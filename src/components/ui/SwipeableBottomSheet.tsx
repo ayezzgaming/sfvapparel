@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useUI } from '@/lib/store/ui-context';
 
@@ -27,6 +28,7 @@ export default function SwipeableBottomSheet({
   maxHeight = 'max-h-[85vh]',
   showCloseButton = true,
 }: SwipeableBottomSheetProps) {
+  const [mounted, setMounted] = useState(false);
   const sheetId = React.useId();
   const { registerSheet } = useUI();
   const [dragY, setDragY] = useState(0);
@@ -34,8 +36,11 @@ export default function SwipeableBottomSheet({
   const startYRef = useRef(0);
   const currentYRef = useRef(0);
   const contentRef = useRef<HTMLDivElement>(null);
-
   const startTimeRef = useRef(0);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Sync with global UI context so Bottom Nav & FAB automatically hide on open and restore on close
   useEffect(() => {
@@ -111,11 +116,13 @@ export default function SwipeableBottomSheet({
     }
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <>
-      {/* Backdrop (Blocks all background touches/scrolling) */}
+      {/* Backdrop (Full screen overlay covering 100% of the entire viewport without gaps) */}
       <div
-        className={`fixed inset-0 bg-black/60 z-[100] transition-opacity duration-300 touch-none overscroll-none ${
+        className={`fixed inset-0 w-full h-full bg-black/60 z-[999] transition-opacity duration-300 touch-none overscroll-none ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
@@ -125,9 +132,9 @@ export default function SwipeableBottomSheet({
         }}
       />
 
-      {/* Sheet Modal Container */}
+      {/* Sheet Modal Container (Pinned to bottom of viewport at z-[1000]) */}
       <div
-        className={`fixed inset-x-0 bottom-0 z-[101] w-full max-w-md mx-auto bg-white rounded-t-[32px] rounded-b-none mb-0 shadow-2xl flex flex-col ${maxHeight} ${
+        className={`fixed inset-x-0 bottom-0 z-[1000] w-full max-w-md mx-auto bg-white rounded-t-[32px] rounded-b-none mb-0 shadow-2xl flex flex-col ${maxHeight} ${
           isOpen
             ? 'pointer-events-auto'
             : 'pointer-events-none translate-y-full'
@@ -201,6 +208,7 @@ export default function SwipeableBottomSheet({
           </div>
         )}
       </div>
-    </>
+    </>,
+    document.body
   );
 }
