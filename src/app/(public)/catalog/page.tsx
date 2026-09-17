@@ -16,10 +16,10 @@ import { Design } from '@/types/database';
 
 const CATEGORY_PILLS = [
   { id: 'all', label: 'Semua' },
-  { id: 'sublimation', label: 'Sublimasi Penuh' },
-  { id: 'dtf', label: 'Cetakan DTF' },
+  { id: 'sublimation', label: 'Sublimasi' },
+  { id: 'dtf', label: 'DTF' },
   { id: 'merchandise', label: 'Cenderamata' },
-  { id: 'embroidery', label: 'Sulaman Khas' },
+  { id: 'embroidery', label: 'Sulaman' },
 ];
 
 function CatalogContent() {
@@ -88,21 +88,18 @@ function CatalogContent() {
   }, [designs, selectedCategory, searchQuery]);
 
   return (
-    <div className="w-full min-h-full pt-4 pb-12 space-y-4.5 select-none font-ios bg-[#F2F2F7]">
-      {/* Page Title Header */}
+    <div className="w-full min-h-full pt-5 pb-16 space-y-5 select-none font-ios bg-[#F2F2F7]">
+      {/* 1. Header Area (Clean & Minimal iOS Style) */}
       <div className="px-5">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] text-[10.5px] font-bold uppercase tracking-wider mb-1.5">
-          <span>Galeri & Templat</span>
-        </div>
-        <h1 className="text-xl sm:text-[22px] font-bold text-slate-900 tracking-tight">
-          Katalog Pilihan
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+          Katalog
         </h1>
-        <p className="text-xs text-slate-500 font-normal tracking-wide mt-0.5">
-          Pilih templat sedia ada atau mula tempahan kustom dengan pereka
+        <p className="text-xs text-slate-500 mt-1 font-normal">
+          Pilihan templat rekaan sedia ada & kustom
         </p>
       </div>
 
-      {/* iOS Search Bar */}
+      {/* 2. iOS Search Bar (Spacious & Clean) */}
       <div className="px-5">
         <div className="relative flex items-center bg-white rounded-2xl border border-slate-200/80 shadow-xs focus-within:border-[#0052FF] focus-within:ring-2 focus-within:ring-[#0052FF]/10 transition-all">
           <Search className="absolute left-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -110,8 +107,8 @@ function CatalogContent() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari jersi esport, raglan, baju DTF..."
-            className="w-full pl-10 pr-9 py-2.5 bg-transparent rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+            placeholder="Cari jersi, kemeja, t-shirt..."
+            className="w-full pl-10 pr-9 py-3 bg-transparent rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
           />
           {searchQuery && (
             <button
@@ -124,7 +121,7 @@ function CatalogContent() {
         </div>
       </div>
 
-      {/* Category Pills (Clean Container Scroller without edge clipping) */}
+      {/* 3. Category Filter Pills (Generous Breathing Room) */}
       <div className="px-5">
         <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none no-scrollbar">
           {CATEGORY_PILLS.map((pill) => {
@@ -133,10 +130,10 @@ function CatalogContent() {
               <button
                 key={pill.id}
                 onClick={() => setSelectedCategory(pill.id)}
-                className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-tight transition-all active:scale-95 ${
+                className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-semibold tracking-tight transition-all active:scale-95 ${
                   isActive
-                    ? 'bg-[#0052FF] text-white shadow-sm shadow-blue-500/25'
-                    : 'bg-white text-slate-600 shadow-2xs border border-slate-200/70 hover:bg-slate-50'
+                    ? 'bg-[#0052FF] text-white shadow-sm shadow-blue-500/20'
+                    : 'bg-white text-slate-600 border border-slate-200/60 hover:bg-slate-50'
                 }`}
               >
                 {pill.label}
@@ -146,28 +143,27 @@ function CatalogContent() {
         </div>
       </div>
 
-      {/* Product Template Grid (Strict Equal Height & Alignment) */}
-      <div className="px-5 pt-0.5">
+      {/* 4. Product Gallery Grid (Clean Cards without Text Pollution) */}
+      <div className="px-5 pt-1">
         {filteredDesigns.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 text-center shadow-sm space-y-2 border border-slate-200/70">
-            <Layers className="w-8 h-8 text-slate-300 mx-auto" />
-            <p className="text-xs font-bold text-slate-700">Tiada templat dijumpai</p>
-            <p className="text-[11.5px] text-slate-500">Cuba tukar kata kunci atau pilih kategori lain.</p>
+          <div className="bg-white rounded-3xl p-10 text-center shadow-xs space-y-2.5 border border-slate-200/60 my-4">
+            <Layers className="w-9 h-9 text-slate-300 mx-auto" />
+            <p className="text-xs font-bold text-slate-800">Tiada templat dijumpai</p>
+            <p className="text-[11px] text-slate-400">Cuba tukar kata kunci carian atau pilih kategori lain.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3.5 items-stretch">
+          <div className="grid grid-cols-2 gap-4">
             {filteredDesigns.map((design) => {
               const isFav = favorites.includes(design.id);
-              const waUrl = `https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20berminat%20dengan%20templat%20rekaan%20*${encodeURIComponent(design.title)}*%20(${encodeURIComponent(design.category)}).%20Boleh%20kita%20bincang%20tempahan%20ini?`;
 
               return (
                 <div
                   key={design.id}
                   onClick={() => handleOpenDesign(design)}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/70 hover:border-blue-200 hover:shadow-md flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all group relative h-full"
+                  className="bg-white rounded-2xl overflow-hidden shadow-xs border border-slate-200/60 hover:border-blue-200 flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all group"
                 >
-                  {/* Top Image Canvas (Uniform Height Across All Cards) */}
-                  <div className="relative w-full h-36 overflow-hidden bg-slate-100 shrink-0">
+                  {/* Clean Visual Image Area */}
+                  <div className="relative w-full aspect-[4/4.5] overflow-hidden bg-slate-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={design.thumbnail_url || design.mockup_front_url}
@@ -175,12 +171,7 @@ function CatalogContent() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                     />
 
-                    {/* Technique Badge */}
-                    <span className="absolute top-2.5 left-2.5 text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-md border border-white/70 text-[#0052FF] shadow-2xs uppercase">
-                      {design.print_type === 'sublimation' ? 'Sublimasi' : design.print_type === 'dtf' ? 'DTF' : 'Khas'}
-                    </span>
-
-                    {/* Favorite Heart Button */}
+                    {/* Minimalist Heart Button */}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -188,46 +179,24 @@ function CatalogContent() {
                         toggleFavorite(design.id);
                       }}
                       aria-label="Kegemaran"
-                      className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-xs active:scale-75 hover:scale-105 transition-all z-10"
+                      className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-black/25 backdrop-blur-md flex items-center justify-center text-white active:scale-75 transition-all z-10"
                     >
                       <Heart 
                         className={`w-3.5 h-3.5 transition-colors ${
-                          isFav ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-slate-500 hover:text-slate-800'
+                          isFav ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-white'
                         }`} 
                       />
                     </button>
                   </div>
 
-                  {/* Template Meta & WhatsApp Direct Action */}
-                  <div className="p-3 flex flex-col justify-between flex-1">
-                    <div className="space-y-0.5">
-                      <h3 className="text-[12.5px] font-bold text-slate-900 tracking-tight h-8.5 line-clamp-2 leading-snug group-hover:text-[#0052FF] transition-colors">
-                        {design.title}
-                      </h3>
-                      <p className="text-[11px] text-slate-500 font-normal truncate">
-                        {design.category}
-                      </p>
-                    </div>
-
-                    {/* Footer: Tags & Clean Grey-to-Green WhatsApp Action Icon */}
-                    <div className="mt-2.5 pt-2 flex items-center justify-between border-t border-slate-100">
-                      <span className="text-[10px] font-medium text-slate-400 truncate">
-                        Templat Kilang
-                      </span>
-
-                      {/* Clean WhatsApp Icon Button (Grey by default, Green on hover/active) */}
-                      <a
-                        href={waUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        aria-label={`Bincang di WhatsApp untuk ${design.title}`}
-                        className="p-1 text-slate-400 hover:text-[#25D366] active:text-[#25D366] active:scale-85 transition-all shrink-0 flex items-center justify-center"
-                        title="Bincang di WhatsApp"
-                      >
-                        <FaWhatsapp className="w-5 h-5" />
-                      </a>
-                    </div>
+                  {/* Clean Minimal Typography (No Badges, No Clutter) */}
+                  <div className="p-3">
+                    <h3 className="text-xs font-bold text-slate-900 tracking-tight truncate group-hover:text-[#0052FF] transition-colors">
+                      {design.title}
+                    </h3>
+                    <p className="text-[11px] text-slate-400 mt-0.5 capitalize truncate">
+                      {design.print_type === 'sublimation' ? 'Sublimasi Penuh' : design.print_type === 'dtf' ? 'Cetakan DTF' : design.category}
+                    </p>
                   </div>
                 </div>
               );
@@ -333,4 +302,3 @@ export default function CatalogPage() {
     </React.Suspense>
   );
 }
-
