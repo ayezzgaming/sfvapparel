@@ -106,7 +106,7 @@ export default function SwipeableBottomSheet({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/50 z-50 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/60 z-[100] transition-opacity duration-300 ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
@@ -114,7 +114,7 @@ export default function SwipeableBottomSheet({
 
       {/* Sheet Modal Container */}
       <div
-        className={`fixed inset-x-0 bottom-0 z-50 w-full max-w-md mx-auto bg-white rounded-t-[32px] rounded-b-none mb-0 shadow-2xl flex flex-col ${maxHeight} ${
+        className={`fixed inset-x-0 bottom-0 z-[101] w-full max-w-md mx-auto bg-white rounded-t-[32px] rounded-b-none mb-0 shadow-2xl flex flex-col ${maxHeight} ${
           isOpen
             ? 'pointer-events-auto'
             : 'pointer-events-none translate-y-full'
@@ -133,7 +133,7 @@ export default function SwipeableBottomSheet({
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="pt-3 pb-2.5 px-6 shrink-0 border-b border-black/[0.04] cursor-grab active:cursor-grabbing select-none touch-none"
+          className="pt-3.5 pb-2.5 px-6 shrink-0 border-b border-black/[0.04] cursor-grab active:cursor-grabbing select-none touch-none"
         >
           {/* iOS Standard Drag Handle Bar */}
           <div className="flex justify-center pb-2.5">
@@ -181,9 +181,9 @@ export default function SwipeableBottomSheet({
           {children}
         </div>
 
-        {/* Sticky Action Footer */}
+        {/* Sticky Action Footer with iOS Bottom Safe Area */}
         {footer && (
-          <div className="p-4 px-6 bg-white/95 backdrop-blur-md border-t border-slate-100 shrink-0 space-y-2">
+          <div className="p-4 px-6 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)] bg-white/95 backdrop-blur-md border-t border-slate-100 shrink-0 space-y-2">
             {footer}
           </div>
         )}

@@ -3,16 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { 
-  X, 
   ChevronRight, 
   ShoppingBag,
   CheckCircle2,
   Clock,
-  Package,
-  Truck,
   Copy,
-  Check,
-  ArrowRight
+  Check
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
@@ -21,22 +17,22 @@ import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { Order, OrderStatus } from '@/types/database';
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; stepIndex: number; color: string; bg: string; dot: string }> = {
-  pending_proof: { label: 'Semakan Reka Bentuk', stepIndex: 1, color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200/60', dot: 'bg-amber-500' },
-  proof_approved: { label: 'Mockup Diluluskan', stepIndex: 1, color: 'text-purple-700', bg: 'bg-purple-50 border-purple-200/60', dot: 'bg-purple-500' },
-  in_printing: { label: 'Dalam Cetakan', stepIndex: 2, color: 'text-[#0052FF]', bg: 'bg-blue-50 border-blue-200/60', dot: 'bg-[#0052FF]' },
-  heat_press: { label: 'Proses Haba', stepIndex: 2, color: 'text-indigo-700', bg: 'bg-indigo-50 border-indigo-200/60', dot: 'bg-indigo-500' },
-  sewing: { label: 'Proses Jahitan', stepIndex: 3, color: 'text-sky-700', bg: 'bg-sky-50 border-sky-200/60', dot: 'bg-sky-500' },
-  qc_check: { label: 'Kawalan Kualiti (QC)', stepIndex: 3, color: 'text-teal-700', bg: 'bg-teal-50 border-teal-200/60', dot: 'bg-teal-500' },
-  ready_to_ship: { label: 'Sedia Dipos', stepIndex: 4, color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200/60', dot: 'bg-emerald-500' },
-  delivered: { label: 'Selesai Diterima', stepIndex: 4, color: 'text-slate-700', bg: 'bg-slate-100 border-slate-200/60', dot: 'bg-slate-500' },
-  cancelled: { label: 'Dibatalkan', stepIndex: 0, color: 'text-rose-700', bg: 'bg-rose-50 border-rose-200/60', dot: 'bg-rose-500' },
+  pending_proof: { label: 'Semakan Mockup', stepIndex: 1, color: 'text-amber-700', bg: 'bg-amber-50', dot: 'bg-amber-500' },
+  proof_approved: { label: 'Diluluskan', stepIndex: 1, color: 'text-purple-700', bg: 'bg-purple-50', dot: 'bg-purple-500' },
+  in_printing: { label: 'Dalam Cetakan', stepIndex: 2, color: 'text-[#0052FF]', bg: 'bg-blue-50', dot: 'bg-[#0052FF]' },
+  heat_press: { label: 'Proses Haba', stepIndex: 2, color: 'text-indigo-700', bg: 'bg-indigo-50', dot: 'bg-indigo-500' },
+  sewing: { label: 'Jahitan', stepIndex: 3, color: 'text-sky-700', bg: 'bg-sky-50', dot: 'bg-sky-500' },
+  qc_check: { label: 'Kawalan Kualiti', stepIndex: 3, color: 'text-teal-700', bg: 'bg-teal-50', dot: 'bg-teal-500' },
+  ready_to_ship: { label: 'Sedia Dipos', stepIndex: 4, color: 'text-emerald-700', bg: 'bg-emerald-50', dot: 'bg-emerald-500' },
+  delivered: { label: 'Selesai', stepIndex: 4, color: 'text-slate-700', bg: 'bg-slate-100', dot: 'bg-slate-500' },
+  cancelled: { label: 'Dibatalkan', stepIndex: 0, color: 'text-rose-700', bg: 'bg-rose-50', dot: 'bg-rose-500' },
 };
 
 const TIMELINE_STEPS = [
-  { step: 1, title: 'Reka Bentuk & Mockup', desc: 'Pengesahan artwork rekaan kilang' },
-  { step: 2, title: 'Cetakan & Pemindahan Haba', desc: 'Proses sublimasi / DTF berkualiti tinggi' },
-  { step: 3, title: 'Jahitan & Kawalan Kualiti (QC)', desc: 'Jahitan kemas dan pemeriksaan akhir' },
-  { step: 4, title: 'Penghantaran Kurier', desc: 'Bungkusan sedia dipos atau dihantar' },
+  { step: 1, title: 'Reka Bentuk & Mockup', desc: 'Pengesahan artwork & susun atur' },
+  { step: 2, title: 'Cetakan & Pemindahan Haba', desc: 'Proses sublimasi / cetakan DTF' },
+  { step: 3, title: 'Jahitan & Pemeriksaan QC', desc: 'Jahitan kemas dan kawalan kualiti' },
+  { step: 4, title: 'Penghantaran Kurier', desc: 'Bungkusan sedia dihantar kepada anda' },
 ];
 
 export default function HistoryPage() {
@@ -88,34 +84,31 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="w-full min-h-full pt-4 pb-12 space-y-4.5 select-none font-ios bg-[#F2F2F7]">
-      {/* Header */}
+    <div className="w-full min-h-full pt-5 pb-16 space-y-5 select-none font-ios bg-[#F2F2F7]">
+      {/* 1. Header (Clean & Minimal iOS Style) */}
       <div className="px-5">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] text-[10.5px] font-bold uppercase tracking-wider mb-1.5">
-          <span>Pengurusan Pesanan</span>
-        </div>
-        <h1 className="text-xl sm:text-[22px] font-bold text-slate-900 tracking-tight">
-          Senarai Pesanan
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+          Pesanan
         </h1>
-        <p className="text-xs text-slate-500 font-normal tracking-wide mt-0.5">
-          Jejak status pembuatan dan penghantaran pakaian anda secara masa nyata
+        <p className="text-xs text-slate-500 mt-1 font-normal">
+          Jejak status pembuatan & penghantaran pesanan
         </p>
       </div>
 
-      {/* Orders List */}
-      <div className="px-5 space-y-3">
+      {/* 2. Orders List (Decluttered Cards with Clean Spacing) */}
+      <div className="px-5 space-y-3.5">
         {orders.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 text-center shadow-sm space-y-3 border border-slate-200/70">
+          <div className="bg-white rounded-3xl p-10 text-center shadow-xs space-y-3 border border-slate-200/60 my-4">
             <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
               <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-800">Belum ada pesanan aktif</p>
-              <p className="text-xs text-slate-500 mt-0.5">Pilih templat dari katalog untuk memulakan tempahan.</p>
+              <p className="text-sm font-bold text-slate-800">Tiada pesanan aktif</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">Pilih templat dari katalog untuk mula menempah.</p>
             </div>
             <Link
               href="/catalog"
-              className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[#0052FF] text-white text-xs font-semibold shadow-md shadow-blue-500/20 active:bg-blue-700 transition-colors"
+              className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[#0052FF] text-white text-xs font-semibold shadow-sm active:bg-blue-700 transition-colors"
             >
               <span>Lihat Katalog</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -127,7 +120,7 @@ export default function HistoryPage() {
               label: order.status,
               stepIndex: 2,
               color: 'text-[#0052FF]',
-              bg: 'bg-blue-50 border-blue-200/60',
+              bg: 'bg-blue-50',
               dot: 'bg-[#0052FF]',
             };
 
@@ -140,23 +133,22 @@ export default function HistoryPage() {
               <div
                 key={order.id}
                 onClick={() => handleOpenOrder(order)}
-                className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/70 hover:border-blue-200 hover:shadow-md transition-all cursor-pointer active:scale-[0.99] space-y-3"
+                className="bg-white rounded-2xl p-4 shadow-xs border border-slate-200/60 hover:border-blue-200 transition-all cursor-pointer active:scale-[0.98] space-y-3"
               >
-                {/* Header Row: Order Number + Status Badge */}
+                {/* Header Row: Order Number + Minimal Pill Status */}
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-slate-900 tracking-tight">
+                  <span className="font-mono text-xs font-bold text-slate-800 tracking-tight">
                     {order.order_number}
                   </span>
                   
-                  <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${config.bg} ${config.color} uppercase tracking-wider`}>
+                  <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full ${config.bg} ${config.color}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
                     {config.label}
                   </span>
                 </div>
 
                 {/* Product Detail Row */}
-                <div className="flex items-center space-x-3.5 pt-0.5">
-                  {/* Mockup Thumbnail */}
+                <div className="flex items-center space-x-3.5">
                   <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -166,29 +158,28 @@ export default function HistoryPage() {
                     />
                   </div>
 
-                  {/* Title & Quantity Meta */}
-                  <div className="min-w-0 flex-1 space-y-0.5">
-                    <h3 className="text-[13.5px] font-bold text-slate-900 tracking-tight truncate leading-snug">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-xs font-bold text-slate-900 truncate">
                       {order.design_title}
                     </h3>
-                    <p className="text-[11.5px] text-slate-500 truncate">
-                      {order.total_quantity} helai • {order.print_type === 'sublimation' ? 'Sublimasi Penuh' : 'Cetakan DTF'}
+                    <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                      {order.total_quantity} helai • {order.print_type === 'sublimation' ? 'Sublimasi' : 'DTF'}
                     </p>
-                    <p className="text-xs font-black text-[#0052FF]">
+                    <p className="text-xs font-bold text-[#0052FF] mt-1">
                       RM{formattedPrice}
                     </p>
                   </div>
                 </div>
 
-                {/* Footer Row: Date & Action Link */}
-                <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-medium text-[11px]">
+                {/* Footer Row: Clean Date & Subdued Chevron */}
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400">
                     {order.created_at ? new Date(order.created_at).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Hari Ini'}
                   </span>
                   
-                  <div className="flex items-center space-x-1 text-[#0052FF] font-semibold text-[11.5px]">
-                    <span>Jejak Pesanan</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
+                  <div className="flex items-center space-x-1 text-slate-500 font-medium">
+                    <span>Perincian</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
                   </div>
                 </div>
               </div>
@@ -203,14 +194,14 @@ export default function HistoryPage() {
       <SwipeableBottomSheet
         isOpen={isOrderSheetOpen}
         onClose={() => setIsOrderSheetOpen(false)}
-        maxHeight="max-h-[88vh]"
+        maxHeight="max-h-[84dvh]"
         title={
           <div>
             <span className="font-mono text-sm font-bold text-slate-900 tracking-tight">
               {selectedOrder.order_number}
             </span>
-            <p className="text-[11px] text-gray-500 font-normal mt-0.5">
-              Tarikh Tempahan: {selectedOrder.created_at ? new Date(selectedOrder.created_at).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+            <p className="text-[11px] text-slate-400 font-normal mt-0.5">
+              Tarikh: {selectedOrder.created_at ? new Date(selectedOrder.created_at).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
             </p>
           </div>
         }
@@ -219,32 +210,32 @@ export default function HistoryPage() {
             href={`https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ingin%20semak%20status%20pesanan%20*${selectedOrder.order_number}*%20(${encodeURIComponent(selectedOrder.design_title)})`}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold py-3.5 rounded-xl text-center active:bg-emerald-700 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-emerald-500/25 text-xs"
+            className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold py-3.5 rounded-xl text-center active:bg-emerald-700 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-emerald-500/20 text-xs"
           >
             <FaWhatsapp className="w-4 h-4" />
-            <span>Semak Status Pantas di WhatsApp →</span>
+            <span>Tanya Status di WhatsApp</span>
           </a>
         }
       >
         {/* Status Current Banner */}
-        <div className="bg-slate-50 rounded-2xl p-4 space-y-2 border border-slate-200/60">
+        <div className="bg-slate-50 rounded-2xl p-3.5 space-y-2 border border-slate-200/50">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-800">Status Semasa</span>
-            <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full border ${STATUS_CONFIG[selectedOrder.status]?.bg || 'bg-blue-50 border-blue-200/60'} ${STATUS_CONFIG[selectedOrder.status]?.color || 'text-[#0052FF]'}`}>
+            <span className="text-xs font-bold text-slate-800">Status Terkini</span>
+            <span className={`inline-flex items-center gap-1.5 text-[10.5px] font-bold px-2.5 py-1 rounded-full ${STATUS_CONFIG[selectedOrder.status]?.bg || 'bg-blue-50'} ${STATUS_CONFIG[selectedOrder.status]?.color || 'text-[#0052FF]'}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${STATUS_CONFIG[selectedOrder.status]?.dot || 'bg-[#0052FF]'}`} />
               {STATUS_CONFIG[selectedOrder.status]?.label || selectedOrder.status}
             </span>
           </div>
 
           {selectedOrder.tracking_number && (
-            <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
-              <span className="text-slate-500 font-medium">
+            <div className="pt-2 border-t border-slate-200/50 flex items-center justify-between text-xs">
+              <span className="text-slate-500 text-[11px]">
                 {selectedOrder.shipping_courier || 'Kurier'}:
               </span>
               <button
                 type="button"
                 onClick={() => handleCopyTracking(selectedOrder.tracking_number || '')}
-                className="flex items-center gap-1.5 font-mono font-bold text-[#0052FF] bg-white px-2.5 py-1 rounded-lg border border-blue-100 shadow-2xs active:scale-95 transition-transform"
+                className="flex items-center gap-1.5 font-mono font-bold text-xs text-[#0052FF] bg-white px-2.5 py-1 rounded-lg border border-slate-200/60 shadow-2xs active:scale-95 transition-transform"
               >
                 <span>{selectedOrder.tracking_number}</span>
                 {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
@@ -254,9 +245,9 @@ export default function HistoryPage() {
         </div>
 
         {/* Stepper Timeline */}
-        <div className="space-y-2.5">
-          <span className="text-xs font-bold text-slate-900">Perjalanan Tempahan Kilang</span>
-          <div className="bg-white rounded-2xl p-4 border border-slate-200/70 space-y-4">
+        <div className="space-y-2">
+          <span className="text-xs font-bold text-slate-900">Kemajuan Kilang</span>
+          <div className="bg-white rounded-2xl p-4 border border-slate-200/60 space-y-3.5">
             {TIMELINE_STEPS.map((step, idx) => {
               const currentStep = STATUS_CONFIG[selectedOrder.status]?.stepIndex || 2;
               const isFinished = currentStep > step.step;
@@ -264,34 +255,34 @@ export default function HistoryPage() {
 
               return (
                 <div key={step.step} className="flex items-start gap-3 relative">
-                  {/* Left Line */}
+                  {/* Left Connecting Line */}
                   {idx < TIMELINE_STEPS.length - 1 && (
-                    <div className={`absolute left-3.5 top-7 bottom-0 w-0.5 -mb-4 ${isFinished ? 'bg-[#0052FF]' : 'bg-slate-100'}`} />
+                    <div className={`absolute left-3 top-6 bottom-0 w-0.5 -mb-3.5 ${isFinished ? 'bg-[#0052FF]' : 'bg-slate-100'}`} />
                   )}
 
                   {/* Step Icon */}
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 z-10 ${
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 z-10 text-[10px] font-bold ${
                     isFinished
                       ? 'bg-[#0052FF] text-white'
                       : isCurrent
-                      ? 'bg-blue-100 text-[#0052FF] ring-4 ring-blue-50'
+                      ? 'bg-blue-100 text-[#0052FF] ring-2 ring-blue-50'
                       : 'bg-slate-100 text-slate-400'
                   }`}>
                     {isFinished ? (
-                      <CheckCircle2 className="w-4 h-4" />
+                      <CheckCircle2 className="w-3.5 h-3.5" />
                     ) : isCurrent ? (
-                      <Clock className="w-3.5 h-3.5 animate-pulse" />
+                      <Clock className="w-3 h-3 animate-pulse" />
                     ) : (
-                      <span className="text-[11px] font-bold">{step.step}</span>
+                      step.step
                     )}
                   </div>
 
-                  {/* Step Text */}
+                  {/* Step Content */}
                   <div className="min-w-0 flex-1 pt-0.5">
-                    <p className={`text-[12.5px] font-bold leading-tight ${isCurrent ? 'text-[#0052FF]' : isFinished ? 'text-slate-900' : 'text-slate-400'}`}>
+                    <p className={`text-xs font-bold ${isCurrent ? 'text-[#0052FF]' : isFinished ? 'text-slate-900' : 'text-slate-400'}`}>
                       {step.title}
                     </p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-slate-400 mt-0.5">
                       {step.desc}
                     </p>
                   </div>
@@ -304,39 +295,39 @@ export default function HistoryPage() {
         {/* Order Garment Specs */}
         <div className="space-y-2">
           <span className="text-xs font-bold text-slate-900">Perincian Pakaian</span>
-          <div className="bg-slate-50 rounded-2xl p-4 space-y-2.5 border border-slate-200/60">
-            <h4 className="text-[13.5px] font-bold text-slate-900">{selectedOrder.design_title}</h4>
+          <div className="bg-slate-50 rounded-2xl p-3.5 space-y-2 border border-slate-200/50 text-xs">
+            <h4 className="text-xs font-bold text-slate-900">{selectedOrder.design_title}</h4>
             
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-white p-2.5 rounded-xl border border-slate-200/50">
-                <span className="text-[10.5px] text-slate-500 block font-medium">Kaedah Cetak</span>
-                <span className="font-semibold text-slate-900">
-                  {selectedOrder.print_type === 'sublimation' ? 'Sublimasi Penuh' : 'Cetakan DTF'}
-                </span>
-              </div>
+            <div className="flex justify-between items-center text-[11px] text-slate-500 pt-1">
+              <span>Jenis Cetakan:</span>
+              <span className="font-semibold text-slate-800">
+                {selectedOrder.print_type === 'sublimation' ? 'Sublimasi Penuh' : 'Cetakan DTF'}
+              </span>
+            </div>
 
-              <div className="bg-white p-2.5 rounded-xl border border-slate-200/50">
-                <span className="text-[10.5px] text-slate-500 block font-medium">Jumlah Kuantiti</span>
-                <span className="font-bold text-[#0052FF]">
-                  {selectedOrder.total_quantity} helai
-                </span>
-              </div>
+            <div className="flex justify-between items-center text-[11px] text-slate-500">
+              <span>Jumlah Tempahan:</span>
+              <span className="font-bold text-[#0052FF]">
+                {selectedOrder.total_quantity} helai
+              </span>
             </div>
 
             {selectedOrder.fabric_name && (
-              <p className="text-xs text-slate-600 pt-1">
-                Fabrik: <span className="font-semibold text-slate-900">{selectedOrder.fabric_name}</span>
-                {selectedOrder.cut_name ? ` • Potongan: ${selectedOrder.cut_name}` : ''}
-              </p>
+              <div className="flex justify-between items-center text-[11px] text-slate-500">
+                <span>Fabrik / Potongan:</span>
+                <span className="font-semibold text-slate-800">
+                  {selectedOrder.fabric_name}
+                </span>
+              </div>
             )}
 
             {/* Sizing Breakdown */}
             {selectedOrder.sizing_breakdown && Object.keys(selectedOrder.sizing_breakdown).length > 0 && (
-              <div className="pt-2 border-t border-slate-200/60">
-                <p className="text-[11px] text-slate-500 font-medium mb-1.5">Pecahan Saiz:</p>
+              <div className="pt-2 border-t border-slate-200/50">
+                <p className="text-[10.5px] text-slate-400 mb-1">Pecahan Saiz:</p>
                 <div className="flex flex-wrap gap-1.5">
                   {Object.entries(selectedOrder.sizing_breakdown).map(([sz, qty]) => (
-                    <div key={sz} className="bg-white px-2.5 py-1 rounded-lg text-xs font-mono font-semibold text-slate-800 border border-slate-200/50">
+                    <div key={sz} className="bg-white px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold text-slate-700 border border-slate-200/40">
                       {sz}: <span className="text-[#0052FF] font-bold">{qty}</span>
                     </div>
                   ))}
@@ -347,9 +338,9 @@ export default function HistoryPage() {
         </div>
 
         {/* Shipping Address */}
-        <div className="bg-slate-50 rounded-2xl p-4 space-y-1 border border-slate-200/60">
+        <div className="bg-slate-50 rounded-2xl p-3.5 space-y-1 border border-slate-200/50 text-xs">
           <span className="text-xs font-bold text-slate-900">Alamat Penghantaran</span>
-          <p className="text-xs text-slate-600 leading-relaxed">
+          <p className="text-[11px] text-slate-500 leading-relaxed">
             {selectedOrder.shipping_address || 'No 15, Jalan Ampang, 50450 Kuala Lumpur'}
           </p>
         </div>
