@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useCallback, useSyncExternalStore } from 'react';
 import {
   ApparelCut,
   Customer,
@@ -51,49 +51,121 @@ function setLocalData<T>(key: string, value: T): void {
   }
 }
 
+interface AppStoreState {
+  designs: Design[];
+  fabrics: FabricMaterial[];
+  cuts: ApparelCut[];
+  dtfDimensions: DtfDimension[];
+  tiers: QuantityTierDiscount[];
+  customers: Customer[];
+  orders: Order[];
+  favorites: string[];
+  isInitialized: boolean;
+}
+
+let storeState: AppStoreState = {
+  designs: INITIAL_DESIGNS,
+  fabrics: INITIAL_FABRIC_MATERIALS,
+  cuts: INITIAL_APPAREL_CUTS,
+  dtfDimensions: INITIAL_DTF_DIMENSIONS,
+  tiers: INITIAL_QUANTITY_TIERS,
+  customers: INITIAL_CUSTOMERS,
+  orders: INITIAL_ORDERS,
+  favorites: [],
+  isInitialized: false,
+};
+
+const listeners = new Set<() => void>();
+
+function notify() {
+  listeners.forEach((listener) => listener());
+}
+
+function initStoreIfNeeded() {
+  if (typeof window === 'undefined' || storeState.isInitialized) return;
+  storeState = {
+    designs: getLocalData(STORAGE_KEYS.DESIGNS, INITIAL_DESIGNS),
+    fabrics: getLocalData(STORAGE_KEYS.FABRICS, INITIAL_FABRIC_MATERIALS),
+    cuts: getLocalData(STORAGE_KEYS.CUTS, INITIAL_APPAREL_CUTS),
+    dtfDimensions: getLocalData(STORAGE_KEYS.DTF_DIMS, INITIAL_DTF_DIMENSIONS),
+    tiers: getLocalData(STORAGE_KEYS.TIERS, INITIAL_QUANTITY_TIERS),
+    customers: getLocalData(STORAGE_KEYS.CUSTOMERS, INITIAL_CUSTOMERS),
+    orders: getLocalData(STORAGE_KEYS.ORDERS, INITIAL_ORDERS),
+    favorites: getLocalData(STORAGE_KEYS.FAVORITES, []),
+    isInitialized: true,
+  };
+  notify();
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e: StorageEvent) => {
+    if (!e.newValue) return;
+    try {
+      if (e.key === STORAGE_KEYS.DESIGNS) storeState.designs = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.FABRICS) storeState.fabrics = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.CUTS) storeState.cuts = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.DTF_DIMS) storeState.dtfDimensions = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.TIERS) storeState.tiers = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.ORDERS) storeState.orders = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.CUSTOMERS) storeState.customers = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.FAVORITES) storeState.favorites = JSON.parse(e.newValue);
+      notify();
+    } catch {
+      // Ignore parse error
+    }
+  });
+}
+
+function subscribe(callback: () => void) {
+  listeners.add(callback);
+  return () => {
+    listeners.delete(callback);
+  };
+}
+
+function getSnapshot() {
+  return storeState;
+}
+
+const serverSnapshot: AppStoreState = {
+  designs: INITIAL_DESIGNS,
+  fabrics: INITIAL_FABRIC_MATERIALS,
+  cuts: INITIAL_APPAREL_CUTS,
+  dtfDimensions: INITIAL_DTF_DIMENSIONS,
+  tiers: INITIAL_QUANTITY_TIERS,
+  customers: INITIAL_CUSTOMERS,
+  orders: INITIAL_ORDERS,
+  favorites: [],
+  isInitialized: false,
+};
+
+function getServerSnapshot() {
+  return serverSnapshot;
+}
+
 export function useAppStore() {
-  const [designs, setDesigns] = useState<Design[]>(INITIAL_DESIGNS);
-  const [fabrics, setFabrics] = useState<FabricMaterial[]>(INITIAL_FABRIC_MATERIALS);
-  const [cuts, setCuts] = useState<ApparelCut[]>(INITIAL_APPAREL_CUTS);
-  const [dtfDimensions, setDtfDimensions] = useState<DtfDimension[]>(INITIAL_DTF_DIMENSIONS);
-  const [tiers, setTiers] = useState<QuantityTierDiscount[]>(INITIAL_QUANTITY_TIERS);
-  const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  // Initialize from LocalStorage
   useEffect(() => {
-    setDesigns(getLocalData(STORAGE_KEYS.DESIGNS, INITIAL_DESIGNS));
-    setFabrics(getLocalData(STORAGE_KEYS.FABRICS, INITIAL_FABRIC_MATERIALS));
-    setCuts(getLocalData(STORAGE_KEYS.CUTS, INITIAL_APPAREL_CUTS));
-    setDtfDimensions(getLocalData(STORAGE_KEYS.DTF_DIMS, INITIAL_DTF_DIMENSIONS));
-    setTiers(getLocalData(STORAGE_KEYS.TIERS, INITIAL_QUANTITY_TIERS));
-    setCustomers(getLocalData(STORAGE_KEYS.CUSTOMERS, INITIAL_CUSTOMERS));
-    setOrders(getLocalData(STORAGE_KEYS.ORDERS, INITIAL_ORDERS));
-    setFavorites(getLocalData(STORAGE_KEYS.FAVORITES, []));
-    setIsInitialized(true);
+    initStoreIfNeeded();
   }, []);
 
-  // Listen for storage events (multi-tab sync between Public PWA and Admin)
-  useEffect(() => {
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEYS.DESIGNS && e.newValue) setDesigns(JSON.parse(e.newValue));
-      if (e.key === STORAGE_KEYS.FABRICS && e.newValue) setFabrics(JSON.parse(e.newValue));
-      if (e.key === STORAGE_KEYS.CUTS && e.newValue) setCuts(JSON.parse(e.newValue));
-      if (e.key === STORAGE_KEYS.DTF_DIMS && e.newValue) setDtfDimensions(JSON.parse(e.newValue));
-      if (e.key === STORAGE_KEYS.TIERS && e.newValue) setTiers(JSON.parse(e.newValue));
-      if (e.key === STORAGE_KEYS.ORDERS && e.newValue) setOrders(JSON.parse(e.newValue));
-      if (e.key === STORAGE_KEYS.CUSTOMERS && e.newValue) setCustomers(JSON.parse(e.newValue));
-      if (e.key === STORAGE_KEYS.FAVORITES && e.newValue) setFavorites(JSON.parse(e.newValue));
-    };
+  const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+  const toggleFavorite = useCallback((designId: string) => {
+    initStoreIfNeeded();
+    const nextFavorites = storeState.favorites.includes(designId)
+      ? storeState.favorites.filter((id) => id !== designId)
+      : [...storeState.favorites, designId];
+    storeState = { ...storeState, favorites: nextFavorites };
+    setLocalData(STORAGE_KEYS.FAVORITES, nextFavorites);
+    notify();
   }, []);
 
-  // Actions
+  const isFavorite = useCallback((designId: string) => {
+    return state.favorites.includes(designId);
+  }, [state.favorites]);
+
   const addOrder = useCallback((newOrderData: Omit<Order, 'id' | 'order_number' | 'created_at' | 'updated_at'>) => {
+    initStoreIfNeeded();
     const nextOrderNum = `SFV-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000))}`;
     const newOrder: Order = {
       ...newOrderData,
@@ -102,128 +174,110 @@ export function useAppStore() {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
-
-    setOrders((prev) => {
-      const updated = [newOrder, ...prev];
-      setLocalData(STORAGE_KEYS.ORDERS, updated);
-      return updated;
-    });
-
+    const nextOrders = [newOrder, ...storeState.orders];
+    storeState = { ...storeState, orders: nextOrders };
+    setLocalData(STORAGE_KEYS.ORDERS, nextOrders);
+    notify();
     return newOrder;
   }, []);
 
   const updateOrderStatus = useCallback((orderId: string, status: OrderStatus, trackingNumber?: string, notes?: string) => {
-    setOrders((prev) => {
-      const updated = prev.map((ord) => {
-        if (ord.id === orderId || ord.order_number === orderId) {
-          return {
-            ...ord,
-            status,
-            tracking_number: trackingNumber !== undefined ? trackingNumber : ord.tracking_number,
-            production_notes: notes !== undefined ? notes : ord.production_notes,
-            updated_at: new Date().toISOString(),
-          };
-        }
-        return ord;
-      });
-      setLocalData(STORAGE_KEYS.ORDERS, updated);
-      return updated;
+    initStoreIfNeeded();
+    const nextOrders = storeState.orders.map((ord) => {
+      if (ord.id === orderId || ord.order_number === orderId) {
+        return {
+          ...ord,
+          status,
+          tracking_number: trackingNumber !== undefined ? trackingNumber : ord.tracking_number,
+          production_notes: notes !== undefined ? notes : ord.production_notes,
+          updated_at: new Date().toISOString(),
+        };
+      }
+      return ord;
     });
+    storeState = { ...storeState, orders: nextOrders };
+    setLocalData(STORAGE_KEYS.ORDERS, nextOrders);
+    notify();
   }, []);
 
   const deleteOrder = useCallback((orderId: string) => {
-    setOrders((prev) => {
-      const updated = prev.filter((ord) => ord.id !== orderId && ord.order_number !== orderId);
-      setLocalData(STORAGE_KEYS.ORDERS, updated);
-      return updated;
-    });
+    initStoreIfNeeded();
+    const nextOrders = storeState.orders.filter((ord) => ord.id !== orderId && ord.order_number !== orderId);
+    storeState = { ...storeState, orders: nextOrders };
+    setLocalData(STORAGE_KEYS.ORDERS, nextOrders);
+    notify();
   }, []);
-
-  const toggleFavorite = useCallback((designId: string) => {
-    setFavorites((prev) => {
-      const next = prev.includes(designId)
-        ? prev.filter((id) => id !== designId)
-        : [...prev, designId];
-      setLocalData(STORAGE_KEYS.FAVORITES, next);
-      return next;
-    });
-  }, []);
-
-  const isFavorite = useCallback((designId: string) => {
-    return favorites.includes(designId);
-  }, [favorites]);
 
   const addDesign = useCallback((design: Omit<Design, 'id'>) => {
-    const newDesign: Design = {
-      ...design,
-      id: `des-${Date.now()}`,
-    };
-    setDesigns((prev) => {
-      const updated = [newDesign, ...prev];
-      setLocalData(STORAGE_KEYS.DESIGNS, updated);
-      return updated;
-    });
+    initStoreIfNeeded();
+    const newDesign: Design = { ...design, id: `des-${Date.now()}` };
+    const nextDesigns = [newDesign, ...storeState.designs];
+    storeState = { ...storeState, designs: nextDesigns };
+    setLocalData(STORAGE_KEYS.DESIGNS, nextDesigns);
+    notify();
     return newDesign;
   }, []);
 
   const updateDesign = useCallback((id: string, updates: Partial<Design>) => {
-    setDesigns((prev) => {
-      const updated = prev.map((d) => (d.id === id ? { ...d, ...updates } : d));
-      setLocalData(STORAGE_KEYS.DESIGNS, updated);
-      return updated;
-    });
+    initStoreIfNeeded();
+    const nextDesigns = storeState.designs.map((d) => (d.id === id ? { ...d, ...updates } : d));
+    storeState = { ...storeState, designs: nextDesigns };
+    setLocalData(STORAGE_KEYS.DESIGNS, nextDesigns);
+    notify();
   }, []);
 
   const deleteDesign = useCallback((id: string) => {
-    setDesigns((prev) => {
-      const updated = prev.filter((d) => d.id !== id);
-      setLocalData(STORAGE_KEYS.DESIGNS, updated);
-      return updated;
-    });
+    initStoreIfNeeded();
+    const nextDesigns = storeState.designs.filter((d) => d.id !== id);
+    storeState = { ...storeState, designs: nextDesigns };
+    setLocalData(STORAGE_KEYS.DESIGNS, nextDesigns);
+    notify();
   }, []);
 
   const updateFabric = useCallback((id: string, updates: Partial<FabricMaterial>) => {
-    setFabrics((prev) => {
-      const updated = prev.map((f) => (f.id === id ? { ...f, ...updates } : f));
-      setLocalData(STORAGE_KEYS.FABRICS, updated);
-      return updated;
-    });
+    initStoreIfNeeded();
+    const next = storeState.fabrics.map((f) => (f.id === id ? { ...f, ...updates } : f));
+    storeState = { ...storeState, fabrics: next };
+    setLocalData(STORAGE_KEYS.FABRICS, next);
+    notify();
   }, []);
 
   const updateCut = useCallback((id: string, updates: Partial<ApparelCut>) => {
-    setCuts((prev) => {
-      const updated = prev.map((c) => (c.id === id ? { ...c, ...updates } : c));
-      setLocalData(STORAGE_KEYS.CUTS, updated);
-      return updated;
-    });
+    initStoreIfNeeded();
+    const next = storeState.cuts.map((c) => (c.id === id ? { ...c, ...updates } : c));
+    storeState = { ...storeState, cuts: next };
+    setLocalData(STORAGE_KEYS.CUTS, next);
+    notify();
   }, []);
 
   const updateDtfDimension = useCallback((id: string, updates: Partial<DtfDimension>) => {
-    setDtfDimensions((prev) => {
-      const updated = prev.map((d) => (d.id === id ? { ...d, ...updates } : d));
-      setLocalData(STORAGE_KEYS.DTF_DIMS, updated);
-      return updated;
-    });
+    initStoreIfNeeded();
+    const next = storeState.dtfDimensions.map((d) => (d.id === id ? { ...d, ...updates } : d));
+    storeState = { ...storeState, dtfDimensions: next };
+    setLocalData(STORAGE_KEYS.DTF_DIMS, next);
+    notify();
   }, []);
 
   const updateQuantityTier = useCallback((id: string, updates: Partial<QuantityTierDiscount>) => {
-    setTiers((prev) => {
-      const updated = prev.map((t) => (t.id === id ? { ...t, ...updates } : t));
-      setLocalData(STORAGE_KEYS.TIERS, updated);
-      return updated;
-    });
+    initStoreIfNeeded();
+    const next = storeState.tiers.map((t) => (t.id === id ? { ...t, ...updates } : t));
+    storeState = { ...storeState, tiers: next };
+    setLocalData(STORAGE_KEYS.TIERS, next);
+    notify();
   }, []);
 
   const resetToSeedData = useCallback(() => {
-    setDesigns(INITIAL_DESIGNS);
-    setFabrics(INITIAL_FABRIC_MATERIALS);
-    setCuts(INITIAL_APPAREL_CUTS);
-    setDtfDimensions(INITIAL_DTF_DIMENSIONS);
-    setTiers(INITIAL_QUANTITY_TIERS);
-    setCustomers(INITIAL_CUSTOMERS);
-    setOrders(INITIAL_ORDERS);
-    setFavorites([]);
-
+    storeState = {
+      designs: INITIAL_DESIGNS,
+      fabrics: INITIAL_FABRIC_MATERIALS,
+      cuts: INITIAL_APPAREL_CUTS,
+      dtfDimensions: INITIAL_DTF_DIMENSIONS,
+      tiers: INITIAL_QUANTITY_TIERS,
+      customers: INITIAL_CUSTOMERS,
+      orders: INITIAL_ORDERS,
+      favorites: [],
+      isInitialized: true,
+    };
     setLocalData(STORAGE_KEYS.DESIGNS, INITIAL_DESIGNS);
     setLocalData(STORAGE_KEYS.FABRICS, INITIAL_FABRIC_MATERIALS);
     setLocalData(STORAGE_KEYS.CUTS, INITIAL_APPAREL_CUTS);
@@ -232,18 +286,19 @@ export function useAppStore() {
     setLocalData(STORAGE_KEYS.CUSTOMERS, INITIAL_CUSTOMERS);
     setLocalData(STORAGE_KEYS.ORDERS, INITIAL_ORDERS);
     setLocalData(STORAGE_KEYS.FAVORITES, []);
+    notify();
   }, []);
 
   return {
-    isInitialized,
-    designs,
-    fabrics,
-    cuts,
-    dtfDimensions,
-    tiers,
-    customers,
-    orders,
-    favorites,
+    isInitialized: state.isInitialized,
+    designs: state.designs,
+    fabrics: state.fabrics,
+    cuts: state.cuts,
+    dtfDimensions: state.dtfDimensions,
+    tiers: state.tiers,
+    customers: state.customers,
+    orders: state.orders,
+    favorites: state.favorites,
     toggleFavorite,
     isFavorite,
     addOrder,
