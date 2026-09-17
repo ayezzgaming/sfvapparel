@@ -1093,19 +1093,19 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* 5. Bottom Legal Bar */}
-        <div className="pt-4 border-t border-gray-200/70 flex justify-between items-center text-[11px]">
-          <p className="font-medium text-slate-600">
+        {/* 5. Bottom Legal Bar (Clean Centered Layout for Mobile) */}
+        <div className="pt-4 border-t border-gray-200/70 flex flex-col items-center justify-center text-center space-y-1">
+          <p className="text-[11px] font-medium text-slate-600">
             © 2026 SFV APPAREL. Hak Cipta Terpelihara.
           </p>
           <a 
             href="https://ayezz.dev/" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-slate-400 hover:text-blue-600 transition-colors inline-flex items-center gap-1"
+            className="text-slate-400 hover:text-[#0052FF] transition-colors inline-flex items-center gap-1 text-[10.5px]"
           >
             <span>Rekaan oleh</span>
-            <span className="font-semibold text-slate-700 hover:text-blue-600">AYEZZ GLOBAL ↗</span>
+            <span className="font-semibold text-slate-600 hover:text-[#0052FF]">AYEZZ GLOBAL ↗</span>
           </a>
         </div>
       </footer>
