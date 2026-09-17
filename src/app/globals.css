@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: "Plus Jakarta Sans", "Outfit", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  }
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #F2F2F7;
+  color: #1D1D1F;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Safe area utilities for native iOS PWA */
+.pt-safe-area {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe-area {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Momentum scroll & scrollbar eradication */
+.sparkle-scroll,
+.scrollbar-none,
+.no-scrollbar,
+[class*="overflow-x-auto"],
+[class*="overflow-y-auto"] {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.sparkle-scroll::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar,
+[class*="overflow-x-auto"]::-webkit-scrollbar,
+[class*="overflow-y-auto"]::-webkit-scrollbar {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+}
+
+/* =========================================================================
+   LUXURY BRAND LOGO ANIMATIONS (Silky Smooth Specular Sheen)
+   ========================================================================= */
+@keyframes specularGlint {
+  0% {
+    background-position: 180% 0;
+  }
+  50% {
+    background-position: -180% 0;
+  }
+  100% {
+    background-position: -180% 0;
+  }
+}
+
+.brand-sfv-text {
+  color: #0052FF;
+  /* Pure Royal Blue base with silky soft specular light sweep */
+  background: linear-gradient(
+    115deg,
+    #0052FF 0%,
+    #0052FF 36%,
+    #5E94FF 46%,
+    #FFFFFF 50%,
+    #5E94FF 54%,
+    #0052FF 64%,
+    #0052FF 100%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: specularGlint 7.5s cubic-bezier(0.4, 0.0, 0.2, 1) infinite;
+  display: inline-block;
+}
+
+.brand-apparel-text {
+  color: #0F172A;
+  /* Deep Slate base with silky soft platinum light sweep */
+  background: linear-gradient(
+    115deg,
+    #0F172A 0%,
+    #0F172A 36%,
+    #475569 46%,
+    #E2E8F0 50%,
+    #475569 54%,
+    #0F172A 64%,
+    #0F172A 100%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: specularGlint 7.5s cubic-bezier(0.4, 0.0, 0.2, 1) infinite;
+  animation-delay: 0.2s;
+  display: inline-block;
+}
+
+/* =========================================================================
+   VIDEO PLAY BUTTON PULSE & RADAR WAVE ANIMATIONS
+   ========================================================================= */
+@keyframes playPulseRing {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+.animate-play-pulse {
+  animation: playPulseRing 2.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+

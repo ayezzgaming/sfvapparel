@@ -1,0 +1,288 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { App } from 'konsta/react';
+import { 
+  IoHomeOutline, 
+  IoHome, 
+  IoGridOutline, 
+  IoGrid, 
+  IoTimeOutline, 
+  IoTime, 
+  IoPersonOutline, 
+  IoPerson 
+} from 'react-icons/io5';
+import { Heart, ShoppingBag } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa6';
+import { useAppStore } from '@/lib/store/app-store';
+
+interface PublicAppShellProps {
+  children: React.ReactNode;
+}
+
+export default function PublicAppShell({ children }: PublicAppShellProps) {
+  const pathname = usePathname();
+  const { orders } = useAppStore();
+  const [isBagOpen, setIsBagOpen] = useState(false);
+
+  const isHome = pathname === '/' || pathname === '';
+  const isCatalog = pathname.startsWith('/catalog') || pathname.startsWith('/customize');
+  const isHistory = pathname.startsWith('/history');
+  const isProfile = pathname.startsWith('/profile');
+
+  const activeOrders = orders.filter((o) => o.status !== 'delivered' && o.status !== 'cancelled');
+  const activeOrdersCount = activeOrders.length;
+
+  return (
+    <App theme="ios" safeAreas={true} className="!bg-transparent min-h-screen font-ios antialiased selection:bg-[#0052FF] selection:text-white">
+      {/* 1. LAYAR MONITOR (Background luar aplikasi jika dibuka di desktop) */}
+      <div className="min-h-screen bg-gray-100 flex justify-center w-full">
+
+        {/* 2. MASTER CONTAINER APLIKASI (Batas ukuran HP - Lock h-screen for fixed header & nav) */}
+        <div className="w-full max-w-md mx-auto relative h-screen bg-white shadow-2xl flex flex-col overflow-hidden">
+          
+          {/* Header / Navbar */}
+          <header className="sticky top-0 z-40 bg-white px-5 py-3.5 pt-[calc(env(safe-area-inset-top,0px)+0.85rem)] flex items-center justify-between border-b border-black/[0.04] shrink-0">
+            {/* Brand Logo with Animated Text */}
+            <Link href="/" className="inline-flex items-center gap-2.5 select-none active:opacity-80 transition-opacity">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo.svg"
+                alt="SFV Apparel Logo"
+                className="h-7 w-7 object-contain shrink-0"
+              />
+              <div className="flex items-baseline">
+                <span className="font-black text-[21px] sm:text-[22px] tracking-tight brand-sfv-text leading-none">
+                  SFV
+                </span>
+                <span className="font-bold text-[14.5px] sm:text-[15px] tracking-[0.22em] ml-2 uppercase brand-apparel-text leading-none">
+                  APPAREL
+                </span>
+              </div>
+            </Link>
+
+            {/* Header Action Icons */}
+            <div className="flex items-center space-x-1">
+              <Link
+                href="/catalog"
+                aria-label="Senarai Pilihan"
+                className="p-2 text-slate-700 hover:text-[#0052FF] transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-slate-50"
+              >
+                <Heart className="w-5 h-5 stroke-[1.75]" />
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => setIsBagOpen(true)}
+                aria-label="Bakul Pesanan Aktif"
+                className="p-2 text-slate-700 hover:text-[#0052FF] relative transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-slate-50"
+              >
+                <ShoppingBag className="w-5 h-5 stroke-[1.75]" />
+                {activeOrdersCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#FF3B30] ring-2 ring-white" />
+                )}
+              </button>
+            </div>
+          </header>
+
+          {/* Scrollable Main Content with Full-Height Seamless iOS Background */}
+          <main className="flex-1 w-full overflow-y-auto sparkle-scroll bg-[#F2F2F7]">
+            {children}
+          </main>
+
+          {/* Pixel-Perfect iOS Bottom Tab Bar with Prominent Icons */}
+          <nav className="sticky bottom-0 left-0 right-0 w-full z-40 bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-3 pt-2 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] flex items-center justify-between shadow-[0_-2px_12px_rgba(0,0,0,0.03)] shrink-0">
+            
+            {/* Tab 1: Utama */}
+            <Link
+              href="/"
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none ${
+                isHome ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
+              }`}
+            >
+              <div className="flex items-center justify-center h-8 w-8">
+                {isHome ? (
+                  <IoHome className="w-7 h-7 transition-transform duration-200 scale-105" />
+                ) : (
+                  <IoHomeOutline className="w-7 h-7" />
+                )}
+              </div>
+              <span className={`text-[11.5px] tracking-tight mt-0.5 ${isHome ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
+                Utama
+              </span>
+            </Link>
+
+            {/* Tab 2: Katalog */}
+            <Link
+              href="/catalog"
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none ${
+                isCatalog ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
+              }`}
+            >
+              <div className="flex items-center justify-center h-8 w-8">
+                {isCatalog ? (
+                  <IoGrid className="w-7 h-7 transition-transform duration-200 scale-105" />
+                ) : (
+                  <IoGridOutline className="w-7 h-7" />
+                )}
+              </div>
+              <span className={`text-[11.5px] tracking-tight mt-0.5 ${isCatalog ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
+                Katalog
+              </span>
+            </Link>
+
+            {/* Tab 3: Pesanan */}
+            <Link
+              href="/history"
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none relative ${
+                isHistory ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
+              }`}
+            >
+              <div className="flex items-center justify-center h-8 w-8 relative">
+                {isHistory ? (
+                  <IoTime className="w-7 h-7 transition-transform duration-200 scale-105" />
+                ) : (
+                  <IoTimeOutline className="w-7 h-7" />
+                )}
+                {activeOrdersCount > 0 && !isHistory && (
+                  <span className="absolute 0 right-0 w-2.5 h-2.5 rounded-full bg-[#FF3B30] ring-2 ring-white" />
+                )}
+              </div>
+              <span className={`text-[11.5px] tracking-tight mt-0.5 ${isHistory ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
+                Pesanan
+              </span>
+            </Link>
+
+            {/* Tab 4: Profil */}
+            <Link
+              href="/profile"
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none ${
+                isProfile ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
+              }`}
+            >
+              <div className="flex items-center justify-center h-8 w-8">
+                {isProfile ? (
+                  <IoPerson className="w-7 h-7 transition-transform duration-200 scale-105" />
+                ) : (
+                  <IoPersonOutline className="w-7 h-7" />
+                )}
+              </div>
+              <span className={`text-[11.5px] tracking-tight mt-0.5 ${isProfile ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
+                Profil
+              </span>
+            </Link>
+          </nav>
+
+          {/* Standard Circular Floating WhatsApp Action Button (Standard 56px FAB) */}
+          <a
+            href="https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ingin%20bertanya%20tentang%20tempahan%20custom."
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Hubungi Kilang di WhatsApp"
+            className="absolute bottom-[calc(env(safe-area-inset-bottom,0px)+5.85rem)] right-4 z-30 w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center shadow-[0_10px_25px_rgba(37,211,102,0.45)] active:scale-90 hover:scale-105 transition-all duration-200 select-none"
+          >
+            <FaWhatsapp className="w-7 h-7 text-white" />
+          </a>
+
+          {/* =========================================================================
+              QUICK ACTIVE ORDERS / BAG MODAL SHEET (NATIVE iOS DRAWER)
+             ========================================================================= */}
+          {/* Backdrop */}
+          <div 
+            className={`fixed inset-0 bg-black/50 z-50 transition-opacity duration-300 ${
+              isBagOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+            }`}
+            onClick={() => setIsBagOpen(false)}
+          />
+
+          {/* Modal Sheet */}
+          <div 
+            className={`fixed inset-x-0 bottom-0 z-50 w-full max-w-md mx-auto bg-white rounded-t-[32px] rounded-b-none mb-0 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col max-h-[85vh] ${
+              isBagOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'
+            }`}
+          >
+            {/* Header */}
+            <div className="pt-3 pb-2 px-6 shrink-0 border-b border-black/[0.04]">
+              <div className="flex justify-center pb-2.5">
+                <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+              </div>
+              <div className="flex justify-between items-center pb-1">
+                <div className="flex items-center gap-2">
+                  <span className="bg-blue-50 text-[#0052FF] text-[10.5px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                    Bakul Pesanan
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    ({activeOrdersCount} aktif)
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsBagOpen(false)}
+                  aria-label="Tutup"
+                  className="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200 active:scale-95 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-4 overflow-y-auto sparkle-scroll space-y-3 flex-1">
+              {activeOrders.length === 0 ? (
+                <div className="py-8 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                    <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm">Tiada Pesanan Aktif</h3>
+                    <p className="text-xs text-slate-500 mt-1">Anda belum mempunyai tempahan yang sedang diproses di kilang.</p>
+                  </div>
+                </div>
+              ) : (
+                activeOrders.map((order) => (
+                  <div 
+                    key={order.id}
+                    className="p-4 rounded-2xl bg-[#F8FAFC] border border-slate-200/70 space-y-2.5"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="font-mono text-xs font-bold text-slate-900">
+                          {order.order_number}
+                        </span>
+                        <h4 className="text-[13.5px] font-semibold text-slate-800 leading-snug mt-0.5">
+                          {order.design_title}
+                        </h4>
+                      </div>
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] border border-blue-100 uppercase">
+                        {order.status.replace('_', ' ')}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-200/50">
+                      <span className="text-slate-500">{order.total_quantity} helai pakaian</span>
+                      <span className="font-bold text-slate-900">RM{(order.total_amount / 100).toFixed(2)}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Sticky Action Footer */}
+            <div className="p-4 px-6 bg-white/95 backdrop-blur-md border-t border-slate-100 shrink-0 space-y-2">
+              <Link
+                href="/history"
+                onClick={() => setIsBagOpen(false)}
+                className="w-full bg-[#0052FF] text-white font-semibold py-3.5 rounded-xl text-center active:bg-blue-700 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-blue-500/20 text-xs"
+              >
+                <span>Buka Pengurusan Pesanan Penuh →</span>
+              </Link>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </App>
+  );
+}

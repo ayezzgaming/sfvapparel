@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 44" fill="none">
+  <!-- Mastercard Official Brand Mark -->
+  <g transform="translate(32, 2)">
+    <circle cx="24" cy="18" r="15" fill="#EB001B"/>
+    <circle cx="48" cy="18" r="15" fill="#F79E1B"/>
+    <path d="M36 5.8C40 9 42.5 13.2 42.5 18C42.5 22.8 40 27 36 30.2C32 27 29.5 22.8 29.5 18C29.5 13.2 32 9 36 5.8Z" fill="#FF5F00"/>
+    <text x="36" y="38" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="6" fill="#141413" text-anchor="middle" letter-spacing="-0.2">mastercard</text>
+  </g>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 44" fill="none">
+  <!-- Touch 'n Go eWallet -->
+  <g transform="translate(6, 4)">
+    <rect x="0" y="2" width="34" height="34" rx="7" fill="#005CB9"/>
+    <text x="17" y="14" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="7.5" fill="#FDB913" text-anchor="middle">Touch</text>
+    <text x="17" y="23" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="7.5" fill="#FFFFFF" text-anchor="middle">&apos;n Go</text>
+    <text x="17" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="5" fill="#FDB913" text-anchor="middle">eWallet</text>
+    
+    <text x="40" y="19" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="12" fill="#005CB9">Touch <tspan fill="#FDB913">&apos;n Go</tspan></text>
+    <text x="40" y="30" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="8" fill="#005CB9" letter-spacing="0.4">eWallet</text>
+  </g>
+</svg>
