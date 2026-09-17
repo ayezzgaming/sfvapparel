@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAppStore } from '@/lib/store/app-store';
-import { useUI } from '@/lib/store/ui-context';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { 
   CreditCard,
@@ -23,7 +22,6 @@ import {
 
 export default function ProfilePage() {
   const { customers, orders, resetToSeedData } = useAppStore();
-  const { setBottomSheetOpen } = useUI();
   const activeCustomer = customers[0] || {
     full_name: 'Muhammad Farhan',
     email: 'farhan.harimau@gmail.com',
@@ -35,12 +33,6 @@ export default function ProfilePage() {
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [pushEnabled, setPushEnabled] = useState(true);
-
-  // Sync with global UIContext so Bottom Nav & WhatsApp FAB automatically hide when sheet is open
-  React.useEffect(() => {
-    setBottomSheetOpen(isSizeChartOpen);
-    return () => setBottomSheetOpen(false);
-  }, [isSizeChartOpen, setBottomSheetOpen]);
 
   const handleReset = () => {
     if (confirm('Set semula data kedai kepada asal?')) {

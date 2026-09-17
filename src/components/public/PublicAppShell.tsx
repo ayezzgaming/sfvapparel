@@ -39,7 +39,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
   const activeOrders = orders.filter((o) => o.status !== 'delivered' && o.status !== 'cancelled');
   const activeOrdersCount = activeOrders.length;
   const favoritesCount = favorites.length;
-  const shouldHideBottomNav = isBottomSheetOpen || isBagOpen || isFavoritesOpen;
+  const shouldHideBottomNav = isBottomSheetOpen;
 
   // Filter full design objects that are favorited
   const favoriteDesigns = designs.filter((d) => favorites.includes(d.id));

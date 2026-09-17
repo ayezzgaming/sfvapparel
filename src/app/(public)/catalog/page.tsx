@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
-import { useUI } from '@/lib/store/ui-context';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { Design } from '@/types/database';
 
@@ -27,17 +26,10 @@ function CatalogContent() {
   const initialType = searchParams.get('type') || 'all';
 
   const { designs, favorites, toggleFavorite } = useAppStore();
-  const { setBottomSheetOpen } = useUI();
   const [selectedCategory, setSelectedCategory] = useState<string>(initialType);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDesign, setSelectedDesign] = useState<Design | null>(designs[0] || null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  // Sync with global UIContext so Bottom Nav & WhatsApp FAB automatically hide when sheet is open
-  useEffect(() => {
-    setBottomSheetOpen(isSheetOpen);
-    return () => setBottomSheetOpen(false);
-  }, [isSheetOpen, setBottomSheetOpen]);
 
   const handleOpenDesign = (design: Design) => {
     setSelectedDesign(design);

@@ -27,19 +27,21 @@ export default function SwipeableBottomSheet({
   maxHeight = 'max-h-[85vh]',
   showCloseButton = true,
 }: SwipeableBottomSheetProps) {
-  const { setBottomSheetOpen } = useUI();
+  const sheetId = React.useId();
+  const { registerSheet } = useUI();
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const startYRef = useRef(0);
   const currentYRef = useRef(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Sync with global UI context for bottom nav & FAB auto-hide
+  // Sync with global UI context so Bottom Nav & FAB automatically hide on open and restore on close
   useEffect(() => {
-    if (isOpen) {
-      setBottomSheetOpen(true);
-    }
-  }, [isOpen, setBottomSheetOpen]);
+    registerSheet(sheetId, isOpen);
+    return () => {
+      registerSheet(sheetId, false);
+    };
+  }, [sheetId, isOpen, registerSheet]);
 
   // Reset drag when sheet closes or opens
   useEffect(() => {
