@@ -548,33 +548,36 @@ export default function HomePage() {
           SECTION 1: HERO & PILIHAN SERVIS (iOS Canvas Tint - Kad Putih Timbul & Jelas)
          ========================================================================= */}
       <div className="w-full bg-[#F2F2F7] pt-3 pb-8 px-4 space-y-6">
-        {/* 1. HERO SECTION */}
-        <div className="relative w-full h-[230px] rounded-2xl bg-slate-100 overflow-hidden shadow-sm group border border-black/[0.06]">
+        {/* 1. HERO SECTION (Seamless Editorial Card - No Cloudy Glassmorphism) */}
+        <div className="relative w-full h-[240px] rounded-3xl overflow-hidden shadow-sm group border border-black/[0.05] bg-slate-900">
           {/* Full-bleed Natural Photo */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/hero1.png"
             alt="SFV Apparel Flagship"
-            className="w-full h-full object-cover object-[center_20%] group-hover:scale-103 transition-transform duration-700"
+            className="w-full h-full object-cover object-[center_22%] group-hover:scale-103 transition-transform duration-700"
           />
 
-          {/* Top Status Pill with True iOS Glassmorphism */}
-          <div className="absolute top-4 left-4 z-10">
-            <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-xl border border-white/60 text-slate-900 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
-              <span className="text-[11px] font-semibold tracking-wide text-slate-900">
+          {/* Seamless Bottom Dark Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent pointer-events-none" />
+
+          {/* Top Status Pill (Subtle Dark Floating Tag) */}
+          <div className="absolute top-3.5 left-3.5 z-10">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-black/45 backdrop-blur-md border border-white/15 text-white shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10.5px] font-medium tracking-wide text-white/95">
                 Kilang Beroperasi • Siap Pantas
               </span>
             </div>
           </div>
 
-          {/* Bottom Frosted Glass Action Strip */}
-          <div className="absolute inset-x-3.5 bottom-3.5 p-3.5 rounded-2xl bg-white/50 backdrop-blur-xl border border-white/60 shadow-sm flex items-center justify-between z-10">
-            <div className="space-y-0.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#0052FF] block">
+          {/* Bottom Content Directly Over Gradient (Clean & Crisp) */}
+          <div className="absolute inset-x-4 bottom-4 flex items-end justify-between z-10">
+            <div className="space-y-0.5 pr-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block">
                 Koleksi Rasmi 2026
               </span>
-              <h1 className="text-[15px] font-semibold text-slate-900 tracking-tight leading-tight">
+              <h1 className="text-[17px] font-bold text-white tracking-tight leading-tight">
                 Studio Jersi & DTF
               </h1>
             </div>
@@ -582,10 +585,10 @@ export default function HomePage() {
             {/* Apple Action Capsule */}
             <Link
               href="/catalog"
-              className="px-3.5 py-1.5 rounded-full bg-white/95 hover:bg-white active:scale-95 text-slate-900 text-xs font-semibold tracking-tight shadow-xs border border-white/70 transition-all flex items-center space-x-1"
+              className="px-4 py-2 rounded-full bg-white hover:bg-slate-100 active:scale-95 text-slate-900 text-xs font-semibold tracking-tight shadow-md transition-all flex items-center space-x-1 shrink-0"
             >
               <span>Katalog</span>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
+              <ChevronRight className="w-3.5 h-3.5 text-slate-700" />
             </Link>
           </div>
         </div>
