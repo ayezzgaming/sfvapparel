@@ -18,6 +18,7 @@ import { Heart, ShoppingBag } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
 import { useUI } from '@/lib/store/ui-context';
+import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 
 interface PublicAppShellProps {
   children: React.ReactNode;
@@ -198,90 +199,23 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
           </a>
 
           {/* =========================================================================
-              QUICK ACTIVE ORDERS / BAG MODAL SHEET (NATIVE iOS DRAWER)
+              QUICK ACTIVE ORDERS / BAG MODAL SHEET (SWIPEABLE iOS DRAWER)
              ========================================================================= */}
-          {/* Backdrop */}
-          <div 
-            className={`fixed inset-0 bg-black/50 z-50 transition-opacity duration-300 ${
-              isBagOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-            }`}
-            onClick={() => setIsBagOpen(false)}
-          />
-
-          {/* Modal Sheet */}
-          <div 
-            className={`fixed inset-x-0 bottom-0 z-50 w-full max-w-md mx-auto bg-white rounded-t-[32px] rounded-b-none mb-0 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col max-h-[85vh] ${
-              isBagOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'
-            }`}
-          >
-            {/* Header */}
-            <div className="pt-3 pb-2 px-6 shrink-0 border-b border-black/[0.04]">
-              <div className="flex justify-center pb-2.5">
-                <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+          <SwipeableBottomSheet
+            isOpen={isBagOpen}
+            onClose={() => setIsBagOpen(false)}
+            maxHeight="max-h-[85vh]"
+            title={
+              <div className="flex items-center gap-2">
+                <span className="bg-blue-50 text-[#0052FF] text-[10.5px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                  Bakul Pesanan
+                </span>
+                <span className="text-xs text-slate-500 font-medium">
+                  ({activeOrdersCount} aktif)
+                </span>
               </div>
-              <div className="flex justify-between items-center pb-1">
-                <div className="flex items-center gap-2">
-                  <span className="bg-blue-50 text-[#0052FF] text-[10.5px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                    Bakul Pesanan
-                  </span>
-                  <span className="text-xs text-slate-500 font-medium">
-                    ({activeOrdersCount} aktif)
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsBagOpen(false)}
-                  aria-label="Tutup"
-                  className="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200 active:scale-95 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-              </div>
-            </div>
-
-            {/* Body */}
-            <div className="px-6 py-4 overflow-y-auto sparkle-scroll space-y-3 flex-1">
-              {activeOrders.length === 0 ? (
-                <div className="py-8 text-center space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-                    <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-sm">Tiada Pesanan Aktif</h3>
-                    <p className="text-xs text-slate-500 mt-1">Anda belum mempunyai tempahan yang sedang diproses di kilang.</p>
-                  </div>
-                </div>
-              ) : (
-                activeOrders.map((order) => (
-                  <div 
-                    key={order.id}
-                    className="p-4 rounded-2xl bg-[#F8FAFC] border border-slate-200/70 space-y-2.5"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <span className="font-mono text-xs font-bold text-slate-900">
-                          {order.order_number}
-                        </span>
-                        <h4 className="text-[13.5px] font-semibold text-slate-800 leading-snug mt-0.5">
-                          {order.design_title}
-                        </h4>
-                      </div>
-                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] border border-blue-100 uppercase">
-                        {order.status.replace('_', ' ')}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-200/50">
-                      <span className="text-slate-500">{order.total_quantity} helai pakaian</span>
-                      <span className="font-bold text-slate-900">RM{(order.total_amount / 100).toFixed(2)}</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Sticky Action Footer */}
-            <div className="p-4 px-6 bg-white/95 backdrop-blur-md border-t border-slate-100 shrink-0 space-y-2">
+            }
+            footer={
               <Link
                 href="/history"
                 onClick={() => setIsBagOpen(false)}
@@ -289,8 +223,46 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               >
                 <span>Buka Pengurusan Pesanan Penuh →</span>
               </Link>
-            </div>
-          </div>
+            }
+          >
+            {activeOrders.length === 0 ? (
+              <div className="py-8 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                  <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm">Tiada Pesanan Aktif</h3>
+                  <p className="text-xs text-slate-500 mt-1">Anda belum mempunyai tempahan yang sedang diproses di kilang.</p>
+                </div>
+              </div>
+            ) : (
+              activeOrders.map((order) => (
+                <div 
+                  key={order.id}
+                  className="p-4 rounded-2xl bg-[#F8FAFC] border border-slate-200/70 space-y-2.5"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="font-mono text-xs font-bold text-slate-900">
+                        {order.order_number}
+                      </span>
+                      <h4 className="text-[13.5px] font-semibold text-slate-800 leading-snug mt-0.5">
+                        {order.design_title}
+                      </h4>
+                    </div>
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] border border-blue-100 uppercase">
+                      {order.status.replace('_', ' ')}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-200/50">
+                    <span className="text-slate-500">{order.total_quantity} helai pakaian</span>
+                    <span className="font-bold text-slate-900">RM{(order.total_amount / 100).toFixed(2)}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </SwipeableBottomSheet>
 
         </div>
       </div>

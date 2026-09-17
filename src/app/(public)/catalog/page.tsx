@@ -11,6 +11,7 @@ import {
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
 import { useUI } from '@/lib/store/ui-context';
+import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { Design } from '@/types/database';
 
 const CATEGORY_PILLS = [
@@ -236,101 +237,27 @@ function CatalogContent() {
       </div>
 
       {/* =========================================================================
-          NATIVE iOS BOTTOM SHEET FOR DESIGN DETAIL
+          SWIPEABLE iOS BOTTOM SHEET FOR DESIGN DETAIL
          ========================================================================= */}
-      {/* 1. BACKDROP (Latar Gelap) */}
-      <div 
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
-          isSheetOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setIsSheetOpen(false)}
-      />
-
-      {/* 2. KOTAK SHEET (STICKY HEADER & FOOTER DOCK) */}
-      <div 
-        className={`fixed inset-x-0 bottom-0 z-50 w-full max-w-md mx-auto bg-white rounded-t-[32px] rounded-b-none mb-0 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col max-h-[88vh] ${
-          isSheetOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'
-        }`}
-      >
-        {selectedDesign && (
-          <>
-            {/* iOS Drag Handle & Sticky Header */}
-            <div className="pt-3 pb-2 px-6 shrink-0 border-b border-black/[0.04]">
-              <div className="flex justify-center pb-2.5">
-                <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-              </div>
-              <div className="flex justify-between items-center pb-1">
-                <div className="flex items-center gap-2">
-                  <span className="bg-blue-50 text-[#0052FF] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                    {selectedDesign.category}
-                  </span>
-                  <span className="text-[10px] font-semibold text-slate-400 uppercase">
-                    {selectedDesign.print_type === 'sublimation' ? 'Sublimasi' : 'DTF'}
-                  </span>
-                </div>
-                
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => toggleFavorite(selectedDesign.id)}
-                    aria-label="Kegemaran"
-                    className="p-2 rounded-full bg-slate-100 text-slate-600 active:scale-90 transition-transform"
-                  >
-                    <Heart 
-                      className={`w-4 h-4 ${
-                        favorites.includes(selectedDesign.id) ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-slate-600'
-                      }`} 
-                    />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsSheetOpen(false)}
-                    aria-label="Tutup"
-                    className="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200 active:scale-95 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  </button>
-                </div>
-              </div>
+      <SwipeableBottomSheet
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        maxHeight="max-h-[88vh]"
+        title={
+          selectedDesign ? (
+            <div className="flex items-center gap-2">
+              <span className="bg-blue-50 text-[#0052FF] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                {selectedDesign.category}
+              </span>
+              <span className="text-[10px] font-semibold text-slate-400 uppercase">
+                {selectedDesign.print_type === 'sublimation' ? 'Sublimasi' : 'DTF'}
+              </span>
             </div>
-
-            {/* Scrollable Content Body */}
-            <div className="px-6 py-4 overflow-y-auto sparkle-scroll space-y-4 flex-1">
-              {/* Mockup Preview Photo */}
-              <div className="relative w-full h-52 rounded-2xl bg-slate-100 overflow-hidden shadow-xs">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={selectedDesign.mockup_front_url || selectedDesign.thumbnail_url}
-                  alt={selectedDesign.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 leading-snug">
-                  {selectedDesign.title}
-                </h2>
-                <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
-                  {selectedDesign.description}
-                </p>
-              </div>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {selectedDesign.tags.map((tag, idx) => (
-                  <span
-                    key={idx}
-                    className="text-[10.5px] font-semibold text-slate-600 bg-gray-100 px-3 py-1 rounded-full"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Sticky Bottom Action Dock: Tempah + WhatsApp Discussion Action */}
-            <div className="p-4 px-6 bg-white/95 backdrop-blur-md border-t border-slate-100 shrink-0 flex items-center gap-2.5">
+          ) : undefined
+        }
+        footer={
+          selectedDesign ? (
+            <div className="flex items-center gap-2.5 w-full">
               {/* WhatsApp Discussion Button */}
               <a
                 href={`https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ingin%20berbincang%20mengenai%20templat%20rekaan%20*${encodeURIComponent(selectedDesign.title)}*%20(ID:%20${selectedDesign.id})`}
@@ -353,9 +280,44 @@ function CatalogContent() {
                 <span>Tempah Rekaan Ini →</span>
               </a>
             </div>
-          </>
+          ) : undefined
+        }
+      >
+        {selectedDesign && (
+          <div className="space-y-4">
+            {/* Mockup Preview Photo */}
+            <div className="relative w-full h-52 rounded-2xl bg-slate-100 overflow-hidden shadow-xs">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={selectedDesign.mockup_front_url || selectedDesign.thumbnail_url}
+                alt={selectedDesign.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 leading-snug">
+                {selectedDesign.title}
+              </h2>
+              <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
+                {selectedDesign.description}
+              </p>
+            </div>
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {selectedDesign.tags.map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="text-[10.5px] font-semibold text-slate-600 bg-gray-100 px-3 py-1 rounded-full"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          </div>
         )}
-      </div>
+      </SwipeableBottomSheet>
     </div>
   );
 }

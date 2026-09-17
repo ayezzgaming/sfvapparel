@@ -12,6 +12,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { useUI } from '@/lib/store/ui-context';
+import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 
 interface ProductDetail {
   id: string;
@@ -1107,63 +1108,18 @@ export default function HomePage() {
       </footer>
 
       {/* =========================================================================
-          5. NATIVE iOS BOTTOM SHEET: LEGAL & POLICY (Sticky Docked Action)
+          5. SWIPEABLE iOS BOTTOM SHEET: LEGAL & POLICY (Sticky Docked Action)
          ========================================================================= */}
-      {/* 1. BACKDROP */}
-      <div 
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
-          isPolicySheetOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setIsPolicySheetOpen(false)}
-      />
-
-      {/* 2. KOTAK SHEET */}
-      <div 
-        className={`fixed inset-x-0 bottom-0 z-50 w-full max-w-md mx-auto bg-white rounded-t-[32px] rounded-b-none mb-0 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col max-h-[88vh] ${
-          isPolicySheetOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'
-        }`}
-      >
-        {/* iOS Drag Handle & Sticky Header */}
-        <div className="pt-3 pb-2 px-6 shrink-0 border-b border-black/[0.04]">
-          <div className="flex justify-center pb-2.5">
-            <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-          </div>
-          <div className="flex justify-between items-center pb-1">
-            <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-              {selectedPolicy.badge}
-            </span>
-            <button 
-              type="button"
-              onClick={() => setIsPolicySheetOpen(false)}
-              aria-label="Tutup"
-              className="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200 active:scale-95 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Scrollable Content Body */}
-        <div className="px-6 py-4 overflow-y-auto sparkle-scroll space-y-3 flex-1">
-          <h2 className="text-xl font-bold text-gray-900 leading-snug">
-            {selectedPolicy.title}
-          </h2>
-          <p className="text-xs text-gray-500 leading-relaxed">
-            {selectedPolicy.description}
-          </p>
-
-          <div className="bg-gray-50 p-4 rounded-2xl space-y-4 mt-3">
-            {selectedPolicy.sections.map((sec, idx) => (
-              <div key={idx} className="space-y-1">
-                <h3 className="text-xs font-bold text-gray-900">{sec.heading}</h3>
-                <p className="text-[11.5px] text-gray-600 leading-relaxed">{sec.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Sticky Bottom Action Dock */}
-        <div className="p-4 px-6 bg-white/95 backdrop-blur-md border-t border-slate-100 shrink-0">
+      <SwipeableBottomSheet
+        isOpen={isPolicySheetOpen}
+        onClose={() => setIsPolicySheetOpen(false)}
+        maxHeight="max-h-[88vh]"
+        badge={
+          <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            {selectedPolicy.badge}
+          </span>
+        }
+        footer={
           <a
             href="https://wa.me/60148599138?text=Hai%20SFV,%20saya%20ada%20pertanyaan%20tentang%20polisi"
             target="_blank"
@@ -1172,73 +1128,38 @@ export default function HomePage() {
           >
             <span>Hubungi Khidmat Pelanggan →</span>
           </a>
+        }
+      >
+        <h2 className="text-xl font-bold text-gray-900 leading-snug">
+          {selectedPolicy.title}
+        </h2>
+        <p className="text-xs text-gray-500 leading-relaxed">
+          {selectedPolicy.description}
+        </p>
+
+        <div className="bg-gray-50 p-4 rounded-2xl space-y-4 mt-3">
+          {selectedPolicy.sections.map((sec, idx) => (
+            <div key={idx} className="space-y-1">
+              <h3 className="text-xs font-bold text-gray-900">{sec.heading}</h3>
+              <p className="text-[11.5px] text-gray-600 leading-relaxed">{sec.text}</p>
+            </div>
+          ))}
         </div>
-      </div>
+      </SwipeableBottomSheet>
 
       {/* =========================================================================
-          6. NATIVE iOS BOTTOM SHEET: SERVICE DETAIL (Sticky Docked Action)
+          6. SWIPEABLE iOS BOTTOM SHEET: SERVICE DETAIL (Sticky Docked Action)
          ========================================================================= */}
-      {/* 1. BACKDROP */}
-      <div 
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
-          isProductSheetOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setIsProductSheetOpen(false)}
-      />
-
-      {/* 2. KOTAK SHEET */}
-      <div 
-        className={`fixed inset-x-0 bottom-0 z-50 w-full max-w-md mx-auto bg-white rounded-t-[32px] rounded-b-none mb-0 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col max-h-[88vh] ${
-          isProductSheetOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'
-        }`}
-      >
-        {/* iOS Drag Handle & Sticky Header */}
-        <div className="pt-3 pb-2 px-6 shrink-0 border-b border-black/[0.04]">
-          <div className="flex justify-center pb-2.5">
-            <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-          </div>
-          <div className="flex justify-between items-center pb-1">
-            <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-              {selectedProduct.category}
-            </span>
-            <button 
-              type="button"
-              onClick={() => setIsProductSheetOpen(false)}
-              aria-label="Tutup"
-              className="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200 active:scale-95 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Scrollable Content Body */}
-        <div className="px-6 py-4 overflow-y-auto sparkle-scroll space-y-3 flex-1">
-          <h2 className="text-xl font-bold text-gray-900 leading-snug">
-            {selectedProduct.headline}
-          </h2>
-          <p className="text-sm text-gray-500 leading-relaxed">
-            {selectedProduct.highlight} • <span className="text-[#0052FF] font-bold">{selectedProduct.price}</span>
-          </p>
-
-          {/* Box Rincian */}
-          <div className="bg-gray-50 p-4 rounded-2xl space-y-2.5 mt-3">
-            {selectedProduct.details.map((detail, idx) => (
-              <div key={idx} className="space-y-0.5">
-                <p className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#0052FF] shrink-0" />
-                  <span>{detail.title}</span>
-                </p>
-                <p className="text-[11.5px] text-gray-600 pl-5 leading-relaxed">
-                  {detail.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Sticky Bottom Action Dock */}
-        <div className="p-4 px-6 bg-white/95 backdrop-blur-md border-t border-slate-100 shrink-0">
+      <SwipeableBottomSheet
+        isOpen={isProductSheetOpen}
+        onClose={() => setIsProductSheetOpen(false)}
+        maxHeight="max-h-[88vh]"
+        badge={
+          <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            {selectedProduct.category}
+          </span>
+        }
+        footer={
           <Link
             href={selectedProduct.href}
             onClick={() => setIsProductSheetOpen(false)}
@@ -1246,71 +1167,44 @@ export default function HomePage() {
           >
             <span>Mula Tempah {selectedProduct.title} →</span>
           </Link>
+        }
+      >
+        <h2 className="text-xl font-bold text-gray-900 leading-snug">
+          {selectedProduct.headline}
+        </h2>
+        <p className="text-sm text-gray-500 leading-relaxed">
+          {selectedProduct.highlight} • <span className="text-[#0052FF] font-bold">{selectedProduct.price}</span>
+        </p>
+
+        {/* Box Rincian */}
+        <div className="bg-gray-50 p-4 rounded-2xl space-y-2.5 mt-3">
+          {selectedProduct.details.map((detail, idx) => (
+            <div key={idx} className="space-y-0.5">
+              <p className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#0052FF] shrink-0" />
+                <span>{detail.title}</span>
+              </p>
+              <p className="text-[11.5px] text-gray-600 pl-5 leading-relaxed">
+                {detail.description}
+              </p>
+            </div>
+          ))}
         </div>
-      </div>
+      </SwipeableBottomSheet>
 
       {/* =========================================================================
-          7. NATIVE iOS BOTTOM SHEET: ORDER STEP DETAIL (Sticky Docked Action)
+          7. SWIPEABLE iOS BOTTOM SHEET: ORDER STEP DETAIL (Sticky Docked Action)
          ========================================================================= */}
-      {/* 1. BACKDROP */}
-      <div 
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
-          isStepSheetOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setIsStepSheetOpen(false)}
-      />
-
-      {/* 2. KOTAK SHEET */}
-      <div 
-        className={`fixed inset-x-0 bottom-0 z-50 w-full max-w-md mx-auto bg-white rounded-t-[32px] rounded-b-none mb-0 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col max-h-[88vh] ${
-          isStepSheetOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'
-        }`}
-      >
-        {/* iOS Drag Handle & Sticky Header */}
-        <div className="pt-3 pb-2 px-6 shrink-0 border-b border-black/[0.04]">
-          <div className="flex justify-center pb-2.5">
-            <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-          </div>
-          <div className="flex justify-between items-center pb-1">
-            <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-              Langkah {selectedStep.step}
-            </span>
-            <button 
-              type="button"
-              onClick={() => setIsStepSheetOpen(false)}
-              aria-label="Tutup"
-              className="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200 active:scale-95 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Scrollable Content Body */}
-        <div className="px-6 py-4 overflow-y-auto sparkle-scroll space-y-3 flex-1">
-          <h2 className="text-lg font-bold text-gray-900 leading-snug">
-            {selectedStep.detailTitle}
-          </h2>
-          <p className="text-[13px] text-gray-500 leading-relaxed">
-            {selectedStep.detailDesc}
-          </p>
-
-          {/* Box Rincian */}
-          <div className="bg-gray-50 p-4 rounded-2xl space-y-2 mt-3">
-            <p className="text-xs font-bold text-gray-900 mb-2.5">Perincian Penting:</p>
-            <ul className="space-y-2">
-              {selectedStep.points.map((pt, idx) => (
-                <li key={idx} className="text-[12px] text-gray-700 flex items-start gap-2 leading-relaxed">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#0052FF] mt-1.5 shrink-0" />
-                  <span>{pt}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Sticky Bottom Action Dock */}
-        <div className="p-4 px-6 bg-white/95 backdrop-blur-md border-t border-slate-100 shrink-0">
+      <SwipeableBottomSheet
+        isOpen={isStepSheetOpen}
+        onClose={() => setIsStepSheetOpen(false)}
+        maxHeight="max-h-[88vh]"
+        badge={
+          <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            Langkah {selectedStep.step}
+          </span>
+        }
+        footer={
           <Link
             href="/catalog"
             onClick={() => setIsStepSheetOpen(false)}
@@ -1318,8 +1212,28 @@ export default function HomePage() {
           >
             <span>Terus ke Katalog Templat →</span>
           </Link>
+        }
+      >
+        <h2 className="text-lg font-bold text-gray-900 leading-snug">
+          {selectedStep.detailTitle}
+        </h2>
+        <p className="text-[13px] text-gray-500 leading-relaxed">
+          {selectedStep.detailDesc}
+        </p>
+
+        {/* Box Rincian */}
+        <div className="bg-gray-50 p-4 rounded-2xl space-y-2 mt-3">
+          <p className="text-xs font-bold text-gray-900 mb-2.5">Perincian Penting:</p>
+          <ul className="space-y-2">
+            {selectedStep.points.map((pt, idx) => (
+              <li key={idx} className="text-[12px] text-gray-700 flex items-start gap-2 leading-relaxed">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0052FF] mt-1.5 shrink-0" />
+                <span>{pt}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
+      </SwipeableBottomSheet>
     </div>
   );
 }

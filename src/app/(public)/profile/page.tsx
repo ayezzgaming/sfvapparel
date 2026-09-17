@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAppStore } from '@/lib/store/app-store';
 import { useUI } from '@/lib/store/ui-context';
+import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { 
   CreditCard,
   MapPin,
@@ -249,85 +250,15 @@ export default function ProfilePage() {
       </div>
 
       {/* =========================================================================
-          MODAL JADUAL UKURAN SAIZ (NATIVE iOS BOTTOM SHEET ARCHITECTURE)
+          MODAL JADUAL UKURAN SAIZ (SWIPEABLE iOS BOTTOM SHEET)
          ========================================================================= */}
-      {/* Backdrop */}
-      <div 
-        className={`fixed inset-0 bg-black/50 z-50 transition-opacity duration-300 ${
-          isSizeChartOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setIsSizeChartOpen(false)}
-      />
-
-      {/* Sheet Container */}
-      <div 
-        className={`fixed inset-x-0 bottom-0 z-50 w-full max-w-md mx-auto bg-white rounded-t-[32px] rounded-b-none mb-0 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col max-h-[88vh] ${
-          isSizeChartOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'
-        }`}
-      >
-        {/* Header */}
-        <div className="pt-3 pb-2.5 px-6 shrink-0 border-b border-black/[0.04]">
-          <div className="flex justify-center pb-2.5">
-            <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-          </div>
-          <div className="flex justify-between items-center pb-1">
-            <div>
-              <h3 className="font-bold text-slate-900 text-base">Jadual Saiz Standard SFV</h3>
-              <p className="text-[11px] text-slate-400">Ukuran jersi sukan & baju DTF (Inci / cm)</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsSizeChartOpen(false)}
-              aria-label="Tutup"
-              className="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200 active:scale-95 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="px-6 py-4 overflow-y-auto sparkle-scroll space-y-4 flex-1">
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
-              <thead>
-                <tr className="border-b border-slate-200/80 text-slate-400 uppercase text-[10px] tracking-wider">
-                  <th className="py-2 font-bold">Saiz</th>
-                  <th className="py-2 font-bold">Dada (Inci)</th>
-                  <th className="py-2 font-bold">Labuh (Inci)</th>
-                  <th className="py-2 font-bold">Bahu (Inci)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-mono">
-                {[
-                  { sz: 'XS', chest: '36"', length: '26"', shoulder: '16"' },
-                  { sz: 'S', chest: '38"', length: '27"', shoulder: '17"' },
-                  { sz: 'M', chest: '40"', length: '28"', shoulder: '18"' },
-                  { sz: 'L', chest: '42"', length: '29"', shoulder: '19"' },
-                  { sz: 'XL', chest: '44"', length: '30"', shoulder: '20"' },
-                  { sz: '2XL', chest: '46"', length: '31"', shoulder: '21"' },
-                  { sz: '3XL', chest: '48"', length: '32"', shoulder: '22"' },
-                  { sz: '4XL', chest: '50"', length: '33"', shoulder: '23"' },
-                  { sz: '5XL', chest: '52"', length: '34"', shoulder: '24"' },
-                ].map((row) => (
-                  <tr key={row.sz} className="hover:bg-slate-50">
-                    <td className="py-2.5 font-bold text-slate-900">{row.sz}</td>
-                    <td className="py-2.5 text-slate-600">{row.chest}</td>
-                    <td className="py-2.5 text-slate-600">{row.length}</td>
-                    <td className="py-2.5 text-slate-600">{row.shoulder}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/60 text-[11px] text-slate-500 leading-relaxed">
-            💡 <strong>Nota Kilang:</strong> Toleransi ukuran jersi adalah ±0.5 inci disebabkan regangan fabrik drifit mikro ketika proses jahitan.
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 px-6 bg-white/95 backdrop-blur-md border-t border-slate-100 shrink-0">
+      <SwipeableBottomSheet
+        isOpen={isSizeChartOpen}
+        onClose={() => setIsSizeChartOpen(false)}
+        maxHeight="max-h-[88vh]"
+        title="Jadual Saiz Standard SFV"
+        subtitle="Ukuran jersi sukan & baju DTF (Inci / cm)"
+        footer={
           <button
             type="button"
             onClick={() => setIsSizeChartOpen(false)}
@@ -335,8 +266,45 @@ export default function ProfilePage() {
           >
             Faham & Tutup
           </button>
+        }
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs text-left">
+            <thead>
+              <tr className="border-b border-slate-200/80 text-slate-400 uppercase text-[10px] tracking-wider">
+                <th className="py-2 font-bold">Saiz</th>
+                <th className="py-2 font-bold">Dada (Inci)</th>
+                <th className="py-2 font-bold">Labuh (Inci)</th>
+                <th className="py-2 font-bold">Bahu (Inci)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-mono">
+              {[
+                { sz: 'XS', chest: '36"', length: '26"', shoulder: '16"' },
+                { sz: 'S', chest: '38"', length: '27"', shoulder: '17"' },
+                { sz: 'M', chest: '40"', length: '28"', shoulder: '18"' },
+                { sz: 'L', chest: '42"', length: '29"', shoulder: '19"' },
+                { sz: 'XL', chest: '44"', length: '30"', shoulder: '20"' },
+                { sz: '2XL', chest: '46"', length: '31"', shoulder: '21"' },
+                { sz: '3XL', chest: '48"', length: '32"', shoulder: '22"' },
+                { sz: '4XL', chest: '50"', length: '33"', shoulder: '23"' },
+                { sz: '5XL', chest: '52"', length: '34"', shoulder: '24"' },
+              ].map((row) => (
+                <tr key={row.sz} className="hover:bg-slate-50">
+                  <td className="py-2.5 font-bold text-slate-900">{row.sz}</td>
+                  <td className="py-2.5 text-slate-600">{row.chest}</td>
+                  <td className="py-2.5 text-slate-600">{row.length}</td>
+                  <td className="py-2.5 text-slate-600">{row.shoulder}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
+
+        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/60 text-[11px] text-slate-500 leading-relaxed">
+          💡 <strong>Nota Kilang:</strong> Toleransi ukuran jersi adalah ±0.5 inci disebabkan regangan fabrik drifit mikro ketika proses jahitan.
+        </div>
+      </SwipeableBottomSheet>
     </div>
   );
 }

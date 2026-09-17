@@ -17,6 +17,7 @@ import {
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
 import { useUI } from '@/lib/store/ui-context';
+import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { Order, OrderStatus } from '@/types/database';
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; stepIndex: number; color: string; bg: string; dot: string }> = {
@@ -197,192 +198,162 @@ export default function HistoryPage() {
       </div>
 
       {/* =========================================================================
-          NATIVE iOS BOTTOM SHEET FOR ORDER TRACKING DETAIL
+          SWIPEABLE iOS BOTTOM SHEET FOR ORDER TRACKING DETAIL
          ========================================================================= */}
-      {/* 1. BACKDROP */}
-      <div 
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
-          isOrderSheetOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setIsOrderSheetOpen(false)}
-      />
-
-      {/* 2. SHEET CONTAINER */}
-      <div 
-        className={`fixed inset-x-0 bottom-0 z-50 w-full max-w-md mx-auto bg-white rounded-t-[32px] rounded-b-none mb-0 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col max-h-[88vh] ${
-          isOrderSheetOpen ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'
-        }`}
-      >
-        {/* iOS Drag Handle & Sticky Header */}
-        <div className="pt-3 pb-2.5 px-6 shrink-0 border-b border-black/[0.04]">
-          <div className="flex justify-center pb-2.5">
-            <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-          </div>
-          <div className="flex items-center justify-between pb-1">
-            <div>
-              <span className="font-mono text-sm font-bold text-slate-900 tracking-tight">
-                {selectedOrder.order_number}
-              </span>
-              <p className="text-[11px] text-gray-500 font-normal mt-0.5">
-                Tarikh Tempahan: {selectedOrder.created_at ? new Date(selectedOrder.created_at).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setIsOrderSheetOpen(false)}
-              aria-label="Tutup"
-              className="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200 active:scale-95 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Scrollable Content Body */}
-        <div className="px-6 py-4 overflow-y-auto sparkle-scroll space-y-4 flex-1">
-          {/* Status Current Banner */}
-          <div className="bg-slate-50 rounded-2xl p-4 space-y-2 border border-slate-200/60">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800">Status Semasa</span>
-              <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full border ${STATUS_CONFIG[selectedOrder.status]?.bg || 'bg-blue-50 border-blue-200/60'} ${STATUS_CONFIG[selectedOrder.status]?.color || 'text-[#0052FF]'}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${STATUS_CONFIG[selectedOrder.status]?.dot || 'bg-[#0052FF]'}`} />
-                {STATUS_CONFIG[selectedOrder.status]?.label || selectedOrder.status}
-              </span>
-            </div>
-
-            {selectedOrder.tracking_number && (
-              <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
-                <span className="text-slate-500 font-medium">
-                  {selectedOrder.shipping_courier || 'Kurier'}:
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleCopyTracking(selectedOrder.tracking_number || '')}
-                  className="flex items-center gap-1.5 font-mono font-bold text-[#0052FF] bg-white px-2.5 py-1 rounded-lg border border-blue-100 shadow-2xs active:scale-95 transition-transform"
-                >
-                  <span>{selectedOrder.tracking_number}</span>
-                  {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Stepper Timeline */}
-          <div className="space-y-2.5">
-            <span className="text-xs font-bold text-slate-900">Perjalanan Tempahan Kilang</span>
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/70 space-y-4">
-              {TIMELINE_STEPS.map((step, idx) => {
-                const currentStep = STATUS_CONFIG[selectedOrder.status]?.stepIndex || 2;
-                const isFinished = currentStep > step.step;
-                const isCurrent = currentStep === step.step;
-
-                return (
-                  <div key={step.step} className="flex items-start gap-3 relative">
-                    {/* Left Line */}
-                    {idx < TIMELINE_STEPS.length - 1 && (
-                      <div className={`absolute left-3.5 top-7 bottom-0 w-0.5 -mb-4 ${isFinished ? 'bg-[#0052FF]' : 'bg-slate-100'}`} />
-                    )}
-
-                    {/* Step Icon */}
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 z-10 ${
-                      isFinished
-                        ? 'bg-[#0052FF] text-white'
-                        : isCurrent
-                        ? 'bg-blue-100 text-[#0052FF] ring-4 ring-blue-50'
-                        : 'bg-slate-100 text-slate-400'
-                    }`}>
-                      {isFinished ? (
-                        <CheckCircle2 className="w-4 h-4" />
-                      ) : isCurrent ? (
-                        <Clock className="w-3.5 h-3.5 animate-pulse" />
-                      ) : (
-                        <span className="text-[11px] font-bold">{step.step}</span>
-                      )}
-                    </div>
-
-                    {/* Step Text */}
-                    <div className="min-w-0 flex-1 pt-0.5">
-                      <p className={`text-[12.5px] font-bold leading-tight ${isCurrent ? 'text-[#0052FF]' : isFinished ? 'text-slate-900' : 'text-slate-400'}`}>
-                        {step.title}
-                      </p>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        {step.desc}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Order Garment Specs */}
-          <div className="space-y-2">
-            <span className="text-xs font-bold text-slate-900">Perincian Pakaian</span>
-            <div className="bg-slate-50 rounded-2xl p-4 space-y-2.5 border border-slate-200/60">
-              <h4 className="text-[13.5px] font-bold text-slate-900">{selectedOrder.design_title}</h4>
-              
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-white p-2.5 rounded-xl border border-slate-200/50">
-                  <span className="text-[10.5px] text-slate-500 block font-medium">Kaedah Cetak</span>
-                  <span className="font-semibold text-slate-900">
-                    {selectedOrder.print_type === 'sublimation' ? 'Sublimasi Penuh' : 'Cetakan DTF'}
-                  </span>
-                </div>
-
-                <div className="bg-white p-2.5 rounded-xl border border-slate-200/50">
-                  <span className="text-[10.5px] text-slate-500 block font-medium">Jumlah Kuantiti</span>
-                  <span className="font-bold text-[#0052FF]">
-                    {selectedOrder.total_quantity} helai
-                  </span>
-                </div>
-              </div>
-
-              {selectedOrder.fabric_name && (
-                <p className="text-xs text-slate-600 pt-1">
-                  Fabrik: <span className="font-semibold text-slate-900">{selectedOrder.fabric_name}</span>
-                  {selectedOrder.cut_name ? ` • Potongan: ${selectedOrder.cut_name}` : ''}
-                </p>
-              )}
-
-              {/* Sizing Breakdown */}
-              {selectedOrder.sizing_breakdown && Object.keys(selectedOrder.sizing_breakdown).length > 0 && (
-                <div className="pt-2 border-t border-slate-200/60">
-                  <p className="text-[11px] text-slate-500 font-medium mb-1.5">Pecahan Saiz:</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {Object.entries(selectedOrder.sizing_breakdown).map(([sz, qty]) => (
-                      <div key={sz} className="bg-white px-2.5 py-1 rounded-lg text-xs font-mono font-semibold text-slate-800 border border-slate-200/50">
-                        {sz}: <span className="text-[#0052FF] font-bold">{qty}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Shipping Address */}
-          <div className="bg-slate-50 rounded-2xl p-4 space-y-1 border border-slate-200/60">
-            <span className="text-xs font-bold text-slate-900">Alamat Penghantaran</span>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              {selectedOrder.shipping_address || 'No 15, Jalan Ampang, 50450 Kuala Lumpur'}
+      <SwipeableBottomSheet
+        isOpen={isOrderSheetOpen}
+        onClose={() => setIsOrderSheetOpen(false)}
+        maxHeight="max-h-[88vh]"
+        title={
+          <div>
+            <span className="font-mono text-sm font-bold text-slate-900 tracking-tight">
+              {selectedOrder.order_number}
+            </span>
+            <p className="text-[11px] text-gray-500 font-normal mt-0.5">
+              Tarikh Tempahan: {selectedOrder.created_at ? new Date(selectedOrder.created_at).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
             </p>
           </div>
-        </div>
-
-        {/* Sticky Bottom Action Dock: Direct WhatsApp Status Check */}
-        <div className="p-4 px-6 bg-white/95 backdrop-blur-md border-t border-slate-100 shrink-0">
+        }
+        footer={
           <a
             href={`https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ingin%20semak%20status%20pesanan%20*${selectedOrder.order_number}*%20(${encodeURIComponent(selectedOrder.design_title)})`}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold py-3.5 rounded-xl text-center active:bg-emerald-700 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-emerald-500/25 text-xs"
           >
-            <FaWhatsapp className="w-4.5 h-4.5" />
-            <span>Tanya Status Pesanan di WhatsApp →</span>
+            <FaWhatsapp className="w-4 h-4" />
+            <span>Semak Status Pantas di WhatsApp →</span>
           </a>
+        }
+      >
+        {/* Status Current Banner */}
+        <div className="bg-slate-50 rounded-2xl p-4 space-y-2 border border-slate-200/60">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-800">Status Semasa</span>
+            <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full border ${STATUS_CONFIG[selectedOrder.status]?.bg || 'bg-blue-50 border-blue-200/60'} ${STATUS_CONFIG[selectedOrder.status]?.color || 'text-[#0052FF]'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${STATUS_CONFIG[selectedOrder.status]?.dot || 'bg-[#0052FF]'}`} />
+              {STATUS_CONFIG[selectedOrder.status]?.label || selectedOrder.status}
+            </span>
+          </div>
+
+          {selectedOrder.tracking_number && (
+            <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
+              <span className="text-slate-500 font-medium">
+                {selectedOrder.shipping_courier || 'Kurier'}:
+              </span>
+              <button
+                type="button"
+                onClick={() => handleCopyTracking(selectedOrder.tracking_number || '')}
+                className="flex items-center gap-1.5 font-mono font-bold text-[#0052FF] bg-white px-2.5 py-1 rounded-lg border border-blue-100 shadow-2xs active:scale-95 transition-transform"
+              >
+                <span>{selectedOrder.tracking_number}</span>
+                {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+          )}
         </div>
-      </div>
+
+        {/* Stepper Timeline */}
+        <div className="space-y-2.5">
+          <span className="text-xs font-bold text-slate-900">Perjalanan Tempahan Kilang</span>
+          <div className="bg-white rounded-2xl p-4 border border-slate-200/70 space-y-4">
+            {TIMELINE_STEPS.map((step, idx) => {
+              const currentStep = STATUS_CONFIG[selectedOrder.status]?.stepIndex || 2;
+              const isFinished = currentStep > step.step;
+              const isCurrent = currentStep === step.step;
+
+              return (
+                <div key={step.step} className="flex items-start gap-3 relative">
+                  {/* Left Line */}
+                  {idx < TIMELINE_STEPS.length - 1 && (
+                    <div className={`absolute left-3.5 top-7 bottom-0 w-0.5 -mb-4 ${isFinished ? 'bg-[#0052FF]' : 'bg-slate-100'}`} />
+                  )}
+
+                  {/* Step Icon */}
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 z-10 ${
+                    isFinished
+                      ? 'bg-[#0052FF] text-white'
+                      : isCurrent
+                      ? 'bg-blue-100 text-[#0052FF] ring-4 ring-blue-50'
+                      : 'bg-slate-100 text-slate-400'
+                  }`}>
+                    {isFinished ? (
+                      <CheckCircle2 className="w-4 h-4" />
+                    ) : isCurrent ? (
+                      <Clock className="w-3.5 h-3.5 animate-pulse" />
+                    ) : (
+                      <span className="text-[11px] font-bold">{step.step}</span>
+                    )}
+                  </div>
+
+                  {/* Step Text */}
+                  <div className="min-w-0 flex-1 pt-0.5">
+                    <p className={`text-[12.5px] font-bold leading-tight ${isCurrent ? 'text-[#0052FF]' : isFinished ? 'text-slate-900' : 'text-slate-400'}`}>
+                      {step.title}
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      {step.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Order Garment Specs */}
+        <div className="space-y-2">
+          <span className="text-xs font-bold text-slate-900">Perincian Pakaian</span>
+          <div className="bg-slate-50 rounded-2xl p-4 space-y-2.5 border border-slate-200/60">
+            <h4 className="text-[13.5px] font-bold text-slate-900">{selectedOrder.design_title}</h4>
+            
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="bg-white p-2.5 rounded-xl border border-slate-200/50">
+                <span className="text-[10.5px] text-slate-500 block font-medium">Kaedah Cetak</span>
+                <span className="font-semibold text-slate-900">
+                  {selectedOrder.print_type === 'sublimation' ? 'Sublimasi Penuh' : 'Cetakan DTF'}
+                </span>
+              </div>
+
+              <div className="bg-white p-2.5 rounded-xl border border-slate-200/50">
+                <span className="text-[10.5px] text-slate-500 block font-medium">Jumlah Kuantiti</span>
+                <span className="font-bold text-[#0052FF]">
+                  {selectedOrder.total_quantity} helai
+                </span>
+              </div>
+            </div>
+
+            {selectedOrder.fabric_name && (
+              <p className="text-xs text-slate-600 pt-1">
+                Fabrik: <span className="font-semibold text-slate-900">{selectedOrder.fabric_name}</span>
+                {selectedOrder.cut_name ? ` • Potongan: ${selectedOrder.cut_name}` : ''}
+              </p>
+            )}
+
+            {/* Sizing Breakdown */}
+            {selectedOrder.sizing_breakdown && Object.keys(selectedOrder.sizing_breakdown).length > 0 && (
+              <div className="pt-2 border-t border-slate-200/60">
+                <p className="text-[11px] text-slate-500 font-medium mb-1.5">Pecahan Saiz:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {Object.entries(selectedOrder.sizing_breakdown).map(([sz, qty]) => (
+                    <div key={sz} className="bg-white px-2.5 py-1 rounded-lg text-xs font-mono font-semibold text-slate-800 border border-slate-200/50">
+                      {sz}: <span className="text-[#0052FF] font-bold">{qty}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Shipping Address */}
+        <div className="bg-slate-50 rounded-2xl p-4 space-y-1 border border-slate-200/60">
+          <span className="text-xs font-bold text-slate-900">Alamat Penghantaran</span>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            {selectedOrder.shipping_address || 'No 15, Jalan Ampang, 50450 Kuala Lumpur'}
+          </p>
+        </div>
+      </SwipeableBottomSheet>
     </div>
   );
 }
