@@ -221,8 +221,8 @@ function CatalogContent() {
       >
         {selectedDesign && (
           <div className="space-y-4">
-            {/* Mockup Preview Photo */}
-            <div className="relative w-full h-52 rounded-2xl bg-slate-100 overflow-hidden shadow-xs">
+            {/* Mockup Preview Photo (1:1 Ratio) */}
+            <div className="relative w-full aspect-square rounded-2xl bg-slate-100 overflow-hidden shadow-xs border border-slate-200/60">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={selectedDesign.mockup_front_url || selectedDesign.thumbnail_url}
