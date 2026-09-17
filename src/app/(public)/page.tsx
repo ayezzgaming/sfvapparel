@@ -539,8 +539,8 @@ export default function HomePage() {
           SECTION 1: HERO & PILIHAN SERVIS (iOS Canvas Tint - Kad Putih Timbul & Jelas)
          ========================================================================= */}
       <div className="w-full bg-[#F2F2F7] pt-3 pb-8 px-4 space-y-6">
-        {/* 1. HERO SECTION (Seamless Editorial Card - No Cloudy Glassmorphism) */}
-        <div className="relative w-full h-[240px] rounded-3xl overflow-hidden shadow-sm group border border-black/[0.05] bg-slate-900">
+        {/* 1. HERO SECTION (Bright, Natural Editorial Card - No Border, Natural Daylight) */}
+        <div className="relative w-full h-[240px] rounded-3xl overflow-hidden shadow-md shadow-slate-300/40 group">
           {/* Full-bleed Natural Photo */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -549,15 +549,15 @@ export default function HomePage() {
             className="w-full h-full object-cover object-[center_22%] group-hover:scale-103 transition-transform duration-700"
           />
 
-          {/* Seamless Bottom Dark Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent pointer-events-none" />
+          {/* Clean Subtle Bottom-Only Gradient (Leaves sky, face, and daylight completely bright) */}
+          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/80 via-black/25 to-transparent pointer-events-none" />
 
-          {/* Top Status Pill (Subtle Dark Floating Tag) */}
+          {/* Top Status Pill (Compact & Minimalist) */}
           <div className="absolute top-3.5 left-3.5 z-10">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-black/45 backdrop-blur-md border border-white/15 text-white shadow-xs">
+            <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-black/35 backdrop-blur-md text-white shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-[10.5px] font-medium tracking-wide text-white/95">
-                Kilang Beroperasi • Siap Pantas
+                Kilang Beroperasi
               </span>
             </div>
           </div>
@@ -565,10 +565,10 @@ export default function HomePage() {
           {/* Bottom Content Directly Over Gradient (Clean & Crisp) */}
           <div className="absolute inset-x-4 bottom-4 flex items-end justify-between z-10">
             <div className="space-y-0.5 pr-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-300 block font-semibold">
                 Koleksi Rasmi 2026
               </span>
-              <h1 className="text-[17px] font-bold text-white tracking-tight leading-tight">
+              <h1 className="text-[17px] font-bold text-white tracking-tight leading-tight drop-shadow-xs">
                 Studio Jersi & DTF
               </h1>
             </div>

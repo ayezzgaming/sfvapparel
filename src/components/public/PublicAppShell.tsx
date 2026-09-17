@@ -72,17 +72,19 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               </div>
             </Link>
 
-            {/* Header Action Icons */}
+            {/* Header Action Icons (Standard Industry Minimal Outline with Red Counter Badges) */}
             <div className="flex items-center space-x-1">
               <button
                 type="button"
                 onClick={() => setIsFavoritesOpen(true)}
                 aria-label="Senarai Pilihan Kegemaran"
-                className="p-2 text-slate-700 hover:text-[#FF2D55] relative transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-slate-50"
+                className="p-2 text-slate-700 hover:text-slate-900 relative transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-slate-50"
               >
-                <Heart className={`w-5 h-5 stroke-[1.75] ${favoritesCount > 0 ? 'fill-[#FF2D55] text-[#FF2D55]' : ''}`} />
+                <Heart className="w-5 h-5 stroke-[1.75]" />
                 {favoritesCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#FF2D55] ring-2 ring-white" />
+                  <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#FF3B30] text-white text-[9.5px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs leading-none pointer-events-none">
+                    {favoritesCount > 99 ? '99+' : favoritesCount}
+                  </span>
                 )}
               </button>
 
@@ -90,11 +92,13 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 type="button"
                 onClick={() => setIsBagOpen(true)}
                 aria-label="Bakul Pesanan Aktif"
-                className="p-2 text-slate-700 hover:text-[#0052FF] relative transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-slate-50"
+                className="p-2 text-slate-700 hover:text-slate-900 relative transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-slate-50"
               >
                 <ShoppingBag className="w-5 h-5 stroke-[1.75]" />
                 {activeOrdersCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#FF3B30] ring-2 ring-white" />
+                  <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#FF3B30] text-white text-[9.5px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs leading-none pointer-events-none">
+                    {activeOrdersCount > 99 ? '99+' : activeOrdersCount}
+                  </span>
                 )}
               </button>
             </div>
