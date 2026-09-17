@@ -10,7 +10,6 @@ import {
   Ruler, 
   MessageCircle,
   Bell,
-  ShieldCheck,
   ChevronRight,
   RotateCcw,
   Check,
@@ -188,14 +187,13 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* 5. Inset Group 3: TETAPAN & SISTEM */}
+      {/* 5. Inset Group 3: TETAPAN & NOTIFIKASI */}
       <div className="space-y-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 px-3 block">
           Tetapan
         </span>
 
-        <div className="bg-white rounded-2xl overflow-hidden shadow-2xs border border-slate-200/60 divide-y divide-slate-100">
-          
+        <div className="bg-white rounded-2xl overflow-hidden shadow-2xs border border-slate-200/60">
           {/* Notifikasi Pesanan */}
           <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-3 min-w-0">
@@ -221,23 +219,6 @@ export default function ProfilePage() {
               }`} />
             </button>
           </div>
-
-          {/* Panel Kawalan Admin */}
-          <Link
-            href="/admin"
-            className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50/80 active:bg-slate-100 transition-colors block"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-              <span className="text-[13.5px] font-medium text-slate-900">
-                Panel Pentadbir Kilang (Admin)
-              </span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
-          </Link>
-
         </div>
       </div>
 
