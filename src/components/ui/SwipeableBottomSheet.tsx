@@ -35,6 +35,8 @@ export default function SwipeableBottomSheet({
   const currentYRef = useRef(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  const startTimeRef = useRef(0);
+
   // Sync with global UI context so Bottom Nav & FAB automatically hide on open and restore on close
   useEffect(() => {
     registerSheet(sheetId, isOpen);
@@ -55,6 +57,7 @@ export default function SwipeableBottomSheet({
     const touch = e.touches[0];
     startYRef.current = touch.clientY;
     currentYRef.current = touch.clientY;
+    startTimeRef.current = Date.now();
     setIsDragging(true);
   };
 
@@ -64,11 +67,11 @@ export default function SwipeableBottomSheet({
     currentYRef.current = touch.clientY;
     const deltaY = currentYRef.current - startYRef.current;
 
-    // Only allow downward dragging
+    // Only allow downward dragging with smooth spring resistance if pulled up
     if (deltaY > 0) {
       setDragY(deltaY);
     } else {
-      setDragY(deltaY * 0.15); // Slight resistance upwards
+      setDragY(deltaY * 0.1);
     }
   };
 
@@ -77,8 +80,11 @@ export default function SwipeableBottomSheet({
     setIsDragging(false);
 
     const deltaY = currentYRef.current - startYRef.current;
-    // Dismiss threshold: 80px downwards
-    if (deltaY > 80) {
+    const duration = Date.now() - startTimeRef.current;
+    const velocity = deltaY / Math.max(duration, 1);
+
+    // Effortless close: either dragged down > 50px OR quick flick downwards (> 0.35px/ms with > 20px delta)
+    if (deltaY > 50 || (velocity > 0.35 && deltaY > 20)) {
       onClose();
     }
     setDragY(0);
@@ -89,6 +95,7 @@ export default function SwipeableBottomSheet({
     if (contentRef.current && contentRef.current.scrollTop <= 0) {
       startYRef.current = e.touches[0].clientY;
       currentYRef.current = e.touches[0].clientY;
+      startTimeRef.current = Date.now();
     }
   };
 
@@ -96,22 +103,26 @@ export default function SwipeableBottomSheet({
     if (contentRef.current && contentRef.current.scrollTop <= 0) {
       const touch = e.touches[0];
       const deltaY = touch.clientY - startYRef.current;
-      if (deltaY > 15) {
+      if (deltaY > 10) {
         setIsDragging(true);
         currentYRef.current = touch.clientY;
-        setDragY(deltaY - 15);
+        setDragY(deltaY - 10);
       }
     }
   };
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop (Blocks all background touches/scrolling) */}
       <div
-        className={`fixed inset-0 bg-black/60 z-[100] transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/60 z-[100] transition-opacity duration-300 touch-none overscroll-none ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
+        onTouchMove={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
       />
 
       {/* Sheet Modal Container */}

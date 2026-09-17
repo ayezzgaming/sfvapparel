@@ -107,8 +107,10 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             </div>
           </header>
 
-          {/* Scrollable Main Content with Full-Height Seamless iOS Background */}
-          <main className="flex-1 w-full overflow-y-auto sparkle-scroll bg-[#F2F2F7] overscroll-y-contain">
+          {/* Scrollable Main Content (Locked when bottom sheet is open) */}
+          <main className={`flex-1 w-full sparkle-scroll bg-[#F2F2F7] ${
+            shouldHideBottomNav ? 'overflow-hidden pointer-events-none' : 'overflow-y-auto overscroll-y-contain'
+          }`}>
             {children}
           </main>
 
