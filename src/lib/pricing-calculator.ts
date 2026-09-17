@@ -71,7 +71,7 @@ export function calculateSublimationPrice({
     subtotal,
     totalSavings,
     finalTotal,
-    currency: 'IDR',
+    currency: 'MYR',
   };
 }
 
@@ -104,20 +104,14 @@ export function calculateDtfPrice({
     subtotal,
     totalSavings,
     finalTotal,
-    currency: 'IDR',
+    currency: 'MYR',
   };
 }
 
-export function formatCurrency(amount: number, currency: string = 'IDR'): string {
-  if (currency === 'IDR') {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  }
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
+export function formatCurrency(amount: number, currency: string = 'MYR'): string {
+  const validAmount = Number(amount) || 0;
+  return `RM ${validAmount.toLocaleString('en-MY', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }

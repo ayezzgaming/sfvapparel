@@ -18,6 +18,7 @@ import { Heart, ShoppingBag, Trash2 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
 import { useUI } from '@/lib/store/ui-context';
+import { formatCurrency } from '@/lib/pricing-calculator';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 
 interface PublicAppShellProps {
@@ -302,7 +303,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
 
                   <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-200/50">
                     <span className="text-slate-500">{order.total_quantity} helai pakaian</span>
-                    <span className="font-bold text-slate-900">RM{(order.total_amount / 100).toFixed(2)}</span>
+                    <span className="font-bold text-slate-900">{formatCurrency(order.total_amount)}</span>
                   </div>
                 </div>
               ))

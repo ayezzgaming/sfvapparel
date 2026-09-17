@@ -22,14 +22,14 @@ import {
 } from './seed-data';
 
 const STORAGE_KEYS = {
-  DESIGNS: 'svf_designs_v2',
-  FABRICS: 'svf_fabrics_v2',
-  CUTS: 'svf_cuts_v2',
-  DTF_DIMS: 'svf_dtf_dims_v2',
-  TIERS: 'svf_tiers_v2',
-  CUSTOMERS: 'svf_customers_v2',
-  ORDERS: 'svf_orders_v2',
-  FAVORITES: 'svf_favorites_v2',
+  DESIGNS: 'svf_designs_v3',
+  FABRICS: 'svf_fabrics_v3',
+  CUTS: 'svf_cuts_v3',
+  DTF_DIMS: 'svf_dtf_dims_v3',
+  TIERS: 'svf_tiers_v3',
+  CUSTOMERS: 'svf_customers_v3',
+  ORDERS: 'svf_orders_v3',
+  FAVORITES: 'svf_favorites_v3',
 };
 
 function getLocalData<T>(key: string, fallback: T): T {

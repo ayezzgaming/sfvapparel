@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
+import { formatCurrency } from '@/lib/pricing-calculator';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { Order, OrderStatus } from '@/types/database';
 
@@ -127,8 +128,6 @@ export default function HistoryPage() {
             const mockupImg = order.mockup_url || 
               (order.print_type === 'sublimation' ? '/images/prod_sportswear.jpg' : '/images/prod_tshirt.jpg');
 
-            const formattedPrice = (order.total_amount / 100).toFixed(2);
-
             return (
               <div
                 key={order.id}
@@ -180,7 +179,7 @@ export default function HistoryPage() {
                       {order.total_quantity} helai • {order.print_type === 'sublimation' ? 'Sublimasi' : 'DTF'}
                     </p>
                     <p className="text-xs font-bold text-[#0052FF] mt-1">
-                      RM{formattedPrice}
+                      {formatCurrency(order.total_amount)}
                     </p>
                   </div>
                 </div>
@@ -334,6 +333,13 @@ export default function HistoryPage() {
               <span>Jumlah Tempahan:</span>
               <span className="font-bold text-[#0052FF]">
                 {selectedOrder.total_quantity} helai
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center text-[11px] text-slate-500">
+              <span>Jumlah Harga:</span>
+              <span className="font-bold text-slate-900">
+                {formatCurrency(selectedOrder.total_amount)}
               </span>
             </div>
 

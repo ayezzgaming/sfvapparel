@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS fabric_materials (
     code TEXT NOT NULL UNIQUE,
     weight_gsm INTEGER NOT NULL, -- e.g. 150, 180, 220
     breathability TEXT DEFAULT 'High', -- 'Standard', 'High', 'Ultra Breathable'
-    sublimation_base_price NUMERIC(10,2) NOT NULL, -- Base rate per jersey in IDR/USD
+    sublimation_base_price NUMERIC(10,2) NOT NULL, -- Base rate per jersey in MYR (RM)
     description TEXT,
     is_popular BOOLEAN DEFAULT false,
     is_active BOOLEAN DEFAULT true,
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS apparel_cuts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     code TEXT NOT NULL UNIQUE, -- 'short_sleeve_standard', 'raglan', 'long_sleeve', 'polo_collar', 'v_neck', 'oversized'
-    cut_add_on_price NUMERIC(10,2) DEFAULT 0.00, -- Extra cost added to fabric base
+    cut_add_on_price NUMERIC(10,2) DEFAULT 0.00, -- Extra cost added to fabric base in MYR (RM)
     description TEXT,
     is_active BOOLEAN DEFAULT true,
     sort_order INTEGER DEFAULT 0
@@ -68,9 +68,9 @@ CREATE TABLE IF NOT EXISTS dtf_dimensions (
     name TEXT NOT NULL,
     code TEXT NOT NULL UNIQUE, -- 'pocket_10x10', 'a4', 'a3', 'a2', 'gang_sheet_meter'
     dimensions_desc TEXT NOT NULL, -- '10 x 10 cm', '21 x 29.7 cm', '58 x 100 cm (Roll)'
-    base_price NUMERIC(10,2) NOT NULL,
+    base_price NUMERIC(10,2) NOT NULL, -- Base price in MYR (RM)
     is_meter_rate BOOLEAN DEFAULT false,
-    garment_included_base_price NUMERIC(10,2) DEFAULT 0.00, -- Optional when bundled with premium cotton blank
+    garment_included_base_price NUMERIC(10,2) DEFAULT 0.00, -- Optional when bundled with premium cotton blank in MYR (RM)
     description TEXT,
     is_active BOOLEAN DEFAULT true,
     sort_order INTEGER DEFAULT 0
@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS orders (
     sizing_breakdown JSONB DEFAULT '{}'::jsonb,
     total_quantity INTEGER NOT NULL,
     
-    -- Financials calculated by dynamic engine
+    -- Financials calculated by dynamic engine (MYR / RM)
     raw_unit_price NUMERIC(10,2) NOT NULL,
     discount_percentage NUMERIC(5,2) DEFAULT 0.00,
     final_unit_price NUMERIC(10,2) NOT NULL,
@@ -148,35 +148,35 @@ CREATE TABLE IF NOT EXISTS order_status_history (
 );
 
 -- -------------------------------------------------------------
--- SEED DATA
+-- SEED DATA (MYR / RM)
 -- -------------------------------------------------------------
 
 -- Fabric Materials (Sublimation)
 INSERT INTO fabric_materials (name, code, weight_gsm, breathability, sublimation_base_price, description, is_popular, sort_order) VALUES
-('Drifit Milano (Premium)', 'drifit_milano', 165, 'Ultra Breathable', 115000, 'Micro-pore zigzag texture, swift sweat evaporation, best for pro football & esports jerseys.', true, 1),
-('Drifit Microfiber (Smooth)', 'drifit_microfiber', 155, 'High', 105000, 'Silky smooth handfeel, sharpest color reproduction, great for running and badminton.', true, 2),
-('Poly-Mesh Honeycomb', 'poly_mesh_honeycomb', 180, 'Ultra Breathable', 120000, 'Hexagonal aerated knit, maximum ventilation for high-heat sports and basketball.', false, 3),
-('Spandex Poly-Blend (4-Way Stretch)', 'spandex_poly', 210, 'High', 135000, 'Flexible compression stretch, wrinkle-free, perfect for cycling and compression wear.', false, 4),
-('Coolmax Anti-Bacterial', 'coolmax_antibacterial', 170, 'Ultra Breathable', 145000, 'Silver-ion infused yarn with anti-odor protection and thermal cooling regulation.', true, 5)
+('Drifit Milano (Premium)', 'drifit_milano', 165, 'Ultra Breathable', 35.00, 'Tekstur zigzag mikro, penyejatan peluh pantas, terbaik untuk jersi bola sepak pro & e-sukan.', true, 1),
+('Drifit Microfiber (Smooth)', 'drifit_microfiber', 155, 'High', 32.00, 'Permukaan licin sutera, warna cetakan tajam, sesuai untuk larian dan badminton.', true, 2),
+('Poly-Mesh Honeycomb', 'poly_mesh_honeycomb', 180, 'Ultra Breathable', 38.00, 'Sulaman heksagon berventilasi, pengudaraan maksimum untuk sukan berintensiti tinggi.', false, 3),
+('Spandex Poly-Blend (4-Way Stretch)', 'spandex_poly', 210, 'High', 42.00, 'Regangan mampatan 4 hala fleksibel, bebas kedutan, sesuai untuk aktiviti berbasikal.', false, 4),
+('Coolmax Anti-Bacterial', 'coolmax_antibacterial', 170, 'Ultra Breathable', 45.00, 'Benang ion perak dengan perlindungan anti-bau dan kawalan penyejukan haba.', true, 5)
 ON CONFLICT (code) DO NOTHING;
 
 -- Apparel Cuts (Sublimation)
 INSERT INTO apparel_cuts (name, code, cut_add_on_price, description, sort_order) VALUES
-('Short Sleeve Standard Crew', 'ss_crew', 0, 'Classic O-Neck crew collar with standard fitted short sleeves.', 1),
-('Short Sleeve V-Neck Pro', 'ss_vneck', 5000, 'Athletic V-Neck collar with reinforced stitch neck tape.', 2),
-('Raglan Sleeve Athletic Cut', 'raglan_ss', 8000, 'Diagonal continuous sleeve from collar to underarm for enhanced arm mobility.', 3),
-('Polo Collar + 3-Button Placket', 'polo_collar', 18000, 'Ribbed knit or sublimated collar with concealed reinforced button placket.', 4),
-('Long Sleeve Elastic Cuff', 'ls_elastic', 15000, 'Full length sleeves with ribbed cuffs, ideal for goalkeeper, cycling & outdoor.', 5),
-('Oversized Streetwear Fit', 'oversized_box', 12000, 'Modern relaxed drop-shoulder silhouette with heavy-duty ribbed collar.', 6)
+('Lengan Pendek Standard Crew', 'ss_crew', 0.00, 'Kolar bulat O-Neck klasik dengan potongan lengan standard kemas.', 1),
+('Lengan Pendek V-Neck Pro', 'ss_vneck', 2.00, 'Kolar V-Neck sukan dengan pita leher bertetulang jahitan kemas.', 2),
+('Potongan Raglan Athletic', 'raglan_ss', 3.00, 'Lengan bersambung diagonal dari leher ke ketiak untuk fleksibiliti lengan.', 3),
+('Kolar Polo + Butang Placket', 'polo_collar', 6.00, 'Kolar berbutang kemas tahan lasak sesuai korporat & kelab sukan.', 4),
+('Lengan Panjang Berkaf Elastik', 'ls_elastic', 5.00, 'Lengan panjang penuh dengan kaf bergetah lembut di pergelangan tangan.', 5),
+('Potongan Oversized Streetwear', 'oversized_box', 4.00, 'Siluet labuh santai moden dengan kolar tebal tahan regangan.', 6)
 ON CONFLICT (code) DO NOTHING;
 
 -- DTF Dimensions
 INSERT INTO dtf_dimensions (name, code, dimensions_desc, base_price, is_meter_rate, garment_included_base_price, description, sort_order) VALUES
-('Logo / Pocket Size (10x10 cm)', 'dtf_pocket', '10 x 10 cm', 8000, false, 45000, 'Ideal for chest pocket emblems, sleeve badges, or neck labels.', 1),
-('A4 Medium Print (21x29.7 cm)', 'dtf_a4', '21 x 29.7 cm', 22000, false, 65000, 'Standard chest or back center graphic on t-shirts and hoodies.', 2),
-('A3 Large Statement (30x42 cm)', 'dtf_a3', '30 x 42 cm', 38000, false, 85000, 'Oversized front or full-back artwork with vivid gradient saturation.', 3),
-('A2 Poster / Jumbo (42x59.4 cm)', 'dtf_a2', '42 x 59.4 cm', 65000, false, 115000, 'Jumbo print coverage across seams, front and bottom hem.', 4),
-('Gang Sheet per Meter (58x100 cm)', 'dtf_meter', '58 x 100 cm (Roll)', 75000, true, 0, 'Commercial print-only roll. Arrange unlimited graphics within 58cm width.', 5)
+('Logo / Poket (10x10 cm)', 'dtf_pocket', '10 x 10 cm', 5.00, false, 18.00, 'Sesuai untuk lencana dada, logo lengan atau label leher belakang.', 1),
+('A4 Cetakan Sederhana (21x29.7 cm)', 'dtf_a4', '21 x 29.7 cm', 12.00, false, 25.00, 'Grafik saiz standard bahagian dada atau belakang baju T dan hoodie.', 2),
+('A3 Cetakan Penuh (30x42 cm)', 'dtf_a3', '30 x 42 cm', 18.00, false, 32.00, 'Grafik besar bahagian depan atau belakang dengan ketepatan warna HD.', 3),
+('A2 Cetakan Jumbo (42x59.4 cm)', 'dtf_a2', '42 x 59.4 cm', 28.00, false, 45.00, 'Liputan cetakan ekstra besar melintasi bahagian depan atau labuh baju.', 4),
+('Gang Sheet Semeter (58x100 cm)', 'dtf_meter', '58 x 100 cm (Gulung)', 32.00, true, 0.00, 'Gulungan cetakan komersial. Susun artwork tanpa had dalam lebar 58cm.', 5)
 ON CONFLICT (code) DO NOTHING;
 
 -- Volume Quantity Tiers
