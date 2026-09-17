@@ -85,19 +85,9 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="w-full min-h-full pt-5 pb-16 space-y-5 select-none font-ios bg-[#F2F2F7]">
-      {/* 1. Header (Clean & Minimal iOS Style) */}
-      <div className="px-5">
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-          Pesanan
-        </h1>
-        <p className="text-xs text-slate-500 mt-1 font-normal">
-          Jejak status pembuatan & penghantaran pesanan
-        </p>
-      </div>
-
-      {/* 2. Orders List (Decluttered Cards with Clean Spacing) */}
-      <div className="px-5 space-y-3.5">
+    <div className="w-full min-h-full pt-3 pb-16 space-y-4 select-none font-ios bg-[#F2F2F7]">
+      {/* 1. Orders List (Decluttered Cards with Clean Spacing) */}
+      <div className="px-5 space-y-3.5 pt-1">
         {orders.length === 0 ? (
           <div className="bg-white rounded-3xl p-10 text-center shadow-xs space-y-3 border border-slate-200/60 my-4">
             <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">

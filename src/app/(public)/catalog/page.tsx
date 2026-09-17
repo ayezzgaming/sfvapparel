@@ -55,19 +55,9 @@ function CatalogContent() {
   }, [designs, selectedCategory, searchQuery]);
 
   return (
-    <div className="w-full min-h-full pt-5 pb-16 space-y-5 select-none font-ios bg-[#F2F2F7]">
-      {/* 1. Header Area (Clean & Minimal iOS Style) */}
-      <div className="px-5">
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-          Katalog
-        </h1>
-        <p className="text-xs text-slate-500 mt-1 font-normal">
-          Pilihan templat rekaan sedia ada & kustom
-        </p>
-      </div>
-
-      {/* 2. iOS Search Bar (Spacious & Clean) */}
-      <div className="px-5">
+    <div className="w-full min-h-full pt-3 pb-16 space-y-4 select-none font-ios bg-[#F2F2F7]">
+      {/* 1. iOS Search Bar (Spacious & Clean) */}
+      <div className="px-5 pt-1">
         <div className="relative flex items-center bg-white rounded-2xl border border-slate-200/80 shadow-xs focus-within:border-[#0052FF] focus-within:ring-2 focus-within:ring-[#0052FF]/10 transition-all">
           <Search className="absolute left-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
           <input
