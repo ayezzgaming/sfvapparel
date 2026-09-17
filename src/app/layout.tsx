@@ -38,6 +38,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              // Unregister stale service workers
               if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
                 navigator.serviceWorker.getRegistrations().then(function(registrations) {
                   for (let registration of registrations) {
@@ -50,11 +51,46 @@ export default function RootLayout({
                   });
                 }
               }
+
+              // Mobile First: Prevent pinch zoom, double-tap zoom & gesture zoom
+              if (typeof window !== 'undefined') {
+                // Prevent multi-touch pinch zoom
+                document.addEventListener('touchstart', function(e) {
+                  if (e.touches.length > 1) {
+                    e.preventDefault();
+                  }
+                }, { passive: false });
+
+                // Prevent iOS Safari gesture zoom
+                document.addEventListener('gesturestart', function(e) {
+                  e.preventDefault();
+                }, { passive: false });
+                document.addEventListener('gesturechange', function(e) {
+                  e.preventDefault();
+                }, { passive: false });
+                document.addEventListener('gestureend', function(e) {
+                  e.preventDefault();
+                }, { passive: false });
+
+                // Prevent double tap to zoom
+                var lastTouchEnd = 0;
+                document.addEventListener('touchend', function(e) {
+                  var now = (new Date()).getTime();
+                  if (now - lastTouchEnd <= 300) {
+                    // Check if not clicking on standard input
+                    var tag = e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '';
+                    if (tag !== 'input' && tag !== 'textarea') {
+                      e.preventDefault();
+                    }
+                  }
+                  lastTouchEnd = now;
+                }, false);
+              }
             `,
           }}
         />
       </head>
-      <body className="h-full antialiased selection:bg-blue-500 selection:text-white">
+      <body className="h-full antialiased selection:bg-blue-500 selection:text-white overscroll-none">
         {children}
       </body>
     </html>

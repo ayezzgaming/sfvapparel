@@ -45,22 +45,25 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
   const favoriteDesigns = designs.filter((d) => favorites.includes(d.id));
 
   return (
-    <App theme="ios" safeAreas={true} className="!bg-transparent min-h-screen font-ios antialiased selection:bg-[#0052FF] selection:text-white">
+    <App theme="ios" safeAreas={true} className="!bg-transparent min-h-screen font-ios antialiased selection:bg-[#0052FF] selection:text-white overscroll-none">
       {/* 1. LAYAR MONITOR (Background luar aplikasi jika dibuka di desktop) */}
-      <div className="min-h-screen bg-gray-100 flex justify-center w-full">
+      <div className="min-h-screen bg-gray-100 flex justify-center w-full overscroll-none">
 
         {/* 2. MASTER CONTAINER APLIKASI (Dynamic 100dvh for iOS Safari safe area) */}
-        <div className="w-full max-w-md mx-auto relative h-[100dvh] max-h-[100dvh] bg-white shadow-2xl flex flex-col overflow-hidden">
+        <div className="w-full max-w-md mx-auto relative h-[100dvh] max-h-[100dvh] bg-white shadow-2xl flex flex-col overflow-hidden overscroll-none touch-pan-y select-none">
           
           {/* Header / Navbar */}
-          <header className="sticky top-0 z-40 bg-white px-5 py-3.5 pt-[calc(env(safe-area-inset-top,0px)+0.85rem)] flex items-center justify-between border-b border-black/[0.04] shrink-0">
+          <header 
+            className="sticky top-0 z-40 bg-white px-5 py-3.5 pt-[calc(env(safe-area-inset-top,0px)+0.85rem)] flex items-center justify-between border-b border-black/[0.04] shrink-0 select-none touch-none"
+            style={{ touchAction: 'none' }}
+          >
             {/* Brand Logo with Animated Text */}
-            <Link href="/" className="inline-flex items-center gap-2.5 select-none active:opacity-80 transition-opacity">
+            <Link href="/" draggable={false} className="inline-flex items-center gap-2.5 select-none active:opacity-80 transition-opacity">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo.svg"
                 alt="SFV Apparel Logo"
-                className="h-7 w-7 object-contain shrink-0"
+                className="h-7 w-7 object-contain shrink-0 pointer-events-none"
               />
               <div className="flex items-baseline">
                 <span className="font-black text-[21px] sm:text-[22px] tracking-tight brand-sfv-text leading-none">
@@ -78,7 +81,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 type="button"
                 onClick={() => setIsFavoritesOpen(true)}
                 aria-label="Senarai Pilihan Kegemaran"
-                className="p-2 text-slate-700 hover:text-slate-900 relative transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-slate-50"
+                className="p-2 text-slate-700 hover:text-slate-900 relative transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-slate-50 touch-manipulation"
               >
                 <Heart className="w-5 h-5 stroke-[1.75]" />
                 {favoritesCount > 0 && (
@@ -92,7 +95,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 type="button"
                 onClick={() => setIsBagOpen(true)}
                 aria-label="Bakul Pesanan Aktif"
-                className="p-2 text-slate-700 hover:text-slate-900 relative transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-slate-50"
+                className="p-2 text-slate-700 hover:text-slate-900 relative transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-slate-50 touch-manipulation"
               >
                 <ShoppingBag className="w-5 h-5 stroke-[1.75]" />
                 {activeOrdersCount > 0 && (
@@ -105,21 +108,25 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
           </header>
 
           {/* Scrollable Main Content with Full-Height Seamless iOS Background */}
-          <main className="flex-1 w-full overflow-y-auto sparkle-scroll bg-[#F2F2F7]">
+          <main className="flex-1 w-full overflow-y-auto sparkle-scroll bg-[#F2F2F7] overscroll-y-contain">
             {children}
           </main>
 
-          {/* Pixel-Perfect iOS Bottom Tab Bar with Standard Refined Icons */}
-          <nav className={`sticky bottom-0 left-0 right-0 w-full z-40 bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-3 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.65rem)] flex items-center justify-between shadow-[0_-2px_12px_rgba(0,0,0,0.03)] shrink-0 transition-all duration-300 ease-in-out transform ${
-            shouldHideBottomNav
-              ? 'translate-y-full opacity-0 pointer-events-none'
-              : 'translate-y-0 opacity-100'
-          }`}>
+          {/* Pixel-Perfect iOS Bottom Tab Bar (Fixed Anchored, Zero Drag/Lift) */}
+          <nav 
+            className={`sticky bottom-0 left-0 right-0 w-full z-40 bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-3 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.65rem)] flex items-center justify-between shadow-[0_-2px_12px_rgba(0,0,0,0.03)] shrink-0 select-none touch-none overscroll-none transition-all duration-300 ease-in-out transform ${
+              shouldHideBottomNav
+                ? 'translate-y-full opacity-0 pointer-events-none'
+                : 'translate-y-0 opacity-100'
+            }`}
+            style={{ touchAction: 'none' }}
+          >
             
             {/* Tab 1: Utama */}
             <Link
               href="/"
-              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none ${
+              draggable={false}
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation ${
                 isHome ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
               }`}
             >
@@ -138,7 +145,8 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             {/* Tab 2: Katalog */}
             <Link
               href="/catalog"
-              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none ${
+              draggable={false}
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation ${
                 isCatalog ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
               }`}
             >
@@ -157,7 +165,8 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             {/* Tab 3: Pesanan */}
             <Link
               href="/history"
-              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none relative ${
+              draggable={false}
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative ${
                 isHistory ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
               }`}
             >
@@ -179,7 +188,8 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             {/* Tab 4: Profil */}
             <Link
               href="/profile"
-              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none ${
+              draggable={false}
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation ${
                 isProfile ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
               }`}
             >
@@ -201,8 +211,9 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             href="https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ingin%20bertanya%20tentang%20tempahan%20custom."
             target="_blank"
             rel="noopener noreferrer"
+            draggable={false}
             aria-label="Hubungi Kilang di WhatsApp"
-            className={`absolute bottom-[calc(env(safe-area-inset-bottom,0px)+5rem)] right-4 z-30 w-12 h-12 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center shadow-[0_8px_20px_rgba(37,211,102,0.4)] active:scale-90 hover:scale-105 transition-all duration-300 ease-in-out select-none transform ${
+            className={`absolute bottom-[calc(env(safe-area-inset-bottom,0px)+5rem)] right-4 z-30 w-12 h-12 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center shadow-[0_8px_20px_rgba(37,211,102,0.4)] active:scale-90 hover:scale-105 transition-all duration-300 ease-in-out select-none touch-manipulation transform ${
               shouldHideBottomNav
                 ? 'translate-y-24 opacity-0 pointer-events-none scale-75'
                 : 'translate-y-0 opacity-100 scale-100'
