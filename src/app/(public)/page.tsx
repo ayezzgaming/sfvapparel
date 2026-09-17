@@ -11,6 +11,7 @@ import {
   Clock,
   CheckCircle2,
 } from 'lucide-react';
+import { useUI } from '@/lib/store/ui-context';
 
 interface ProductDetail {
   id: string;
@@ -449,6 +450,7 @@ const POLICIES: Record<string, PolicyModalContent> = {
 };
 
 export default function HomePage() {
+  const { setBottomSheetOpen } = useUI();
   const [selectedProduct, setSelectedProduct] = useState<ProductDetail>(PRODUCTS[0]);
   const [isProductSheetOpen, setIsProductSheetOpen] = useState(false);
 
@@ -459,6 +461,13 @@ export default function HomePage() {
   const [isPolicySheetOpen, setIsPolicySheetOpen] = useState(false);
 
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
+
+  // Sync with global UIContext so Bottom Nav & WhatsApp FAB automatically hide when any sheet is open
+  useEffect(() => {
+    const isAnyOpen = isProductSheetOpen || isStepSheetOpen || isPolicySheetOpen;
+    setBottomSheetOpen(isAnyOpen);
+    return () => setBottomSheetOpen(false);
+  }, [isProductSheetOpen, isStepSheetOpen, isPolicySheetOpen, setBottomSheetOpen]);
 
   // Testimonial Auto-Swap State & Ref
   const testimonialScrollRef = useRef<HTMLDivElement>(null);

@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAppStore } from '@/lib/store/app-store';
+import { useUI } from '@/lib/store/ui-context';
 import { 
   calculateSublimationPrice, 
   calculateDtfPrice, 
@@ -28,6 +29,7 @@ export default function CustomizePage() {
   const router = useRouter();
   const params = useParams();
   const designId = params.id as string;
+  const { setBottomSheetOpen } = useUI();
 
   const { 
     designs, 
@@ -87,6 +89,12 @@ export default function CustomizePage() {
   const [shippingAddress, setShippingAddress] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdOrderNumber, setCreatedOrderNumber] = useState<string | null>(null);
+
+  // Sync with global UIContext so Bottom Nav & WhatsApp FAB automatically hide when modal is open
+  React.useEffect(() => {
+    setBottomSheetOpen(isCheckoutOpen);
+    return () => setBottomSheetOpen(false);
+  }, [isCheckoutOpen, setBottomSheetOpen]);
 
   const totalQuantity = useMemo(() => {
     return Object.values(sizing).reduce((sum, qty) => sum + (Number(qty) || 0), 0);

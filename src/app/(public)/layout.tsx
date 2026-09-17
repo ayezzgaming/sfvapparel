@@ -1,9 +1,14 @@
 import PublicAppShell from '@/components/public/PublicAppShell';
+import { UIProvider } from '@/lib/store/ui-context';
 
 export default function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <PublicAppShell>{children}</PublicAppShell>;
+  return (
+    <UIProvider>
+      <PublicAppShell>{children}</PublicAppShell>
+    </UIProvider>
+  );
 }

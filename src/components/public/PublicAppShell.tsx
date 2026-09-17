@@ -17,6 +17,7 @@ import {
 import { Heart, ShoppingBag } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
+import { useUI } from '@/lib/store/ui-context';
 
 interface PublicAppShellProps {
   children: React.ReactNode;
@@ -25,6 +26,7 @@ interface PublicAppShellProps {
 export default function PublicAppShell({ children }: PublicAppShellProps) {
   const pathname = usePathname();
   const { orders } = useAppStore();
+  const { isBottomSheetOpen } = useUI();
   const [isBagOpen, setIsBagOpen] = useState(false);
 
   const isHome = pathname === '/' || pathname === '';
@@ -34,6 +36,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
 
   const activeOrders = orders.filter((o) => o.status !== 'delivered' && o.status !== 'cancelled');
   const activeOrdersCount = activeOrders.length;
+  const shouldHideBottomNav = isBottomSheetOpen || isBagOpen;
 
   return (
     <App theme="ios" safeAreas={true} className="!bg-transparent min-h-screen font-ios antialiased selection:bg-[#0052FF] selection:text-white">
@@ -93,7 +96,11 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
           </main>
 
           {/* Pixel-Perfect iOS Bottom Tab Bar with Standard Refined Icons */}
-          <nav className="sticky bottom-0 left-0 right-0 w-full z-40 bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-3 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.65rem)] flex items-center justify-between shadow-[0_-2px_12px_rgba(0,0,0,0.03)] shrink-0">
+          <nav className={`sticky bottom-0 left-0 right-0 w-full z-40 bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-3 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.65rem)] flex items-center justify-between shadow-[0_-2px_12px_rgba(0,0,0,0.03)] shrink-0 transition-all duration-300 ease-in-out transform ${
+            shouldHideBottomNav
+              ? 'translate-y-full opacity-0 pointer-events-none'
+              : 'translate-y-0 opacity-100'
+          }`}>
             
             {/* Tab 1: Utama */}
             <Link
@@ -181,7 +188,11 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Hubungi Kilang di WhatsApp"
-            className="absolute bottom-[calc(env(safe-area-inset-bottom,0px)+5rem)] right-4 z-30 w-12 h-12 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center shadow-[0_8px_20px_rgba(37,211,102,0.4)] active:scale-90 hover:scale-105 transition-all duration-200 select-none"
+            className={`absolute bottom-[calc(env(safe-area-inset-bottom,0px)+5rem)] right-4 z-30 w-12 h-12 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center shadow-[0_8px_20px_rgba(37,211,102,0.4)] active:scale-90 hover:scale-105 transition-all duration-300 ease-in-out select-none transform ${
+              shouldHideBottomNav
+                ? 'translate-y-24 opacity-0 pointer-events-none scale-75'
+                : 'translate-y-0 opacity-100 scale-100'
+            }`}
           >
             <FaWhatsapp className="w-6 h-6 text-white" />
           </a>

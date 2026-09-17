@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
+import { useUI } from '@/lib/store/ui-context';
 import { Order, OrderStatus } from '@/types/database';
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; stepIndex: number; color: string; bg: string; dot: string }> = {
@@ -39,6 +40,7 @@ const TIMELINE_STEPS = [
 
 export default function HistoryPage() {
   const { orders } = useAppStore();
+  const { setBottomSheetOpen } = useUI();
   const [selectedOrder, setSelectedOrder] = useState<Order>(orders[0] || {
     id: 'ord-fallback',
     order_number: 'SFV-2026-001',
@@ -65,6 +67,12 @@ export default function HistoryPage() {
 
   const [isOrderSheetOpen, setIsOrderSheetOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+
+  // Sync with global UIContext so Bottom Nav & WhatsApp FAB automatically hide when sheet is open
+  React.useEffect(() => {
+    setBottomSheetOpen(isOrderSheetOpen);
+    return () => setBottomSheetOpen(false);
+  }, [isOrderSheetOpen, setBottomSheetOpen]);
 
   const handleOpenOrder = (order: Order) => {
     setSelectedOrder(order);
