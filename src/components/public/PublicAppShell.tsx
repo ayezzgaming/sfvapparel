@@ -45,16 +45,16 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
   const favoriteDesigns = designs.filter((d) => favorites.includes(d.id));
 
   return (
-    <App theme="ios" safeAreas={true} className="!bg-transparent min-h-screen font-ios antialiased selection:bg-[#0052FF] selection:text-white overscroll-none">
-      {/* 1. LAYAR MONITOR (Background luar aplikasi jika dibuka di desktop) */}
-      <div className="min-h-screen bg-gray-100 flex justify-center w-full overscroll-none">
+    <App theme="ios" safeAreas={true} className="!bg-transparent h-full font-ios antialiased selection:bg-[#0052FF] selection:text-white overscroll-none">
+      {/* 1. FIXED FULL-SCREEN FRAME (Locks directly to physical viewport, zero window scrolling) */}
+      <div className="fixed inset-0 w-full h-full bg-gray-100 flex justify-center overflow-hidden overscroll-none">
 
-        {/* 2. MASTER CONTAINER APLIKASI (Dynamic 100dvh for iOS Safari safe area) */}
-        <div className="w-full max-w-md mx-auto relative h-[100dvh] max-h-[100dvh] bg-white shadow-2xl flex flex-col overflow-hidden overscroll-none touch-pan-y select-none">
+        {/* 2. MASTER CONTAINER APLIKASI (Fixed 100% height of the pinned frame) */}
+        <div className="w-full max-w-md h-full bg-white shadow-2xl flex flex-col overflow-hidden relative overscroll-none touch-pan-y select-none">
           
-          {/* Header / Navbar */}
+          {/* Header / Navbar (Anchored firmly at top) */}
           <header 
-            className="sticky top-0 z-40 bg-white px-5 py-3.5 pt-[calc(env(safe-area-inset-top,0px)+0.85rem)] flex items-center justify-between border-b border-black/[0.04] shrink-0 select-none touch-none"
+            className="shrink-0 z-40 bg-white px-5 py-3.5 pt-[calc(env(safe-area-inset-top,0px)+0.85rem)] flex items-center justify-between border-b border-black/[0.04] select-none touch-none"
             style={{ touchAction: 'none' }}
           >
             {/* Brand Logo with Animated Text */}
@@ -114,7 +114,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
 
           {/* Pixel-Perfect iOS Bottom Tab Bar (Fixed Anchored, Zero Drag/Lift) */}
           <nav 
-            className={`sticky bottom-0 left-0 right-0 w-full z-40 bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-3 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.65rem)] flex items-center justify-between shadow-[0_-2px_12px_rgba(0,0,0,0.03)] shrink-0 select-none touch-none overscroll-none transition-all duration-300 ease-in-out transform ${
+            className={`shrink-0 z-40 w-full bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-3 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.65rem)] flex items-center justify-between shadow-[0_-2px_12px_rgba(0,0,0,0.03)] select-none touch-none overscroll-none transition-all duration-300 ease-in-out transform ${
               shouldHideBottomNav
                 ? 'translate-y-full opacity-0 pointer-events-none'
                 : 'translate-y-0 opacity-100'

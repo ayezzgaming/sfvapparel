@@ -37,7 +37,7 @@ export default function AdminLayoutShell({
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row antialiased">
+    <div className="h-full w-full bg-slate-950 text-slate-100 flex flex-col md:flex-row antialiased overflow-hidden">
       {/* ----------------- LEFT PERSISTENT DESKTOP SIDEBAR ----------------- */}
       <aside className="hidden md:flex md:w-64 flex-col justify-between bg-slate-900 border-r border-slate-800 p-5 flex-shrink-0">
         <div className="space-y-6">
