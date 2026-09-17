@@ -40,8 +40,8 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
       {/* 1. LAYAR MONITOR (Background luar aplikasi jika dibuka di desktop) */}
       <div className="min-h-screen bg-gray-100 flex justify-center w-full">
 
-        {/* 2. MASTER CONTAINER APLIKASI (Batas ukuran HP - Lock h-screen for fixed header & nav) */}
-        <div className="w-full max-w-md mx-auto relative h-screen bg-white shadow-2xl flex flex-col overflow-hidden">
+        {/* 2. MASTER CONTAINER APLIKASI (Dynamic 100dvh for iOS Safari safe area) */}
+        <div className="w-full max-w-md mx-auto relative h-[100dvh] max-h-[100dvh] bg-white shadow-2xl flex flex-col overflow-hidden">
           
           {/* Header / Navbar */}
           <header className="sticky top-0 z-40 bg-white px-5 py-3.5 pt-[calc(env(safe-area-inset-top,0px)+0.85rem)] flex items-center justify-between border-b border-black/[0.04] shrink-0">
@@ -92,8 +92,8 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             {children}
           </main>
 
-          {/* Pixel-Perfect iOS Bottom Tab Bar with Prominent Icons */}
-          <nav className="sticky bottom-0 left-0 right-0 w-full z-40 bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-3 pt-2 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] flex items-center justify-between shadow-[0_-2px_12px_rgba(0,0,0,0.03)] shrink-0">
+          {/* Pixel-Perfect iOS Bottom Tab Bar with Standard Refined Icons */}
+          <nav className="sticky bottom-0 left-0 right-0 w-full z-40 bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-3 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.65rem)] flex items-center justify-between shadow-[0_-2px_12px_rgba(0,0,0,0.03)] shrink-0">
             
             {/* Tab 1: Utama */}
             <Link
@@ -102,14 +102,14 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 isHome ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
               }`}
             >
-              <div className="flex items-center justify-center h-8 w-8">
+              <div className="flex items-center justify-center h-6 w-6">
                 {isHome ? (
-                  <IoHome className="w-7 h-7 transition-transform duration-200 scale-105" />
+                  <IoHome className="w-5.5 h-5.5 transition-transform duration-200 scale-105" />
                 ) : (
-                  <IoHomeOutline className="w-7 h-7" />
+                  <IoHomeOutline className="w-5.5 h-5.5" />
                 )}
               </div>
-              <span className={`text-[11.5px] tracking-tight mt-0.5 ${isHome ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
+              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isHome ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
                 Utama
               </span>
             </Link>
@@ -121,14 +121,14 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 isCatalog ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
               }`}
             >
-              <div className="flex items-center justify-center h-8 w-8">
+              <div className="flex items-center justify-center h-6 w-6">
                 {isCatalog ? (
-                  <IoGrid className="w-7 h-7 transition-transform duration-200 scale-105" />
+                  <IoGrid className="w-5.5 h-5.5 transition-transform duration-200 scale-105" />
                 ) : (
-                  <IoGridOutline className="w-7 h-7" />
+                  <IoGridOutline className="w-5.5 h-5.5" />
                 )}
               </div>
-              <span className={`text-[11.5px] tracking-tight mt-0.5 ${isCatalog ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
+              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isCatalog ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
                 Katalog
               </span>
             </Link>
@@ -140,17 +140,17 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 isHistory ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
               }`}
             >
-              <div className="flex items-center justify-center h-8 w-8 relative">
+              <div className="flex items-center justify-center h-6 w-6 relative">
                 {isHistory ? (
-                  <IoTime className="w-7 h-7 transition-transform duration-200 scale-105" />
+                  <IoTime className="w-5.5 h-5.5 transition-transform duration-200 scale-105" />
                 ) : (
-                  <IoTimeOutline className="w-7 h-7" />
+                  <IoTimeOutline className="w-5.5 h-5.5" />
                 )}
                 {activeOrdersCount > 0 && !isHistory && (
-                  <span className="absolute 0 right-0 w-2.5 h-2.5 rounded-full bg-[#FF3B30] ring-2 ring-white" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#FF3B30] ring-2 ring-white" />
                 )}
               </div>
-              <span className={`text-[11.5px] tracking-tight mt-0.5 ${isHistory ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
+              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isHistory ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
                 Pesanan
               </span>
             </Link>
@@ -162,28 +162,28 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 isProfile ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
               }`}
             >
-              <div className="flex items-center justify-center h-8 w-8">
+              <div className="flex items-center justify-center h-6 w-6">
                 {isProfile ? (
-                  <IoPerson className="w-7 h-7 transition-transform duration-200 scale-105" />
+                  <IoPerson className="w-5.5 h-5.5 transition-transform duration-200 scale-105" />
                 ) : (
-                  <IoPersonOutline className="w-7 h-7" />
+                  <IoPersonOutline className="w-5.5 h-5.5" />
                 )}
               </div>
-              <span className={`text-[11.5px] tracking-tight mt-0.5 ${isProfile ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
+              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isProfile ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
                 Profil
               </span>
             </Link>
           </nav>
 
-          {/* Standard Circular Floating WhatsApp Action Button (Standard 56px FAB) */}
+          {/* Standard Circular Floating WhatsApp Action Button (Standard 48px FAB) */}
           <a
             href="https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ingin%20bertanya%20tentang%20tempahan%20custom."
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Hubungi Kilang di WhatsApp"
-            className="absolute bottom-[calc(env(safe-area-inset-bottom,0px)+5.85rem)] right-4 z-30 w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center shadow-[0_10px_25px_rgba(37,211,102,0.45)] active:scale-90 hover:scale-105 transition-all duration-200 select-none"
+            className="absolute bottom-[calc(env(safe-area-inset-bottom,0px)+5rem)] right-4 z-30 w-12 h-12 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center shadow-[0_8px_20px_rgba(37,211,102,0.4)] active:scale-90 hover:scale-105 transition-all duration-200 select-none"
           >
-            <FaWhatsapp className="w-7 h-7 text-white" />
+            <FaWhatsapp className="w-6 h-6 text-white" />
           </a>
 
           {/* =========================================================================

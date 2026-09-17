@@ -475,7 +475,8 @@ export default function HomePage() {
       const nextIndex = (activeTestiIndex + 1) % TESTIMONIALS.length;
       const child = container.children[nextIndex] as HTMLElement;
       if (child) {
-        child.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        const scrollLeft = child.offsetLeft - (container.clientWidth - child.offsetWidth) / 2;
+        container.scrollTo({ left: Math.max(0, scrollLeft), behavior: 'smooth' });
       }
       setActiveTestiIndex(nextIndex);
     }, 4200);
@@ -488,7 +489,8 @@ export default function HomePage() {
     const container = testimonialScrollRef.current;
     const child = container.children[index] as HTMLElement;
     if (child) {
-      child.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      const scrollLeft = child.offsetLeft - (container.clientWidth - child.offsetWidth) / 2;
+      container.scrollTo({ left: Math.max(0, scrollLeft), behavior: 'smooth' });
     }
     setActiveTestiIndex(index);
   };
