@@ -8,7 +8,8 @@ import {
   CheckCircle2,
   Clock,
   Copy,
-  Check
+  Check,
+  Trash2
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
@@ -36,7 +37,7 @@ const TIMELINE_STEPS = [
 ];
 
 export default function HistoryPage() {
-  const { orders } = useAppStore();
+  const { orders, deleteOrder } = useAppStore();
   const { setBottomSheetOpen } = useUI();
   const [selectedOrder, setSelectedOrder] = useState<Order>(orders[0] || {
     id: 'ord-fallback',
@@ -81,6 +82,13 @@ export default function HistoryPage() {
     navigator.clipboard.writeText(tracking);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const handleDeleteOrder = (orderId: string, orderNumber: string) => {
+    if (confirm(`Adakah anda pasti mahu memadam pesanan ${orderNumber}?`)) {
+      deleteOrder(orderId);
+      setIsOrderSheetOpen(false);
+    }
   };
 
   return (
@@ -135,16 +143,30 @@ export default function HistoryPage() {
                 onClick={() => handleOpenOrder(order)}
                 className="bg-white rounded-2xl p-4 shadow-xs border border-slate-200/60 hover:border-blue-200 transition-all cursor-pointer active:scale-[0.98] space-y-3"
               >
-                {/* Header Row: Order Number + Minimal Pill Status */}
+                {/* Header Row: Order Number + Minimal Pill Status + Quick Delete */}
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-xs font-bold text-slate-800 tracking-tight">
                     {order.order_number}
                   </span>
                   
-                  <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full ${config.bg} ${config.color}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
-                    {config.label}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full ${config.bg} ${config.color}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+                      {config.label}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteOrder(order.id, order.order_number);
+                      }}
+                      title="Padam pesanan"
+                      className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 active:scale-90 transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Product Detail Row */}
@@ -178,7 +200,7 @@ export default function HistoryPage() {
                   </span>
                   
                   <div className="flex items-center space-x-1 text-slate-500 font-medium">
-                    <span>Perincian</span>
+                    <span>Perincian & Jejak</span>
                     <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
                   </div>
                 </div>
@@ -206,15 +228,26 @@ export default function HistoryPage() {
           </div>
         }
         footer={
-          <a
-            href={`https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ingin%20semak%20status%20pesanan%20*${selectedOrder.order_number}*%20(${encodeURIComponent(selectedOrder.design_title)})`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold py-3.5 rounded-xl text-center active:bg-emerald-700 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-emerald-500/20 text-xs"
-          >
-            <FaWhatsapp className="w-4 h-4" />
-            <span>Tanya Status di WhatsApp</span>
-          </a>
+          <div className="space-y-2 w-full">
+            <a
+              href={`https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ingin%20semak%20status%20pesanan%20*${selectedOrder.order_number}*%20(${encodeURIComponent(selectedOrder.design_title)})`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold py-3.5 rounded-xl text-center active:bg-emerald-700 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-emerald-500/20 text-xs"
+            >
+              <FaWhatsapp className="w-4 h-4" />
+              <span>Tanya Status di WhatsApp</span>
+            </a>
+
+            <button
+              type="button"
+              onClick={() => handleDeleteOrder(selectedOrder.id, selectedOrder.order_number)}
+              className="w-full bg-rose-50 text-rose-600 hover:bg-rose-100 font-semibold py-2.5 rounded-xl text-center active:scale-[0.99] transition-all flex items-center justify-center space-x-1.5 text-xs"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Padam Pesanan Ini</span>
+            </button>
+          </div>
         }
       >
         {/* Status Current Banner */}

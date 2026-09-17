@@ -29,6 +29,7 @@ const STORAGE_KEYS = {
   TIERS: 'svf_tiers_v2',
   CUSTOMERS: 'svf_customers_v2',
   ORDERS: 'svf_orders_v2',
+  FAVORITES: 'svf_favorites_v2',
 };
 
 function getLocalData<T>(key: string, fallback: T): T {
@@ -58,6 +59,7 @@ export function useAppStore() {
   const [tiers, setTiers] = useState<QuantityTierDiscount[]>(INITIAL_QUANTITY_TIERS);
   const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize from LocalStorage
@@ -69,6 +71,7 @@ export function useAppStore() {
     setTiers(getLocalData(STORAGE_KEYS.TIERS, INITIAL_QUANTITY_TIERS));
     setCustomers(getLocalData(STORAGE_KEYS.CUSTOMERS, INITIAL_CUSTOMERS));
     setOrders(getLocalData(STORAGE_KEYS.ORDERS, INITIAL_ORDERS));
+    setFavorites(getLocalData(STORAGE_KEYS.FAVORITES, []));
     setIsInitialized(true);
   }, []);
 
@@ -82,6 +85,7 @@ export function useAppStore() {
       if (e.key === STORAGE_KEYS.TIERS && e.newValue) setTiers(JSON.parse(e.newValue));
       if (e.key === STORAGE_KEYS.ORDERS && e.newValue) setOrders(JSON.parse(e.newValue));
       if (e.key === STORAGE_KEYS.CUSTOMERS && e.newValue) setCustomers(JSON.parse(e.newValue));
+      if (e.key === STORAGE_KEYS.FAVORITES && e.newValue) setFavorites(JSON.parse(e.newValue));
     };
 
     window.addEventListener('storage', handleStorage);
@@ -126,6 +130,28 @@ export function useAppStore() {
       return updated;
     });
   }, []);
+
+  const deleteOrder = useCallback((orderId: string) => {
+    setOrders((prev) => {
+      const updated = prev.filter((ord) => ord.id !== orderId && ord.order_number !== orderId);
+      setLocalData(STORAGE_KEYS.ORDERS, updated);
+      return updated;
+    });
+  }, []);
+
+  const toggleFavorite = useCallback((designId: string) => {
+    setFavorites((prev) => {
+      const next = prev.includes(designId)
+        ? prev.filter((id) => id !== designId)
+        : [...prev, designId];
+      setLocalData(STORAGE_KEYS.FAVORITES, next);
+      return next;
+    });
+  }, []);
+
+  const isFavorite = useCallback((designId: string) => {
+    return favorites.includes(designId);
+  }, [favorites]);
 
   const addDesign = useCallback((design: Omit<Design, 'id'>) => {
     const newDesign: Design = {
@@ -196,6 +222,7 @@ export function useAppStore() {
     setTiers(INITIAL_QUANTITY_TIERS);
     setCustomers(INITIAL_CUSTOMERS);
     setOrders(INITIAL_ORDERS);
+    setFavorites([]);
 
     setLocalData(STORAGE_KEYS.DESIGNS, INITIAL_DESIGNS);
     setLocalData(STORAGE_KEYS.FABRICS, INITIAL_FABRIC_MATERIALS);
@@ -204,6 +231,7 @@ export function useAppStore() {
     setLocalData(STORAGE_KEYS.TIERS, INITIAL_QUANTITY_TIERS);
     setLocalData(STORAGE_KEYS.CUSTOMERS, INITIAL_CUSTOMERS);
     setLocalData(STORAGE_KEYS.ORDERS, INITIAL_ORDERS);
+    setLocalData(STORAGE_KEYS.FAVORITES, []);
   }, []);
 
   return {
@@ -215,7 +243,11 @@ export function useAppStore() {
     tiers,
     customers,
     orders,
+    favorites,
+    toggleFavorite,
+    isFavorite,
     addOrder,
+    deleteOrder,
     updateOrderStatus,
     addDesign,
     updateDesign,

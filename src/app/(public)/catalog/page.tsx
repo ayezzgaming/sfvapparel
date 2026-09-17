@@ -26,43 +26,18 @@ function CatalogContent() {
   const searchParams = useSearchParams();
   const initialType = searchParams.get('type') || 'all';
 
-  const { designs } = useAppStore();
+  const { designs, favorites, toggleFavorite } = useAppStore();
   const { setBottomSheetOpen } = useUI();
   const [selectedCategory, setSelectedCategory] = useState<string>(initialType);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDesign, setSelectedDesign] = useState<Design | null>(designs[0] || null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [favorites, setFavorites] = useState<string[]>([]);
 
   // Sync with global UIContext so Bottom Nav & WhatsApp FAB automatically hide when sheet is open
   useEffect(() => {
     setBottomSheetOpen(isSheetOpen);
     return () => setBottomSheetOpen(false);
   }, [isSheetOpen, setBottomSheetOpen]);
-
-  // Load favorites from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('svf_favorite_designs');
-      if (saved) setFavorites(JSON.parse(saved));
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const toggleFavorite = (designId: string) => {
-    setFavorites((prev) => {
-      const next = prev.includes(designId)
-        ? prev.filter((id) => id !== designId)
-        : [...prev, designId];
-      try {
-        localStorage.setItem('svf_favorite_designs', JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
-  };
 
   const handleOpenDesign = (design: Design) => {
     setSelectedDesign(design);

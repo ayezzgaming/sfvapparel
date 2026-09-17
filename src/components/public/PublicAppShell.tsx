@@ -14,7 +14,7 @@ import {
   IoPersonOutline, 
   IoPerson 
 } from 'react-icons/io5';
-import { Heart, ShoppingBag } from 'lucide-react';
+import { Heart, ShoppingBag, Trash2 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
 import { useUI } from '@/lib/store/ui-context';
@@ -26,9 +26,10 @@ interface PublicAppShellProps {
 
 export default function PublicAppShell({ children }: PublicAppShellProps) {
   const pathname = usePathname();
-  const { orders } = useAppStore();
+  const { orders, favorites, designs, deleteOrder, toggleFavorite } = useAppStore();
   const { isBottomSheetOpen } = useUI();
   const [isBagOpen, setIsBagOpen] = useState(false);
+  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
 
   const isHome = pathname === '/' || pathname === '';
   const isCatalog = pathname.startsWith('/catalog') || pathname.startsWith('/customize');
@@ -37,7 +38,11 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
 
   const activeOrders = orders.filter((o) => o.status !== 'delivered' && o.status !== 'cancelled');
   const activeOrdersCount = activeOrders.length;
-  const shouldHideBottomNav = isBottomSheetOpen || isBagOpen;
+  const favoritesCount = favorites.length;
+  const shouldHideBottomNav = isBottomSheetOpen || isBagOpen || isFavoritesOpen;
+
+  // Filter full design objects that are favorited
+  const favoriteDesigns = designs.filter((d) => favorites.includes(d.id));
 
   return (
     <App theme="ios" safeAreas={true} className="!bg-transparent min-h-screen font-ios antialiased selection:bg-[#0052FF] selection:text-white">
@@ -69,13 +74,17 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
 
             {/* Header Action Icons */}
             <div className="flex items-center space-x-1">
-              <Link
-                href="/catalog"
-                aria-label="Senarai Pilihan"
-                className="p-2 text-slate-700 hover:text-[#0052FF] transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-slate-50"
+              <button
+                type="button"
+                onClick={() => setIsFavoritesOpen(true)}
+                aria-label="Senarai Pilihan Kegemaran"
+                className="p-2 text-slate-700 hover:text-[#FF2D55] relative transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-slate-50"
               >
-                <Heart className="w-5 h-5 stroke-[1.75]" />
-              </Link>
+                <Heart className={`w-5 h-5 stroke-[1.75] ${favoritesCount > 0 ? 'fill-[#FF2D55] text-[#FF2D55]' : ''}`} />
+                {favoritesCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#FF2D55] ring-2 ring-white" />
+                )}
+              </button>
 
               <button
                 type="button"
@@ -239,7 +248,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               activeOrders.map((order) => (
                 <div 
                   key={order.id}
-                  className="p-4 rounded-2xl bg-[#F8FAFC] border border-slate-200/70 space-y-2.5"
+                  className="p-4 rounded-2xl bg-[#F8FAFC] border border-slate-200/70 space-y-2.5 relative group"
                 >
                   <div className="flex justify-between items-start">
                     <div>
@@ -250,14 +259,118 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                         {order.design_title}
                       </h4>
                     </div>
-                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] border border-blue-100 uppercase">
-                      {order.status.replace('_', ' ')}
-                    </span>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] border border-blue-100 uppercase">
+                        {order.status.replace('_', ' ')}
+                      </span>
+                      
+                      {/* Tombol Hapus Pesanan */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm(`Padam pesanan ${order.order_number} dari bakul?`)) {
+                            deleteOrder(order.id);
+                          }
+                        }}
+                        aria-label="Padam pesanan"
+                        title="Padam dari bakul"
+                        className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 active:scale-90 transition-all shrink-0"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-200/50">
                     <span className="text-slate-500">{order.total_quantity} helai pakaian</span>
                     <span className="font-bold text-slate-900">RM{(order.total_amount / 100).toFixed(2)}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </SwipeableBottomSheet>
+
+          {/* =========================================================================
+              FAVORITES / SENARAI KEGEMARAN MODAL SHEET (SWIPEABLE iOS DRAWER)
+             ========================================================================= */}
+          <SwipeableBottomSheet
+            isOpen={isFavoritesOpen}
+            onClose={() => setIsFavoritesOpen(false)}
+            maxHeight="max-h-[85vh]"
+            title={
+              <div className="flex items-center gap-2">
+                <span className="bg-rose-50 text-[#FF2D55] text-[10.5px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                  Pilihan Kegemaran
+                </span>
+                <span className="text-xs text-slate-500 font-medium">
+                  ({favoritesCount} disimpan)
+                </span>
+              </div>
+            }
+            footer={
+              <Link
+                href="/catalog"
+                onClick={() => setIsFavoritesOpen(false)}
+                className="w-full bg-[#0052FF] text-white font-semibold py-3.5 rounded-xl text-center active:bg-blue-700 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-blue-500/20 text-xs"
+              >
+                <span>Terokai Lebih Banyak di Katalog →</span>
+              </Link>
+            }
+          >
+            {favoriteDesigns.length === 0 ? (
+              <div className="py-8 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-400 flex items-center justify-center mx-auto">
+                  <Heart className="w-6 h-6 stroke-[1.5]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm">Tiada Rekaan Kegemaran</h3>
+                  <p className="text-xs text-slate-500 mt-1">Tekan ikon hati pada mana-mana templat di katalog untuk menyimpannya di sini.</p>
+                </div>
+              </div>
+            ) : (
+              favoriteDesigns.map((design) => (
+                <div 
+                  key={design.id}
+                  className="p-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200/70 flex items-center gap-3.5 justify-between"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200/60">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={design.thumbnail_url || design.mockup_front_url}
+                        alt={design.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xs font-bold text-slate-900 truncate">
+                        {design.title}
+                      </h4>
+                      <p className="text-[11px] text-slate-400 mt-0.5 capitalize truncate">
+                        {design.category} • {design.print_type === 'sublimation' ? 'Sublimasi' : 'DTF'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Link
+                      href={`/customize/${design.id}`}
+                      onClick={() => setIsFavoritesOpen(false)}
+                      className="px-3 py-1.5 rounded-xl bg-[#0052FF] text-white text-xs font-semibold active:bg-blue-700 transition-colors shadow-2xs"
+                    >
+                      Tempah
+                    </Link>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleFavorite(design.id)}
+                      aria-label="Buang dari kegemaran"
+                      className="p-2 rounded-xl bg-white border border-slate-200/60 text-[#FF2D55] hover:bg-rose-50 active:scale-90 transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               ))
