@@ -8,7 +8,6 @@ import {
   MapPin,
   CreditCard,
   Ruler, 
-  MessageCircle,
   Bell,
   ChevronRight,
   RotateCcw,
@@ -41,37 +40,32 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="w-full min-h-full pt-2 pb-16 px-4 space-y-6 select-none font-ios bg-[#F2F2F7]">
+    <div className="w-full min-h-full pt-4 pb-16 px-4 space-y-6 select-none font-ios bg-[#F2F2F7]">
       
-      {/* 1. Page Header (Clean & Minimal) */}
-      <div className="px-1 pt-2">
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-          Akaun
-        </h1>
-      </div>
-
-      {/* 2. User Profile Card (iOS Modern Inset Card) */}
-      <div className="bg-white rounded-2xl p-4 shadow-2xs border border-slate-200/60 flex items-center gap-3.5">
-        <div className="w-13 h-13 rounded-full bg-gradient-to-tr from-slate-900 to-slate-700 text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-xs ring-4 ring-slate-100">
-          {activeCustomer.full_name.charAt(0)}
+      {/* 1. Centered Standard Profile Header */}
+      <div className="flex flex-col items-center justify-center text-center pt-2 pb-1 space-y-2.5">
+        <div className="relative">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-slate-900 to-slate-700 text-white flex items-center justify-center font-bold text-2xl shadow-sm ring-4 ring-white">
+            {activeCustomer.full_name.charAt(0)}
+          </div>
         </div>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <h2 className="text-[15px] font-bold text-slate-900 tracking-tight truncate">
-              {activeCustomer.full_name}
-            </h2>
-          </div>
-          <p className="text-xs text-slate-500 font-normal truncate mt-0.5">
+        <div className="space-y-0.5">
+          <h1 className="text-lg font-bold text-slate-900 tracking-tight">
+            {activeCustomer.full_name}
+          </h1>
+          <p className="text-xs text-slate-500 font-normal">
             {activeCustomer.email}
           </p>
-          <p className="text-[11px] font-medium text-blue-600 mt-0.5 truncate">
-            {activeCustomer.company_or_team || 'Pelanggan Individu'}
-          </p>
+          {activeCustomer.company_or_team && (
+            <p className="text-[11px] font-medium text-slate-400">
+              {activeCustomer.company_or_team}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* 3. Inset Group 1: AKTIKITI & PENGURUSAN */}
+      {/* 2. Inset Group 1: MAKLUMAT TEMPAHAN */}
       <div className="space-y-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 px-3 block">
           Maklumat Tempahan
@@ -139,7 +133,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* 4. Inset Group 2: BANTUAN & SOKONGAN */}
+      {/* 3. Inset Group 2: BANTUAN & SOKONGAN */}
       <div className="space-y-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 px-3 block">
           Bantuan & Sokongan
@@ -147,7 +141,7 @@ export default function ProfilePage() {
 
         <div className="bg-white rounded-2xl overflow-hidden shadow-2xs border border-slate-200/60 divide-y divide-slate-100">
           
-          {/* WhatsApp Support */}
+          {/* WhatsApp Support (Genuine Icon) */}
           <a
             href="https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20memerlukan%20bantuan%20mengenai%20tempahan%20saya"
             target="_blank"
@@ -156,14 +150,13 @@ export default function ProfilePage() {
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#25D366] flex items-center justify-center shrink-0">
-                <MessageCircle className="w-4 h-4" />
+                <FaWhatsapp className="w-4.5 h-4.5" />
               </div>
               <span className="text-[13.5px] font-medium text-slate-900">
-                Hubungi Khidmat Pelanggan
+                Khidmat Pelanggan (WhatsApp)
               </span>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-emerald-600 font-medium">WhatsApp</span>
+            <div className="flex items-center gap-1 text-slate-400">
               <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
             </div>
           </a>
@@ -187,7 +180,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* 5. Inset Group 3: TETAPAN & NOTIFIKASI */}
+      {/* 4. Inset Group 3: TETAPAN & NOTIFIKASI */}
       <div className="space-y-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 px-3 block">
           Tetapan
@@ -222,7 +215,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* 6. Footer & Reset Action */}
+      {/* 5. Footer & Reset Action */}
       <div className="pt-2 text-center space-y-2">
         <button
           type="button"
@@ -243,7 +236,7 @@ export default function ProfilePage() {
         </button>
 
         <p className="text-[10px] text-slate-400 font-medium tracking-tight">
-          SFV Apparel App v1.2.0 • Beroperasi di Malaysia 🇲🇾
+          SFV Apparel App v1.2.0 • Beroperasi di Malaysia
         </p>
       </div>
 
@@ -331,7 +324,7 @@ export default function ProfilePage() {
         </div>
 
         <div className="mt-3 p-3 rounded-xl bg-blue-50/60 border border-blue-100 text-[11px] text-blue-900 leading-relaxed">
-          💡 <strong>Nota Kilang:</strong> Toleransi ukuran jersi adalah ±0.5 inci disebabkan elastisiti fabrik semasa proses jahitan kemas.
+          <strong>Nota Kilang:</strong> Toleransi ukuran jersi adalah ±0.5 inci disebabkan elastisiti fabrik semasa proses jahitan kemas.
         </div>
       </SwipeableBottomSheet>
     </div>
