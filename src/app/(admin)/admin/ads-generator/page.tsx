@@ -896,11 +896,12 @@ ${activeVariation.whatsappMessage}`;
                 />
               </div>
 
-              <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 text-[11px] text-slate-600 space-y-1">
-                <p className="font-medium text-slate-800">Panduan Ringkas:</p>
-                <p>1. Dapatkan kunci API percuma di <span className="font-mono text-blue-600">aistudio.google.com</span>.</p>
-                <p>2. Tampalkan di ruangan atas dan klik Simpan.</p>
-                <p>3. Jika dikosongkan, sistem automatik menggunakan <em>Enjin AI Pintar Tempatan</em>.</p>
+              <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 text-[11px] text-slate-600 space-y-1.5">
+                <p className="font-medium text-slate-800">Panduan Kunci API Google AI Studio:</p>
+                <p>1. Buka <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="font-mono text-blue-600 underline">aistudio.google.com/app/apikey</a>.</p>
+                <p>2. Tekan butang <strong>&ldquo;Create API key&rdquo;</strong> dan pilih <em>&ldquo;Create API key in new project&rdquo;</em> (percuma & aktif serta-merta).</p>
+                <p>3. Salin kunci (bermula dengan <span className="font-mono text-slate-700">AIzaSy...</span>) dan tampalkan di atas.</p>
+                <p className="text-slate-500 pt-0.5"><em>Nota: Sekiranya dikosongkan atau menggunakan kunci lain, sistem menggunakan Enjin Semantik SVF secara automatik.</em></p>
               </div>
             </div>
 
