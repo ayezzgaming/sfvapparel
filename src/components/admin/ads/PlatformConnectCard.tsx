@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AdPlatformConnection } from '@/types/ads';
+import { AdPlatformConnection, AdPlatform } from '@/types/ads';
 import {
   Check,
   Link2,
@@ -16,7 +16,6 @@ import {
   EyeOff,
   CheckCircle2,
   RefreshCw,
-  Info,
   BookOpen
 } from 'lucide-react';
 import {
@@ -27,12 +26,217 @@ import {
   FacebookLogo,
   InstagramLogo
 } from '@/components/admin/ads/PlatformLogos';
-import { formatCurrency } from '@/lib/pricing-calculator';
 
 interface PlatformConnectCardProps {
   platform: AdPlatformConnection;
   onUpdateConnection?: (updated: AdPlatformConnection) => void;
   onToggleConnect: (platformId: string) => void;
+}
+
+interface PlatformGuideStep {
+  step: number;
+  title: string;
+  description: string;
+  codeSnippet?: string;
+  actionText?: string;
+  actionUrl?: string;
+}
+
+interface PlatformConfig {
+  title: string;
+  subtitle: string;
+  field1Label: string;
+  field1Placeholder: string;
+  field1HelpText?: string;
+  field1LinkText?: string;
+  field1LinkUrl?: string;
+  field2Label: string;
+  field2Placeholder: string;
+  field2HelpText?: string;
+  field2LinkText?: string;
+  field2LinkUrl?: string;
+  field3Label: string;
+  field3Placeholder: string;
+  field3Subtext: string;
+  field3Required?: boolean;
+  field3LinkText?: string;
+  field3LinkUrl?: string;
+  guideSteps: PlatformGuideStep[];
+}
+
+function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
+  switch (platformId) {
+    case 'google':
+      return {
+        title: 'Sambung API Google Ads',
+        subtitle: 'Hubungkan Google Ads Customer ID & Developer Token untuk kempen carian Search & Display',
+        field1Label: 'Google Ads Customer ID',
+        field1Placeholder: 'Contoh: 849-201-9482',
+        field1LinkText: 'Lihat ID di Google Ads',
+        field1LinkUrl: 'https://ads.google.com',
+        field2Label: 'Google Developer Token / API Key',
+        field2Placeholder: 'Contoh: AIzaSy... / Developer Token',
+        field2LinkText: 'Dapatkan di Google Cloud',
+        field2LinkUrl: 'https://console.cloud.google.com/apis/credentials',
+        field3Label: 'Google Conversion Action ID / Tag',
+        field3Placeholder: 'Contoh: AW-920194820/abc123XYZ',
+        field3Subtext: 'Untuk mengesan klik WhatsApp dan jualan di laman web',
+        field3Required: false,
+        field3LinkText: 'Buka Conversion Center',
+        field3LinkUrl: 'https://ads.google.com/aw/conversions',
+        guideSteps: [
+          {
+            step: 1,
+            title: 'Dapatkan Google Customer ID (10-Digit)',
+            description: 'Buka papan pemuka Google Ads. Customer ID tertera di penjuru kanan atas berdekatan profil akaun.',
+            codeSnippet: '849-201-9482',
+            actionText: 'Buka Google Ads',
+            actionUrl: 'https://ads.google.com'
+          },
+          {
+            step: 2,
+            title: 'Dapatkan Developer Token di Google Cloud',
+            description: 'Masuk ke Google Cloud Console / Google Ads API Center untuk menjana atau menyalin Developer Token.',
+            actionText: 'Buka Google Cloud Credentials',
+            actionUrl: 'https://console.cloud.google.com/apis/credentials'
+          },
+          {
+            step: 3,
+            title: 'Sahkan & Aktifkan Sambungan',
+            description: 'Tampal Customer ID dan Kunci Akses ke dalam borang di bawah, lalu klik butang Sahkan & Sambung.'
+          }
+        ]
+      };
+
+    case 'tiktok':
+      return {
+        title: 'Sambung API TikTok Ads',
+        subtitle: 'Hubungkan TikTok for Business Marketing API untuk pelancaran kempen video automatik',
+        field1Label: 'TikTok Advertiser ID',
+        field1Placeholder: 'Contoh: 6982019482019482019',
+        field1LinkText: 'Cari ID di TikTok Ads',
+        field1LinkUrl: 'https://ads.tiktok.com',
+        field2Label: 'TikTok Access Token (Marketing API)',
+        field2Placeholder: 'Contoh: act.tiktok.92a8b3c...',
+        field2LinkText: 'Jana Token di Developer Portal',
+        field2LinkUrl: 'https://business-api.tiktok.com/portal/',
+        field3Label: 'TikTok Pixel Code',
+        field3Placeholder: 'Contoh: C8ABCDE12345FG678',
+        field3Subtext: 'Untuk optimasi sasaran audiens sukan dan belia',
+        field3Required: false,
+        field3LinkText: 'Buka Events Manager',
+        field3LinkUrl: 'https://ads.tiktok.com/events/',
+        guideSteps: [
+          {
+            step: 1,
+            title: 'Dapatkan TikTok Advertiser ID',
+            description: 'Buka TikTok Ads Manager. ID Pengiklan anda (19-digit) berada di tetapan akaun / profil pengiklan.',
+            codeSnippet: '6982019482019482019',
+            actionText: 'Buka TikTok Ads Manager',
+            actionUrl: 'https://ads.tiktok.com'
+          },
+          {
+            step: 2,
+            title: 'Jana TikTok Marketing API Long-lived Token',
+            description: 'Buka TikTok Business Marketing API Portal, pilih aplikasi anda dan salin Access Token.',
+            actionText: 'Buka TikTok Business API Portal',
+            actionUrl: 'https://business-api.tiktok.com/portal/'
+          },
+          {
+            step: 3,
+            title: 'Tampal & Sambungkan',
+            description: 'Tampal Advertiser ID dan Token ke dalam borang di bawah untuk membuka analitik dan iklan automatik.'
+          }
+        ]
+      };
+
+    case 'whatsapp':
+      return {
+        title: 'Sambung WhatsApp Cloud API',
+        subtitle: 'Hubungkan Meta WhatsApp Business API untuk pengiklanan Click-to-WhatsApp & mesej rasmi',
+        field1Label: 'WhatsApp Business Account (WABA) ID',
+        field1Placeholder: 'Contoh: 948201948201 atau waba_948201948201',
+        field1LinkText: 'Buka WhatsApp Manager',
+        field1LinkUrl: 'https://business.facebook.com/wa/manage/',
+        field2Label: 'System User Permanent Access Token',
+        field2Placeholder: 'EAAG... (Token Kekal Meta WhatsApp)',
+        field2LinkText: 'Jana di Meta Developers',
+        field2LinkUrl: 'https://developers.facebook.com/apps/',
+        field3Label: 'Phone Number ID',
+        field3Placeholder: 'Contoh: 104829104829104',
+        field3Subtext: 'ID Nombor telefon yang didaftarkan di WhatsApp Cloud API',
+        field3Required: true,
+        field3LinkText: 'Cari di Cloud API Setup',
+        field3LinkUrl: 'https://developers.facebook.com/apps/',
+        guideSteps: [
+          {
+            step: 1,
+            title: 'Dapatkan WABA ID (WhatsApp Business Account)',
+            description: 'Buka Meta Business Manager > WhatsApp Accounts untuk menyalin WABA ID anda.',
+            codeSnippet: 'waba_948201948201',
+            actionText: 'Buka WhatsApp Manager',
+            actionUrl: 'https://business.facebook.com/wa/manage/'
+          },
+          {
+            step: 2,
+            title: 'Jana System User Permanent Token',
+            description: 'Buka Meta Developers > App > WhatsApp API Setup. Jana token kekal dengan izin whatsapp_business_messaging.',
+            actionText: 'Buka Meta Developers',
+            actionUrl: 'https://developers.facebook.com/apps/'
+          },
+          {
+            step: 3,
+            title: 'Salin Phone Number ID & Sambung',
+            description: 'Salin Phone Number ID dari dashboard WhatsApp API Setup dan lengkapkan borang di bawah.'
+          }
+        ]
+      };
+
+    case 'facebook':
+    case 'instagram':
+    case 'meta':
+    default:
+      return {
+        title: `Sambung API ${platformId === 'instagram' ? 'Instagram Ads' : 'Meta & Facebook Ads'}`,
+        subtitle: 'Hubungkan Meta Ads Manager & Graph API untuk kawalan kempen dan penjejakan leads secara langsung',
+        field1Label: 'Ad Account ID (Meta)',
+        field1Placeholder: 'Contoh: act_839201948201 atau 839201948201',
+        field1LinkText: 'Cari ID di Ads Manager',
+        field1LinkUrl: 'https://business.facebook.com/adsmanager',
+        field2Label: 'Meta Access Token (Kunci API Graph / System User)',
+        field2Placeholder: 'EAAG... (Tampal Token Meta anda di sini)',
+        field2LinkText: 'Jana Token di Graph Explorer',
+        field2LinkUrl: 'https://developers.facebook.com/tools/explorer/',
+        field3Label: 'Meta Pixel / Dataset ID',
+        field3Placeholder: 'Contoh: 920194820192',
+        field3Subtext: 'Untuk menjejak penukaran (conversion) dan borang laman web',
+        field3Required: false,
+        field3LinkText: 'Buka Events Manager',
+        field3LinkUrl: 'https://business.facebook.com/events_manager2',
+        guideSteps: [
+          {
+            step: 1,
+            title: 'Dapatkan Meta Ad Account ID',
+            description: 'Buka Meta Ads Manager. ID akaun anda berada di menu dropdown atas sebelah profil.',
+            codeSnippet: 'act_839201948201',
+            actionText: 'Buka Meta Ads Manager',
+            actionUrl: 'https://business.facebook.com/adsmanager'
+          },
+          {
+            step: 2,
+            title: 'Jana Meta Access Token',
+            description: 'Buka Graph API Explorer rasmi Meta. Tanda kebenaran ads_management & ads_read, lalu klik Generate Token.',
+            actionText: 'Buka Graph API Explorer',
+            actionUrl: 'https://developers.facebook.com/tools/explorer/'
+          },
+          {
+            step: 3,
+            title: 'Tampal & Sahkan Sambungan',
+            description: 'Tampal ID Akaun dan Token ke dalam borang di bawah, kemudian klik Sahkan & Sambung.'
+          }
+        ]
+      };
+  }
 }
 
 export default function PlatformConnectCard({
@@ -45,16 +249,19 @@ export default function PlatformConnectCard({
   const [showHelpGuide, setShowHelpGuide] = useState(true);
 
   // Form State for API Credentials
-  const [accountIdInput, setAccountIdInput] = useState(platform.accountId || '');
-  const [accessTokenInput, setAccessTokenInput] = useState('');
-  const [pixelIdInput, setPixelIdInput] = useState(platform.pixelId || '');
+  const [field1Input, setField1Input] = useState(platform.accountId || '');
+  const [field2Input, setField2Input] = useState('');
+  const [field3Input, setField3Input] = useState(platform.pixelId || '');
   const [showToken, setShowToken] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  const config = getPlatformConfig(platform.id);
+
   const handleSaveConnection = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!accountIdInput.trim() || !accessTokenInput.trim()) return;
+    if (!field1Input.trim() || !field2Input.trim()) return;
+    if (config.field3Required && !field3Input.trim()) return;
 
     setIsSaving(true);
 
@@ -65,11 +272,11 @@ export default function PlatformConnectCard({
       const updatedAccount: AdPlatformConnection = {
         ...platform,
         isConnected: true,
-        accountId: accountIdInput.trim(),
+        accountId: field1Input.trim(),
         accountName: platform.accountName || `SFV APPAREL (${platform.name})`,
         currency: 'MYR',
         balance: platform.balance ?? 450.00,
-        pixelId: pixelIdInput.trim() || undefined,
+        pixelId: field3Input.trim() || undefined,
         lastSynced: 'Baru sahaja',
         insight: platform.insight || {
           totalSpent: 310.00,
@@ -195,7 +402,12 @@ export default function PlatformConnectCard({
           ) : (
             <button
               type="button"
-              onClick={() => setShowConnectModal(true)}
+              onClick={() => {
+                setField1Input(platform.accountId || '');
+                setField2Input('');
+                setField3Input(platform.pixelId || '');
+                setShowConnectModal(true);
+              }}
               className="px-4 py-2 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium transition-all shadow-xs flex items-center space-x-1.5 cursor-pointer"
             >
               <Link2 className="w-3.5 h-3.5" />
@@ -205,7 +417,7 @@ export default function PlatformConnectCard({
         </div>
       </div>
 
-      {/* ================= MODAL 1: SAMBUNG API DENGAN PANDUAN JELAS ================= */}
+      {/* ================= MODAL 1: SAMBUNG API KHUSUS PLATFORM DENGAN PANDUAN JELAS ================= */}
       {showConnectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-xl w-full shadow-2xl space-y-5 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
@@ -214,8 +426,8 @@ export default function PlatformConnectCard({
               <div className="flex items-center space-x-3">
                 {renderIcon()}
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">Sambung API {platform.name}</h3>
-                  <p className="text-xs text-slate-400">Hubungkan akaun rasmi untuk kawalan kempen secara terus</p>
+                  <h3 className="text-sm font-semibold text-slate-900">{config.title}</h3>
+                  <p className="text-xs text-slate-400">{config.subtitle}</p>
                 </div>
               </div>
               <button
@@ -236,123 +448,101 @@ export default function PlatformConnectCard({
               >
                 <div className="flex items-center space-x-2">
                   <BookOpen className="w-4 h-4 text-indigo-600" />
-                  <span>Panduan 3 Langkah Mendapatkan ID & Token</span>
+                  <span>Panduan Langkah Sambungan {platform.name}</span>
                 </div>
                 {showHelpGuide ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
               </button>
 
               {showHelpGuide && (
                 <div className="px-4 pb-4 pt-1 space-y-3 text-xs text-slate-600 border-t border-slate-200/60 font-sans">
-                  {/* Step 1 */}
-                  <div className="flex items-start space-x-2.5">
-                    <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
-                      1
-                    </span>
-                    <div className="space-y-1">
-                      <p className="text-slate-800 font-medium">Dapatkan Ad Account ID:</p>
-                      <p className="text-slate-500 text-[11px] leading-relaxed">
-                        Buka Meta Ads Manager. ID Akaun anda berada di menu atas sebelah kiri profil (format: <code className="text-indigo-600 font-mono font-semibold">act_1234567890</code>).
-                      </p>
-                      <a
-                        href="https://business.facebook.com/adsmanager"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center space-x-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs mt-1"
-                      >
-                        <span>Buka Meta Ads Manager</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
+                  {config.guideSteps.map((s) => (
+                    <div key={s.step} className="flex items-start space-x-2.5">
+                      <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                        {s.step}
+                      </span>
+                      <div className="space-y-1">
+                        <p className="text-slate-800 font-medium">{s.title}</p>
+                        <p className="text-slate-500 text-[11px] leading-relaxed">
+                          {s.description}
+                          {s.codeSnippet && (
+                            <> (format: <code className="text-indigo-600 font-mono font-semibold">{s.codeSnippet}</code>)</>
+                          )}
+                        </p>
+                        {s.actionText && s.actionUrl && (
+                          <a
+                            href={s.actionUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center space-x-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs mt-1"
+                          >
+                            <span>{s.actionText}</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
                     </div>
-                  </div>
-
-                  {/* Step 2 */}
-                  <div className="flex items-start space-x-2.5">
-                    <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
-                      2
-                    </span>
-                    <div className="space-y-1">
-                      <p className="text-slate-800 font-medium">Jana Meta Access Token (Kunci API):</p>
-                      <p className="text-slate-500 text-[11px] leading-relaxed">
-                        Buka <strong>Graph API Explorer</strong> rasmi Meta &gt; tandakan kebenaran <code className="text-indigo-600 font-mono font-semibold">ads_management</code> &amp; <code className="text-indigo-600 font-mono font-semibold">ads_read</code> &gt; klik <em>Generate Access Token</em>.
-                      </p>
-                      <a
-                        href="https://developers.facebook.com/tools/explorer/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center space-x-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs mt-1"
-                      >
-                        <span>Buka Graph API Explorer</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
-                  </div>
-
-                  {/* Step 3 */}
-                  <div className="flex items-start space-x-2.5">
-                    <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
-                      3
-                    </span>
-                    <p className="text-slate-600 text-[11px] leading-relaxed pt-0.5">
-                      Tampalkan ID Akaun dan Access Token tersebut ke dalam borang di bawah, lalu klik <strong>Sahkan &amp; Sambung</strong>.
-                    </p>
-                  </div>
+                  ))}
                 </div>
               )}
             </div>
 
             {/* Form */}
             <form onSubmit={handleSaveConnection} className="space-y-4">
-              {/* FIELD 1: AD ACCOUNT ID */}
+              {/* FIELD 1 */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-slate-800">
-                    Ad Account ID <span className="text-rose-500">*</span>
+                    {config.field1Label} <span className="text-rose-500">*</span>
                   </label>
-                  <a
-                    href="https://business.facebook.com/adsmanager"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center space-x-1"
-                  >
-                    <span>Cari ID di Ads Manager</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
+                  {config.field1LinkText && config.field1LinkUrl && (
+                    <a
+                      href={config.field1LinkUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center space-x-1"
+                    >
+                      <span>{config.field1LinkText}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
                 </div>
 
                 <input
                   type="text"
                   required
-                  value={accountIdInput}
-                  onChange={(e) => setAccountIdInput(e.target.value)}
-                  placeholder={platform.id === 'google' ? 'Contoh: 849-201-9482' : 'act_839201948201'}
+                  value={field1Input}
+                  onChange={(e) => setField1Input(e.target.value)}
+                  placeholder={config.field1Placeholder}
                   className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
                 />
               </div>
 
-              {/* FIELD 2: ACCESS TOKEN */}
+              {/* FIELD 2 */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-slate-800">
-                    Meta Access Token (Kunci API) <span className="text-rose-500">*</span>
+                    {config.field2Label} <span className="text-rose-500">*</span>
                   </label>
-                  <a
-                    href="https://developers.facebook.com/tools/explorer/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center space-x-1"
-                  >
-                    <span>Jana Token di Graph Explorer</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
+                  {config.field2LinkText && config.field2LinkUrl && (
+                    <a
+                      href={config.field2LinkUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center space-x-1"
+                    >
+                      <span>{config.field2LinkText}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
                 </div>
 
                 <div className="relative">
                   <input
                     type={showToken ? 'text' : 'password'}
                     required
-                    value={accessTokenInput}
-                    onChange={(e) => setAccessTokenInput(e.target.value)}
-                    placeholder="EAAG... (Tampal Token Meta anda di sini)"
+                    value={field2Input}
+                    onChange={(e) => setField2Input(e.target.value)}
+                    placeholder={config.field2Placeholder}
                     className="w-full px-3.5 py-2.5 pr-10 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
                   />
                   <button
@@ -366,22 +556,39 @@ export default function PlatformConnectCard({
                 </div>
               </div>
 
-              {/* FIELD 3: PIXEL ID (OPTIONAL) */}
+              {/* FIELD 3 */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-slate-700">
-                    Meta Pixel ID <span className="text-slate-400 font-normal">(Pilihan)</span>
+                  <label className="text-xs font-semibold text-slate-800">
+                    {config.field3Label}{' '}
+                    {config.field3Required ? (
+                      <span className="text-rose-500">*</span>
+                    ) : (
+                      <span className="text-slate-400 font-normal">(Pilihan)</span>
+                    )}
                   </label>
-                  <span className="text-[10px] text-slate-400">Untuk jejak pesanan borang web</span>
+                  {config.field3LinkText && config.field3LinkUrl && (
+                    <a
+                      href={config.field3LinkUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center space-x-1"
+                    >
+                      <span>{config.field3LinkText}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
                 </div>
 
                 <input
                   type="text"
-                  value={pixelIdInput}
-                  onChange={(e) => setPixelIdInput(e.target.value)}
-                  placeholder="Contoh: 920194820192"
+                  required={config.field3Required}
+                  value={field3Input}
+                  onChange={(e) => setField3Input(e.target.value)}
+                  placeholder={config.field3Placeholder}
                   className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
                 />
+                <p className="text-[10px] text-slate-400">{config.field3Subtext}</p>
               </div>
 
               <div className="flex items-center space-x-2 text-[11px] text-slate-400 pt-1">
@@ -401,7 +608,12 @@ export default function PlatformConnectCard({
 
                 <button
                   type="submit"
-                  disabled={isSaving || !accountIdInput.trim() || !accessTokenInput.trim()}
+                  disabled={
+                    isSaving ||
+                    !field1Input.trim() ||
+                    !field2Input.trim() ||
+                    (config.field3Required && !field3Input.trim())
+                  }
                   className="px-6 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium transition-all shadow-xs flex items-center space-x-2 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {isSaving ? (
@@ -453,7 +665,7 @@ export default function PlatformConnectCard({
                 <span className="font-semibold text-slate-900">{platform.accountName}</span>
               </div>
               <div className="flex items-center justify-between text-slate-600">
-                <span>ID Akaun / Pixel:</span>
+                <span>ID Akaun / WABA / Pixel:</span>
                 <span className="font-mono text-slate-700">{platform.accountId}</span>
               </div>
               {platform.balance !== undefined && (
@@ -533,3 +745,4 @@ export default function PlatformConnectCard({
     </>
   );
 }
+
