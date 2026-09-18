@@ -1,26 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAppStore } from '@/lib/store/app-store';
 import { Design, PrintType } from '@/types/database';
-import ImageUploadField from '@/components/admin/ImageUploadField';
 import {
-  Shirt,
   Plus,
   Search,
   Edit,
   Trash2,
-  Check,
   Star,
-  Layers,
-  Image as ImageIcon,
-  ExternalLink,
-  Eye,
   LayoutGrid,
-  List
+  List,
+  UploadCloud,
+  X,
+  RefreshCw,
+  ImageIcon
 } from 'lucide-react';
 
-const CATEGORIES = ['Jersey', 'T-Shirt', 'Hoodie', 'Polo', 'Windbreaker', 'Singlet', 'Banner'];
+const CATEGORIES = ['Jersey', 'T-Shirt', 'Hoodie', 'Polo', 'Windbreaker', 'Singlet', 'Merchandise'];
 
 export default function AdminCatalogPage() {
   const { designs, addDesign, updateDesign, deleteDesign } = useAppStore();
@@ -31,16 +28,16 @@ export default function AdminCatalogPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDesign, setEditingDesign] = useState<Design | null>(null);
 
-  // Form State
+  // Form State - Clean & Minimal
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Jersey');
   const [printType, setPrintType] = useState<PrintType>('sublimation');
-  const [thumbnailUrl, setThumbnailUrl] = useState('');
-  const [mockupFrontUrl, setMockupFrontUrl] = useState('');
-  const [mockupBackUrl, setMockupBackUrl] = useState('');
-  const [description, setDescription] = useState('');
-  const [tagsInput, setTagsInput] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [isFeatured, setIsFeatured] = useState(false);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredDesigns = designs.filter((d) => {
     if (filterType !== 'all' && d.print_type !== filterType) return false;
@@ -58,11 +55,7 @@ export default function AdminCatalogPage() {
     setTitle('');
     setCategory('Jersey');
     setPrintType('sublimation');
-    setThumbnailUrl('https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=80');
-    setMockupFrontUrl('https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=80');
-    setMockupBackUrl('');
-    setDescription('');
-    setTagsInput('kustom, jersi');
+    setImageUrl('');
     setIsFeatured(false);
     setIsModalOpen(true);
   };
@@ -72,46 +65,103 @@ export default function AdminCatalogPage() {
     setTitle(design.title);
     setCategory(design.category);
     setPrintType(design.print_type);
-    setThumbnailUrl(design.thumbnail_url);
-    setMockupFrontUrl(design.mockup_front_url);
-    setMockupBackUrl(design.mockup_back_url || '');
-    setDescription(design.description || '');
-    setTagsInput((design.tags || []).join(', '));
+    setImageUrl(design.thumbnail_url || design.mockup_front_url || '');
     setIsFeatured(!!design.is_featured);
     setIsModalOpen(true);
   };
 
+  const processImageFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      alert('Sila pilih fail imej yang sah (PNG, JPG, WEBP).');
+      return;
+    }
+
+    setIsProcessingImage(true);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+
+      if (file.type === 'image/svg+xml') {
+        setImageUrl(result);
+        setIsProcessingImage(false);
+        return;
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        const maxWidth = 1200;
+        const maxHeight = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          setImageUrl(canvas.toDataURL('image/jpeg', 0.88));
+        } else {
+          setImageUrl(result);
+        }
+        setIsProcessingImage(false);
+      };
+      img.onerror = () => {
+        setImageUrl(result);
+        setIsProcessingImage(false);
+      };
+      img.src = result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processImageFile(file);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !thumbnailUrl) return;
+    if (!title.trim() || !imageUrl) return;
 
-    const tags = tagsInput
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean);
+    const autoTags = [
+      category.toLowerCase(),
+      printType === 'sublimation' ? 'sublimasi' : 'dtf',
+      'kustom',
+    ];
 
     if (editingDesign) {
       updateDesign(editingDesign.id, {
-        title,
+        title: title.trim(),
         category,
         print_type: printType,
-        thumbnail_url: thumbnailUrl,
-        mockup_front_url: mockupFrontUrl || thumbnailUrl,
-        mockup_back_url: mockupBackUrl || undefined,
-        description,
-        tags,
+        thumbnail_url: imageUrl,
+        mockup_front_url: imageUrl,
+        tags: editingDesign.tags && editingDesign.tags.length > 0 ? editingDesign.tags : autoTags,
         is_featured: isFeatured,
       });
     } else {
       addDesign({
-        title,
+        title: title.trim(),
         category,
         print_type: printType,
-        thumbnail_url: thumbnailUrl,
-        mockup_front_url: mockupFrontUrl || thumbnailUrl,
-        mockup_back_url: mockupBackUrl || undefined,
-        description,
-        tags,
+        thumbnail_url: imageUrl,
+        mockup_front_url: imageUrl,
+        tags: autoTags,
         is_featured: isFeatured,
       });
     }
@@ -120,13 +170,13 @@ export default function AdminCatalogPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('Padam mockup rekaan ini daripada katalog?')) {
+    if (confirm('Padam rekaan ini daripada katalog?')) {
       deleteDesign(id);
     }
   };
 
   return (
-    <div className="space-y-6 select-none">
+    <div className="space-y-6 select-none max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -140,7 +190,7 @@ export default function AdminCatalogPage() {
 
         <button
           onClick={handleOpenAdd}
-          className="px-5 py-2 rounded-full bg-[#0052FF] hover:bg-blue-600 text-white text-xs font-semibold transition-all shadow-xs flex items-center space-x-1.5 self-start sm:self-auto"
+          className="px-4 py-2 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium transition-all shadow-xs flex items-center space-x-1.5 self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>Tambah Rekaan</span>
@@ -155,8 +205,8 @@ export default function AdminCatalogPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari mengikut tajuk, tag, atau kategori..."
-            className="w-full pl-9 pr-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#0052FF]"
+            placeholder="Cari mengikut tajuk atau kategori..."
+            className="w-full pl-9 pr-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-slate-400"
           />
         </div>
 
@@ -167,7 +217,7 @@ export default function AdminCatalogPage() {
               onClick={() => setFilterType('all')}
               className={`px-3.5 py-1 text-xs font-medium rounded-full transition-all ${
                 filterType === 'all'
-                  ? 'bg-white text-[#0052FF] shadow-xs'
+                  ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -177,7 +227,7 @@ export default function AdminCatalogPage() {
               onClick={() => setFilterType('sublimation')}
               className={`px-3.5 py-1 text-xs font-medium rounded-full transition-all ${
                 filterType === 'sublimation'
-                  ? 'bg-white text-[#0052FF] shadow-xs'
+                  ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -187,7 +237,7 @@ export default function AdminCatalogPage() {
               onClick={() => setFilterType('dtf')}
               className={`px-3.5 py-1 text-xs font-medium rounded-full transition-all ${
                 filterType === 'dtf'
-                  ? 'bg-white text-[#0052FF] shadow-xs'
+                  ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -202,7 +252,7 @@ export default function AdminCatalogPage() {
               onClick={() => setViewMode('grid')}
               className={`p-1.5 rounded-full text-xs font-medium flex items-center gap-1 transition-all ${
                 viewMode === 'grid'
-                  ? 'bg-white text-[#0052FF] shadow-xs'
+                  ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
               title="Paparan Grid"
@@ -214,7 +264,7 @@ export default function AdminCatalogPage() {
               onClick={() => setViewMode('list')}
               className={`p-1.5 rounded-full text-xs font-medium flex items-center gap-1 transition-all ${
                 viewMode === 'list'
-                  ? 'bg-white text-[#0052FF] shadow-xs'
+                  ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
               title="Paparan Jadual"
@@ -237,7 +287,7 @@ export default function AdminCatalogPage() {
               <div className="relative aspect-square w-full bg-slate-100 overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={item.thumbnail_url}
+                  src={item.thumbnail_url || item.mockup_front_url}
                   alt={item.title}
                   className="w-full h-full object-cover"
                 />
@@ -263,19 +313,7 @@ export default function AdminCatalogPage() {
                   <span className="text-[11px] font-medium text-slate-400 block">
                     {item.category}
                   </span>
-                  <h3 className="text-sm font-semibold text-slate-800 line-clamp-1">{item.title}</h3>
-                </div>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-1 pt-1">
-                  {(item.tags || []).map((t, idx) => (
-                    <span
-                      key={idx}
-                      className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-slate-100 text-slate-600"
-                    >
-                      #{t}
-                    </span>
-                  ))}
+                  <h3 className="text-sm font-medium text-slate-800 line-clamp-1">{item.title}</h3>
                 </div>
 
                 {/* Action Buttons */}
@@ -312,7 +350,6 @@ export default function AdminCatalogPage() {
                   <th className="py-3.5 px-4">Gambar</th>
                   <th className="py-3.5 px-4">Tajuk & Kategori</th>
                   <th className="py-3.5 px-4">Teknik</th>
-                  <th className="py-3.5 px-4">Tag</th>
                   <th className="py-3.5 px-4">Pilihan Utama</th>
                   <th className="py-3.5 px-4 text-right">Tindakan</th>
                 </tr>
@@ -324,7 +361,7 @@ export default function AdminCatalogPage() {
                       <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-200 shrink-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={item.thumbnail_url}
+                          src={item.thumbnail_url || item.mockup_front_url}
                           alt={item.title}
                           className="w-full h-full object-cover"
                         />
@@ -338,18 +375,6 @@ export default function AdminCatalogPage() {
                       <span className="text-xs font-medium uppercase text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full">
                         {item.print_type}
                       </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="flex flex-wrap gap-1 max-w-xs">
-                        {(item.tags || []).map((t, idx) => (
-                          <span
-                            key={idx}
-                            className="text-xs font-normal px-2 py-0.5 rounded-full bg-slate-100 text-slate-600"
-                          >
-                            #{t}
-                          </span>
-                        ))}
-                      </div>
                     </td>
                     <td className="py-3.5 px-4">
                       {item.is_featured ? (
@@ -392,12 +417,14 @@ export default function AdminCatalogPage() {
       {/* ===================== ADD / EDIT DESIGN MODAL ===================== */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-white border border-slate-200/80 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-normal text-slate-800">
+          <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-7 space-y-5 shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-medium text-slate-800">
                 {editingDesign ? 'Kemaskini Rekaan' : 'Tambah Rekaan Baharu'}
               </h3>
               <button
+                type="button"
                 onClick={() => setIsModalOpen(false)}
                 className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all"
               >
@@ -405,30 +432,118 @@ export default function AdminCatalogPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3.5">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Image Upload Area */}
               <div>
-                <label className="text-xs font-medium text-slate-700 block mb-1">
-                  Tajuk Rekaan
+                <label className="text-xs font-medium text-slate-700 block mb-1.5">
+                  Gambar Rekaan <span className="text-rose-500">*</span>
+                </label>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+
+                {imageUrl ? (
+                  <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imageUrl}
+                      alt="Pratonton Rekaan"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-3.5 py-1.5 rounded-full bg-white text-slate-800 text-xs font-medium shadow flex items-center space-x-1.5 hover:bg-slate-50 transition-colors"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5 text-slate-600" />
+                        <span>Tukar Gambar</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setImageUrl('')}
+                        className="px-3 py-1.5 rounded-full bg-rose-600 text-white text-xs font-medium shadow flex items-center space-x-1 hover:bg-rose-700 transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        <span>Padam</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDragging(true);
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault();
+                      setIsDragging(false);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDragging(false);
+                      const file = e.dataTransfer.files?.[0];
+                      if (file) processImageFile(file);
+                    }}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`w-full h-40 rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center p-4 text-center ${
+                      isDragging
+                        ? 'border-slate-800 bg-slate-50'
+                        : 'border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-50'
+                    }`}
+                  >
+                    {isProcessingImage ? (
+                      <div className="flex flex-col items-center space-y-2 text-slate-600">
+                        <RefreshCw className="w-5 h-5 animate-spin text-slate-800" />
+                        <span className="text-xs font-medium">Memproses imej...</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center space-y-1.5 text-slate-600">
+                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 mb-1">
+                          <UploadCloud className="w-5 h-5" />
+                        </div>
+                        <p className="text-xs font-medium text-slate-700">
+                          Klik untuk pilih fail gambar
+                        </p>
+                        <p className="text-[11px] text-slate-400">
+                          PNG, JPG, WEBP (Seret & lepas disokong)
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Tajuk Rekaan */}
+              <div>
+                <label className="text-xs font-medium text-slate-700 block mb-1.5">
+                  Tajuk Rekaan <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Contoh: Jersi Sublimasi Harimau Malaya 2026"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                  placeholder="Contoh: Jersi Harimau Malaya 2026"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                 />
               </div>
 
+              {/* Kategori & Teknik */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-slate-700 block mb-1">
+                  <label className="text-xs font-medium text-slate-700 block mb-1.5">
                     Kategori
                   </label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                   >
                     {CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>
@@ -439,84 +554,36 @@ export default function AdminCatalogPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-slate-700 block mb-1">
+                  <label className="text-xs font-medium text-slate-700 block mb-1.5">
                     Teknik Cetakan
                   </label>
                   <select
                     value={printType}
                     onChange={(e) => setPrintType(e.target.value as PrintType)}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
                   >
                     <option value="sublimation">Sublimasi Penuh</option>
                     <option value="dtf">DTF Direct Transfer</option>
-                    <option value="both">Kedua-duanya</option>
                   </select>
                 </div>
               </div>
 
-              <ImageUploadField
-                label="Thumbnail Utama Mockup"
-                value={thumbnailUrl}
-                onChange={setThumbnailUrl}
-                placeholder="Muat naik fail gambar atau masukkan URL..."
-                required
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <ImageUploadField
-                  label="Mockup Hadapan"
-                  value={mockupFrontUrl}
-                  onChange={setMockupFrontUrl}
-                  placeholder="Imej hadapan (pilihan)..."
-                />
-                <ImageUploadField
-                  label="Mockup Belakang"
-                  value={mockupBackUrl}
-                  onChange={setMockupBackUrl}
-                  placeholder="Imej belakang (pilihan)..."
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-slate-700 block mb-1">
-                  Keterangan
-                </label>
-                <textarea
-                  rows={2}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Perincian corak, kesesuaian acara, jenis kolar..."
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-slate-700 block mb-1">
-                  Tag Kata Kunci (Dipisahkan dengan koma)
-                </label>
-                <input
-                  type="text"
-                  value={tagsInput}
-                  onChange={(e) => setTagsInput(e.target.value)}
-                  placeholder="bolasepak, korporat, esport"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
-                />
-              </div>
-
-              <div className="flex items-center space-x-2 pt-1">
+              {/* Featured Checkbox */}
+              <div className="flex items-center space-x-2.5 pt-1">
                 <input
                   type="checkbox"
                   id="featuredCheck"
                   checked={isFeatured}
                   onChange={(e) => setIsFeatured(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#0B57D0] bg-slate-50 border-slate-300 focus:ring-[#0B57D0]"
+                  className="w-4 h-4 rounded text-slate-900 bg-slate-50 border-slate-300 focus:ring-slate-800 accent-slate-900"
                 />
-                <label htmlFor="featuredCheck" className="text-xs font-normal text-slate-700">
-                  Paparkan dalam promosi utama (Featured)
+                <label htmlFor="featuredCheck" className="text-xs font-normal text-slate-700 cursor-pointer">
+                  Paparkan dalam pilihan utama (Featured)
                 </label>
               </div>
 
-              <div className="pt-3 flex items-center justify-end space-x-2 border-t border-slate-100">
+              {/* Modal Actions */}
+              <div className="pt-3 flex items-center justify-end space-x-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
@@ -526,9 +593,10 @@ export default function AdminCatalogPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs shadow-xs transition-all"
+                  disabled={!title.trim() || !imageUrl}
+                  className="px-5 py-2.5 rounded-full bg-slate-900 hover:bg-black disabled:opacity-40 disabled:hover:bg-slate-900 text-white font-medium text-xs shadow-xs transition-all"
                 >
-                  {editingDesign ? 'Simpan Perubahan' : 'Cipta Rekaan'}
+                  {editingDesign ? 'Simpan Perubahan' : 'Simpan Rekaan'}
                 </button>
               </div>
             </form>
@@ -538,4 +606,5 @@ export default function AdminCatalogPage() {
     </div>
   );
 }
+
 
