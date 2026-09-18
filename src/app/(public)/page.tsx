@@ -722,9 +722,6 @@ export default function HomePage() {
         <div className="space-y-3.5">
           <div className="flex justify-between items-end mb-2">
             <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] text-[10.5px] font-bold uppercase tracking-wider mb-1.5">
-                <span>Perkhidmatan Kami</span>
-              </div>
               <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                 Pilihan Servis
               </h2>
@@ -816,9 +813,6 @@ export default function HomePage() {
         {/* Header Cara Tempahan */}
         <div className="flex justify-between items-end">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-100/70 text-[#0052FF] text-[10.5px] font-bold uppercase tracking-wider mb-1.5">
-              <span>Panduan Mudah</span>
-            </div>
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Cara Tempahan</h2>
             <p className="text-xs text-slate-500 mt-0.5">4 langkah ringkas untuk memulakan pesanan anda</p>
           </div>
@@ -887,12 +881,6 @@ export default function HomePage() {
           <Quote className="absolute top-4 right-4 w-12 h-12 text-white/10 rotate-180 pointer-events-none" />
 
           <div className="relative z-10 space-y-3">
-            {/* Top Minimal Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-white text-[10.5px] font-bold uppercase tracking-wider border border-white/20">
-              <Sparkles className="w-3.5 h-3.5 text-blue-200" />
-              <span>Realiti Rekaan Anda</span>
-            </div>
-
             {/* Main Headline Slogan */}
             <h3 className="text-[19px] sm:text-[21px] font-extrabold text-white tracking-tight leading-snug">
               Anda bayangkan, <br />
@@ -933,9 +921,6 @@ export default function HomePage() {
       <div className="w-full bg-white pt-6 pb-12 px-4 border-t border-gray-100">
         <div className="mb-5 flex justify-between items-end">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] text-[10.5px] font-bold uppercase tracking-wider mb-1.5">
-              <span>Rakaman Kilang</span>
-            </div>
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Proses Produksi</h2>
             <p className="text-xs text-slate-500 mt-0.5">Lihat kualiti cetakan & kemasan jersi anda dihasilkan</p>
           </div>
@@ -1023,10 +1008,6 @@ export default function HomePage() {
 
         <div className="relative z-10 mb-5 flex justify-between items-end">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10.5px] font-bold uppercase tracking-wider mb-1.5 border border-blue-400/20">
-              <Sparkles className="w-3 h-3 text-blue-300" />
-              <span>Galeri Output</span>
-            </div>
             <h2 className="text-xl font-bold text-white tracking-tight">Hasil Produksi Kilang</h2>
             <p className="text-xs text-slate-400 mt-0.5">Koleksi gambar sebenar jersi & pakaian tempahan siap</p>
           </div>
@@ -1136,9 +1117,6 @@ export default function HomePage() {
       <div className="w-full bg-[#F2F2F7] pt-10 pb-14 px-4 border-t border-gray-200/60">
         <div className="mb-5 flex justify-between items-end">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] text-[10.5px] font-bold uppercase tracking-wider mb-1.5">
-              <span>Pengalaman Pelanggan</span>
-            </div>
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Apa Kata Mereka</h2>
             <p className="text-xs text-slate-500 mt-0.5">Ribuan pelanggan telah mempercayai kualiti jersi kami</p>
           </div>
