@@ -1,4 +1,4 @@
-export type AdPlatform = 'google' | 'meta' | 'tiktok' | 'whatsapp';
+export type AdPlatform = 'facebook' | 'instagram' | 'google' | 'tiktok' | 'whatsapp' | 'meta';
 
 export type AdObjective =
   | 'whatsapp_leads'

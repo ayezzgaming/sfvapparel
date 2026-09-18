@@ -8,7 +8,8 @@ import PlatformConnectCard from '@/components/admin/ads/PlatformConnectCard';
 import AdPreviewCard from '@/components/admin/ads/AdPreviewCard';
 import {
   GoogleAdsLogo,
-  MetaLogo,
+  FacebookLogo,
+  InstagramLogo,
   TikTokLogo,
   WhatsAppLogo
 } from '@/components/admin/ads/PlatformLogos';
@@ -63,7 +64,7 @@ export default function AdminAdsGeneratorPage() {
 
   // AI Generator States
   const [userPrompt, setUserPrompt] = useState('');
-  const [selectedPlatform, setSelectedPlatform] = useState<AdPlatform>('meta');
+  const [selectedPlatform, setSelectedPlatform] = useState<AdPlatform>('facebook');
   const [selectedObjective, setSelectedObjective] = useState<AdObjective>('whatsapp_leads');
   const [selectedDesignId, setSelectedDesignId] = useState<string | null>(null);
   const [dailyBudget, setDailyBudget] = useState<number>(30);
@@ -562,222 +563,174 @@ ${activeVariation.whatsappMessage}`;
                   </div>
                 </div>
 
-                {/* 2-Column Split: Left Navigation Controls, Right Live Ad Preview */}
+                {/* 3-Column Split: Left Platform Navigation, Center Copywriting Variations, Right Live Ad Preview */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                  {/* Left 7 Columns: Platform Switcher & Strategic Angles */}
-                  <div className="lg:col-span-7 space-y-6">
-                    {/* Platform Switcher Navigation */}
-                    <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-3">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-medium text-slate-700">
-                          Navigasi Platform Pengiklanan
-                        </label>
-                        <span className="text-[11px] text-slate-400">Pilih format iklan di bawah</span>
-                      </div>
-
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                        {/* Google Ads */}
-                        <button
-                          type="button"
-                          onClick={() => setSelectedPlatform('google')}
-                          className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
-                            selectedPlatform === 'google'
-                              ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
-                              : 'bg-white border-slate-200 hover:border-slate-300'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
-                              <GoogleAdsLogo className="w-4 h-4" />
-                            </div>
-                            <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                              API
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-xs font-semibold text-slate-900 block">Google Ads</span>
-                            <span className="text-[11px] text-slate-400">Search & SEO</span>
-                          </div>
-                        </button>
-
-                        {/* Meta Ads */}
-                        <button
-                          type="button"
-                          onClick={() => setSelectedPlatform('meta')}
-                          className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
-                            selectedPlatform === 'meta'
-                              ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
-                              : 'bg-white border-slate-200 hover:border-slate-300'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
-                              <MetaLogo className="w-4 h-4" />
-                            </div>
-                            <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                              API
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-xs font-semibold text-slate-900 block">Meta Ads</span>
-                            <span className="text-[11px] text-slate-400">FB & Instagram</span>
-                          </div>
-                        </button>
-
-                        {/* TikTok Ads */}
-                        <button
-                          type="button"
-                          onClick={() => setSelectedPlatform('tiktok')}
-                          className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
-                            selectedPlatform === 'tiktok'
-                              ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
-                              : 'bg-white border-slate-200 hover:border-slate-300'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
-                              <TikTokLogo className="w-4 h-4" />
-                            </div>
-                            <span className="text-[10px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
-                              Manual
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-xs font-semibold text-slate-900 block">TikTok Ads</span>
-                            <span className="text-[11px] text-slate-400">In-Feed 9:16</span>
-                          </div>
-                        </button>
-
-                        {/* WhatsApp Ads */}
-                        <button
-                          type="button"
-                          onClick={() => setSelectedPlatform('whatsapp')}
-                          className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
-                            selectedPlatform === 'whatsapp'
-                              ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
-                              : 'bg-white border-slate-200 hover:border-slate-300'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
-                              <WhatsAppLogo className="w-4 h-4" />
-                            </div>
-                            <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                              API
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-xs font-semibold text-slate-900 block">WhatsApp</span>
-                            <span className="text-[11px] text-slate-400">Click-to-Chat</span>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* 3 AI Generated Conversion Angles */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between px-1">
-                        <label className="text-xs font-medium text-slate-700">
-                          Pilih Sudut Strategi Iklan AI
-                        </label>
-                        <span className="text-[11px] text-slate-400">
-                          {aiVariations.length} Sudut Dijana Mengikut Algoritma
-                        </span>
-                      </div>
-
-                      <div className="space-y-2.5">
-                        {aiVariations.map((variation, idx) => {
-                          const isSelected = selectedVariationIndex === idx;
+                  {/* LEFT COLUMN (lg:col-span-3): Platform Navigation */}
+                  <div className="lg:col-span-3 space-y-4">
+                    <div>
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block px-1 mb-2">
+                        Platform Pengiklanan
+                      </span>
+                      <div className="bg-white rounded-3xl border border-slate-200 p-2 space-y-1 shadow-xs">
+                        {[
+                          { id: 'facebook' as AdPlatform, name: 'Facebook Ads', logo: FacebookLogo },
+                          { id: 'instagram' as AdPlatform, name: 'Instagram Ads', logo: InstagramLogo },
+                          { id: 'google' as AdPlatform, name: 'Google Ads', logo: GoogleAdsLogo },
+                          { id: 'tiktok' as AdPlatform, name: 'TikTok Ads', logo: TikTokLogo },
+                          { id: 'whatsapp' as AdPlatform, name: 'WhatsApp Ads', logo: WhatsAppLogo },
+                        ].map((plat) => {
+                          const Logo = plat.logo;
+                          const isSelected = selectedPlatform === plat.id;
                           return (
-                            <div
-                              key={variation.id}
-                              onClick={() => setSelectedVariationIndex(idx)}
-                              className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                            <button
+                              key={plat.id}
+                              type="button"
+                              onClick={() => setSelectedPlatform(plat.id)}
+                              className={`w-full px-3.5 py-3 rounded-2xl flex items-center space-x-3 transition-all text-left ${
                                 isSelected
-                                  ? 'bg-blue-50/60 border-blue-400 ring-1 ring-blue-400 shadow-xs'
-                                  : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300'
+                                  ? 'bg-slate-900 text-white shadow-xs font-medium'
+                                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
                               }`}
                             >
-                              <div className="flex items-center justify-between mb-1.5">
-                                <div className="flex items-center space-x-1.5">
-                                  {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
-                                  <span className="text-[11px] font-semibold text-slate-900 uppercase tracking-wider">
-                                    {variation.angleName}
-                                  </span>
-                                </div>
-                                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">
-                                  {variation.tagline}
-                                </span>
+                              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                                <Logo className="w-4 h-4" />
                               </div>
-
-                              <h4 className="text-sm font-medium text-slate-900 leading-snug line-clamp-1">
-                                {variation.headline}
-                              </h4>
-                              <p className="text-xs mt-1 text-slate-600 line-clamp-2 leading-relaxed">
-                                {variation.primaryText}
-                              </p>
-                            </div>
+                              <span className="text-xs tracking-tight">{plat.name}</span>
+                            </button>
                           );
                         })}
                       </div>
                     </div>
 
-                    {/* Budget & Target Settings */}
-                    <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-xs font-medium text-slate-700 block mb-1.5">
-                            Produk Terpilih
-                          </label>
-                          <select
-                            value={selectedDesignId || (designs[0]?.id ?? '')}
-                            onChange={(e) => {
-                              setSelectedDesignId(e.target.value);
-                              setCustomImage(null);
-                              setCustomTitle(null);
-                            }}
-                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium"
-                          >
-                            {designs.map((d) => (
-                              <option key={d.id} value={d.id}>
-                                {d.title} ({d.category})
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                    {/* Quick Settings: Product & Budget */}
+                    <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 space-y-3.5 shadow-xs">
+                      <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                        Tetapan Kempen
+                      </span>
 
-                        <div>
-                          <label className="text-xs font-medium text-slate-700 block mb-1.5">
-                            Belanjawan Harian (RM)
-                          </label>
-                          <input
-                            type="number"
-                            min="10"
-                            step="5"
-                            value={dailyBudget}
-                            onChange={(e) => setDailyBudget(Number(e.target.value))}
-                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
-                          />
-                        </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-700 block mb-1">
+                          Produk Katalog
+                        </label>
+                        <select
+                          value={selectedDesignId || (designs[0]?.id ?? '')}
+                          onChange={(e) => {
+                            setSelectedDesignId(e.target.value);
+                            setCustomImage(null);
+                            setCustomTitle(null);
+                          }}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate"
+                        >
+                          {designs.map((d) => (
+                            <option key={d.id} value={d.id}>
+                              {d.title}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-medium text-slate-700 block mb-1">
+                          Belanjawan Harian (RM)
+                        </label>
+                        <input
+                          type="number"
+                          min="10"
+                          step="5"
+                          value={dailyBudget}
+                          onChange={(e) => setDailyBudget(Number(e.target.value))}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                        />
                       </div>
                     </div>
                   </div>
 
-                  {/* Right 5 Columns: Live Ad Preview & Launch API */}
-                  <div className="lg:col-span-5 space-y-4 sticky top-6">
-                    <div className="bg-slate-50/80 rounded-3xl border border-slate-200 p-6 space-y-4 text-center">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-medium text-slate-700 uppercase tracking-wider">
-                          Pratonton Iklan Sebenar
-                        </h3>
-                        <span className="text-[11px] text-slate-400 capitalize">{selectedPlatform} Live</span>
-                      </div>
+                  {/* CENTER COLUMN (lg:col-span-5): Copywriting Variations Selection */}
+                  <div className="lg:col-span-5 space-y-3">
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Pilihan Copywriting
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        {aiVariations.length} Variasi Dijana
+                      </span>
+                    </div>
 
+                    <div className="space-y-3">
+                      {aiVariations.map((variation, idx) => {
+                        const isSelected = selectedVariationIndex === idx;
+                        return (
+                          <div
+                            key={variation.id}
+                            onClick={() => setSelectedVariationIndex(idx)}
+                            className={`p-5 rounded-3xl border transition-all cursor-pointer text-left ${
+                              isSelected
+                                ? 'bg-white border-slate-900 ring-1 ring-slate-900 shadow-sm'
+                                : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300 shadow-xs'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className={`text-[11px] font-semibold uppercase tracking-wider ${isSelected ? 'text-slate-900' : 'text-slate-500'}`}>
+                                {variation.angleName}
+                              </span>
+                              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">
+                                {variation.tagline}
+                              </span>
+                            </div>
+
+                            <h4 className="text-sm font-semibold text-slate-900 leading-snug">
+                              {variation.headline}
+                            </h4>
+
+                            {variation.secondaryHeadline && (
+                              <p className="text-xs text-slate-500 mt-0.5 font-normal">
+                                {variation.secondaryHeadline}
+                              </p>
+                            )}
+
+                            <p className="text-xs mt-2.5 text-slate-600 line-clamp-3 leading-relaxed">
+                              {variation.primaryText}
+                            </p>
+
+                            <div className="mt-3.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                              <span className="text-slate-500 font-medium">
+                                CTA: <span className="text-slate-800 font-semibold">{variation.callToAction}</span>
+                              </span>
+                              <span className={`text-xs font-medium ${isSelected ? 'text-slate-900' : 'text-slate-400'}`}>
+                                {isSelected ? 'Pilihan Aktif' : 'Pilih Variasi'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* RIGHT COLUMN (lg:col-span-4): Live Ad Preview & Actions */}
+                  <div className="lg:col-span-4 space-y-3 sticky top-6">
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Pratonton Iklan
+                      </span>
+                      <span className="text-xs text-slate-400 capitalize">
+                        {selectedPlatform === 'facebook'
+                          ? 'Facebook Feed'
+                          : selectedPlatform === 'instagram'
+                          ? 'Instagram Feed'
+                          : selectedPlatform === 'google'
+                          ? 'Google Search'
+                          : selectedPlatform === 'tiktok'
+                          ? 'TikTok In-Feed'
+                          : 'WhatsApp'}
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-50/80 rounded-3xl border border-slate-200 p-5 space-y-4 text-center shadow-xs">
                       {/* Ad Preview Card */}
                       <AdPreviewCard platform={selectedPlatform} creative={currentCreative} />
 
                       {/* Action Buttons Bar */}
-                      <div className="pt-2 border-t border-slate-200/80 space-y-2">
+                      <div className="pt-3 border-t border-slate-200 space-y-2">
                         <button
                           type="button"
                           onClick={handlePublishCampaign}
@@ -787,7 +740,7 @@ ${activeVariation.whatsappMessage}`;
                           {isPublishing ? (
                             <>
                               <RefreshCw className="w-4 h-4 animate-spin" />
-                              <span>Menolak ke API {selectedPlatform.toUpperCase()}...</span>
+                              <span>Memproses Kempen...</span>
                             </>
                           ) : publishSuccess ? (
                             <>
@@ -797,7 +750,7 @@ ${activeVariation.whatsappMessage}`;
                           ) : (
                             <>
                               <Rocket className="w-4 h-4" />
-                              <span>Lancar Kempen Terus via API</span>
+                              <span>Lancar Kempen Iklan</span>
                             </>
                           )}
                         </button>
@@ -810,12 +763,12 @@ ${activeVariation.whatsappMessage}`;
                           {copied ? (
                             <>
                               <Check className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>Tersalin ke Papan Keratan!</span>
+                              <span>Tersalin ke Papan Keratan</span>
                             </>
                           ) : (
                             <>
                               <Copy className="w-3.5 h-3.5" />
-                              <span>Salin Semua Teks (Copywriting)</span>
+                              <span>Salin Teks Copywriting</span>
                             </>
                           )}
                         </button>
