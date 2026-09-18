@@ -10,6 +10,10 @@ import {
 import {
   RotateCcw,
   Calculator,
+  Layers,
+  Scissors,
+  Printer,
+  Percent,
   Check
 } from 'lucide-react';
 
@@ -26,7 +30,7 @@ export default function AdminPricingRulesPage() {
     resetToSeedData
   } = useAppStore();
 
-  const [activeTab, setActiveTab] = useState<'sublimation_fabrics' | 'apparel_cuts' | 'dtf_dims' | 'volume_tiers'>('sublimation_fabrics');
+  const [activeTab, setActiveTab] = useState<'sublimation_fabrics' | 'apparel_cuts' | 'dtf_dims' | 'volume_tiers' | 'simulator'>('sublimation_fabrics');
 
   // Edit inline states
   const [editingFabricId, setEditingFabricId] = useState<string | null>(null);
@@ -111,7 +115,7 @@ export default function AdminPricingRulesPage() {
 
         <button
           onClick={() => {
-            if (confirm('Kembalikan formula harga kepada kadar lalai?')) {
+            if (confirm('Kembalikan formula harga kepada kadar asal?')) {
               resetToSeedData();
             }
           }}
@@ -122,65 +126,51 @@ export default function AdminPricingRulesPage() {
         </button>
       </div>
 
-      {/* Grid: Left 2 Cols = Rules Tables, Right 1 Col = Simulator */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Pricing Rules Managers */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Sub Navigation Tabs */}
-          <div className="bg-slate-100 p-1 rounded-full border border-slate-200 flex items-center overflow-x-auto scrollbar-none">
-            <button
-              onClick={() => setActiveTab('sublimation_fabrics')}
-              className={`px-4 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-all ${
-                activeTab === 'sublimation_fabrics'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Fabrik ({fabrics.length})
-            </button>
+      {/* 2-Panel Settings Layout */}
+      <div className="flex flex-col md:flex-row gap-6 items-start">
+        {/* Left Panel Navigation */}
+        <aside className="w-full md:w-56 shrink-0 bg-white p-2 rounded-2xl border border-slate-200 shadow-xs space-y-1 md:sticky md:top-20">
+          {[
+            { id: 'sublimation_fabrics', label: 'Fabrik Sublimasi', icon: Layers, count: fabrics.length },
+            { id: 'apparel_cuts', label: 'Potongan & Kolar', icon: Scissors, count: cuts.length },
+            { id: 'dtf_dims', label: 'Dimensi DTF', icon: Printer, count: dtfDimensions.length },
+            { id: 'volume_tiers', label: 'Diskaun Kuantiti', icon: Percent, count: tiers.length },
+            { id: 'simulator', label: 'Simulator Harga', icon: Calculator },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-full text-xs font-medium transition-all ${
+                  isActive
+                    ? 'bg-[#C2E7FF] text-[#001D35] font-semibold'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                <div className="flex items-center space-x-2.5">
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#001D35]' : 'text-slate-500'}`} />
+                  <span>{tab.label}</span>
+                </div>
+                {tab.count !== undefined && (
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/70 text-[#001D35] font-semibold' : 'text-slate-400'}`}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </aside>
 
-            <button
-              onClick={() => setActiveTab('apparel_cuts')}
-              className={`px-4 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-all ${
-                activeTab === 'apparel_cuts'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Potongan & Kolar ({cuts.length})
-            </button>
-
-            <button
-              onClick={() => setActiveTab('dtf_dims')}
-              className={`px-4 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-all ${
-                activeTab === 'dtf_dims'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Dimensi DTF ({dtfDimensions.length})
-            </button>
-
-            <button
-              onClick={() => setActiveTab('volume_tiers')}
-              className={`px-4 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-all ${
-                activeTab === 'volume_tiers'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Diskaun Kuantiti ({tiers.length})
-            </button>
-          </div>
-
+        {/* Right Content Panel */}
+        <main className="flex-1 min-w-0 space-y-6">
           {/* TAB 1: FABRIC MATERIALS */}
           {activeTab === 'sublimation_fabrics' && (
-            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
-              <div>
-                <h3 className="text-sm font-medium text-slate-800">Kadar Fabrik Sublimasi</h3>
-                <p className="text-xs text-slate-500">
-                  Harga seunit asas untuk setiap jenis kain dan ketebalan GSM
-                </p>
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h2 className="text-base font-normal text-slate-800">Fabrik Sublimasi</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Kadar harga seunit asas bagi setiap material</p>
               </div>
 
               <div className="overflow-x-auto">
@@ -188,8 +178,8 @@ export default function AdminPricingRulesPage() {
                   <thead className="bg-slate-50/80 text-slate-500 uppercase text-[11px] font-medium tracking-wider border-b border-slate-200">
                     <tr>
                       <th className="py-2.5 px-3">Nama Fabrik</th>
-                      <th className="py-2.5 px-3">Ketebalan</th>
-                      <th className="py-2.5 px-3">Sifat</th>
+                      <th className="py-2.5 px-3">Berat</th>
+                      <th className="py-2.5 px-3">Ciri</th>
                       <th className="py-2.5 px-3 text-right">Harga Asas</th>
                       <th className="py-2.5 px-3 text-center">Tindakan</th>
                     </tr>
@@ -201,12 +191,10 @@ export default function AdminPricingRulesPage() {
                         <tr key={f.id} className="hover:bg-slate-50/60 transition-colors">
                           <td className="py-3 px-3">
                             <span className="font-medium text-slate-800 block">{f.name}</span>
-                            <span className="text-[11px] text-slate-400 line-clamp-1">{f.description}</span>
+                            <span className="text-[11px] text-slate-400">{f.description}</span>
                           </td>
                           <td className="py-3 px-3 font-mono text-slate-600">{f.weight_gsm} GSM</td>
-                          <td className="py-3 px-3 text-slate-600">
-                            {f.breathability}
-                          </td>
+                          <td className="py-3 px-3 text-slate-600">{f.breathability}</td>
                           <td className="py-3 px-3 text-right font-mono font-medium text-slate-800">
                             {isEditing ? (
                               <input
@@ -223,7 +211,7 @@ export default function AdminPricingRulesPage() {
                             {isEditing ? (
                               <button
                                 onClick={() => handleSaveFabric(f.id)}
-                                className="px-3 py-1 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs transition-all"
+                                className="px-3.5 py-1.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs transition-all"
                               >
                                 Simpan
                               </button>
@@ -250,12 +238,10 @@ export default function AdminPricingRulesPage() {
 
           {/* TAB 2: APPAREL CUTS */}
           {activeTab === 'apparel_cuts' && (
-            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
-              <div>
-                <h3 className="text-sm font-medium text-slate-800">Surcaj Potongan & Kolar</h3>
-                <p className="text-xs text-slate-500">
-                  Caj tambahan ke atas harga asas untuk jenis kolar khusus
-                </p>
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h2 className="text-base font-normal text-slate-800">Potongan & Kolar</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Surcaj tambahan bagi jenis kolar khusus</p>
               </div>
 
               <div className="overflow-x-auto">
@@ -274,7 +260,7 @@ export default function AdminPricingRulesPage() {
                       return (
                         <tr key={c.id} className="hover:bg-slate-50/60 transition-colors">
                           <td className="py-3 px-3 font-medium text-slate-800">{c.name}</td>
-                          <td className="py-3 px-3 text-xs text-slate-500 max-w-[200px]">{c.description}</td>
+                          <td className="py-3 px-3 text-xs text-slate-500">{c.description}</td>
                           <td className="py-3 px-3 text-right font-mono font-medium text-slate-800">
                             {isEditing ? (
                               <input
@@ -293,7 +279,7 @@ export default function AdminPricingRulesPage() {
                             {isEditing ? (
                               <button
                                 onClick={() => handleSaveCut(c.id)}
-                                className="px-3 py-1 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs transition-all"
+                                className="px-3.5 py-1.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs transition-all"
                               >
                                 Simpan
                               </button>
@@ -320,12 +306,10 @@ export default function AdminPricingRulesPage() {
 
           {/* TAB 3: DTF DIMENSIONS */}
           {activeTab === 'dtf_dims' && (
-            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
-              <div>
-                <h3 className="text-sm font-medium text-slate-800">Kadar Dimensi DTF</h3>
-                <p className="text-xs text-slate-500">
-                  Kadar saiz cetakan filem transfer dan pilihan baju siap
-                </p>
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h2 className="text-base font-normal text-slate-800">Dimensi DTF</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Kadar saiz filem cetakan dan pilihan bersama baju</p>
               </div>
 
               <div className="overflow-x-auto">
@@ -374,7 +358,7 @@ export default function AdminPricingRulesPage() {
                             {isEditing ? (
                               <button
                                 onClick={() => handleSaveDtf(d.id)}
-                                className="px-3 py-1 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs transition-all"
+                                className="px-3.5 py-1.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs transition-all"
                               >
                                 Simpan
                               </button>
@@ -402,12 +386,10 @@ export default function AdminPricingRulesPage() {
 
           {/* TAB 4: VOLUME TIERS */}
           {activeTab === 'volume_tiers' && (
-            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
-              <div>
-                <h3 className="text-sm font-medium text-slate-800">Diskaun Mengikut Kuantiti</h3>
-                <p className="text-xs text-slate-500">
-                  Peratusan potongan harga berdasarkan jumlah pesanan
-                </p>
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h2 className="text-base font-normal text-slate-800">Diskaun Mengikut Kuantiti</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Peratusan potongan harga mengikut kelompok tempahan</p>
               </div>
 
               <div className="overflow-x-auto">
@@ -447,7 +429,7 @@ export default function AdminPricingRulesPage() {
                             {isEditing ? (
                               <button
                                 onClick={() => handleSaveTier(t.id)}
-                                className="px-3 py-1 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs transition-all"
+                                className="px-3.5 py-1.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs transition-all"
                               >
                                 Simpan
                               </button>
@@ -471,164 +453,149 @@ export default function AdminPricingRulesPage() {
               </div>
             </div>
           )}
-        </div>
 
-        {/* Right 1 Col: Dynamic Live Pricing Sandbox / Simulator */}
-        <div className="space-y-4">
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center space-x-2">
-                <Calculator className="w-4 h-4 text-[#0B57D0]" />
-                <h3 className="text-sm font-medium text-slate-800">Simulator Harga</h3>
+          {/* TAB 5: SIMULATOR */}
+          {activeTab === 'simulator' && (
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-5 max-w-xl">
+              <div className="border-b border-slate-100 pb-3">
+                <h2 className="text-base font-normal text-slate-800">Simulator Harga</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Ujian pengiraan harga seunit dan diskaun kuantiti secara langsung</p>
               </div>
-              <span className="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                Ujian Langsung
-              </span>
-            </div>
 
-            {/* Mode Switcher */}
-            <div className="bg-slate-100 p-1 rounded-full border border-slate-200 flex items-center">
-              <button
-                onClick={() => setSimMode('sublimation')}
-                className={`flex-1 py-1 text-xs font-medium rounded-full transition-all ${
-                  simMode === 'sublimation'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Sublimasi
-              </button>
-              <button
-                onClick={() => setSimMode('dtf')}
-                className={`flex-1 py-1 text-xs font-medium rounded-full transition-all ${
-                  simMode === 'dtf'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                DTF
-              </button>
-            </div>
+              {/* Mode Switcher */}
+              <div className="bg-slate-100 p-1 rounded-full border border-slate-200 flex items-center">
+                <button
+                  onClick={() => setSimMode('sublimation')}
+                  className={`flex-1 py-1 text-xs font-medium rounded-full transition-all ${
+                    simMode === 'sublimation'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Sublimasi
+                </button>
+                <button
+                  onClick={() => setSimMode('dtf')}
+                  className={`flex-1 py-1 text-xs font-medium rounded-full transition-all ${
+                    simMode === 'dtf'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  DTF
+                </button>
+              </div>
 
-            {/* Simulator Controls */}
-            <div className="space-y-3 text-xs">
-              {simMode === 'sublimation' ? (
-                <>
-                  <div>
-                    <label className="text-[11px] text-slate-500 block mb-1">
-                      Material Fabrik
-                    </label>
-                    <select
-                      value={simFabricId}
-                      onChange={(e) => setSimFabricId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white font-medium"
-                    >
-                      {fabrics.map((f) => (
-                        <option key={f.id} value={f.id}>
-                          {f.name} ({formatCurrency(f.sublimation_base_price)})
-                        </option>
-                      ))}
-                    </select>
+              {/* Simulator Controls */}
+              <div className="space-y-4 text-xs">
+                {simMode === 'sublimation' ? (
+                  <>
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-slate-500">Material Fabrik</label>
+                      <select
+                        value={simFabricId}
+                        onChange={(e) => setSimFabricId(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white font-medium"
+                      >
+                        {fabrics.map((f) => (
+                          <option key={f.id} value={f.id}>
+                            {f.name} ({formatCurrency(f.sublimation_base_price)})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-slate-500">Potongan & Kolar</label>
+                      <select
+                        value={simCutId}
+                        onChange={(e) => setSimCutId(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white font-medium"
+                      >
+                        {cuts.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name} (+{formatCurrency(c.cut_add_on_price)})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-slate-500">Dimensi DTF</label>
+                      <select
+                        value={simDtfId}
+                        onChange={(e) => setSimDtfId(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white font-medium"
+                      >
+                        {dtfDimensions.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name} ({d.dimensions_desc})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-slate-500">Pilihan Pakaian</label>
+                      <select
+                        value={simDtfType}
+                        onChange={(e) => setSimDtfType(e.target.value as any)}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white font-medium"
+                      >
+                        <option value="with_garment">Termasuk T-Shirt Kapas 24s</option>
+                        <option value="film_only">Lembaran Filem Sahaja</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                <div className="space-y-1 pt-1">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[11px] text-slate-500">Kuantiti Tempahan</label>
+                    <span className="font-mono font-medium text-slate-800">{simQuantity} helai</span>
                   </div>
-
-                  <div>
-                    <label className="text-[11px] text-slate-500 block mb-1">
-                      Potongan Pakaian & Kolar
-                    </label>
-                    <select
-                      value={simCutId}
-                      onChange={(e) => setSimCutId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white font-medium"
-                    >
-                      {cuts.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name} (+{formatCurrency(c.cut_add_on_price)})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div>
-                    <label className="text-[11px] text-slate-500 block mb-1">
-                      Dimensi Ukuran DTF
-                    </label>
-                    <select
-                      value={simDtfId}
-                      onChange={(e) => setSimDtfId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white font-medium"
-                    >
-                      {dtfDimensions.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.name} ({d.dimensions_desc})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] text-slate-500 block mb-1">
-                      Pilihan Pakaian
-                    </label>
-                    <select
-                      value={simDtfType}
-                      onChange={(e) => setSimDtfType(e.target.value as any)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white font-medium"
-                    >
-                      <option value="with_garment">Termasuk T-Shirt Kapas 24s</option>
-                      <option value="film_only">Lembaran Filem Sahaja</option>
-                    </select>
-                  </div>
-                </>
-              )}
-
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-[11px] text-slate-500">
-                    Kuantiti Tempahan
-                  </label>
-                  <span className="font-mono font-medium text-slate-800">{simQuantity} helai</span>
+                  <input
+                    type="range"
+                    min={1}
+                    max={200}
+                    value={simQuantity}
+                    onChange={(e) => setSimQuantity(Number(e.target.value))}
+                    className="w-full accent-[#0B57D0]"
+                  />
                 </div>
-                <input
-                  type="range"
-                  min={1}
-                  max={200}
-                  value={simQuantity}
-                  onChange={(e) => setSimQuantity(Number(e.target.value))}
-                  className="w-full accent-[#0B57D0]"
-                />
+              </div>
+
+              {/* Calculated Breakdown Display */}
+              <div className="p-4 rounded-2xl bg-slate-50 space-y-2 text-xs">
+                <div className="flex justify-between text-slate-500">
+                  <span>Harga Asas:</span>
+                  <span className="font-mono text-slate-700">{formatCurrency(simQuote.rawUnitPrice)}/helai</span>
+                </div>
+
+                <div className="flex justify-between text-slate-500">
+                  <span>Diskaun:</span>
+                  <span className="font-mono text-emerald-700 font-medium">
+                    {simQuote.discountPercentage}% ({simQuote.tierLabel})
+                  </span>
+                </div>
+
+                <div className="flex justify-between text-slate-700 font-medium border-t border-slate-200 pt-2">
+                  <span>Harga Seunit:</span>
+                  <span className="font-mono text-[#0B57D0] text-sm font-semibold">{formatCurrency(simQuote.finalUnitPrice)}</span>
+                </div>
+
+                <div className="flex justify-between items-baseline pt-2 border-t border-slate-200 text-slate-800">
+                  <span className="text-xs font-medium text-slate-600">Jumlah Sebut Harga:</span>
+                  <span className="text-base font-medium font-mono text-[#0B57D0]">
+                    {formatCurrency(simQuote.finalTotal)}
+                  </span>
+                </div>
               </div>
             </div>
-
-            {/* Calculated Breakdown Display */}
-            <div className="p-3.5 rounded-xl bg-slate-50 space-y-2 text-xs">
-              <div className="flex justify-between text-slate-500">
-                <span>Harga Asas:</span>
-                <span className="font-mono text-slate-700">{formatCurrency(simQuote.rawUnitPrice)}/helai</span>
-              </div>
-
-              <div className="flex justify-between text-slate-500">
-                <span>Diskaun:</span>
-                <span className="font-mono text-emerald-700 font-medium">
-                  {simQuote.discountPercentage}% ({simQuote.tierLabel})
-                </span>
-              </div>
-
-              <div className="flex justify-between text-slate-700 font-medium border-t border-slate-200 pt-1.5">
-                <span>Harga Seunit:</span>
-                <span className="font-mono text-[#0B57D0] text-sm font-semibold">{formatCurrency(simQuote.finalUnitPrice)}</span>
-              </div>
-
-              <div className="flex justify-between items-baseline pt-2 border-t border-slate-200 text-slate-800">
-                <span className="text-xs font-medium text-slate-600">Jumlah Sebut Harga:</span>
-                <span className="text-base font-medium font-mono text-[#0B57D0]">
-                  {formatCurrency(simQuote.finalTotal)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+          )}
+        </main>
       </div>
     </div>
   );

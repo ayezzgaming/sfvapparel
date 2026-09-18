@@ -1923,85 +1923,90 @@ export default function AdminCmsPage() {
           HERO BANNER MODAL (WITH IMAGE UPLOAD FIELD)
          ========================================================================= */}
       {isBannerModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
-            <div className="px-5 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-sm text-slate-900">
-                {editingBanner ? 'Kemaskini Slide Banner' : 'Tambah Slide Banner Baharu'}
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-white border border-slate-200/80 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-normal text-slate-800">
+                {editingBanner ? 'Kemaskini Slide Banner' : 'Tambah Slide Banner'}
               </h3>
-              <button onClick={() => setIsBannerModalOpen(false)} className="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+              <button
+                onClick={() => setIsBannerModalOpen(false)}
+                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all"
+              >
+                ✕
+              </button>
             </div>
-            <form onSubmit={handleSaveBanner} className="p-5 space-y-4 overflow-y-auto flex-1">
+            <form onSubmit={handleSaveBanner} className="space-y-3.5">
               <ImageUploadField
                 label="Gambar Slide Banner"
                 value={bannerForm.image_url}
                 onChange={(val) => setBannerForm({ ...bannerForm, image_url: val })}
                 aspectRatio="banner"
-                helperText="Muat naik fail dari peranti atau masukkan pautan URL gambar terus."
+                helperText="Muat naik fail dari peranti atau masukkan pautan gambar."
                 required
               />
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Tajuk Utama Banner</label>
+                <label className="text-xs font-medium text-slate-700">Tajuk Utama</label>
                 <input
                   type="text"
                   required
                   value={bannerForm.title}
                   onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Tag / Kategori</label>
+                  <label className="text-xs font-medium text-slate-700">Tag / Kategori</label>
                   <input
                     type="text"
                     value={bannerForm.tag_text}
                     onChange={(e) => setBannerForm({ ...bannerForm, tag_text: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Pill Status</label>
+                  <label className="text-xs font-medium text-slate-700">Pill Status</label>
                   <input
                     type="text"
                     value={bannerForm.status_pill}
                     onChange={(e) => setBannerForm({ ...bannerForm, status_pill: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Teks Butang</label>
+                  <label className="text-xs font-medium text-slate-700">Teks Butang</label>
                   <input
                     type="text"
                     value={bannerForm.button_text}
                     onChange={(e) => setBannerForm({ ...bannerForm, button_text: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Pautan Butang</label>
+                  <label className="text-xs font-medium text-slate-700">Pautan Butang</label>
                   <input
                     type="text"
                     value={bannerForm.button_link}
                     onChange={(e) => setBannerForm({ ...bannerForm, button_link: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
               </div>
-              <div className="pt-2 flex justify-end space-x-2 border-t border-slate-100">
+              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsBannerModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-slate-200"
+                  className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-[#0052FF] text-white text-xs font-bold hover:bg-blue-600"
+                  className="px-5 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
                 >
                   Simpan Banner
                 </button>
@@ -2015,15 +2020,20 @@ export default function AdminCmsPage() {
           SERVICE MODAL (WITH IMAGE UPLOAD FIELD)
          ========================================================================= */}
       {isServiceModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
-            <div className="px-5 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-sm text-slate-900">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-white border border-slate-200/80 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-normal text-slate-800">
                 {editingService ? 'Kemaskini Servis' : 'Tambah Servis Baharu'}
               </h3>
-              <button onClick={() => setIsServiceModalOpen(false)} className="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+              <button
+                onClick={() => setIsServiceModalOpen(false)}
+                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all"
+              >
+                ✕
+              </button>
             </div>
-            <form onSubmit={handleSaveService} className="p-5 space-y-3.5 overflow-y-auto flex-1">
+            <form onSubmit={handleSaveService} className="space-y-3.5">
               <ImageUploadField
                 label="Gambar Produk Servis"
                 value={serviceForm.image_url}
@@ -2035,84 +2045,84 @@ export default function AdminCmsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Kategori Servis</label>
+                  <label className="text-xs font-medium text-slate-700">Kategori Servis</label>
                   <input
                     type="text"
                     required
                     value={serviceForm.category}
                     onChange={(e) => setServiceForm({ ...serviceForm, category: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Tajuk Servis</label>
+                  <label className="text-xs font-medium text-slate-700">Tajuk Servis</label>
                   <input
                     type="text"
                     required
                     value={serviceForm.title}
                     onChange={(e) => setServiceForm({ ...serviceForm, title: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Headline Ringkas</label>
+                <label className="text-xs font-medium text-slate-700">Headline Ringkas</label>
                 <input
                   type="text"
                   value={serviceForm.headline}
                   onChange={(e) => setServiceForm({ ...serviceForm, headline: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Keterangan / Highlight</label>
+                <label className="text-xs font-medium text-slate-700">Keterangan</label>
                 <textarea
                   rows={2}
                   value={serviceForm.highlight}
                   onChange={(e) => setServiceForm({ ...serviceForm, highlight: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                 />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Prefix Harga</label>
+                  <label className="text-xs font-medium text-slate-700">Prefix</label>
                   <input
                     type="text"
                     value={serviceForm.price_prefix}
                     onChange={(e) => setServiceForm({ ...serviceForm, price_prefix: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Harga (cth: RM28)</label>
+                  <label className="text-xs font-medium text-slate-700">Harga</label>
                   <input
                     type="text"
                     value={serviceForm.price_amount}
                     onChange={(e) => setServiceForm({ ...serviceForm, price_amount: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white font-bold"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20 font-medium"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Unit (cth: / helai)</label>
+                  <label className="text-xs font-medium text-slate-700">Unit</label>
                   <input
                     type="text"
                     value={serviceForm.price_unit}
                     onChange={(e) => setServiceForm({ ...serviceForm, price_unit: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
               </div>
-              <div className="pt-3 flex justify-end space-x-2 border-t border-slate-100">
+              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsServiceModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold"
+                  className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-[#0052FF] text-white text-xs font-bold"
+                  className="px-5 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
                 >
                   Simpan Servis
                 </button>
@@ -2126,63 +2136,68 @@ export default function AdminCmsPage() {
           VIDEO MODAL (WITH IMAGE UPLOAD FIELD)
          ========================================================================= */}
       {isVideoModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
-            <div className="px-5 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-sm text-slate-900">
-                {editingVideo ? 'Kemaskini Video Produksi' : 'Tambah Video Produksi'}
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-normal text-slate-800">
+                {editingVideo ? 'Kemaskini Video' : 'Tambah Video'}
               </h3>
-              <button onClick={() => setIsVideoModalOpen(false)} className="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+              <button
+                onClick={() => setIsVideoModalOpen(false)}
+                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all"
+              >
+                ✕
+              </button>
             </div>
-            <form onSubmit={handleSaveVideo} className="p-5 space-y-3.5 overflow-y-auto flex-1">
+            <form onSubmit={handleSaveVideo} className="space-y-3.5">
               <ImageUploadField
-                label="Gambar Thumbnail Video"
+                label="Thumbnail Video"
                 value={videoForm.thumbnail_url}
                 onChange={(val) => setVideoForm({ ...videoForm, thumbnail_url: val })}
                 aspectRatio="video"
-                helperText="Muat naik poster/thumbnail video atau guna pautan gambar."
+                helperText="Muat naik gambar poster video."
               />
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Tajuk Video</label>
+                <label className="text-xs font-medium text-slate-700">Tajuk Video</label>
                 <input
                   type="text"
                   required
                   value={videoForm.title}
                   onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Kategori Video</label>
+                <label className="text-xs font-medium text-slate-700">Kategori</label>
                 <input
                   type="text"
                   value={videoForm.category}
                   onChange={(e) => setVideoForm({ ...videoForm, category: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">YouTube Video ID (cth: q6U_y9-pX_4)</label>
+                <label className="text-xs font-medium text-slate-700">YouTube Video ID (cth: q6U_y9-pX_4)</label>
                 <input
                   type="text"
                   required
                   value={videoForm.youtube_id}
                   onChange={(e) => setVideoForm({ ...videoForm, youtube_id: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white font-mono"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20 font-mono"
                 />
               </div>
-              <div className="pt-3 flex justify-end space-x-2 border-t border-slate-100">
+              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsVideoModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold"
+                  className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-[#0052FF] text-white text-xs font-bold"
+                  className="px-5 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
                 >
                   Simpan Video
                 </button>
@@ -2196,85 +2211,90 @@ export default function AdminCmsPage() {
           GALLERY MODAL (WITH IMAGE UPLOAD FIELD)
          ========================================================================= */}
       {isGalleryModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
-            <div className="px-5 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-sm text-slate-900">
-                {editingGallery ? 'Kemaskini Hasil Produksi' : 'Tambah Hasil Produksi'}
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-normal text-slate-800">
+                {editingGallery ? 'Kemaskini Galeri' : 'Tambah Hasil Produksi'}
               </h3>
-              <button onClick={() => setIsGalleryModalOpen(false)} className="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+              <button
+                onClick={() => setIsGalleryModalOpen(false)}
+                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all"
+              >
+                ✕
+              </button>
             </div>
-            <form onSubmit={handleSaveGallery} className="p-5 space-y-3.5 overflow-y-auto flex-1">
+            <form onSubmit={handleSaveGallery} className="space-y-3.5">
               <ImageUploadField
-                label="Foto Hasil Tempahan Siap"
+                label="Foto Hasil Tempahan"
                 value={galleryForm.image_url}
                 onChange={(val) => setGalleryForm({ ...galleryForm, image_url: val })}
                 aspectRatio="video"
-                helperText="Muat naik foto produk sebenar yang telah siap dijahit/dicetak."
+                helperText="Muat naik foto produk sebenar yang siap."
                 required
               />
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Tajuk Tempahan</label>
+                <label className="text-xs font-medium text-slate-700">Tajuk Tempahan</label>
                 <input
                   type="text"
                   required
                   value={galleryForm.title}
                   onChange={(e) => setGalleryForm({ ...galleryForm, title: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Info Fabrik & Kolar</label>
+                  <label className="text-xs font-medium text-slate-700">Info Fabrik & Kolar</label>
                   <input
                     type="text"
                     value={galleryForm.fabric}
                     onChange={(e) => setGalleryForm({ ...galleryForm, fabric: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Kuantiti & Nama Klien</label>
+                  <label className="text-xs font-medium text-slate-700">Kuantiti & Klien</label>
                   <input
                     type="text"
                     value={galleryForm.client}
                     onChange={(e) => setGalleryForm({ ...galleryForm, client: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Tag Label</label>
+                  <label className="text-xs font-medium text-slate-700">Tag Label</label>
                   <input
                     type="text"
                     value={galleryForm.tag}
                     onChange={(e) => setGalleryForm({ ...galleryForm, tag: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Kategori</label>
+                  <label className="text-xs font-medium text-slate-700">Kategori</label>
                   <input
                     type="text"
                     value={galleryForm.category}
                     onChange={(e) => setGalleryForm({ ...galleryForm, category: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
               </div>
-              <div className="pt-3 flex justify-end space-x-2 border-t border-slate-100">
+              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsGalleryModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold"
+                  className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-[#0052FF] text-white text-xs font-bold"
+                  className="px-5 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
                 >
                   Simpan Galeri
                 </button>
@@ -2288,43 +2308,48 @@ export default function AdminCmsPage() {
           TESTIMONIAL MODAL
          ========================================================================= */}
       {isTestiModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="px-5 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-sm text-slate-900">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-normal text-slate-800">
                 {editingTesti ? 'Kemaskini Testimoni' : 'Tambah Testimoni'}
               </h3>
-              <button onClick={() => setIsTestiModalOpen(false)} className="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+              <button
+                onClick={() => setIsTestiModalOpen(false)}
+                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all"
+              >
+                ✕
+              </button>
             </div>
-            <form onSubmit={handleSaveTesti} className="p-5 space-y-3.5">
+            <form onSubmit={handleSaveTesti} className="space-y-3.5">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Nama Pelanggan</label>
+                  <label className="text-xs font-medium text-slate-700">Nama Pelanggan</label>
                   <input
                     type="text"
                     required
                     value={testiForm.name}
                     onChange={(e) => setTestiForm({ ...testiForm, name: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Lokasi (cth: Shah Alam)</label>
+                  <label className="text-xs font-medium text-slate-700">Lokasi</label>
                   <input
                     type="text"
                     value={testiForm.location}
                     onChange={(e) => setTestiForm({ ...testiForm, location: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Platform Sumber</label>
+                  <label className="text-xs font-medium text-slate-700">Platform</label>
                   <select
                     value={testiForm.platform}
                     onChange={(e) => setTestiForm({ ...testiForm, platform: e.target.value as any })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   >
                     <option value="google">Google Review</option>
                     <option value="tiktok">TikTok</option>
@@ -2333,11 +2358,11 @@ export default function AdminCmsPage() {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Penilaian (Bintang 1-5)</label>
+                  <label className="text-xs font-medium text-slate-700">Penilaian (Bintang)</label>
                   <select
                     value={testiForm.rating}
                     onChange={(e) => setTestiForm({ ...testiForm, rating: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   >
                     <option value={5}>5 Bintang (Cemerlang)</option>
                     <option value={4}>4 Bintang (Bagus)</option>
@@ -2346,26 +2371,26 @@ export default function AdminCmsPage() {
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Ayat Ulasan Pelanggan</label>
+                <label className="text-xs font-medium text-slate-700">Ulasan</label>
                 <textarea
-                  rows={4}
+                  rows={3}
                   required
                   value={testiForm.review}
                   onChange={(e) => setTestiForm({ ...testiForm, review: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                 />
               </div>
-              <div className="pt-3 flex justify-end space-x-2 border-t border-slate-100">
+              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsTestiModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold"
+                  className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-[#0052FF] text-white text-xs font-bold"
+                  className="px-5 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
                 >
                   Simpan Testimoni
                 </button>
