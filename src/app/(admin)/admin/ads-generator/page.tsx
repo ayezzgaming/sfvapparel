@@ -409,10 +409,10 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
         {/* ======================= TAB 1: STUDIO IKLAN AI ======================= */}
         {activeTab === 'create' && (
           <div>
-            {/* STEP 1: INDUSTRY STANDARD UNIFIED PROMPT CARD */}
+            {/* STEP 1: PLATFORM-FIRST GENERATION WORKFLOW */}
             {studioStep === 'prompt' && (
-              <div className="min-h-[60vh] flex flex-col justify-center items-center py-8 px-4 animate-in fade-in">
-                <div className="w-full max-w-2xl space-y-4">
+              <div className="min-h-[58vh] flex flex-col justify-center items-center py-6 px-4 animate-in fade-in">
+                <div className="w-full max-w-2xl space-y-5">
                   {/* Error Notification Banner if API error occurs */}
                   {generationError && (
                     <div className="bg-red-50 text-red-700 text-xs rounded-2xl p-4 flex items-start justify-between gap-3">
@@ -430,131 +430,182 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     </div>
                   )}
 
-                  {/* Unified Industry Standard Prompt Card */}
-                  <div className="bg-slate-50/90 rounded-3xl p-4 space-y-3">
-                    {/* Attachment Preview INSIDE Prompt Box at the top */}
-                    {(customImage || activeDesign) && (
-                      <div className="flex items-center gap-2 pb-2">
-                        <div className="flex items-center space-x-3 bg-white rounded-2xl p-2 pr-3 max-w-sm">
-                          <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 shrink-0">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.jpg'}
-                              alt="Lampiran"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-slate-800 truncate">
-                              {customTitle || activeDesign?.title}
-                            </p>
-                            <span className="text-[11px] text-slate-400 block truncate">
-                              {customImage ? 'Imej Dimuat Naik' : `Katalog ${brandName} • ${activeDesign?.category || 'Jersi'}`}
-                            </span>
-                          </div>
+                  {/* 1. SELECT PLATFORM FIRST */}
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block px-1">
+                      1. Pilih Saluran Pengiklanan
+                    </span>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-slate-50/80 p-1.5 rounded-3xl">
+                      {[
+                        { id: 'facebook' as AdPlatform, name: 'Facebook', logo: FacebookLogo },
+                        { id: 'instagram' as AdPlatform, name: 'Instagram', logo: InstagramLogo },
+                        { id: 'google' as AdPlatform, name: 'Google', logo: GoogleAdsLogo },
+                        { id: 'tiktok' as AdPlatform, name: 'TikTok', logo: TikTokLogo },
+                        { id: 'whatsapp' as AdPlatform, name: 'WhatsApp', logo: WhatsAppLogo },
+                      ].map((plat) => {
+                        const Logo = plat.logo;
+                        const isSelected = selectedPlatform === plat.id;
+                        return (
                           <button
+                            key={plat.id}
                             type="button"
-                            onClick={() => {
-                              setCustomImage(null);
-                              setCustomTitle(null);
-                              setSelectedDesignId(null);
-                            }}
-                            className="w-6 h-6 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors shrink-0"
-                            title="Padam lampiran"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Text Input / Textarea */}
-                    <textarea
-                      rows={2}
-                      value={userPrompt}
-                      onChange={(e) => setUserPrompt(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey && userPrompt.trim() && !isGeneratingAi) {
-                          e.preventDefault();
-                          handleGenerateAi();
-                        }
-                      }}
-                      placeholder="Tulis arahan promosi iklan anda di sini..."
-                      className="w-full bg-transparent text-sm sm:text-base text-slate-900 placeholder-slate-400 focus:outline-none resize-none font-sans px-1 pt-1"
-                    />
-
-                    {/* Bottom Action Bar inside the box */}
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="flex items-center space-x-2" ref={attachMenuRef}>
-                        {/* + (Plus) Attachment Button with Popover */}
-                        <div className="relative">
-                          <button
-                            type="button"
-                            onClick={() => setShowAttachMenu(!showAttachMenu)}
-                            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0 ${
-                              showAttachMenu
-                                ? 'bg-slate-200 text-slate-900'
-                                : 'hover:bg-slate-200 text-slate-600 hover:text-slate-900'
+                            onClick={() => setSelectedPlatform(plat.id)}
+                            className={`px-3 py-2.5 rounded-2xl flex items-center justify-center space-x-2 transition-all ${
+                              isSelected
+                                ? 'bg-white text-slate-900 font-semibold shadow-xs'
+                                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                             }`}
-                            title="Tambah gambar atau pilih produk katalog"
                           >
-                            <Plus className="w-4 h-4" />
-                          </button>
-
-                          {/* Attachment Popover (+ Menu) */}
-                          {showAttachMenu && (
-                            <div className="absolute left-0 bottom-11 z-40 bg-white rounded-2xl p-1.5 w-60 space-y-1 text-left animate-in fade-in zoom-in-95 shadow-lg">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setShowCatalogModal(true);
-                                  setShowAttachMenu(false);
-                                }}
-                                className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
-                              >
-                                <FolderArchive className="w-4 h-4 text-slate-600" />
-                                <span>Pilih dari Katalog</span>
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  fileInputRef.current?.click();
-                                  setShowAttachMenu(false);
-                                }}
-                                className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
-                              >
-                                <Upload className="w-4 h-4 text-slate-600" />
-                                <span>Muat Naik Imej</span>
-                              </button>
+                            <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                              <Logo className="w-4 h-4" />
                             </div>
-                          )}
+                            <span className="text-xs">{plat.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 2. UNIFIED PROMPT & ATTACHMENTS CARD */}
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block px-1">
+                      2. Masukkan Arahan & Konteks Iklan
+                    </span>
+                    <div className="bg-slate-50/90 rounded-3xl p-4 space-y-3">
+                      {/* Attachment Preview INSIDE Prompt Box at the top */}
+                      {(customImage || activeDesign) && (
+                        <div className="flex items-center gap-2 pb-2">
+                          <div className="flex items-center space-x-3 bg-white rounded-2xl p-2 pr-3 max-w-sm">
+                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 shrink-0">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.jpg'}
+                                alt="Lampiran"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-slate-800 truncate">
+                                {customTitle || activeDesign?.title}
+                              </p>
+                              <span className="text-[11px] text-slate-400 block truncate">
+                                {customImage ? 'Imej Dimuat Naik' : `Katalog ${brandName} • ${activeDesign?.category || 'Jersi'}`}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCustomImage(null);
+                                setCustomTitle(null);
+                                setSelectedDesignId(null);
+                              }}
+                              className="w-6 h-6 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors shrink-0"
+                              title="Padam lampiran"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Text Input / Textarea */}
+                      <textarea
+                        rows={2}
+                        value={userPrompt}
+                        onChange={(e) => setUserPrompt(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey && userPrompt.trim() && !isGeneratingAi) {
+                            e.preventDefault();
+                            handleGenerateAi();
+                          }
+                        }}
+                        placeholder={`Tulis arahan kempen untuk ${
+                          selectedPlatform === 'facebook'
+                            ? 'Facebook Ads'
+                            : selectedPlatform === 'instagram'
+                            ? 'Instagram Ads'
+                            : selectedPlatform === 'google'
+                            ? 'Google Search Ads'
+                            : selectedPlatform === 'tiktok'
+                            ? 'TikTok Video Ads'
+                            : 'WhatsApp Direct Leads'
+                        }...`}
+                        className="w-full bg-transparent text-sm sm:text-base text-slate-900 placeholder-slate-400 focus:outline-none resize-none font-sans px-1 pt-1"
+                      />
+
+                      {/* Bottom Action Bar inside the box */}
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="flex items-center space-x-2" ref={attachMenuRef}>
+                          {/* + (Plus) Attachment Button with Popover */}
+                          <div className="relative">
+                            <button
+                              type="button"
+                              onClick={() => setShowAttachMenu(!showAttachMenu)}
+                              className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0 ${
+                                showAttachMenu
+                                  ? 'bg-slate-200 text-slate-900'
+                                  : 'hover:bg-slate-200 text-slate-600 hover:text-slate-900'
+                              }`}
+                              title="Tambah gambar atau pilih produk katalog"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+
+                            {/* Attachment Popover (+ Menu) */}
+                            {showAttachMenu && (
+                              <div className="absolute left-0 bottom-11 z-40 bg-white rounded-2xl p-1.5 w-60 space-y-1 text-left animate-in fade-in zoom-in-95 shadow-lg">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setShowCatalogModal(true);
+                                    setShowAttachMenu(false);
+                                  }}
+                                  className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
+                                >
+                                  <FolderArchive className="w-4 h-4 text-slate-600" />
+                                  <span>Pilih dari Katalog</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    fileInputRef.current?.click();
+                                    setShowAttachMenu(false);
+                                  }}
+                                  className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
+                                >
+                                  <Upload className="w-4 h-4 text-slate-600" />
+                                  <span>Muat Naik Imej</span>
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Hidden File Input */}
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                          />
                         </div>
 
-                        {/* Hidden File Input */}
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                        />
+                        {/* Send Button */}
+                        <button
+                          type="button"
+                          onClick={handleGenerateAi}
+                          disabled={isGeneratingAi || !userPrompt.trim()}
+                          className="w-8 h-8 rounded-full bg-slate-900 hover:bg-black text-white flex items-center justify-center transition-colors shrink-0 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                          title="Jana kempen iklan"
+                        >
+                          {isGeneratingAi ? (
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <SendHorizontal className="w-3.5 h-3.5" />
+                          )}
+                        </button>
                       </div>
-
-                      {/* Send Button */}
-                      <button
-                        type="button"
-                        onClick={handleGenerateAi}
-                        disabled={isGeneratingAi || !userPrompt.trim()}
-                        className="w-8 h-8 rounded-full bg-slate-900 hover:bg-black text-white flex items-center justify-center transition-colors shrink-0 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-                        title="Jana kempen iklan"
-                      >
-                        {isGeneratingAi ? (
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <SendHorizontal className="w-3.5 h-3.5" />
-                        )}
-                      </button>
                     </div>
                   </div>
                 </div>
