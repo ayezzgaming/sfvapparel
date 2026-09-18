@@ -20,12 +20,8 @@ import {
   Rocket,
   RefreshCw,
   Info,
-  ChevronRight,
-  Zap,
-  Layers,
   Wand2,
-  SlidersHorizontal,
-  ArrowRight
+  CheckCircle2
 } from 'lucide-react';
 
 interface AiVariation {
@@ -40,17 +36,10 @@ interface AiVariation {
 }
 
 const AI_PROMPT_PRESETS = [
-  { label: '🏆 Jersi Futsal & Sukan', prompt: 'Buat kempen jersi futsal sempena liga komuniti, kain sejuk Drifit Milano, siap 7 hari, percuma rekaan nama & nombor.' },
-  { label: '👔 Jersi Korporat Syarikat', prompt: 'Tawaran jersi kolar polo korporat & event rasmi syarikat, kemasan jahitan kemas, diskaun kuantiti dari kilang.' },
-  { label: '⚡ Cetak Baju DTF Ekspres', prompt: 'Servis cetakan baju DTF warna terang tahan basuhan, tiada had warna, sesuai untuk merchandise & streetwear.' },
-  { label: '🔥 Edisi Khas Harimau Malaya', prompt: 'Promosi jersi corak harimau edisi terhad, diskaun 20% untuk 10 helai ke atas, tempah terus dari kilang.' },
-];
-
-const TONE_OPTIONS = [
-  { id: 'energetic', label: '💥 Sukan & Bertenaga' },
-  { id: 'corporate', label: '💼 Profesional & Korporat' },
-  { id: 'urgent', label: '⏳ Tawaran Terhad (FOMO)' },
-  { id: 'direct', label: '💬 Santai & Terus WhatsApp' },
+  { label: 'Jersi Futsal & Sukan', prompt: 'Buat kempen jersi futsal sempena liga komuniti, kain sejuk Drifit Milano, siap 7 hari, percuma rekaan nama dan nombor.' },
+  { label: 'Jersi Korporat Syarikat', prompt: 'Tawaran jersi kolar polo korporat dan acara rasmi syarikat, kemasan jahitan kemas, diskaun kuantiti dari kilang.' },
+  { label: 'Cetak Baju DTF Ekspres', prompt: 'Servis cetakan baju DTF warna terang tahan basuhan, tiada had warna, sesuai untuk merchandise dan jenama pakaian.' },
+  { label: 'Edisi Khas Harimau Malaya', prompt: 'Promosi jersi corak harimau edisi terhad, diskaun 20% untuk 10 helai ke atas, tempahan terus dari kilang.' },
 ];
 
 export default function AdminAdsGeneratorPage() {
@@ -65,16 +54,15 @@ export default function AdminAdsGeneratorPage() {
 
   // AI Generator States
   const [userPrompt, setUserPrompt] = useState(
-    'Buat kempen jersi futsal sempena liga komuniti, kain sejuk Drifit Milano, siap 7 hari, percuma rekaan nama & nombor.'
+    'Buat kempen jersi futsal sempena liga komuniti, kain sejuk Drifit Milano, siap 7 hari, percuma rekaan nama dan nombor.'
   );
-  const [selectedTone, setSelectedTone] = useState('energetic');
   const [selectedPlatform, setSelectedPlatform] = useState<AdPlatform>('meta');
   const [selectedObjective, setSelectedObjective] = useState<AdObjective>('whatsapp_leads');
   const [selectedDesignId, setSelectedDesignId] = useState<string>(designs[0]?.id || '');
   const [dailyBudget, setDailyBudget] = useState<number>(30);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
-  // 3 AI Generated Variations
+  // 3 Clean AI Generated Variations (Zero Emojis)
   const [selectedVariationIndex, setSelectedVariationIndex] = useState(0);
   const [aiVariations, setAiVariations] = useState<AiVariation[]>([
     {
@@ -84,31 +72,31 @@ export default function AdminAdsGeneratorPage() {
       headline: 'Kilang Cetak Jersi Sublimasi & DTF No. 1 Malaysia',
       secondaryHeadline: 'Tempah Terus Dari Kilang | Harga Borong',
       primaryText:
-        '🔥 Jimat kos jersi pasukan anda terus dari kilang! Cetakan sublimasi tajam tak luntur, fabrik Drifit Milano sejuk, siap dalam 7-10 hari. Tekan butang di bawah untuk sebut harga segera di WhatsApp!',
+        'Jimat kos jersi pasukan anda terus dari kilang. Cetakan sublimasi tajam tidak luntur, fabrik Drifit Milano sejuk, siap dalam tempoh 7-10 hari bekerja. Hubungi kami untuk sebut harga segera di WhatsApp.',
       callToAction: 'Dapatkan Sebut Harga',
-      whatsappMessage: 'Salam SVF Apparel, saya nak minta sebut harga jersi futsal terus dari kilang.',
+      whatsappMessage: 'Salam SVF Apparel, saya ingin mendapatkan sebut harga jersi futsal terus dari kilang.',
     },
     {
       id: 'var-2',
       angleName: 'Sudut Kualiti Premium & Rekaan',
       tagline: 'Fabrik Drifit Sejuk & Rekaan Percuma',
       headline: 'Jersi Sukan Kustom Eksklusif | Kain Milano Anti-Peluh',
-      secondaryHeadline: 'Percuma Rekaan Nama, Nombor & Logo',
+      secondaryHeadline: 'Percuma Rekaan Nama, Nombor & Logo Pasukan',
       primaryText:
-        '🏆 Bawa semangat juara dalam pasukan anda dengan jersi kustom eksklusif SVF APPAREL. Warna ultra-vibrant, kemasan jahitan kukuh, dan rekaan profesional disesuaikan untuk anda.',
+        'Tingkatkan identiti pasukan anda dengan jersi kustom eksklusif daripada SVF APPAREL. Warna tajam beresolusi tinggi, kemasan jahitan kukuh, dan rekaan disesuaikan secara profesional.',
       callToAction: 'Kirim Mesej WhatsApp',
-      whatsappMessage: 'Hai SVF, saya berminat nak buat rekaan jersi kustom premium untuk team kami.',
+      whatsappMessage: 'Hai SVF, saya berminat untuk membuat rekaan jersi kustom premium untuk pasukan kami.',
     },
     {
       id: 'var-3',
       angleName: 'Sudut Kelajuan & Jaminan Siap Pantas',
       tagline: 'Jaminan Siap 7 Hari & Penghantaran Selamat',
       headline: 'Tempah Jersi Siap Pantas 7 Hari | Penghantaran Seluruh Malaysia',
-      secondaryHeadline: 'Jaminan Kualiti Terjamin Dari SVF APPAREL',
+      secondaryHeadline: 'Kualiti Terjamin Dari Kilang SVF APPAREL',
       primaryText:
-        '⚡ Perlukan jersi dengan segera untuk perlawanan minggu depan? Kilang kami proses tempahan pantas 7 hari bekerja dengan penghantaran selamat ke seluruh Malaysia. Hubungi kami sekarang!',
+        'Perlukan jersi dengan segera untuk perlawanan minggu hadapan? Kilang kami memproses tempahan pantas 7 hari bekerja dengan jaminan kualiti dan penghantaran selamat ke seluruh Malaysia.',
       callToAction: 'Tempah Sekarang',
-      whatsappMessage: 'Salam SVF, saya ada tempahan jersi urgent, boleh siap dalam 7 hari?',
+      whatsappMessage: 'Salam SVF, saya ada tempahan jersi segera, adakah boleh siap dalam 7 hari?',
     },
   ]);
 
@@ -137,9 +125,8 @@ export default function AdminAdsGeneratorPage() {
   const handleGenerateAi = () => {
     setIsGeneratingAi(true);
     setTimeout(() => {
-      // Generate fresh dynamic variations based on prompt and tone
       const promptLower = userPrompt.toLowerCase();
-      const isCorporate = promptLower.includes('korporat') || promptLower.includes('syarikat') || selectedTone === 'corporate';
+      const isCorporate = promptLower.includes('korporat') || promptLower.includes('syarikat');
       const isDtf = promptLower.includes('dtf') || promptLower.includes('baju');
 
       const itemType = isDtf ? 'Baju DTF' : isCorporate ? 'Jersi Korporat' : 'Jersi Pasukan';
@@ -151,9 +138,9 @@ export default function AdminAdsGeneratorPage() {
           tagline: 'Pakej Pukal Berbaloi',
           headline: `Tawaran Khas Cetak ${itemType} Terus Dari Kilang`,
           secondaryHeadline: 'Diskaun Khas Tempahan Pasukan & Korporat',
-          primaryText: `🔥 ${userPrompt.trim()} Nikmati penjimatan hebat terus dari kilang SVF Apparel dengan kualiti cetakan tahan luntur dan kain sejuk berkualiti.`,
+          primaryText: `${userPrompt.trim()} Nikmati penjimatan terus dari kilang SVF Apparel dengan kualiti cetakan tahan luntur dan kain sejuk berkualiti tinggi.`,
           callToAction: 'Dapatkan Sebut Harga',
-          whatsappMessage: `Salam SVF, saya nak tanya tawaran promosi untuk ${itemType.toLowerCase()}.`,
+          whatsappMessage: `Salam SVF, saya ingin bertanyakan tawaran promosi bagi ${itemType.toLowerCase()}.`,
         },
         {
           id: `var-${Date.now()}-2`,
@@ -161,9 +148,9 @@ export default function AdminAdsGeneratorPage() {
           tagline: 'Kualiti Eksport Premium',
           headline: `${itemType} Kustom Berkualiti Tinggi | Fabrik Sejuk Anti-Peluh`,
           secondaryHeadline: 'Rekaan Eksklusif & Kemasan Jahitan Kemas',
-          primaryText: `🏆 Tingkatkan imej pasukan anda dengan ${itemType.toLowerCase()} berkualiti tinggi. Warna tajam, jahitan berkualiti, dan selesa dipakai sepanjang hari.`,
+          primaryText: `Tingkatkan imej pasukan anda dengan ${itemType.toLowerCase()} berkualiti tinggi. Warna tajam, jahitan kukuh, dan selesa dipakai sepanjang aktiviti sukan.`,
           callToAction: 'Kirim Mesej WhatsApp',
-          whatsappMessage: `Hai SVF Apparel, saya berminat dengan material premium untuk tempahan ${itemType.toLowerCase()}.`,
+          whatsappMessage: `Hai SVF Apparel, saya berminat dengan material premium bagi tempahan ${itemType.toLowerCase()}.`,
         },
         {
           id: `var-${Date.now()}-3`,
@@ -171,14 +158,14 @@ export default function AdminAdsGeneratorPage() {
           tagline: 'Siap Pantas 7 Hari',
           headline: `Tempah ${itemType} Siap Pantas 7 Hari Bekerja`,
           secondaryHeadline: 'Penghantaran Pantas ke Seluruh Malaysia',
-          primaryText: `⚡ Tempahan ${itemType.toLowerCase()} mudah dan pantas. Konsultasi rekaan percuma dan penghantaran terjamin ke pintu rumah anda.`,
+          primaryText: `Tempahan ${itemType.toLowerCase()} kini lebih mudah dan pantas. Konsultasi rekaan percuma dan penghantaran terjamin terus ke lokasi anda.`,
           callToAction: 'Tempah Sekarang',
-          whatsappMessage: `Salam SVF, saya nak buat tempahan ${itemType.toLowerCase()} sekarang.`,
+          whatsappMessage: `Salam SVF, saya ingin membuat tempahan ${itemType.toLowerCase()} sekarang.`,
         },
       ]);
       setSelectedVariationIndex(0);
       setIsGeneratingAi(false);
-    }, 1000);
+    }, 900);
   };
 
   const handleToggleConnect = (platformId: string) => {
@@ -246,7 +233,7 @@ ${activeVariation.whatsappMessage}`;
         setPublishSuccess(false);
         setActiveTab('campaigns');
       }, 1000);
-    }, 1400);
+    }, 1200);
   };
 
   const handleToggleCampaignStatus = (id: string) => {
@@ -256,7 +243,7 @@ ${activeVariation.whatsappMessage}`;
   };
 
   return (
-    <div className="space-y-7 select-none max-w-7xl mx-auto">
+    <div className="space-y-6 select-none max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -264,7 +251,7 @@ ${activeVariation.whatsappMessage}`;
             Ads Generator
           </h1>
           <p className="text-sm text-slate-500 mt-0.5">
-            Mesin pintar penjanaan kempen iklan AI merentasi Google, Meta, TikTok, dan WhatsApp.
+            Penjanaan kandungan kempen iklan AI merentasi Google, Meta, TikTok, dan WhatsApp.
           </p>
         </div>
 
@@ -291,7 +278,7 @@ ${activeVariation.whatsappMessage}`;
             }`}
           >
             <span>Sambungan API</span>
-            <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full">
+            <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full font-medium">
               {platforms.filter((p) => p.isConnected).length}/{platforms.length}
             </span>
           </button>
@@ -312,53 +299,49 @@ ${activeVariation.whatsappMessage}`;
       {/* ======================= TAB 1: STUDIO IKLAN AI ======================= */}
       {activeTab === 'create' && (
         <div className="space-y-6">
-          {/* Top Hero: AI Prompt Command Bar */}
+          {/* Top Hero: Clean AI Prompt Bar */}
           <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-7 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-xs">
-                  <Sparkles className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="text-base font-medium text-slate-800">
-                    Arahkan AI Untuk Menjana Kempen Iklan
-                  </h2>
-                  <span className="text-xs text-slate-400">
-                    Masukkan matlamat promosi, sasaran produk, atau pilih templat cadangan pantas di bawah.
-                  </span>
-                </div>
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center border border-slate-200">
+                <Sparkles className="w-4 h-4 text-slate-600" />
+              </div>
+              <div>
+                <h2 className="text-base font-medium text-slate-800">
+                  Arahkan AI Untuk Menjana Kempen Iklan
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Nyatakan objektif promosi anda atau pilih cadangan templat di bawah.
+                </p>
               </div>
             </div>
 
             {/* Prompt Input Box */}
-            <div className="relative">
+            <div>
               <textarea
                 rows={2}
                 value={userPrompt}
                 onChange={(e) => setUserPrompt(e.target.value)}
-                placeholder="Contoh: Buat iklan promo jersi futsal sempena liga komuniti, diskaun 20% untuk 10 helai ke atas, kain sejuk Drifit Milano..."
+                placeholder="Contoh: Buat kempen jersi futsal sempena liga komuniti, diskaun 20% untuk 10 helai ke atas, kain sejuk Drifit Milano..."
                 className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all leading-relaxed"
               />
             </div>
 
-            {/* Quick Inspiration Chips & Tone Selector */}
+            {/* Quick Inspiration Chips & Generate Button */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
-              {/* Inspiration Chips */}
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-xs text-slate-400 mr-1">Cadangan:</span>
+                <span className="text-xs text-slate-400 mr-1 font-medium">Pilihan Pantas:</span>
                 {AI_PROMPT_PRESETS.map((preset) => (
                   <button
                     key={preset.label}
                     type="button"
                     onClick={() => setUserPrompt(preset.prompt)}
-                    className="px-3 py-1 rounded-full text-xs font-normal bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                    className="px-3.5 py-1 rounded-full text-xs font-normal bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 transition-colors"
                   >
                     {preset.label}
                   </button>
                 ))}
               </div>
 
-              {/* Generate AI Button */}
               <button
                 type="button"
                 onClick={handleGenerateAi}
@@ -380,11 +363,11 @@ ${activeVariation.whatsappMessage}`;
             </div>
           </div>
 
-          {/* Main 2-Column Section: Left Controls & Variations, Right Live Preview */}
+          {/* Main 2-Column Section: Left Controls, Right Live Preview */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left 7 Columns: Setup & Variations */}
+            {/* Left 7 Columns */}
             <div className="lg:col-span-7 space-y-6">
-              {/* Platform Selector with Real Vector Logos */}
+              {/* Platform Selector with Clean Light Badges */}
               <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-3">
                 <label className="text-xs font-medium text-slate-700 block">
                   Pilih Platform Pengiklanan
@@ -394,33 +377,23 @@ ${activeVariation.whatsappMessage}`;
                   <button
                     type="button"
                     onClick={() => setSelectedPlatform('google')}
-                    className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2 ${
+                    className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
                       selectedPlatform === 'google'
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
+                        : 'bg-white border-slate-200 hover:border-slate-300'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
                         <GoogleAdsLogo className="w-4 h-4" />
                       </div>
-                      <span
-                        className={`text-[10px] font-medium ${
-                          selectedPlatform === 'google' ? 'text-emerald-300' : 'text-emerald-600'
-                        }`}
-                      >
-                        ● API
+                      <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                        API
                       </span>
                     </div>
                     <div>
-                      <span className="text-xs font-semibold block">Google Ads</span>
-                      <span
-                        className={`text-[10px] ${
-                          selectedPlatform === 'google' ? 'text-slate-300' : 'text-slate-400'
-                        }`}
-                      >
-                        Search & Display
-                      </span>
+                      <span className="text-xs font-semibold text-slate-900 block">Google Ads</span>
+                      <span className="text-[11px] text-slate-400">Search & Display</span>
                     </div>
                   </button>
 
@@ -428,33 +401,23 @@ ${activeVariation.whatsappMessage}`;
                   <button
                     type="button"
                     onClick={() => setSelectedPlatform('meta')}
-                    className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2 ${
+                    className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
                       selectedPlatform === 'meta'
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
+                        : 'bg-white border-slate-200 hover:border-slate-300'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
                         <MetaLogo className="w-4 h-4" />
                       </div>
-                      <span
-                        className={`text-[10px] font-medium ${
-                          selectedPlatform === 'meta' ? 'text-emerald-300' : 'text-emerald-600'
-                        }`}
-                      >
-                        ● API
+                      <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                        API
                       </span>
                     </div>
                     <div>
-                      <span className="text-xs font-semibold block">Meta Ads</span>
-                      <span
-                        className={`text-[10px] ${
-                          selectedPlatform === 'meta' ? 'text-slate-300' : 'text-slate-400'
-                        }`}
-                      >
-                        FB & Instagram
-                      </span>
+                      <span className="text-xs font-semibold text-slate-900 block">Meta Ads</span>
+                      <span className="text-[11px] text-slate-400">FB & Instagram</span>
                     </div>
                   </button>
 
@@ -462,33 +425,23 @@ ${activeVariation.whatsappMessage}`;
                   <button
                     type="button"
                     onClick={() => setSelectedPlatform('tiktok')}
-                    className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2 ${
+                    className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
                       selectedPlatform === 'tiktok'
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
+                        : 'bg-white border-slate-200 hover:border-slate-300'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
                         <TikTokLogo className="w-4 h-4" />
                       </div>
-                      <span
-                        className={`text-[10px] font-medium ${
-                          selectedPlatform === 'tiktok' ? 'text-slate-300' : 'text-slate-400'
-                        }`}
-                      >
-                        ○ Manual
+                      <span className="text-[10px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
+                        Manual
                       </span>
                     </div>
                     <div>
-                      <span className="text-xs font-semibold block">TikTok Ads</span>
-                      <span
-                        className={`text-[10px] ${
-                          selectedPlatform === 'tiktok' ? 'text-slate-300' : 'text-slate-400'
-                        }`}
-                      >
-                        In-Feed 9:16
-                      </span>
+                      <span className="text-xs font-semibold text-slate-900 block">TikTok Ads</span>
+                      <span className="text-[11px] text-slate-400">In-Feed 9:16</span>
                     </div>
                   </button>
 
@@ -496,33 +449,23 @@ ${activeVariation.whatsappMessage}`;
                   <button
                     type="button"
                     onClick={() => setSelectedPlatform('whatsapp')}
-                    className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2 ${
+                    className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
                       selectedPlatform === 'whatsapp'
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
+                        : 'bg-white border-slate-200 hover:border-slate-300'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
                         <WhatsAppLogo className="w-4 h-4" />
                       </div>
-                      <span
-                        className={`text-[10px] font-medium ${
-                          selectedPlatform === 'whatsapp' ? 'text-emerald-300' : 'text-emerald-600'
-                        }`}
-                      >
-                        ● API
+                      <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                        API
                       </span>
                     </div>
                     <div>
-                      <span className="text-xs font-semibold block">WhatsApp</span>
-                      <span
-                        className={`text-[10px] ${
-                          selectedPlatform === 'whatsapp' ? 'text-slate-300' : 'text-slate-400'
-                        }`}
-                      >
-                        Click-to-Chat
-                      </span>
+                      <span className="text-xs font-semibold text-slate-900 block">WhatsApp</span>
+                      <span className="text-[11px] text-slate-400">Click-to-Chat</span>
                     </div>
                   </button>
                 </div>
@@ -564,7 +507,7 @@ ${activeVariation.whatsappMessage}`;
                 </div>
               </div>
 
-              {/* 3 AI Generated Variations Card Selection */}
+              {/* 3 AI Generated Variations Card Selection (Clean Google One Light Style) */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between px-1">
                   <label className="text-xs font-medium text-slate-700">
@@ -582,33 +525,26 @@ ${activeVariation.whatsappMessage}`;
                         onClick={() => setSelectedVariationIndex(idx)}
                         className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                            ? 'bg-blue-50/60 border-blue-400 ring-1 ring-blue-400 shadow-xs'
                             : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1.5">
-                          <span
-                            className={`text-[11px] font-semibold uppercase tracking-wider ${
-                              isSelected ? 'text-blue-300' : 'text-blue-600'
-                            }`}
-                          >
-                            {variation.angleName}
-                          </span>
-                          <span
-                            className={`text-[10px] px-2 py-0.5 rounded-full ${
-                              isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
-                            }`}
-                          >
+                          <div className="flex items-center space-x-1.5">
+                            {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
+                            <span className="text-[11px] font-semibold text-slate-900 uppercase tracking-wider">
+                              {variation.angleName}
+                            </span>
+                          </div>
+                          <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">
                             {variation.tagline}
                           </span>
                         </div>
 
-                        <h4 className="text-sm font-medium leading-snug line-clamp-1">{variation.headline}</h4>
-                        <p
-                          className={`text-xs mt-1 line-clamp-2 leading-relaxed ${
-                            isSelected ? 'text-slate-300' : 'text-slate-500'
-                          }`}
-                        >
+                        <h4 className="text-sm font-medium text-slate-900 leading-snug line-clamp-1">
+                          {variation.headline}
+                        </h4>
+                        <p className="text-xs mt-1 text-slate-600 line-clamp-2 leading-relaxed">
                           {variation.primaryText}
                         </p>
                       </div>
@@ -620,7 +556,7 @@ ${activeVariation.whatsappMessage}`;
 
             {/* Right 5 Columns: Live Ad Preview & 1-Click Actions */}
             <div className="lg:col-span-5 space-y-4 sticky top-6">
-              <div className="bg-slate-50 rounded-3xl border border-slate-200 p-6 space-y-4 text-center">
+              <div className="bg-slate-50/80 rounded-3xl border border-slate-200 p-6 space-y-4 text-center">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-medium text-slate-700 uppercase tracking-wider">
                     Pratonton Iklan Sebenar
