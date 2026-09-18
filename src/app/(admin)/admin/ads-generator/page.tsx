@@ -69,7 +69,7 @@ export default function AdminAdsGeneratorPage() {
   const [selectedDesignId, setSelectedDesignId] = useState<string | null>(null);
   const [dailyBudget, setDailyBudget] = useState<number>(30);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
-  const [aiSource, setAiSource] = useState<'gemini' | 'groq' | 'openrouter' | 'nlp'>('groq');
+  const [aiSource, setAiSource] = useState<'gemini' | 'groq' | 'openrouter'>('groq');
   const [apiKey, setApiKey] = useState('');
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
@@ -97,11 +97,11 @@ export default function AdminAdsGeneratorPage() {
   useEffect(() => {
     try {
       const savedKey = localStorage.getItem('svf_ai_api_key');
-      const savedProvider = localStorage.getItem('svf_ai_model_provider') as 'gemini' | 'groq' | 'openrouter' | 'nlp';
+      const savedProvider = localStorage.getItem('svf_ai_model_provider') as 'gemini' | 'groq' | 'openrouter';
       if (savedKey) {
         setApiKey(savedKey);
       }
-      if (savedProvider) {
+      if (savedProvider && ['gemini', 'groq', 'openrouter'].includes(savedProvider)) {
         setAiSource(savedProvider);
       } else if (savedKey) {
         if (savedKey.startsWith('gsk_')) setAiSource('groq');
@@ -113,7 +113,7 @@ export default function AdminAdsGeneratorPage() {
     }
   }, []);
 
-  const handleSaveApiKey = (key: string, provider?: 'gemini' | 'groq' | 'openrouter' | 'nlp') => {
+  const handleSaveApiKey = (key: string, provider?: 'gemini' | 'groq' | 'openrouter') => {
     setApiKey(key);
     const targetProvider = provider || aiSource;
     setAiSource(targetProvider);
@@ -204,9 +204,12 @@ export default function AdminAdsGeneratorPage() {
     tags: activeDesign?.tags || ['jersi', 'sublimasi'],
   };
 
+  const [generationError, setGenerationError] = useState<string | null>(null);
+
   const handleGenerateAi = async () => {
     if (!userPrompt.trim()) return;
     setIsGeneratingAi(true);
+    setGenerationError(null);
 
     try {
       const response = await fetch('/api/admin/ads/generate', {
@@ -222,20 +225,25 @@ export default function AdminAdsGeneratorPage() {
         }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.variations && Array.isArray(data.variations) && data.variations.length > 0) {
-          setAiVariations(data.variations);
-          setSelectedVariationIndex(0);
-          if (data.source?.includes('groq')) setAiSource('groq');
-          else if (data.source?.includes('gemini')) setAiSource('gemini');
-          else setAiSource('nlp');
-        }
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Gagal menjana copywriting AI. Sila semak Kunci API anda.');
       }
-      setStudioStep('result');
-    } catch (err) {
+
+      if (data.variations && Array.isArray(data.variations) && data.variations.length > 0) {
+        setAiVariations(data.variations);
+        setSelectedVariationIndex(0);
+        if (data.source?.includes('groq')) setAiSource('groq');
+        else if (data.source?.includes('gemini')) setAiSource('gemini');
+        else if (data.source?.includes('openrouter')) setAiSource('openrouter');
+        setStudioStep('result');
+      } else {
+        throw new Error('Respons model AI tidak mengandungi variasi yang sah.');
+      }
+    } catch (err: any) {
       console.error('Failed to generate ads copy:', err);
-      setStudioStep('result');
+      setGenerationError(err?.message || 'Ralat sambungan ke API Model AI.');
     } finally {
       setIsGeneratingAi(false);
     }
@@ -385,7 +393,24 @@ ${activeVariation.whatsappMessage}`;
             {/* STEP 1: INDUSTRY STANDARD UNIFIED PROMPT CARD */}
             {studioStep === 'prompt' && (
               <div className="min-h-[62vh] flex flex-col justify-center items-center py-12 px-4 animate-in fade-in">
-                <div className="w-full max-w-3xl">
+                <div className="w-full max-w-3xl space-y-4">
+                  {/* Error Notification Banner if API error occurs */}
+                  {generationError && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-2xl p-4 flex items-start justify-between gap-3 shadow-xs">
+                      <div className="flex-1">
+                        <p className="font-semibold mb-0.5">Ralat Kredensial AI Model</p>
+                        <p className="text-red-600">{generationError}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowKeyModal(true)}
+                        className="px-3 py-1.5 bg-red-600 text-white rounded-xl text-xs font-medium hover:bg-red-700 transition-colors shrink-0"
+                      >
+                        Tetapkan API Key
+                      </button>
+                    </div>
+                  )}
+
                   {/* Unified Industry Standard Prompt Card */}
                   <div className="bg-white rounded-3xl border border-slate-300 shadow-sm focus-within:border-slate-800 focus-within:shadow-md transition-all p-3.5 sm:p-4 space-y-3">
                     {/* Attachment Preview INSIDE Prompt Box at the top */}
@@ -998,10 +1023,9 @@ ${activeVariation.whatsappMessage}`;
                   onChange={(e) => setAiSource(e.target.value as any)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 cursor-pointer"
                 >
-                  <option value="groq">Groq (Llama 3.3 / GPT-OSS 120B)</option>
-                  <option value="gemini">Google Gemini (Flash / Pro)</option>
-                  <option value="openrouter">OpenRouter AI</option>
-                  <option value="nlp">Enjin Semantik SVF (Tempatan)</option>
+                  <option value="groq">Groq Cloud (Llama 3.3 70B Versatile / Mixtral)</option>
+                  <option value="gemini">Google Gemini (2.0 Flash / Pro)</option>
+                  <option value="openrouter">OpenRouter AI (Multi-Model Gateway)</option>
                 </select>
               </div>
 
