@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppStore } from '@/lib/store/app-store';
 import { AdPlatform, AdObjective, AdCreative, AdCampaign, AdPlatformConnection } from '@/types/ads';
 import { INITIAL_PLATFORMS, INITIAL_CAMPAIGNS } from '@/lib/ads/ad-templates';
@@ -21,7 +21,11 @@ import {
   RefreshCw,
   Info,
   Wand2,
-  CheckCircle2
+  CheckCircle2,
+  Key,
+  SlidersHorizontal,
+  Bot,
+  X
 } from 'lucide-react';
 
 interface AiVariation {
@@ -61,6 +65,38 @@ export default function AdminAdsGeneratorPage() {
   const [selectedDesignId, setSelectedDesignId] = useState<string>(designs[0]?.id || '');
   const [dailyBudget, setDailyBudget] = useState<number>(30);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [aiSource, setAiSource] = useState<'gemini' | 'nlp'>('nlp');
+  const [geminiApiKey, setGeminiApiKey] = useState('');
+  const [showKeyModal, setShowKeyModal] = useState(false);
+
+  // Load API Key from localStorage
+  useEffect(() => {
+    try {
+      const savedKey = localStorage.getItem('svf_gemini_api_key');
+      if (savedKey) {
+        setGeminiApiKey(savedKey);
+        setAiSource('gemini');
+      }
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  const handleSaveApiKey = (key: string) => {
+    setGeminiApiKey(key);
+    try {
+      if (key.trim()) {
+        localStorage.setItem('svf_gemini_api_key', key.trim());
+        setAiSource('gemini');
+      } else {
+        localStorage.removeItem('svf_gemini_api_key');
+        setAiSource('nlp');
+      }
+    } catch {
+      // Ignore
+    }
+    setShowKeyModal(false);
+  };
 
   // 3 Clean AI Generated Variations (Zero Emojis)
   const [selectedVariationIndex, setSelectedVariationIndex] = useState(0);
@@ -113,59 +149,50 @@ export default function AdminAdsGeneratorPage() {
     id: 'active-preview',
     productName: activeDesign?.title || 'Jersi Kustom Sublimasi',
     imageUrl: activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.jpg',
-    headline: activeVariation.headline,
-    secondaryHeadline: activeVariation.secondaryHeadline,
-    primaryText: activeVariation.primaryText,
-    callToAction: activeVariation.callToAction,
+    headline: activeVariation?.headline || 'Kilang Cetak Jersi Sublimasi & DTF',
+    secondaryHeadline: activeVariation?.secondaryHeadline || '',
+    primaryText: activeVariation?.primaryText || '',
+    callToAction: activeVariation?.callToAction || 'Dapatkan Sebut Harga',
     targetUrl: 'https://svfapparel.my/catalog',
-    whatsappMessage: activeVariation.whatsappMessage,
+    whatsappMessage: activeVariation?.whatsappMessage || '',
     tags: activeDesign?.tags || ['jersi', 'sublimasi'],
   };
 
-  const handleGenerateAi = () => {
+  const handleGenerateAi = async () => {
+    if (!userPrompt.trim()) return;
     setIsGeneratingAi(true);
-    setTimeout(() => {
-      const promptLower = userPrompt.toLowerCase();
-      const isCorporate = promptLower.includes('korporat') || promptLower.includes('syarikat');
-      const isDtf = promptLower.includes('dtf') || promptLower.includes('baju');
 
-      const itemType = isDtf ? 'Baju DTF' : isCorporate ? 'Jersi Korporat' : 'Jersi Pasukan';
+    try {
+      const response = await fetch('/api/admin/ads/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: userPrompt.trim(),
+          platform: selectedPlatform,
+          objective: selectedObjective,
+          productName: activeDesign?.title || 'Jersi Sublimasi Kustom',
+          category: activeDesign?.category || 'Jersi Sukan',
+          apiKey: geminiApiKey.trim() || undefined,
+        }),
+      });
 
-      setAiVariations([
-        {
-          id: `var-${Date.now()}-1`,
-          angleName: 'Sudut Tawaran & Diskaun Kuantiti',
-          tagline: 'Pakej Pukal Berbaloi',
-          headline: `Tawaran Khas Cetak ${itemType} Terus Dari Kilang`,
-          secondaryHeadline: 'Diskaun Khas Tempahan Pasukan & Korporat',
-          primaryText: `${userPrompt.trim()} Nikmati penjimatan terus dari kilang SVF Apparel dengan kualiti cetakan tahan luntur dan kain sejuk berkualiti tinggi.`,
-          callToAction: 'Dapatkan Sebut Harga',
-          whatsappMessage: `Salam SVF, saya ingin bertanyakan tawaran promosi bagi ${itemType.toLowerCase()}.`,
-        },
-        {
-          id: `var-${Date.now()}-2`,
-          angleName: 'Sudut Kualiti & Material Drifit',
-          tagline: 'Kualiti Eksport Premium',
-          headline: `${itemType} Kustom Berkualiti Tinggi | Fabrik Sejuk Anti-Peluh`,
-          secondaryHeadline: 'Rekaan Eksklusif & Kemasan Jahitan Kemas',
-          primaryText: `Tingkatkan imej pasukan anda dengan ${itemType.toLowerCase()} berkualiti tinggi. Warna tajam, jahitan kukuh, dan selesa dipakai sepanjang aktiviti sukan.`,
-          callToAction: 'Kirim Mesej WhatsApp',
-          whatsappMessage: `Hai SVF Apparel, saya berminat dengan material premium bagi tempahan ${itemType.toLowerCase()}.`,
-        },
-        {
-          id: `var-${Date.now()}-3`,
-          angleName: 'Sudut Kelajuan & Tempahan Mudah',
-          tagline: 'Siap Pantas 7 Hari',
-          headline: `Tempah ${itemType} Siap Pantas 7 Hari Bekerja`,
-          secondaryHeadline: 'Penghantaran Pantas ke Seluruh Malaysia',
-          primaryText: `Tempahan ${itemType.toLowerCase()} kini lebih mudah dan pantas. Konsultasi rekaan percuma dan penghantaran terjamin terus ke lokasi anda.`,
-          callToAction: 'Tempah Sekarang',
-          whatsappMessage: `Salam SVF, saya ingin membuat tempahan ${itemType.toLowerCase()} sekarang.`,
-        },
-      ]);
-      setSelectedVariationIndex(0);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.variations && Array.isArray(data.variations) && data.variations.length > 0) {
+          setAiVariations(data.variations);
+          setSelectedVariationIndex(0);
+          if (data.source === 'gemini-1.5-flash') {
+            setAiSource('gemini');
+          } else {
+            setAiSource('nlp');
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to generate ads copy:', err);
+    } finally {
       setIsGeneratingAi(false);
-    }, 900);
+    }
   };
 
   const handleToggleConnect = (platformId: string) => {
@@ -301,17 +328,38 @@ ${activeVariation.whatsappMessage}`;
         <div className="space-y-6">
           {/* Top Hero: Clean AI Prompt Bar */}
           <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-7 shadow-xs space-y-4">
-            <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center border border-slate-200">
-                <Sparkles className="w-4 h-4 text-slate-600" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-slate-100">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center border border-slate-200">
+                  <Sparkles className="w-4 h-4 text-slate-600" />
+                </div>
+                <div>
+                  <h2 className="text-base font-medium text-slate-800">
+                    Arahkan AI Untuk Menjana Kempen Iklan
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Taipkan kata kunci, tawaran, material, atau pilih templat pantas di bawah.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-base font-medium text-slate-800">
-                  Arahkan AI Untuk Menjana Kempen Iklan
-                </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Nyatakan objektif promosi anda atau pilih cadangan templat di bawah.
-                </p>
+
+              {/* AI Engine Status Pill & Settings */}
+              <div className="flex items-center space-x-2 self-start sm:self-auto">
+                <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-xs">
+                  <Bot className="w-3.5 h-3.5 text-blue-600" />
+                  <span className="text-slate-700 font-medium">
+                    {aiSource === 'gemini' ? 'Google Gemini 1.5 Flash' : 'Enjin AI Pintar'}
+                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowKeyModal(true)}
+                  className="p-1.5 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 transition-colors"
+                  title="Tetapan Kunci API Google Gemini"
+                >
+                  <Key className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
 
@@ -351,7 +399,7 @@ ${activeVariation.whatsappMessage}`;
                 {isGeneratingAi ? (
                   <>
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Menjana Strategi AI...</span>
+                    <span>Otak AI Sedang Menulis...</span>
                   </>
                 ) : (
                   <>
@@ -737,6 +785,71 @@ ${activeVariation.whatsappMessage}`;
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Google Gemini API Key Modal */}
+      {showKeyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-7 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                  <Key className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-slate-900">Tetapan Google Gemini AI</h3>
+                  <p className="text-xs text-slate-400">Sambungkan kunci API untuk model LLM langsung.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowKeyModal(false)}
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 pt-1">
+              <div>
+                <label className="text-xs font-medium text-slate-700 block mb-1.5">
+                  Google Gemini API Key
+                </label>
+                <input
+                  type="password"
+                  value={geminiApiKey}
+                  onChange={(e) => setGeminiApiKey(e.target.value)}
+                  placeholder="AIzaSy..."
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                />
+              </div>
+
+              <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 text-[11px] text-slate-600 space-y-1">
+                <p className="font-medium text-slate-800">Panduan Ringkas:</p>
+                <p>1. Dapatkan kunci API percuma di <span className="font-mono text-blue-600">aistudio.google.com</span>.</p>
+                <p>2. Tampalkan di ruangan atas dan klik Simpan.</p>
+                <p>3. Jika dikosongkan, sistem automatik menggunakan <em>Enjin AI Pintar Tempatan</em>.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowKeyModal(false)}
+                className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSaveApiKey(geminiApiKey)}
+                className="px-5 py-2 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium shadow-xs transition-colors"
+              >
+                Simpan & Aktifkan
+              </button>
+            </div>
           </div>
         </div>
       )}
