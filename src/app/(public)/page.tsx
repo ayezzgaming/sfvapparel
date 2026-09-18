@@ -10,7 +10,10 @@ import {
   Truck,
   Clock,
   CheckCircle2,
+  Quote,
+  Sparkles
 } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa6';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 
 interface ProductDetail {
@@ -449,6 +452,80 @@ const POLICIES: Record<string, PolicyModalContent> = {
   },
 };
 
+interface ProductionGalleryItem {
+  id: string;
+  title: string;
+  category: string;
+  fabric: string;
+  image: string;
+  client: string;
+  tag: string;
+  tagBg: string;
+}
+
+const PRODUCTION_GALLERY: ProductionGalleryItem[] = [
+  {
+    id: 'gal-1',
+    title: 'Jersi Bola Sepak Harimau FC',
+    category: 'Sublimasi Penuh',
+    fabric: 'Drifit Milano 165 GSM • Kolar V-Pro',
+    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1000&auto=format&fit=crop&q=80',
+    client: '50 helai • FC Harimau Selangor',
+    tag: 'Full Sublimation',
+    tagBg: 'bg-[#0052FF]',
+  },
+  {
+    id: 'gal-2',
+    title: 'Jersi E-Sports Valkyrie Cyber',
+    category: 'Sublimasi Penuh HD',
+    fabric: 'Microfiber Smooth • Potongan Raglan',
+    image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1000&auto=format&fit=crop&q=80',
+    client: '25 helai • Valkyrie MY E-Sports',
+    tag: 'Esports Pro',
+    tagBg: 'bg-indigo-600',
+  },
+  {
+    id: 'gal-3',
+    title: 'Baju T-Shirt Streetwear Neo-Tokyo',
+    category: 'Cetakan DTF HD',
+    fabric: 'Heavyweight Cotton 24s • Saiz Cetak A3',
+    image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=1000&auto=format&fit=crop&q=80',
+    client: '80 helai • Neo Apparel Store',
+    tag: 'DTF Transfer',
+    tagBg: 'bg-emerald-600',
+  },
+  {
+    id: 'gal-4',
+    title: 'Jersi Larian AeroFlow Marathon',
+    category: 'Sublimasi Penuh',
+    fabric: 'Poly-Mesh Honeycomb • Ultra Breathable',
+    image: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=1000&auto=format&fit=crop&q=80',
+    client: '120 helai • KL Running Squad',
+    tag: 'Running Kit',
+    tagBg: 'bg-amber-600',
+  },
+  {
+    id: 'gal-5',
+    title: 'Hoodie Fleece Heavyweight Glitch',
+    category: 'DTF Elastomeric',
+    fabric: 'Cotton Fleece 320 GSM • Cetakan Belakang Jumbo A2',
+    image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=1000&auto=format&fit=crop&q=80',
+    client: '35 helai • Glitch Society KL',
+    tag: 'Heavy Hoodie',
+    tagBg: 'bg-purple-600',
+  },
+  {
+    id: 'gal-6',
+    title: 'Baju Polo Pique Kelab Korporat',
+    category: 'Sublimasi & DTF',
+    fabric: 'Pique Poly-Blend • Kolar Butang & Lencana Dada',
+    image: 'https://images.unsplash.com/photo-1625910513413-7a718797f1df?w=1000&auto=format&fit=crop&q=80',
+    client: '60 helai • Apex Engineering',
+    tag: 'Corporate Polo',
+    tagBg: 'bg-sky-600',
+  },
+];
+
 export default function HomePage() {
   const [selectedProduct, setSelectedProduct] = useState<ProductDetail>(PRODUCTS[0]);
   const [isProductSheetOpen, setIsProductSheetOpen] = useState(false);
@@ -461,12 +538,69 @@ export default function HomePage() {
 
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
+  // Production Gallery Auto-Swap State & Ref
+  const galleryScrollRef = useRef<HTMLDivElement>(null);
+  const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
+  const [isGalleryPaused, setIsGalleryPaused] = useState(false);
+
   // Testimonial Auto-Swap State & Ref
   const testimonialScrollRef = useRef<HTMLDivElement>(null);
   const [activeTestiIndex, setActiveTestiIndex] = useState(0);
   const [isTestiPaused, setIsTestiPaused] = useState(false);
 
-  // Auto-Swap Timer (Smoothly moves every 4 seconds)
+  // Production Gallery Auto-Swap Timer (moves smoothly every 3.8 seconds)
+  useEffect(() => {
+    if (isGalleryPaused) return;
+
+    const interval = setInterval(() => {
+      if (!galleryScrollRef.current) return;
+      const container = galleryScrollRef.current;
+      const nextIndex = (activeGalleryIndex + 1) % PRODUCTION_GALLERY.length;
+      const child = container.children[nextIndex] as HTMLElement;
+      if (child) {
+        const scrollLeft = child.offsetLeft - (container.clientWidth - child.offsetWidth) / 2;
+        container.scrollTo({ left: Math.max(0, scrollLeft), behavior: 'smooth' });
+      }
+      setActiveGalleryIndex(nextIndex);
+    }, 3800);
+
+    return () => clearInterval(interval);
+  }, [isGalleryPaused, activeGalleryIndex]);
+
+  const scrollToGallery = (index: number) => {
+    if (!galleryScrollRef.current) return;
+    const container = galleryScrollRef.current;
+    const child = container.children[index] as HTMLElement;
+    if (child) {
+      const scrollLeft = child.offsetLeft - (container.clientWidth - child.offsetWidth) / 2;
+      container.scrollTo({ left: Math.max(0, scrollLeft), behavior: 'smooth' });
+    }
+    setActiveGalleryIndex(index);
+  };
+
+  const handleGalleryScroll = () => {
+    if (!galleryScrollRef.current) return;
+    const container = galleryScrollRef.current;
+    const scrollCenter = container.scrollLeft + container.clientWidth / 2;
+    let closestIndex = 0;
+    let minDistance = Infinity;
+
+    Array.from(container.children).forEach((child, index) => {
+      const el = child as HTMLElement;
+      const childCenter = el.offsetLeft + el.offsetWidth / 2;
+      const distance = Math.abs(scrollCenter - childCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = index;
+      }
+    });
+
+    if (closestIndex !== activeGalleryIndex) {
+      setActiveGalleryIndex(closestIndex);
+    }
+  };
+
+  // Testimonial Auto-Swap Timer (Smoothly moves every 4.2 seconds)
   useEffect(() => {
     if (isTestiPaused) return;
 
@@ -743,9 +877,60 @@ export default function HomePage() {
       </div>
 
       {/* =========================================================================
+          QUOTE / SLOGAN CARD: ANDA BAYANGKAN, KAMI JADIKAN REALITI
+         ========================================================================= */}
+      <div className="w-full bg-white pt-6 pb-2 px-4">
+        <div className="relative overflow-hidden rounded-[26px] bg-gradient-to-br from-[#0052FF] via-[#0044D6] to-[#0A1847] p-5 sm:p-6 text-white shadow-lg shadow-blue-600/20 border border-blue-400/25">
+          {/* Subtle Glassmorphism Ambient Glows */}
+          <div className="absolute -top-12 -right-12 w-40 h-40 bg-blue-400/20 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-indigo-400/20 rounded-full blur-2xl pointer-events-none" />
+          <Quote className="absolute top-4 right-4 w-12 h-12 text-white/10 rotate-180 pointer-events-none" />
+
+          <div className="relative z-10 space-y-3">
+            {/* Top Minimal Badge */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-white text-[10.5px] font-bold uppercase tracking-wider border border-white/20">
+              <Sparkles className="w-3.5 h-3.5 text-blue-200" />
+              <span>Realiti Rekaan Anda</span>
+            </div>
+
+            {/* Main Headline Slogan */}
+            <h3 className="text-[19px] sm:text-[21px] font-extrabold text-white tracking-tight leading-snug">
+              Anda bayangkan, <br />
+              <span className="text-blue-200 underline decoration-blue-300/40 underline-offset-4">
+                Kami Jadikan Realiti.
+              </span>
+            </h3>
+
+            {/* Sub-headline & Description */}
+            <div className="space-y-1.5 pt-1.5 border-t border-white/15">
+              <p className="text-xs sm:text-[13px] font-bold text-white/95 tracking-tight">
+                Anda Design atau sekadar lakaran?
+              </p>
+              <p className="text-[11.5px] sm:text-xs text-blue-100/90 leading-relaxed font-normal">
+                Hantar kepada kami. Kami bantu ubah idea anda menjadi baju sublimation yang nampak WOW dan menepati citarasa anda.
+              </p>
+            </div>
+
+            {/* Interactive WhatsApp Action */}
+            <div className="pt-1.5">
+              <a
+                href="https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ada%20lakaran/idea%20rekaan%20baju%20yang%20ingin%20dijadikan%20realiti."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#0052FF] hover:bg-blue-50 font-bold text-xs shadow-md shadow-black/10 active:scale-95 transition-all"
+              >
+                <FaWhatsapp className="w-4 h-4 text-[#25D366]" />
+                <span>Hantar Idea / Lakaran Sekarang →</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
           SECTION 3: PROSES PRODUKSI (Latar Putih Bersih - Video Portrait Reel Swipe)
          ========================================================================= */}
-      <div className="w-full bg-white pt-10 pb-16 px-4 border-t border-gray-100">
+      <div className="w-full bg-white pt-6 pb-12 px-4 border-t border-gray-100">
         <div className="mb-5 flex justify-between items-end">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] text-[10.5px] font-bold uppercase tracking-wider mb-1.5">
@@ -825,6 +1010,123 @@ export default function HomePage() {
               )}
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* =========================================================================
+          SECTION 3.5: HASIL PRODUKSI KILANG (Auto-Swap Showcase Image Slider)
+         ========================================================================= */}
+      <div className="w-full bg-[#0F172A] text-white pt-10 pb-14 px-4 relative overflow-hidden border-t border-slate-800">
+        {/* Subtle Background Glow Accent */}
+        <div className="absolute top-0 right-0 w-72 h-72 bg-[#0052FF]/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 mb-5 flex justify-between items-end">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10.5px] font-bold uppercase tracking-wider mb-1.5 border border-blue-400/20">
+              <Sparkles className="w-3 h-3 text-blue-300" />
+              <span>Galeri Output</span>
+            </div>
+            <h2 className="text-xl font-bold text-white tracking-tight">Hasil Produksi Kilang</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Koleksi gambar sebenar jersi & pakaian tempahan siap</p>
+          </div>
+
+          {/* Quick Counter */}
+          <span className="text-[11px] font-bold text-slate-300 bg-white/10 px-2.5 py-1 rounded-full border border-white/10">
+            {activeGalleryIndex + 1} / {PRODUCTION_GALLERY.length}
+          </span>
+        </div>
+
+        {/* Horizontal Auto-Swap Carousel Container */}
+        <div 
+          ref={galleryScrollRef}
+          onScroll={handleGalleryScroll}
+          onMouseEnter={() => setIsGalleryPaused(true)}
+          onMouseLeave={() => setIsGalleryPaused(false)}
+          onTouchStart={() => setIsGalleryPaused(true)}
+          onTouchEnd={() => setIsGalleryPaused(false)}
+          className="relative z-10 flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar" 
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {PRODUCTION_GALLERY.map((item, idx) => {
+            const isActive = idx === activeGalleryIndex;
+            return (
+              <div 
+                key={item.id}
+                onClick={() => scrollToGallery(idx)}
+                className={`shrink-0 w-[84vw] max-w-[340px] aspect-[4/4.5] rounded-[28px] overflow-hidden snap-center relative border transition-all duration-300 cursor-pointer shadow-xl ${
+                  isActive 
+                    ? 'border-blue-400/60 shadow-blue-500/20 ring-2 ring-blue-500/30' 
+                    : 'border-white/10 opacity-85'
+                }`}
+              >
+                {/* Showcase Photo */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={item.image} 
+                  alt={item.title} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                />
+
+                {/* Dark Vignette Bottom Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent pointer-events-none" />
+
+                {/* Top Badge */}
+                <div className="absolute top-3.5 left-3.5 z-10 flex items-center gap-2">
+                  <span className={`${item.tagBg} text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm`}>
+                    {item.tag}
+                  </span>
+                </div>
+
+                {/* Bottom Overlay Info */}
+                <div className="absolute inset-x-0 bottom-0 p-4 space-y-1.5 z-10">
+                  <span className="text-[10.5px] font-semibold text-blue-300 block">
+                    {item.client}
+                  </span>
+                  <h3 className="text-[16px] font-bold text-white leading-snug drop-shadow-md">
+                    {item.title}
+                  </h3>
+                  <p className="text-[11.5px] text-slate-300 leading-relaxed font-normal">
+                    {item.fabric}
+                  </p>
+
+                  <div className="pt-2 flex items-center justify-between border-t border-white/15 text-[11px]">
+                    <span className="text-white/80 font-medium">Kualiti Piawai Kilang SFV</span>
+                    <a
+                      href={`https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20berminat%20dengan%20hasil%20produksi%20*${encodeURIComponent(item.title)}*`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 font-bold text-blue-300 hover:text-white transition-colors"
+                    >
+                      <span>Tempah Seperti Ini</span>
+                      <span>→</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Interactive Indicator Dots */}
+        <div className="relative z-10 flex justify-center items-center gap-1.5 pt-2">
+          {PRODUCTION_GALLERY.map((_, idx) => {
+            const isActive = idx === activeGalleryIndex;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => scrollToGallery(idx)}
+                aria-label={`Lihat hasil produksi ${idx + 1}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  isActive 
+                    ? 'w-6 bg-[#0052FF]' 
+                    : 'w-2 bg-white/20 hover:bg-white/40'
+                }`}
+              />
+            );
+          })}
         </div>
       </div>
 
