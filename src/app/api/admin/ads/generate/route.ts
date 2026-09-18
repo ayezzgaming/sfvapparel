@@ -75,26 +75,28 @@ async function buildBusinessGroundingContext(selectedProduct?: string, selectedC
     .join('\n');
 
   return `
-MAKLUMAT PERNIAGAAN & PENGKALAN DATA KILANG (SVF APPAREL MALAYSIA):
-- Nama Syarikat: ${company.company_name || 'SVF APPAREL SDN. BHD.'} (${company.brand_name || 'SVF APPAREL'})
-- Industri: Kilang Pembuatan Jersi Sublimasi Penuh & Percetakan DTF Terkemuka Malaysia.
-- Lokasi Kilang: ${company.address || 'Kawasan Perindustrian Shah Alam, Selangor, Malaysia'}
-- Nombor Khidmat Pelanggan / WhatsApp: ${company.whatsapp_number || '+60 19-332 1100'}
-- Tagline & Misi: ${company.tagline || 'Pakar Pembuatan Jersi Sublimasi & Percetakan DTF Terkemuka Malaysia'}
+MAKLUMAT PERNIAGAAN & PENGKALAN DATA SISTEM:
+- Nama Syarikat: ${company.company_name || 'SFV Ventures Marketing'}
+- Jenama Rasmi: ${company.brand_name || 'SFV APPAREL'}
+- No Pendaftaran: ${company.registration_number || '202303194821 (003492811-M)'}
+- Industri: Pembuatan Jersi Sublimasi Penuh, Cetakan DTF & Sulaman Pakaian Kustom Berkualiti Tinggi Malaysia.
+- Lokasi & Alamat Operasi: ${company.address || 'Kajang, Selangor, Malaysia'}
+- Nombor Khidmat Pelanggan / WhatsApp: ${company.phone || company.whatsapp_number || '+60 14-859 9138'}
+- Tagline & Misi Jenama: ${company.tagline || 'Pakar pembuatan jersi sublimasi penuh, cetakan DTF & sulaman pakaian kustom berkualiti tinggi di Malaysia.'}
 
-KELEBIHAN TEKNOLOGI KILANG (USP):
+KELEBIHAN TEKNOLOGI KILANG & SPESIFIKASI (USP DARI DATABASE):
 1. Cetakan Sublimasi HD Penuh: Dakwat meresap terus ke serat benang, tidak luntur, tidak merekah, warna ultra-tajam.
-2. Fabrik Sukan Premium:
+2. Fabrik Sukan Premium (Database):
 ${fabricSummaries}
-3. Pilihan Potongan & Kolar:
+3. Pilihan Potongan & Kolar (Database):
 ${cutSummaries}
-4. Penjimatan Harga Kilang & Diskaun Kuantiti:
+4. Penjimatan Harga Kilang & Diskaun Kuantiti (Database):
 ${tierSummaries}
-5. Jaminan & Servis Percuma: Percuma rekaan grafik kustom (nama, nombor, logo pasukan), jaminan siap pantas 7-10 hari bekerja, penghantaran ke seluruh Malaysia.
+5. Jaminan & Servis: Percuma rekaan grafik kustom (nama, nombor, logo pasukan), jaminan siap pantas 7-10 hari bekerja, penghantaran ke seluruh Malaysia.
 
 PRODUK SASARAN KEMPEN SEMASA:
 - Nama Produk: ${selectedProduct || 'Jersi Sukan Kustom Sublimasi'}
-- Kategori: ${selectedCategory || 'Jersi Sukan / Pakaian Kustom'}
+- Kategori: ${selectedCategory || 'Jersi Sukan'}
 `;
 }
 

@@ -52,7 +52,8 @@ interface AiVariation {
 }
 
 export default function AdminAdsGeneratorPage() {
-  const { designs } = useAppStore();
+  const { designs, companySettings } = useAppStore();
+  const brandName = companySettings?.brand_name || 'SFV APPAREL';
 
   // Navigation Tabs & Generation Workflow Steps
   const [activeTab, setActiveTab] = useState<'create' | 'connections' | 'campaigns'>('create');
@@ -156,7 +157,7 @@ export default function AdminAdsGeneratorPage() {
       primaryText:
         'Jimat kos jersi pasukan anda terus dari kilang. Cetakan sublimasi tajam tidak luntur, fabrik Drifit Milano sejuk, siap dalam tempoh 7-10 hari bekerja. Hubungi kami untuk sebut harga segera di WhatsApp.',
       callToAction: 'Dapatkan Sebut Harga',
-      whatsappMessage: 'Salam SVF Apparel, saya ingin mendapatkan sebut harga jersi futsal terus dari kilang.',
+      whatsappMessage: 'Salam ' + (companySettings?.brand_name || 'SFV APPAREL') + ', saya ingin mendapatkan sebut harga jersi futsal terus dari kilang.',
     },
     {
       id: 'var-2',
@@ -165,20 +166,20 @@ export default function AdminAdsGeneratorPage() {
       headline: 'Jersi Sukan Kustom Eksklusif | Kain Milano Anti-Peluh',
       secondaryHeadline: 'Percuma Rekaan Nama, Nombor & Logo Pasukan',
       primaryText:
-        'Tingkatkan identiti pasukan anda dengan jersi kustom eksklusif daripada SVF APPAREL. Warna tajam beresolusi tinggi, kemasan jahitan kukuh, dan rekaan disesuaikan secara profesional.',
+        'Tingkatkan identiti pasukan anda dengan jersi kustom eksklusif daripada ' + (companySettings?.brand_name || 'SFV APPAREL') + '. Warna tajam beresolusi tinggi, kemasan jahitan kukuh, dan rekaan disesuaikan secara profesional.',
       callToAction: 'Kirim Mesej WhatsApp',
-      whatsappMessage: 'Hai SVF, saya berminat untuk membuat rekaan jersi kustom premium untuk pasukan kami.',
+      whatsappMessage: 'Hai ' + (companySettings?.brand_name || 'SFV APPAREL') + ', saya berminat untuk membuat rekaan jersi kustom premium untuk pasukan kami.',
     },
     {
       id: 'var-3',
       angleName: 'Sudut Kelajuan & Jaminan Siap Pantas',
       tagline: 'Jaminan Siap 7 Hari & Penghantaran Selamat',
       headline: 'Tempah Jersi Siap Pantas 7 Hari | Penghantaran Seluruh Malaysia',
-      secondaryHeadline: 'Kualiti Terjamin Dari Kilang SVF APPAREL',
+      secondaryHeadline: 'Kualiti Terjamin Dari Kilang ' + (companySettings?.brand_name || 'SFV APPAREL'),
       primaryText:
         'Perlukan jersi dengan segera untuk perlawanan minggu hadapan? Kilang kami memproses tempahan pantas 7 hari bekerja dengan jaminan kualiti dan penghantaran selamat ke seluruh Malaysia.',
       callToAction: 'Tempah Sekarang',
-      whatsappMessage: 'Salam SVF, saya ada tempahan jersi segera, adakah boleh siap dalam 7 hari?',
+      whatsappMessage: 'Salam ' + (companySettings?.brand_name || 'SFV APPAREL') + ', saya ada tempahan jersi segera, adakah boleh siap dalam 7 hari?',
     },
   ]);
 
@@ -193,13 +194,13 @@ export default function AdminAdsGeneratorPage() {
 
   const currentCreative: AdCreative = {
     id: 'active-preview',
-    productName: customTitle || activeDesign?.title || 'Jersi Kustom Sublimasi',
+    productName: customTitle || activeDesign?.title || 'Jersi Sukan Kustom Sublimasi',
     imageUrl: customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.jpg',
     headline: activeVariation?.headline || 'Kilang Cetak Jersi Sublimasi & DTF',
     secondaryHeadline: activeVariation?.secondaryHeadline || '',
     primaryText: activeVariation?.primaryText || '',
     callToAction: activeVariation?.callToAction || 'Dapatkan Sebut Harga',
-    targetUrl: 'https://svfapparel.my/catalog',
+    targetUrl: companySettings?.website_url || 'https://sfvapparel.my/catalog',
     whatsappMessage: activeVariation?.whatsappMessage || '',
     tags: activeDesign?.tags || ['jersi', 'sublimasi'],
   };
@@ -347,13 +348,13 @@ ${activeVariation.whatsappMessage}`;
           </div>
 
           {/* Tab Switcher */}
-          <div className="bg-slate-100 p-1 rounded-full border border-slate-200 flex items-center self-start sm:self-auto">
+          <div className="flex items-center space-x-1 bg-slate-100/80 p-1 rounded-2xl">
             <button
               type="button"
               onClick={() => setActiveTab('create')}
-              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
                 activeTab === 'create'
-                  ? 'bg-white text-slate-900 shadow-xs'
+                  ? 'bg-white text-slate-900 font-semibold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -362,23 +363,20 @@ ${activeVariation.whatsappMessage}`;
             <button
               type="button"
               onClick={() => setActiveTab('connections')}
-              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all flex items-center space-x-1.5 ${
+              className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
                 activeTab === 'connections'
-                  ? 'bg-white text-slate-900 shadow-xs'
+                  ? 'bg-white text-slate-900 font-semibold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <span>Sambungan API</span>
-              <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full font-medium">
-                {platforms.filter((p) => p.isConnected).length}/{platforms.length}
-              </span>
+              Sambungan API
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('campaigns')}
-              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
                 activeTab === 'campaigns'
-                  ? 'bg-white text-slate-900 shadow-xs'
+                  ? 'bg-white text-slate-900 font-semibold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -396,7 +394,7 @@ ${activeVariation.whatsappMessage}`;
                 <div className="w-full max-w-3xl space-y-4">
                   {/* Error Notification Banner if API error occurs */}
                   {generationError && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-2xl p-4 flex items-start justify-between gap-3 shadow-xs">
+                    <div className="bg-red-50 text-red-700 text-xs rounded-2xl p-4 flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <p className="font-semibold mb-0.5">Ralat Kredensial AI Model</p>
                         <p className="text-red-600">{generationError}</p>
@@ -412,12 +410,12 @@ ${activeVariation.whatsappMessage}`;
                   )}
 
                   {/* Unified Industry Standard Prompt Card */}
-                  <div className="bg-white rounded-3xl border border-slate-300 shadow-sm focus-within:border-slate-800 focus-within:shadow-md transition-all p-3.5 sm:p-4 space-y-3">
+                  <div className="bg-slate-50/90 rounded-3xl p-4 space-y-3">
                     {/* Attachment Preview INSIDE Prompt Box at the top */}
                     {(customImage || activeDesign) && (
-                      <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                        <div className="flex items-center space-x-3 bg-slate-50 border border-slate-200 rounded-2xl p-2 pr-3 max-w-sm">
-                          <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 border border-slate-300 shrink-0">
+                      <div className="flex items-center gap-2 pb-2">
+                        <div className="flex items-center space-x-3 bg-white rounded-2xl p-2 pr-3 max-w-sm">
+                          <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 shrink-0">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.jpg'}
@@ -430,7 +428,7 @@ ${activeVariation.whatsappMessage}`;
                               {customTitle || activeDesign?.title}
                             </p>
                             <span className="text-[11px] text-slate-400 block truncate">
-                              {customImage ? 'Imej Dimuat Naik' : `Katalog SVF • ${activeDesign?.category || 'Jersi'}`}
+                              {customImage ? 'Imej Dimuat Naik' : `Katalog ${brandName} • ${activeDesign?.category || 'Jersi'}`}
                             </span>
                           </div>
                           <button
@@ -440,7 +438,7 @@ ${activeVariation.whatsappMessage}`;
                               setCustomTitle(null);
                               setSelectedDesignId(null);
                             }}
-                            className="w-6 h-6 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors shrink-0"
+                            className="w-6 h-6 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors shrink-0"
                             title="Padam lampiran"
                           >
                             <X className="w-3.5 h-3.5" />
@@ -465,7 +463,7 @@ ${activeVariation.whatsappMessage}`;
                     />
 
                     {/* Bottom Action Bar inside the box */}
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                    <div className="flex items-center justify-between pt-2">
                       <div className="flex items-center space-x-2" ref={attachMenuRef}>
                         {/* + (Plus) Attachment Button with Popover */}
                         <div className="relative">
@@ -474,8 +472,8 @@ ${activeVariation.whatsappMessage}`;
                             onClick={() => setShowAttachMenu(!showAttachMenu)}
                             className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0 ${
                               showAttachMenu
-                                ? 'bg-slate-900 text-white'
-                                : 'hover:bg-slate-100 text-slate-600 hover:text-slate-900'
+                                ? 'bg-slate-200 text-slate-900'
+                                : 'hover:bg-slate-200 text-slate-600 hover:text-slate-900'
                             }`}
                             title="Tambah gambar atau pilih produk katalog"
                           >
@@ -484,7 +482,7 @@ ${activeVariation.whatsappMessage}`;
 
                           {/* Attachment Popover (+ Menu) */}
                           {showAttachMenu && (
-                            <div className="absolute left-0 bottom-11 z-40 bg-white rounded-2xl border border-slate-200 shadow-xl p-1.5 w-60 space-y-1 text-left animate-in fade-in zoom-in-95">
+                            <div className="absolute left-0 bottom-11 z-40 bg-white rounded-2xl p-1.5 w-60 space-y-1 text-left animate-in fade-in zoom-in-95">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -506,20 +504,29 @@ ${activeVariation.whatsappMessage}`;
                                 className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
                               >
                                 <Upload className="w-4 h-4 text-slate-600" />
-                                <span>Muat Naik Gambar / Mockup</span>
+                                <span>Muat Naik Imej</span>
                               </button>
                             </div>
                           )}
                         </div>
 
+                        {/* Hidden File Input */}
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
+
                         {/* Model Selector Pill */}
                         <button
                           type="button"
                           onClick={() => setShowKeyModal(true)}
-                          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200/80 text-xs font-medium text-slate-700 transition-colors shrink-0"
+                          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-100 text-xs font-medium text-slate-700 transition-colors shrink-0"
                           title="Tetapan Model AI & Kunci API"
                         >
-                          <span>{aiSource === 'groq' ? 'Groq' : aiSource === 'gemini' ? 'Gemini' : aiSource === 'openrouter' ? 'OpenRouter' : 'Enjin AI'}</span>
+                          <span>{aiSource === 'groq' ? 'Groq' : aiSource === 'gemini' ? 'Gemini' : 'OpenRouter'}</span>
                           <ChevronDown className="w-3 h-3 text-slate-500" />
                         </button>
                       </div>
@@ -529,7 +536,7 @@ ${activeVariation.whatsappMessage}`;
                         type="button"
                         onClick={handleGenerateAi}
                         disabled={isGeneratingAi || !userPrompt.trim()}
-                        className="w-8 h-8 rounded-full bg-slate-900 hover:bg-black text-white flex items-center justify-center shadow-xs transition-colors shrink-0 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                        className="w-8 h-8 rounded-full bg-slate-900 hover:bg-black text-white flex items-center justify-center transition-colors shrink-0 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
                         title="Jana kempen iklan"
                       >
                         {isGeneratingAi ? (
@@ -544,16 +551,16 @@ ${activeVariation.whatsappMessage}`;
               </div>
             )}
 
-            {/* STEP 2: RESULT STUDIO - LEFT NAVIGATION & RIGHT LIVE PREVIEW */}
+            {/* STEP 2: RESULT STUDIO - 3-COLUMN SEPARATE SCROLL LAYOUT */}
             {studioStep === 'result' && (
               <div className="space-y-6 animate-in fade-in">
                 {/* Back / Prompt Summary Ribbon */}
-                <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                <div className="bg-slate-50/80 rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="flex items-center space-x-3">
                     <button
                       type="button"
                       onClick={() => setStudioStep('prompt')}
-                      className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors shrink-0"
+                      className="p-2 rounded-full bg-white hover:bg-slate-200 text-slate-700 transition-colors shrink-0"
                       title="Kembali ke halaman input"
                     >
                       <ArrowLeft className="w-4 h-4" />
@@ -572,7 +579,7 @@ ${activeVariation.whatsappMessage}`;
                     <button
                       type="button"
                       onClick={() => setStudioStep('prompt')}
-                      className="px-4 py-1.5 rounded-full text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
+                      className="px-4 py-1.5 rounded-full text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 transition-colors"
                     >
                       Ubah Arahan Prompt
                     </button>
@@ -580,7 +587,7 @@ ${activeVariation.whatsappMessage}`;
                       type="button"
                       onClick={handleGenerateAi}
                       disabled={isGeneratingAi}
-                      className="px-4 py-1.5 rounded-full text-xs font-medium bg-slate-900 hover:bg-black text-white shadow-xs transition-colors flex items-center space-x-1.5"
+                      className="px-4 py-1.5 rounded-full text-xs font-medium bg-slate-900 hover:bg-black text-white transition-colors flex items-center space-x-1.5"
                     >
                       <RefreshCw className={`w-3 h-3 ${isGeneratingAi ? 'animate-spin' : ''}`} />
                       <span>Jana Semula</span>
@@ -588,15 +595,15 @@ ${activeVariation.whatsappMessage}`;
                   </div>
                 </div>
 
-                {/* 3-Column Split: Left Platform Navigation, Center Copywriting Variations, Right Live Ad Preview */}
+                {/* 3-Column Split: Left Static Column, Center Scrollable Variations, Right Static Live Preview */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                  {/* LEFT COLUMN (lg:col-span-3): Platform Navigation */}
-                  <div className="lg:col-span-3 space-y-4">
+                  {/* LEFT COLUMN (lg:col-span-3): Static/Sticky Platform Navigation & Quick Settings */}
+                  <div className="lg:col-span-3 lg:sticky lg:top-20 space-y-4">
                     <div>
                       <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block px-1 mb-2">
                         Platform Pengiklanan
                       </span>
-                      <div className="bg-white rounded-3xl border border-slate-200 p-2 space-y-1 shadow-xs">
+                      <div className="bg-slate-50/80 rounded-3xl p-2 space-y-1">
                         {[
                           { id: 'facebook' as AdPlatform, name: 'Facebook Ads', logo: FacebookLogo },
                           { id: 'instagram' as AdPlatform, name: 'Instagram Ads', logo: InstagramLogo },
@@ -613,8 +620,8 @@ ${activeVariation.whatsappMessage}`;
                               onClick={() => setSelectedPlatform(plat.id)}
                               className={`w-full px-3.5 py-3 rounded-2xl flex items-center space-x-3 transition-all text-left ${
                                 isSelected
-                                  ? 'bg-slate-900 text-white shadow-xs font-medium'
-                                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
+                                  ? 'bg-white text-slate-900 font-semibold'
+                                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                               }`}
                             >
                               <div className="w-5 h-5 flex items-center justify-center shrink-0">
@@ -628,7 +635,7 @@ ${activeVariation.whatsappMessage}`;
                     </div>
 
                     {/* Quick Settings: Product & Budget */}
-                    <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 space-y-3.5 shadow-xs">
+                    <div className="bg-slate-50/80 rounded-3xl p-4 sm:p-5 space-y-3.5">
                       <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
                         Tetapan Kempen
                       </span>
@@ -644,7 +651,7 @@ ${activeVariation.whatsappMessage}`;
                             setCustomImage(null);
                             setCustomTitle(null);
                           }}
-                          className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate"
+                          className="w-full px-3 py-2 rounded-xl bg-white text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate"
                         >
                           {designs.map((d) => (
                             <option key={d.id} value={d.id}>
@@ -664,13 +671,13 @@ ${activeVariation.whatsappMessage}`;
                           step="5"
                           value={dailyBudget}
                           onChange={(e) => setDailyBudget(Number(e.target.value))}
-                          className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                          className="w-full px-3 py-2 rounded-xl bg-white text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
                         />
                       </div>
                     </div>
                   </div>
 
-                  {/* CENTER COLUMN (lg:col-span-5): Copywriting Variations Selection */}
+                  {/* CENTER COLUMN (lg:col-span-5): Scrollable Copywriting Variations */}
                   <div className="lg:col-span-5 space-y-3">
                     <div className="flex items-center justify-between px-1">
                       <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
@@ -688,17 +695,17 @@ ${activeVariation.whatsappMessage}`;
                           <div
                             key={variation.id}
                             onClick={() => setSelectedVariationIndex(idx)}
-                            className={`p-5 rounded-3xl border transition-all cursor-pointer text-left ${
+                            className={`p-5 rounded-3xl transition-all cursor-pointer text-left ${
                               isSelected
-                                ? 'bg-white border-slate-900 ring-1 ring-slate-900 shadow-sm'
-                                : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300 shadow-xs'
+                                ? 'bg-slate-100 text-slate-900 ring-1 ring-slate-300'
+                                : 'bg-slate-50/80 text-slate-700 hover:bg-slate-100/70'
                             }`}
                           >
                             <div className="flex items-center justify-between mb-2">
                               <span className={`text-[11px] font-semibold uppercase tracking-wider ${isSelected ? 'text-slate-900' : 'text-slate-500'}`}>
                                 {variation.angleName}
                               </span>
-                              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">
+                              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-white text-slate-600 font-medium">
                                 {variation.tagline}
                               </span>
                             </div>
@@ -717,7 +724,7 @@ ${activeVariation.whatsappMessage}`;
                               {variation.primaryText}
                             </p>
 
-                            <div className="mt-3.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                            <div className="mt-3.5 pt-2.5 flex items-center justify-between text-[11px]">
                               <span className="text-slate-500 font-medium">
                                 CTA: <span className="text-slate-800 font-semibold">{variation.callToAction}</span>
                               </span>
@@ -731,8 +738,8 @@ ${activeVariation.whatsappMessage}`;
                     </div>
                   </div>
 
-                  {/* RIGHT COLUMN (lg:col-span-4): Live Ad Preview & Actions */}
-                  <div className="lg:col-span-4 space-y-3 sticky top-6">
+                  {/* RIGHT COLUMN (lg:col-span-4): Static/Sticky Live Ad Preview & Actions */}
+                  <div className="lg:col-span-4 lg:sticky lg:top-20 space-y-3">
                     <div className="flex items-center justify-between px-1">
                       <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                         Pratonton Iklan
@@ -750,17 +757,17 @@ ${activeVariation.whatsappMessage}`;
                       </span>
                     </div>
 
-                    <div className="bg-slate-50/80 rounded-3xl border border-slate-200 p-5 space-y-4 text-center shadow-xs">
+                    <div className="bg-slate-50/80 rounded-3xl p-5 space-y-4 text-center">
                       {/* Ad Preview Card */}
                       <AdPreviewCard platform={selectedPlatform} creative={currentCreative} />
 
                       {/* Action Buttons Bar */}
-                      <div className="pt-3 border-t border-slate-200 space-y-2">
+                      <div className="pt-2 space-y-2">
                         <button
                           type="button"
                           onClick={handlePublishCampaign}
                           disabled={isPublishing}
-                          className="w-full py-3 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium shadow-xs transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                          className="w-full py-3 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
                         >
                           {isPublishing ? (
                             <>
@@ -783,7 +790,7 @@ ${activeVariation.whatsappMessage}`;
                         <button
                           type="button"
                           onClick={handleCopyContent}
-                          className="w-full py-2.5 rounded-full text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 transition-all flex items-center justify-center space-x-1.5 shadow-xs"
+                          className="w-full py-2.5 rounded-full text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 transition-all flex items-center justify-center space-x-1.5"
                         >
                           {copied ? (
                             <>

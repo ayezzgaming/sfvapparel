@@ -234,6 +234,7 @@ export interface CmsCompanySettings {
   email: string;
   address: string;
   working_hours: string;
+  website_url?: string;
   telegram_catalog_url: string;
   facebook_url: string;
   instagram_url: string;

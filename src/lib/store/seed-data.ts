@@ -195,7 +195,7 @@ export const INITIAL_QUANTITY_TIERS: QuantityTierDiscount[] = [
 export const INITIAL_DESIGNS: Design[] = [
   {
     id: 'des-1',
-    title: 'Jersi Sukan Sublimasi Cyber Pro',
+    title: 'Jersi Sukan Sublimasi E-Sports & Kelab',
     category: 'Jersi Sukan',
     print_type: 'sublimation',
     thumbnail_url: '/images/prod_sportswear.jpg',
@@ -607,7 +607,7 @@ export const INITIAL_CMS_PRODUCTION_GALLERY = [
   },
   {
     id: 'gal-2',
-    title: 'Jersi E-Sports Valkyrie Cyber',
+    title: 'Jersi E-Sports Valkyrie HD',
     category: 'Sublimasi Penuh HD',
     fabric: 'Microfiber Smooth • Potongan Raglan',
     image_url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1000&auto=format&fit=crop&q=80',
@@ -733,6 +733,7 @@ export const INITIAL_CMS_COMPANY_SETTINGS = {
   email: 'sales@sfvapparel.my',
   address: 'No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor, Malaysia',
   working_hours: 'Isnin - Jumaat: 9.00 AM - 6.00 PM | Sabtu: 9.00 AM - 1.00 PM',
+  website_url: 'https://sfvapparel.my',
   telegram_catalog_url: 'https://t.me/sfvapparelcatalog',
   facebook_url: 'https://www.facebook.com/sfvapparel/',
   instagram_url: 'https://www.instagram.com/sfv.apparel/',

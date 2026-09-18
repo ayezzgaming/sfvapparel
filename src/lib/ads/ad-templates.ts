@@ -107,7 +107,7 @@ export const INITIAL_CAMPAIGNS: AdCampaign[] = [
     createdAt: '2026-09-12',
     creative: {
       id: 'cr-2',
-      productName: 'Cyber Pro Esports Kit',
+      productName: 'Jersi Sublimasi E-Sports & Kelab',
       imageUrl: '/images/prod_merchandise.jpg',
       headline: 'Jersi Sukan Kustom Eksklusif | Kain Milano Sejuk',
       primaryText: 'Upgrade jersi team anda sekarang! Cetakan sublimasi penuh warna tahan luntur & rekaan mantap.',
