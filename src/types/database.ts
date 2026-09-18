@@ -141,3 +141,115 @@ export interface OrderStatusStep {
   description: string;
   iconName: string;
 }
+
+// ==========================================
+// DYNAMIC CMS & PUBLIC MANAGEMENT TYPES
+// ==========================================
+
+export interface CmsHeroBanner {
+  id: string;
+  image_url: string;
+  status_pill: string; // e.g. 'Kilang Beroperasi'
+  tag_text: string; // e.g. 'Koleksi Rasmi 2026'
+  title: string; // e.g. 'Studio Jersi & DTF'
+  button_text: string; // e.g. 'Katalog'
+  button_link: string; // e.g. '/catalog'
+  sort_order: number;
+  is_active: boolean;
+}
+
+export interface CmsServiceDetail {
+  title: string;
+  description: string;
+}
+
+export interface CmsService {
+  id: string;
+  category: string;
+  title: string;
+  headline: string;
+  highlight: string;
+  price_prefix: string; // e.g. 'Bermula'
+  price_amount: string; // e.g. 'RM28'
+  price_unit: string; // e.g. '/ helai'
+  image_url: string;
+  href: string;
+  details: CmsServiceDetail[];
+  sort_order: number;
+  is_active: boolean;
+}
+
+export interface CmsProductionVideo {
+  id: string;
+  category: string;
+  title: string;
+  thumbnail_url: string;
+  youtube_id: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
+export interface CmsProductionGalleryItem {
+  id: string;
+  title: string;
+  category: string;
+  fabric: string;
+  image_url: string;
+  client: string;
+  tag: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
+export interface CmsTestimonial {
+  id: string;
+  name: string;
+  location: string;
+  initial: string;
+  avatar_bg: string;
+  avatar_text: string;
+  platform: 'google' | 'tiktok' | 'facebook' | 'instagram';
+  rating: number;
+  review: string;
+  is_active: boolean;
+}
+
+export interface CmsSloganQuote {
+  headline: string;
+  highlight_text: string;
+  question_text: string;
+  description_text: string;
+  button_text: string;
+  whatsapp_message: string;
+}
+
+export interface CmsCompanySettings {
+  company_name: string;
+  brand_name: string;
+  registration_number: string; // SSM e.g. 202303123456 (003456789-X)
+  tagline: string;
+  phone: string;
+  whatsapp_number: string; // 60148599138
+  whatsapp_default_message: string;
+  email: string;
+  address: string;
+  working_hours: string;
+  telegram_catalog_url: string;
+  facebook_url: string;
+  instagram_url: string;
+  tiktok_url: string;
+}
+
+export interface CmsPolicySection {
+  heading: string;
+  text: string;
+}
+
+export interface CmsPolicy {
+  id: 'privacy' | 'terms' | 'warranty' | 'shipping';
+  badge: string;
+  title: string;
+  description: string;
+  sections: CmsPolicySection[];
+}
+

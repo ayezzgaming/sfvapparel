@@ -198,3 +198,121 @@ INSERT INTO designs (title, category, print_type, thumbnail_url, mockup_front_ur
 ('AeroFlow Pro Cycling Jersey', 'Jersey', 'sublimation', 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=800&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=800&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800&auto=format&fit=crop&q=80', 'Topographic contour print with 3-pocket back panel sublimation cut for road and gravel cyclists.', ARRAY['cycling', 'aerodynamic', 'contour', 'sublimation'], true),
 ('Signature Club Pique Polo', 'Polo', 'both', 'https://images.unsplash.com/photo-1625910513413-7a718797f1df?w=800&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1625910513413-7a718797f1df?w=800&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800&auto=format&fit=crop&q=80', 'Sublimated patterned collar with custom DTF chest crest badge for golf, corporate & staff wear.', ARRAY['polo', 'corporate', 'golf', 'custom'], false)
 ON CONFLICT DO NOTHING;
+
+-- -------------------------------------------------------------
+-- CMS & DYNAMIC PUBLIC CONTENT MANAGEMENT
+-- -------------------------------------------------------------
+
+-- 9. Hero Banners
+CREATE TABLE IF NOT EXISTS cms_hero_banners (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    image_url TEXT NOT NULL,
+    status_pill TEXT DEFAULT 'Kilang Beroperasi',
+    tag_text TEXT DEFAULT 'Koleksi Rasmi 2026',
+    title TEXT NOT NULL,
+    button_text TEXT DEFAULT 'Katalog',
+    button_link TEXT DEFAULT '/catalog',
+    sort_order INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 10. Services (Pilihan Servis)
+CREATE TABLE IF NOT EXISTS cms_services (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    category TEXT NOT NULL,
+    title TEXT NOT NULL,
+    headline TEXT NOT NULL,
+    highlight TEXT NOT NULL,
+    price_prefix TEXT DEFAULT 'Bermula',
+    price_amount TEXT NOT NULL,
+    price_unit TEXT DEFAULT '/ helai',
+    image_url TEXT NOT NULL,
+    href TEXT NOT NULL,
+    details JSONB DEFAULT '[]'::jsonb,
+    sort_order INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 11. Production Videos (Proses Produksi)
+CREATE TABLE IF NOT EXISTS cms_production_videos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    category TEXT NOT NULL,
+    title TEXT NOT NULL,
+    thumbnail_url TEXT NOT NULL,
+    youtube_id TEXT NOT NULL,
+    sort_order INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 12. Production Showcase Gallery (Hasil Produksi Kilang)
+CREATE TABLE IF NOT EXISTS cms_production_gallery (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title TEXT NOT NULL,
+    category TEXT NOT NULL,
+    fabric TEXT NOT NULL,
+    image_url TEXT NOT NULL,
+    client TEXT NOT NULL,
+    tag TEXT NOT NULL,
+    sort_order INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 13. Customer Testimonials (Apa Kata Mereka)
+CREATE TABLE IF NOT EXISTS cms_testimonials (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    location TEXT NOT NULL,
+    initial TEXT NOT NULL,
+    avatar_bg TEXT DEFAULT 'bg-blue-100',
+    avatar_text TEXT DEFAULT 'text-blue-600',
+    platform TEXT NOT NULL, -- 'google' | 'tiktok' | 'facebook' | 'instagram'
+    rating INTEGER DEFAULT 5,
+    review TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 14. Company Settings & Slogan
+CREATE TABLE IF NOT EXISTS cms_company_settings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    company_name TEXT NOT NULL,
+    brand_name TEXT NOT NULL,
+    registration_number TEXT NOT NULL,
+    tagline TEXT,
+    phone TEXT NOT NULL,
+    whatsapp_number TEXT NOT NULL,
+    whatsapp_default_message TEXT,
+    email TEXT NOT NULL,
+    address TEXT NOT NULL,
+    working_hours TEXT,
+    telegram_catalog_url TEXT,
+    facebook_url TEXT,
+    instagram_url TEXT,
+    tiktok_url TEXT,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS cms_slogan_quote (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    headline TEXT NOT NULL,
+    highlight_text TEXT NOT NULL,
+    question_text TEXT NOT NULL,
+    description_text TEXT NOT NULL,
+    button_text TEXT NOT NULL,
+    whatsapp_message TEXT NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS cms_policies (
+    id TEXT PRIMARY KEY, -- 'privacy' | 'terms' | 'warranty' | 'shipping'
+    badge TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    sections JSONB DEFAULT '[]'::jsonb,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+

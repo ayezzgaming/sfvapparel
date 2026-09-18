@@ -27,7 +27,7 @@ interface PublicAppShellProps {
 
 export default function PublicAppShell({ children }: PublicAppShellProps) {
   const pathname = usePathname();
-  const { orders, favorites, designs, deleteOrder, toggleFavorite } = useAppStore();
+  const { orders, favorites, designs, deleteOrder, toggleFavorite, companySettings } = useAppStore();
   const { isBottomSheetOpen } = useUI();
   const [isBagOpen, setIsBagOpen] = useState(false);
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
@@ -211,7 +211,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
 
           {/* Standard Circular Floating WhatsApp Action Button (Standard 48px FAB) */}
           <a
-            href="https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ingin%20bertanya%20tentang%20tempahan%20custom."
+            href={`https://wa.me/${companySettings?.whatsapp_number || '60148599138'}?text=${encodeURIComponent(companySettings?.whatsapp_default_message || 'Hai SFV Apparel, saya ingin bertanya tentang tempahan custom.')}`}
             target="_blank"
             rel="noopener noreferrer"
             draggable={false}

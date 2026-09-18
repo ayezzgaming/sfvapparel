@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
+  Globe,
   ClipboardList,
   Shirt,
   DollarSign,
   Users,
   Smartphone,
-  Sparkles,
   Layers,
   Search,
   Bell,
@@ -22,10 +22,11 @@ import {
 
 const ADMIN_NAV = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { href: '/admin/orders', label: 'Order Pipeline', icon: ClipboardList },
-  { href: '/admin/catalog', label: 'Mockup Assets', icon: Shirt },
-  { href: '/admin/pricing-rules', label: 'Dynamic Pricing', icon: DollarSign },
-  { href: '/admin/customers', label: 'Customers', icon: Users },
+  { href: '/admin/cms', label: 'Pengurus Web / CMS', icon: Globe },
+  { href: '/admin/orders', label: 'Saluran Pesanan', icon: ClipboardList },
+  { href: '/admin/catalog', label: 'Mockup & Katalog', icon: Shirt },
+  { href: '/admin/pricing-rules', label: 'Formula Harga', icon: DollarSign },
+  { href: '/admin/customers', label: 'Pelanggan', icon: Users },
 ];
 
 export default function AdminLayoutShell({

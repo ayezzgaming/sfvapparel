@@ -10,7 +10,7 @@ import {
   Edit,
   Trash2,
   Check,
-  Sparkles,
+  Star,
   Layers,
   Image as ImageIcon,
   ExternalLink,
@@ -224,7 +224,7 @@ export default function AdminCatalogPage() {
               {item.is_featured && (
                 <div className="absolute top-2 right-2">
                   <span className="w-6 h-6 rounded-full bg-amber-400 text-slate-900 flex items-center justify-center shadow-xs">
-                    <Sparkles className="w-3.5 h-3.5 fill-slate-900" />
+                    <Star className="w-3.5 h-3.5 fill-slate-900" />
                   </span>
                 </div>
               )}

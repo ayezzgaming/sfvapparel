@@ -10,6 +10,14 @@ import {
   Order,
   OrderStatus,
   QuantityTierDiscount,
+  CmsHeroBanner,
+  CmsService,
+  CmsProductionVideo,
+  CmsProductionGalleryItem,
+  CmsTestimonial,
+  CmsSloganQuote,
+  CmsCompanySettings,
+  CmsPolicy,
 } from '@/types/database';
 import {
   INITIAL_APPAREL_CUTS,
@@ -19,6 +27,14 @@ import {
   INITIAL_FABRIC_MATERIALS,
   INITIAL_ORDERS,
   INITIAL_QUANTITY_TIERS,
+  INITIAL_CMS_HERO_BANNERS,
+  INITIAL_CMS_SERVICES,
+  INITIAL_CMS_PRODUCTION_VIDEOS,
+  INITIAL_CMS_PRODUCTION_GALLERY,
+  INITIAL_CMS_TESTIMONIALS,
+  INITIAL_CMS_SLOGAN_QUOTE,
+  INITIAL_CMS_COMPANY_SETTINGS,
+  INITIAL_CMS_POLICIES,
 } from './seed-data';
 
 const STORAGE_KEYS = {
@@ -30,6 +46,14 @@ const STORAGE_KEYS = {
   CUSTOMERS: 'svf_customers_v3',
   ORDERS: 'svf_orders_v3',
   FAVORITES: 'svf_favorites_v3',
+  HERO_BANNERS: 'svf_cms_hero_v3',
+  SERVICES: 'svf_cms_services_v3',
+  VIDEOS: 'svf_cms_videos_v3',
+  GALLERY: 'svf_cms_gallery_v3',
+  TESTIMONIALS: 'svf_cms_testi_v3',
+  SLOGAN: 'svf_cms_slogan_v3',
+  COMPANY: 'svf_cms_company_v3',
+  POLICIES: 'svf_cms_policies_v3',
 };
 
 function getLocalData<T>(key: string, fallback: T): T {
@@ -60,6 +84,14 @@ interface AppStoreState {
   customers: Customer[];
   orders: Order[];
   favorites: string[];
+  heroBanners: CmsHeroBanner[];
+  services: CmsService[];
+  productionVideos: CmsProductionVideo[];
+  productionGallery: CmsProductionGalleryItem[];
+  testimonials: CmsTestimonial[];
+  sloganQuote: CmsSloganQuote;
+  companySettings: CmsCompanySettings;
+  policies: Record<'privacy' | 'terms' | 'warranty' | 'shipping', CmsPolicy>;
   isInitialized: boolean;
 }
 
@@ -72,6 +104,14 @@ let storeState: AppStoreState = {
   customers: INITIAL_CUSTOMERS,
   orders: INITIAL_ORDERS,
   favorites: [],
+  heroBanners: INITIAL_CMS_HERO_BANNERS,
+  services: INITIAL_CMS_SERVICES,
+  productionVideos: INITIAL_CMS_PRODUCTION_VIDEOS,
+  productionGallery: INITIAL_CMS_PRODUCTION_GALLERY,
+  testimonials: INITIAL_CMS_TESTIMONIALS,
+  sloganQuote: INITIAL_CMS_SLOGAN_QUOTE,
+  companySettings: INITIAL_CMS_COMPANY_SETTINGS,
+  policies: INITIAL_CMS_POLICIES,
   isInitialized: false,
 };
 
@@ -92,6 +132,14 @@ function initStoreIfNeeded() {
     customers: getLocalData(STORAGE_KEYS.CUSTOMERS, INITIAL_CUSTOMERS),
     orders: getLocalData(STORAGE_KEYS.ORDERS, INITIAL_ORDERS),
     favorites: getLocalData(STORAGE_KEYS.FAVORITES, []),
+    heroBanners: getLocalData(STORAGE_KEYS.HERO_BANNERS, INITIAL_CMS_HERO_BANNERS),
+    services: getLocalData(STORAGE_KEYS.SERVICES, INITIAL_CMS_SERVICES),
+    productionVideos: getLocalData(STORAGE_KEYS.VIDEOS, INITIAL_CMS_PRODUCTION_VIDEOS),
+    productionGallery: getLocalData(STORAGE_KEYS.GALLERY, INITIAL_CMS_PRODUCTION_GALLERY),
+    testimonials: getLocalData(STORAGE_KEYS.TESTIMONIALS, INITIAL_CMS_TESTIMONIALS),
+    sloganQuote: getLocalData(STORAGE_KEYS.SLOGAN, INITIAL_CMS_SLOGAN_QUOTE),
+    companySettings: getLocalData(STORAGE_KEYS.COMPANY, INITIAL_CMS_COMPANY_SETTINGS),
+    policies: getLocalData(STORAGE_KEYS.POLICIES, INITIAL_CMS_POLICIES),
     isInitialized: true,
   };
   notify();
@@ -109,6 +157,14 @@ if (typeof window !== 'undefined') {
       if (e.key === STORAGE_KEYS.ORDERS) storeState.orders = JSON.parse(e.newValue);
       if (e.key === STORAGE_KEYS.CUSTOMERS) storeState.customers = JSON.parse(e.newValue);
       if (e.key === STORAGE_KEYS.FAVORITES) storeState.favorites = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.HERO_BANNERS) storeState.heroBanners = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.SERVICES) storeState.services = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.VIDEOS) storeState.productionVideos = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.GALLERY) storeState.productionGallery = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.TESTIMONIALS) storeState.testimonials = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.SLOGAN) storeState.sloganQuote = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.COMPANY) storeState.companySettings = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.POLICIES) storeState.policies = JSON.parse(e.newValue);
       notify();
     } catch {
       // Ignore parse error
@@ -136,6 +192,14 @@ const serverSnapshot: AppStoreState = {
   customers: INITIAL_CUSTOMERS,
   orders: INITIAL_ORDERS,
   favorites: [],
+  heroBanners: INITIAL_CMS_HERO_BANNERS,
+  services: INITIAL_CMS_SERVICES,
+  productionVideos: INITIAL_CMS_PRODUCTION_VIDEOS,
+  productionGallery: INITIAL_CMS_PRODUCTION_GALLERY,
+  testimonials: INITIAL_CMS_TESTIMONIALS,
+  sloganQuote: INITIAL_CMS_SLOGAN_QUOTE,
+  companySettings: INITIAL_CMS_COMPANY_SETTINGS,
+  policies: INITIAL_CMS_POLICIES,
   isInitialized: false,
 };
 
@@ -150,6 +214,7 @@ export function useAppStore() {
 
   const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
+  // Favorites
   const toggleFavorite = useCallback((designId: string) => {
     initStoreIfNeeded();
     const nextFavorites = storeState.favorites.includes(designId)
@@ -164,6 +229,7 @@ export function useAppStore() {
     return state.favorites.includes(designId);
   }, [state.favorites]);
 
+  // Orders
   const addOrder = useCallback((newOrderData: Omit<Order, 'id' | 'order_number' | 'created_at' | 'updated_at'>) => {
     initStoreIfNeeded();
     const nextOrderNum = `SFV-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000))}`;
@@ -208,6 +274,7 @@ export function useAppStore() {
     notify();
   }, []);
 
+  // Catalog Designs
   const addDesign = useCallback((design: Omit<Design, 'id'>) => {
     initStoreIfNeeded();
     const newDesign: Design = { ...design, id: `des-${Date.now()}` };
@@ -234,6 +301,7 @@ export function useAppStore() {
     notify();
   }, []);
 
+  // Pricing Rules
   const updateFabric = useCallback((id: string, updates: Partial<FabricMaterial>) => {
     initStoreIfNeeded();
     const next = storeState.fabrics.map((f) => (f.id === id ? { ...f, ...updates } : f));
@@ -266,6 +334,176 @@ export function useAppStore() {
     notify();
   }, []);
 
+  // ==========================================
+  // CMS MUTATORS (HERO, SERVICES, VIDEOS, GALLERY, TESTIMONIALS, SETTINGS, POLICIES)
+  // ==========================================
+
+  // Hero Banners
+  const addHeroBanner = useCallback((banner: Omit<CmsHeroBanner, 'id'>) => {
+    initStoreIfNeeded();
+    const newBanner: CmsHeroBanner = { ...banner, id: `hero-${Date.now()}` };
+    const next = [...storeState.heroBanners, newBanner];
+    storeState = { ...storeState, heroBanners: next };
+    setLocalData(STORAGE_KEYS.HERO_BANNERS, next);
+    notify();
+    return newBanner;
+  }, []);
+
+  const updateHeroBanner = useCallback((id: string, updates: Partial<CmsHeroBanner>) => {
+    initStoreIfNeeded();
+    const next = storeState.heroBanners.map((b) => (b.id === id ? { ...b, ...updates } : b));
+    storeState = { ...storeState, heroBanners: next };
+    setLocalData(STORAGE_KEYS.HERO_BANNERS, next);
+    notify();
+  }, []);
+
+  const deleteHeroBanner = useCallback((id: string) => {
+    initStoreIfNeeded();
+    const next = storeState.heroBanners.filter((b) => b.id !== id);
+    storeState = { ...storeState, heroBanners: next };
+    setLocalData(STORAGE_KEYS.HERO_BANNERS, next);
+    notify();
+  }, []);
+
+  // Services
+  const addService = useCallback((service: Omit<CmsService, 'id'>) => {
+    initStoreIfNeeded();
+    const newService: CmsService = { ...service, id: `srv-${Date.now()}` };
+    const next = [...storeState.services, newService];
+    storeState = { ...storeState, services: next };
+    setLocalData(STORAGE_KEYS.SERVICES, next);
+    notify();
+    return newService;
+  }, []);
+
+  const updateService = useCallback((id: string, updates: Partial<CmsService>) => {
+    initStoreIfNeeded();
+    const next = storeState.services.map((s) => (s.id === id ? { ...s, ...updates } : s));
+    storeState = { ...storeState, services: next };
+    setLocalData(STORAGE_KEYS.SERVICES, next);
+    notify();
+  }, []);
+
+  const deleteService = useCallback((id: string) => {
+    initStoreIfNeeded();
+    const next = storeState.services.filter((s) => s.id !== id);
+    storeState = { ...storeState, services: next };
+    setLocalData(STORAGE_KEYS.SERVICES, next);
+    notify();
+  }, []);
+
+  // Production Videos
+  const addProductionVideo = useCallback((video: Omit<CmsProductionVideo, 'id'>) => {
+    initStoreIfNeeded();
+    const newVid: CmsProductionVideo = { ...video, id: `vid-${Date.now()}` };
+    const next = [...storeState.productionVideos, newVid];
+    storeState = { ...storeState, productionVideos: next };
+    setLocalData(STORAGE_KEYS.VIDEOS, next);
+    notify();
+    return newVid;
+  }, []);
+
+  const updateProductionVideo = useCallback((id: string, updates: Partial<CmsProductionVideo>) => {
+    initStoreIfNeeded();
+    const next = storeState.productionVideos.map((v) => (v.id === id ? { ...v, ...updates } : v));
+    storeState = { ...storeState, productionVideos: next };
+    setLocalData(STORAGE_KEYS.VIDEOS, next);
+    notify();
+  }, []);
+
+  const deleteProductionVideo = useCallback((id: string) => {
+    initStoreIfNeeded();
+    const next = storeState.productionVideos.filter((v) => v.id !== id);
+    storeState = { ...storeState, productionVideos: next };
+    setLocalData(STORAGE_KEYS.VIDEOS, next);
+    notify();
+  }, []);
+
+  // Production Gallery
+  const addGalleryItem = useCallback((item: Omit<CmsProductionGalleryItem, 'id'>) => {
+    initStoreIfNeeded();
+    const newItem: CmsProductionGalleryItem = { ...item, id: `gal-${Date.now()}` };
+    const next = [...storeState.productionGallery, newItem];
+    storeState = { ...storeState, productionGallery: next };
+    setLocalData(STORAGE_KEYS.GALLERY, next);
+    notify();
+    return newItem;
+  }, []);
+
+  const updateGalleryItem = useCallback((id: string, updates: Partial<CmsProductionGalleryItem>) => {
+    initStoreIfNeeded();
+    const next = storeState.productionGallery.map((g) => (g.id === id ? { ...g, ...updates } : g));
+    storeState = { ...storeState, productionGallery: next };
+    setLocalData(STORAGE_KEYS.GALLERY, next);
+    notify();
+  }, []);
+
+  const deleteGalleryItem = useCallback((id: string) => {
+    initStoreIfNeeded();
+    const next = storeState.productionGallery.filter((g) => g.id !== id);
+    storeState = { ...storeState, productionGallery: next };
+    setLocalData(STORAGE_KEYS.GALLERY, next);
+    notify();
+  }, []);
+
+  // Testimonials
+  const addTestimonial = useCallback((testi: Omit<CmsTestimonial, 'id'>) => {
+    initStoreIfNeeded();
+    const newTesti: CmsTestimonial = { ...testi, id: `testi-${Date.now()}` };
+    const next = [...storeState.testimonials, newTesti];
+    storeState = { ...storeState, testimonials: next };
+    setLocalData(STORAGE_KEYS.TESTIMONIALS, next);
+    notify();
+    return newTesti;
+  }, []);
+
+  const updateTestimonial = useCallback((id: string, updates: Partial<CmsTestimonial>) => {
+    initStoreIfNeeded();
+    const next = storeState.testimonials.map((t) => (t.id === id ? { ...t, ...updates } : t));
+    storeState = { ...storeState, testimonials: next };
+    setLocalData(STORAGE_KEYS.TESTIMONIALS, next);
+    notify();
+  }, []);
+
+  const deleteTestimonial = useCallback((id: string) => {
+    initStoreIfNeeded();
+    const next = storeState.testimonials.filter((t) => t.id !== id);
+    storeState = { ...storeState, testimonials: next };
+    setLocalData(STORAGE_KEYS.TESTIMONIALS, next);
+    notify();
+  }, []);
+
+  // Slogan & Quote
+  const updateSloganQuote = useCallback((updates: Partial<CmsSloganQuote>) => {
+    initStoreIfNeeded();
+    const next = { ...storeState.sloganQuote, ...updates };
+    storeState = { ...storeState, sloganQuote: next };
+    setLocalData(STORAGE_KEYS.SLOGAN, next);
+    notify();
+  }, []);
+
+  // Company Settings
+  const updateCompanySettings = useCallback((updates: Partial<CmsCompanySettings>) => {
+    initStoreIfNeeded();
+    const next = { ...storeState.companySettings, ...updates };
+    storeState = { ...storeState, companySettings: next };
+    setLocalData(STORAGE_KEYS.COMPANY, next);
+    notify();
+  }, []);
+
+  // Policies
+  const updatePolicy = useCallback((key: 'privacy' | 'terms' | 'warranty' | 'shipping', updates: Partial<CmsPolicy>) => {
+    initStoreIfNeeded();
+    const next = {
+      ...storeState.policies,
+      [key]: { ...storeState.policies[key], ...updates },
+    };
+    storeState = { ...storeState, policies: next };
+    setLocalData(STORAGE_KEYS.POLICIES, next);
+    notify();
+  }, []);
+
+  // Reset to seed data
   const resetToSeedData = useCallback(() => {
     storeState = {
       designs: INITIAL_DESIGNS,
@@ -276,6 +514,14 @@ export function useAppStore() {
       customers: INITIAL_CUSTOMERS,
       orders: INITIAL_ORDERS,
       favorites: [],
+      heroBanners: INITIAL_CMS_HERO_BANNERS,
+      services: INITIAL_CMS_SERVICES,
+      productionVideos: INITIAL_CMS_PRODUCTION_VIDEOS,
+      productionGallery: INITIAL_CMS_PRODUCTION_GALLERY,
+      testimonials: INITIAL_CMS_TESTIMONIALS,
+      sloganQuote: INITIAL_CMS_SLOGAN_QUOTE,
+      companySettings: INITIAL_CMS_COMPANY_SETTINGS,
+      policies: INITIAL_CMS_POLICIES,
       isInitialized: true,
     };
     setLocalData(STORAGE_KEYS.DESIGNS, INITIAL_DESIGNS);
@@ -286,6 +532,14 @@ export function useAppStore() {
     setLocalData(STORAGE_KEYS.CUSTOMERS, INITIAL_CUSTOMERS);
     setLocalData(STORAGE_KEYS.ORDERS, INITIAL_ORDERS);
     setLocalData(STORAGE_KEYS.FAVORITES, []);
+    setLocalData(STORAGE_KEYS.HERO_BANNERS, INITIAL_CMS_HERO_BANNERS);
+    setLocalData(STORAGE_KEYS.SERVICES, INITIAL_CMS_SERVICES);
+    setLocalData(STORAGE_KEYS.VIDEOS, INITIAL_CMS_PRODUCTION_VIDEOS);
+    setLocalData(STORAGE_KEYS.GALLERY, INITIAL_CMS_PRODUCTION_GALLERY);
+    setLocalData(STORAGE_KEYS.TESTIMONIALS, INITIAL_CMS_TESTIMONIALS);
+    setLocalData(STORAGE_KEYS.SLOGAN, INITIAL_CMS_SLOGAN_QUOTE);
+    setLocalData(STORAGE_KEYS.COMPANY, INITIAL_CMS_COMPANY_SETTINGS);
+    setLocalData(STORAGE_KEYS.POLICIES, INITIAL_CMS_POLICIES);
     notify();
   }, []);
 
@@ -299,6 +553,14 @@ export function useAppStore() {
     customers: state.customers,
     orders: state.orders,
     favorites: state.favorites,
+    heroBanners: state.heroBanners,
+    services: state.services,
+    productionVideos: state.productionVideos,
+    productionGallery: state.productionGallery,
+    testimonials: state.testimonials,
+    sloganQuote: state.sloganQuote,
+    companySettings: state.companySettings,
+    policies: state.policies,
     toggleFavorite,
     isFavorite,
     addOrder,
@@ -311,6 +573,25 @@ export function useAppStore() {
     updateCut,
     updateDtfDimension,
     updateQuantityTier,
+    addHeroBanner,
+    updateHeroBanner,
+    deleteHeroBanner,
+    addService,
+    updateService,
+    deleteService,
+    addProductionVideo,
+    updateProductionVideo,
+    deleteProductionVideo,
+    addGalleryItem,
+    updateGalleryItem,
+    deleteGalleryItem,
+    addTestimonial,
+    updateTestimonial,
+    deleteTestimonial,
+    updateSloganQuote,
+    updateCompanySettings,
+    updatePolicy,
     resetToSeedData,
   };
 }
+

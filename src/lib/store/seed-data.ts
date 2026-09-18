@@ -398,3 +398,431 @@ export const INITIAL_ORDERS: Order[] = [
     updated_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
   },
 ];
+
+// ==========================================
+// INITIAL CMS DATA SEEDS
+// ==========================================
+
+export const INITIAL_CMS_HERO_BANNERS = [
+  {
+    id: 'hero-1',
+    image_url: '/hero1.png',
+    status_pill: 'Kilang Beroperasi',
+    tag_text: 'Koleksi Rasmi 2026',
+    title: 'Studio Jersi & DTF',
+    button_text: 'Katalog',
+    button_link: '/catalog',
+    sort_order: 1,
+    is_active: true,
+  },
+  {
+    id: 'hero-2',
+    image_url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&auto=format&fit=crop&q=80',
+    status_pill: 'Sublimasi Penuh HD',
+    tag_text: 'E-Sukan & Bola Sepak',
+    title: 'Jersi Sublimasi Kustom',
+    button_text: 'Tempah Sekarang',
+    button_link: '/catalog?type=sublimation',
+    sort_order: 2,
+    is_active: true,
+  },
+  {
+    id: 'hero-3',
+    image_url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=1200&auto=format&fit=crop&q=80',
+    status_pill: 'Cetakan DTF Jepun',
+    tag_text: 'Streetwear & Korporat',
+    title: 'T-Shirt Kapas Premium',
+    button_text: 'Katalog DTF',
+    button_link: '/catalog?type=dtf',
+    sort_order: 3,
+    is_active: true,
+  },
+];
+
+export const INITIAL_CMS_SERVICES = [
+  {
+    id: 'sublimation',
+    category: 'Sublimasi Penuh',
+    title: 'Jersi Sublimasi',
+    headline: 'Corak tanpa batasan untuk kelab sukan anda.',
+    highlight: 'Kain DryFit • Warna Kekal',
+    price_prefix: 'Bermula',
+    price_amount: 'RM28',
+    price_unit: '/ helai',
+    image_url: '/images/prod_sportswear.jpg',
+    href: '/catalog?type=sublimation',
+    sort_order: 1,
+    is_active: true,
+    details: [
+      {
+        title: 'Ketahanan warna tanpa luntur.',
+        description: 'Teknologi cetakan sublimasi haba tinggi menyerap terus ke dalam serat fabrik Microfiber Eyelet. Warna kekal terang, tajam, dan tidak merekah walaupun dibasuh berulang kali.',
+      },
+      {
+        title: 'Kesejukan & pengudaraan optimum.',
+        description: 'Fabrik quick-dry berliang mikro direka khas untuk atlet dan sukan lasak. Memastikan penyejukan badan maksimum sepanjang hari.',
+      },
+      {
+        title: 'Kustom sepenuhnya.',
+        description: 'Pilihan kolar V-neck, Roundneck, atau Polo dengan cetakan nama dan nombor jersi tanpa had caj tambahan.',
+      },
+    ],
+  },
+  {
+    id: 'tshirt',
+    category: 'Cetakan DTF',
+    title: 'Cetakan T-Shirt',
+    headline: 'Perincian ultra tajam pada kapas premium.',
+    highlight: 'Kapas 100% • Warna Tajam',
+    price_prefix: 'Bermula',
+    price_amount: 'RM18',
+    price_unit: '/ helai',
+    image_url: '/images/prod_tshirt.jpg',
+    href: '/catalog?type=dtf',
+    sort_order: 2,
+    is_active: true,
+    details: [
+      {
+        title: 'Hasil cetakan sehalus fotografi.',
+        description: 'Menggunakan dakwat DTF gred industri Jepun dengan lapisan serbuk TPU premium, menghasilkan cetakan yang elastik dan lembut disentuh.',
+      },
+      {
+        title: 'Kapas 100% Combed Cotton.',
+        description: 'Pilihan baju kapas berkualiti tinggi 190gsm - 220gsm yang selesa, sejuk, dan tahan lasak selepas basuhan.',
+      },
+      {
+        title: 'Tiada had kuantiti minimum.',
+        description: 'Sesuai untuk tempahan kumpulan kecil, baju kelas, acara keluarga, mahupun edisi terhad jenama anda.',
+      },
+    ],
+  },
+  {
+    id: 'merchandise',
+    category: 'Cenderamata',
+    title: 'Cenderamata',
+    headline: 'Hadiah korporat eksklusif berjenama.',
+    highlight: 'Lanyard, Beg & Cawan',
+    price_prefix: 'Bermula',
+    price_amount: 'RM5',
+    price_unit: '/ unit',
+    image_url: '/images/prod_merchandise.jpg',
+    href: '/catalog?type=merchandise',
+    sort_order: 3,
+    is_active: true,
+    details: [
+      {
+        title: 'Lanyard Sublimasi HD.',
+        description: 'Tali lanyard berkualiti tinggi dengan cetakan dua sisi warna penuh dan cangkuk besi tahan karat tebal.',
+      },
+      {
+        title: 'Tote Bag & Beg Kasut Kanvas.',
+        description: 'Pilihan cenderamata tahan lasak untuk program orientasi, sukan universiti, dan cenderamata persidangan.',
+      },
+      {
+        title: 'Mug Seramik & Botol Air Termos.',
+        description: 'Cetakan logo berdefinisi tinggi untuk hadiah VIP dan acara penghargaan pekerja.',
+      },
+    ],
+  },
+  {
+    id: 'embroidery',
+    category: 'Sulaman Komputer',
+    title: 'Sulaman Logo',
+    headline: 'Ketelitian jahitan kemas berprofil tinggi.',
+    highlight: 'Benang Jepun • Tahan Lasak',
+    price_prefix: 'Bermula',
+    price_amount: 'RM6',
+    price_unit: '/ logo',
+    image_url: '/images/prod_embroidery.jpg',
+    href: '/catalog?type=embroidery',
+    sort_order: 4,
+    is_active: true,
+    details: [
+      {
+        title: 'Mesin Sulaman Berkomputer Multi-Head.',
+        description: 'Ketepatan tinggi sehingga ribuan jahitan mikro bagi merealisasikan logo jata sekolah, institusi, dan syarikat.',
+      },
+      {
+        title: 'Sulaman 3D Timbul (Puff Embroidery).',
+        description: 'Sesuai untuk topi snapback, jaket bomber, dan lencana korporat eksklusif.',
+      },
+      {
+        title: 'Ketahanan Benang Tidak Putus.',
+        description: 'Menggunakan benang polyester berkualiti tinggi yang tahan luntur warna serta tidak reput apabila dicuci.',
+      },
+    ],
+  },
+];
+
+export const INITIAL_CMS_PRODUCTION_VIDEOS = [
+  {
+    id: 'vid-sublimation',
+    category: 'Sublimasi Penuh',
+    title: 'Cetakan Definisi Tinggi',
+    thumbnail_url: '/images/prod_sportswear.jpg',
+    youtube_id: 'LXb3EKWsInQ',
+    sort_order: 1,
+    is_active: true,
+  },
+  {
+    id: 'vid-dtf',
+    category: 'Cetakan DTF',
+    title: 'Teknologi Dakwat Jepun',
+    thumbnail_url: '/images/prod_tshirt.jpg',
+    youtube_id: 'kJQP7kiw5Fk',
+    sort_order: 2,
+    is_active: true,
+  },
+  {
+    id: 'vid-embroidery',
+    category: 'Sulaman Berkomputer',
+    title: 'Ketumpatan Jahitan Tajam',
+    thumbnail_url: '/images/prod_embroidery.jpg',
+    youtube_id: '9bZkp7q19f0',
+    sort_order: 3,
+    is_active: true,
+  },
+  {
+    id: 'vid-merchandise',
+    category: 'Cenderamata Syarikat',
+    title: 'Kualiti Kemasan Eksekutif',
+    thumbnail_url: '/images/prod_merchandise.jpg',
+    youtube_id: '3JZ_D3ELwOQ',
+    sort_order: 4,
+    is_active: true,
+  },
+];
+
+export const INITIAL_CMS_PRODUCTION_GALLERY = [
+  {
+    id: 'gal-1',
+    title: 'Jersi Bola Sepak Harimau FC',
+    category: 'Sublimasi Penuh',
+    fabric: 'Drifit Milano 165 GSM • Kolar V-Pro',
+    image_url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1000&auto=format&fit=crop&q=80',
+    client: '50 helai • FC Harimau Selangor',
+    tag: 'Full Sublimation',
+    sort_order: 1,
+    is_active: true,
+  },
+  {
+    id: 'gal-2',
+    title: 'Jersi E-Sports Valkyrie Cyber',
+    category: 'Sublimasi Penuh HD',
+    fabric: 'Microfiber Smooth • Potongan Raglan',
+    image_url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1000&auto=format&fit=crop&q=80',
+    client: '25 helai • Valkyrie MY E-Sports',
+    tag: 'Esports Pro',
+    sort_order: 2,
+    is_active: true,
+  },
+  {
+    id: 'gal-3',
+    title: 'Baju T-Shirt Streetwear Neo-Tokyo',
+    category: 'Cetakan DTF HD',
+    fabric: 'Heavyweight Cotton 24s • Saiz Cetak A3',
+    image_url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=1000&auto=format&fit=crop&q=80',
+    client: '80 helai • Neo Apparel Store',
+    tag: 'DTF Transfer',
+    sort_order: 3,
+    is_active: true,
+  },
+  {
+    id: 'gal-4',
+    title: 'Jersi Larian AeroFlow Marathon',
+    category: 'Sublimasi Penuh',
+    fabric: 'Poly-Mesh Honeycomb • Ultra Breathable',
+    image_url: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=1000&auto=format&fit=crop&q=80',
+    client: '120 helai • KL Running Squad',
+    tag: 'Running Kit',
+    sort_order: 4,
+    is_active: true,
+  },
+  {
+    id: 'gal-5',
+    title: 'Hoodie Fleece Heavyweight Glitch',
+    category: 'DTF Elastomeric',
+    fabric: 'Cotton Fleece 320 GSM • Cetakan Belakang Jumbo A2',
+    image_url: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=1000&auto=format&fit=crop&q=80',
+    client: '35 helai • Glitch Society KL',
+    tag: 'Heavy Hoodie',
+    sort_order: 5,
+    is_active: true,
+  },
+  {
+    id: 'gal-6',
+    title: 'Baju Polo Pique Kelab Korporat',
+    category: 'Sublimasi & DTF',
+    fabric: 'Pique Poly-Blend • Kolar Butang & Lencana Dada',
+    image_url: 'https://images.unsplash.com/photo-1625910513413-7a718797f1df?w=1000&auto=format&fit=crop&q=80',
+    client: '60 helai • Apex Engineering',
+    tag: 'Corporate Polo',
+    sort_order: 6,
+    is_active: true,
+  },
+];
+
+export const INITIAL_CMS_TESTIMONIALS = [
+  {
+    id: 'testi-1',
+    name: 'Ahmad Faizal',
+    location: 'Kuala Lumpur',
+    initial: 'A',
+    avatar_bg: 'bg-blue-100',
+    avatar_text: 'text-blue-600',
+    platform: 'google' as const,
+    rating: 5,
+    review: '"Baju sampai cepat, design cantik & kain berkualiti! Dah order 3 kali untuk team futsal, terus repeat order. Servis memang padu."',
+    is_active: true,
+  },
+  {
+    id: 'testi-2',
+    name: 'Nurul Izzah',
+    location: 'Shah Alam',
+    initial: 'N',
+    avatar_bg: 'bg-rose-100',
+    avatar_text: 'text-rose-600',
+    platform: 'tiktok' as const,
+    rating: 5,
+    review: '"Sublimasi jersi netball sekolah kami memang meletop warna dia! Halus gila printing, cikgu dan student semua puas hati."',
+    is_active: true,
+  },
+  {
+    id: 'testi-3',
+    name: 'Hafizuddin Radzi',
+    location: 'Johor Bahru',
+    initial: 'H',
+    avatar_bg: 'bg-blue-100',
+    avatar_text: 'text-blue-700',
+    platform: 'facebook' as const,
+    rating: 5,
+    review: '"Tempah baju polo sulam kolar untuk 50 staf syarikat. Jahitan sulam logo tajam sangat, material sejuk sedap pakai pergi event."',
+    is_active: true,
+  },
+  {
+    id: 'testi-4',
+    name: 'Danial Hakim',
+    location: 'Pulau Pinang',
+    initial: 'D',
+    avatar_bg: 'bg-amber-100',
+    avatar_text: 'text-amber-600',
+    platform: 'instagram' as const,
+    rating: 5,
+    review: '"DTF print baju event running kelab kami tak tanggal lepas banyak kali basuh. Kualiti memang terbaik, penghantaran 4 hari dah sampai."',
+    is_active: true,
+  },
+];
+
+export const INITIAL_CMS_SLOGAN_QUOTE = {
+  headline: 'Anda bayangkan,',
+  highlight_text: 'Kami Jadikan Realiti.',
+  question_text: 'Anda Design atau sekadar lakaran?',
+  description_text: 'Hantar kepada kami. Kami bantu ubah idea anda menjadi baju sublimation yang nampak WOW dan menepati citarasa anda.',
+  button_text: 'Hantar Idea / Lakaran Sekarang →',
+  whatsapp_message: 'Hai SFV Apparel, saya ada lakaran/idea rekaan baju yang ingin dijadikan realiti.',
+};
+
+export const INITIAL_CMS_COMPANY_SETTINGS = {
+  company_name: 'SFV Ventures Marketing',
+  brand_name: 'SFV APPAREL',
+  registration_number: '202303194821 (003492811-M)',
+  tagline: 'Pakar pembuatan jersi sublimasi penuh, cetakan DTF & sulaman pakaian kustom berkualiti tinggi di Malaysia.',
+  phone: '+60 14-859 9138',
+  whatsapp_number: '60148599138',
+  whatsapp_default_message: 'Hai SFV Apparel, saya ingin bertanya tentang tempahan kustom baju.',
+  email: 'sales@sfvapparel.my',
+  address: 'No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor, Malaysia',
+  working_hours: 'Isnin - Jumaat: 9.00 AM - 6.00 PM | Sabtu: 9.00 AM - 1.00 PM',
+  telegram_catalog_url: 'https://t.me/sfvapparelcatalog',
+  facebook_url: 'https://www.facebook.com/sfvapparel/',
+  instagram_url: 'https://www.instagram.com/sfv.apparel/',
+  tiktok_url: 'https://www.tiktok.com/@sfvapparel',
+};
+
+export const INITIAL_CMS_POLICIES = {
+  privacy: {
+    id: 'privacy' as const,
+    badge: 'Polisi Privasi',
+    title: 'Dasar Privasi & Keselamatan Data Pelanggan',
+    description: 'Kami menghormati dan melindungi data peribadi anda selaras dengan Akta Perlindungan Data Peribadi (PDPA) 2010 Malaysia.',
+    sections: [
+      {
+        heading: '1. Pengumpulan Maklumat Peribadi',
+        text: 'Kami hanya mengumpulkan maklumat yang diperlukan untuk memproses pesanan anda seperti nama, nombor telefon WhatsApp, alamat penghantaran, dan fail artwork rekaan anda.',
+      },
+      {
+        heading: '2. Penggunaan Data Pesanan',
+        text: 'Maklumat anda hanya digunakan untuk tujuan pengeluaran jersi, penghantaran kurier, dan pengemaskinian status pesanan.',
+      },
+      {
+        heading: '3. Kerahsiaan Rekaan (Artwork Confidentiality)',
+        text: 'Semua reka bentuk kustom dan logo rasmi kelab/syarikat anda tidak akan dijual atau dicetak untuk pihak ketiga tanpa izin bertulis daripada anda.',
+      },
+    ],
+  },
+  terms: {
+    id: 'terms' as const,
+    badge: 'Terma & Syarat',
+    title: 'Terma & Syarat Perkhidmatan Tempahan Kustom',
+    description: 'Sila baca syarat-syarat perkhidmatan ini sebelum mengesahkan pesanan pengeluaran jersi kustom anda.',
+    sections: [
+      {
+        heading: '1. Pengesahan Mockup Reka Bentuk',
+        text: 'Pelanggan bertanggungjawab menyemak ejaan nama, nombor jersi, logo penaja, dan carta saiz sebelum memberi kelulusan akhir mockup digital.',
+      },
+      {
+        heading: '2. Deposit & Pembayaran',
+        text: 'Produksi kilang hanya akan dimulakan setelah deposit tempahan yang dipersetujui disahkan diterima oleh akaun rasmi SFV Ventures Marketing.',
+      },
+      {
+        heading: '3. Pindaan Selepas Cetakan',
+        text: 'Sebarang pindaan pada rekaan atau senarai saiz selepas proses cetakan bermula mungkin akan dikenakan caj kos pengeluaran semula.',
+      },
+      {
+        heading: '4. Hak Cipta Reka Bentuk',
+        text: 'Pelanggan menjamin bahawa semua logo dan imej yang dibekalkan untuk dicetak adalah hak milik sah atau mempunyai permit/kebenaran penggunaan yang sah.',
+      },
+    ],
+  },
+  warranty: {
+    id: 'warranty' as const,
+    badge: 'Jaminan Kualiti',
+    title: 'Polisi Jaminan & Pemulangan (1-to-1 Replacement)',
+    description: 'Kami memberi keutamaan penuh kepada kepuasan pelanggan dengan prosedur kawalan kualiti (QC) berstandard tinggi.',
+    sections: [
+      {
+        heading: '1. Jaminan Kualiti Fabrik & Cetakan',
+        text: 'Kami menjamin cetakan warna jersi sublimasi penuh adalah tajam, tidak luntur, dan jahitan kemas berstandard sukan profesional.',
+      },
+      {
+        heading: '2. Gantian 1-ke-1 (Defect Replacement)',
+        text: 'Sekiranya terdapat kecacatan ketara akibat kesilapan kilang kami (seperti tersalah saiz dari senarai disahkan atau kerosakan fabrik), kami akan menggantikan item tersebut 1-ke-1 secara percuma.',
+      },
+      {
+        heading: '3. Tempoh Laporan Kecacatan',
+        text: 'Sebarang tuntutan kecacatan hendaklah dilaporkan kepada pihak khidmat pelanggan kami dalam tempoh 7 hari selepas bungkusan pesanan diterima.',
+      },
+    ],
+  },
+  shipping: {
+    id: 'shipping' as const,
+    badge: 'Polisi Penghantaran',
+    title: 'Dasar Penghantaran & Tempoh Pengeluaran',
+    description: 'Maklumat berkaitan tempoh siap, pembungkusan rapi, dan kaedah penghantaran ke seluruh Malaysia & Singapura.',
+    sections: [
+      {
+        heading: '1. Tempoh Siap Pengeluaran',
+        text: 'Tempoh siap piawai kilang adalah 5 hingga 9 hari bekerja selepas reka bentuk mockup diluluskan secara rasmi oleh pelanggan.',
+      },
+      {
+        heading: '2. Rakan Kurier Rasmi',
+        text: 'Penghantaran dibuat menggunakan rakan kurier dipercayai seperti PosLaju, J&T Express, dan NinjaVan dengan nombor penjejakan (tracking number) masa nyata.',
+      },
+      {
+        heading: '3. Kawasan Liputan Penghantaran',
+        text: 'Kami menyediakan perkhidmatan penghantaran pantas ke seluruh Semenanjung Malaysia, Sabah, Sarawak, Labuan, dan Singapura.',
+      },
+    ],
+  },
+};
+
