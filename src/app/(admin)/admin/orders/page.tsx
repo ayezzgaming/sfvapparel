@@ -10,7 +10,8 @@ import {
   LayoutGrid,
   List,
   SlidersHorizontal,
-  X
+  X,
+  Edit3
 } from 'lucide-react';
 
 const STATUS_LIST: { status: OrderStatus; label: string; color: string }[] = [
@@ -190,19 +191,19 @@ export default function AdminOrdersPage() {
 
       {/* Main Content Area: Table vs Grid */}
       {viewMode === 'list' ? (
-        <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-xs">
+        <div className="rounded-3xl bg-white border border-slate-200 overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
-              <thead className="bg-slate-50/80 text-slate-500 uppercase text-[11px] font-medium tracking-wider border-b border-slate-200">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-slate-50/80 text-slate-500 uppercase text-xs font-medium tracking-wider border-b border-slate-200">
                 <tr>
-                  <th className="py-3 px-4">No Pesanan</th>
-                  <th className="py-3 px-4">Rekaan</th>
-                  <th className="py-3 px-4">Pelanggan</th>
-                  <th className="py-3 px-4">Spesifikasi</th>
-                  <th className="py-3 px-4">Kuantiti</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Jumlah</th>
-                  <th className="py-3 px-4 text-center">Tindakan</th>
+                  <th className="py-3.5 px-4">No Pesanan</th>
+                  <th className="py-3.5 px-4">Rekaan</th>
+                  <th className="py-3.5 px-4">Pelanggan</th>
+                  <th className="py-3.5 px-4">Spesifikasi</th>
+                  <th className="py-3.5 px-4">Kuantiti</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4 text-right">Jumlah</th>
+                  <th className="py-3.5 px-4 text-center">Tindakan</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-normal">
@@ -214,15 +215,15 @@ export default function AdminOrdersPage() {
                       <tr key={ord.id} className="hover:bg-slate-50/60 transition-colors">
                         <td className="py-3.5 px-4 font-mono font-medium text-[#0B57D0] whitespace-nowrap">
                           {ord.order_number}
-                          <span className="text-[11px] text-slate-400 block font-normal font-sans">
+                          <span className="text-xs text-slate-400 block font-normal font-sans">
                             {new Date(ord.created_at).toLocaleDateString()}
                           </span>
                         </td>
 
                         <td className="py-3.5 px-4">
-                          <div className="flex items-center space-x-2.5">
+                          <div className="flex items-center space-x-3">
                             {ord.mockup_url && (
-                              <div className="w-9 h-9 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
+                              <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={ord.mockup_url}
@@ -235,7 +236,7 @@ export default function AdminOrdersPage() {
                               <span className="font-medium text-slate-800 block line-clamp-1 max-w-[160px]">
                                 {ord.design_title}
                               </span>
-                              <span className="text-[10px] text-slate-500 uppercase">
+                              <span className="text-xs text-slate-500 uppercase">
                                 {ord.print_type}
                               </span>
                             </div>
@@ -244,7 +245,7 @@ export default function AdminOrdersPage() {
 
                         <td className="py-3.5 px-4">
                           <span className="font-medium text-slate-800 block">{ord.customer_name}</span>
-                          <span className="text-[11px] text-slate-500 font-mono block">{ord.customer_phone}</span>
+                          <span className="text-xs text-slate-500 font-mono block">{ord.customer_phone}</span>
                         </td>
 
                         <td className="py-3.5 px-4">
@@ -252,13 +253,13 @@ export default function AdminOrdersPage() {
                             {ord.fabric_name || ord.dtf_dimension_name || 'Standard'}
                           </span>
                           {ord.cut_name && (
-                            <span className="text-[11px] text-slate-500 block">{ord.cut_name}</span>
+                            <span className="text-xs text-slate-500 block">{ord.cut_name}</span>
                           )}
                         </td>
 
                         <td className="py-3.5 px-4 font-mono">
                           <span className="font-medium text-slate-800 block">{ord.total_quantity} helai</span>
-                          <div className="text-[10px] text-slate-500 flex flex-wrap gap-1 max-w-[120px] mt-0.5">
+                          <div className="text-xs text-slate-500 flex flex-wrap gap-1 max-w-[120px] mt-0.5">
                             {Object.entries(ord.sizing_breakdown || {}).map(([s, q]) => {
                               if (Number(q) <= 0) return null;
                               return (
@@ -272,7 +273,7 @@ export default function AdminOrdersPage() {
 
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${statusObj.color}`}
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusObj.color}`}
                           >
                             {statusObj.label}
                           </span>
@@ -284,10 +285,12 @@ export default function AdminOrdersPage() {
 
                         <td className="py-3.5 px-4 text-center">
                           <button
+                            type="button"
                             onClick={() => handleOpenEdit(ord)}
-                            className="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-[#C2E7FF] text-[#001D35] font-medium text-xs transition-all"
+                            title="Kemas Kini Status"
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors mx-auto"
                           >
-                            Status
+                            <Edit3 className="w-4 h-4" />
                           </button>
                         </td>
                       </tr>
@@ -314,18 +317,18 @@ export default function AdminOrdersPage() {
               return (
                 <div
                   key={ord.id}
-                  className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-3"
+                  className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-3"
                 >
                   <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
                     <div>
                       <span className="text-xs font-mono font-medium text-[#0B57D0] block">
                         {ord.order_number}
                       </span>
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-xs text-slate-400">
                         {new Date(ord.created_at).toLocaleDateString()}
                       </span>
                     </div>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${statusObj.color}`}>
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusObj.color}`}>
                       {statusObj.label}
                     </span>
                   </div>
@@ -344,11 +347,11 @@ export default function AdminOrdersPage() {
                     <div className="min-w-0 flex-1">
                       <h4 className="font-medium text-sm text-slate-800 truncate">{ord.design_title}</h4>
                       <p className="text-xs text-slate-600 truncate">{ord.customer_name}</p>
-                      <p className="text-[11px] text-slate-400 font-mono truncate">{ord.customer_phone}</p>
+                      <p className="text-xs text-slate-400 font-mono truncate">{ord.customer_phone}</p>
                     </div>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-slate-50 text-xs space-y-1">
+                  <div className="p-3 rounded-xl bg-slate-50 text-xs space-y-1">
                     <div className="flex justify-between text-slate-600">
                       <span>Kuantiti:</span>
                       <span className="font-medium text-slate-800">{ord.total_quantity} helai</span>
@@ -363,19 +366,21 @@ export default function AdminOrdersPage() {
                     </div>
                   </div>
 
-                  <div className="pt-1">
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-end">
                     <button
+                      type="button"
                       onClick={() => handleOpenEdit(ord)}
-                      className="w-full py-2 rounded-full bg-slate-100 hover:bg-[#C2E7FF] text-[#001D35] font-medium text-xs transition-all"
+                      title="Kemas Kini Status"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                     >
-                      Kemas Kini Status
+                      <Edit3 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
               );
             })
           ) : (
-            <div className="col-span-full bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400">
+            <div className="col-span-full bg-white rounded-3xl border border-slate-200 p-8 text-center text-slate-400">
               Tiada pesanan dijumpai.
             </div>
           )}

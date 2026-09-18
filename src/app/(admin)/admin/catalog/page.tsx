@@ -279,21 +279,23 @@ export default function AdminCatalogPage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-end space-x-1.5">
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-end space-x-1">
                   <button
+                    type="button"
                     onClick={() => handleOpenEdit(item)}
-                    className="px-3 py-1.5 rounded-full text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors flex items-center space-x-1"
+                    title="Ubah Rekaan"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                   >
-                    <Edit className="w-3.5 h-3.5 text-[#0052FF]" />
-                    <span>Edit</span>
+                    <Edit className="w-4 h-4" />
                   </button>
 
                   <button
+                    type="button"
                     onClick={() => handleDelete(item.id)}
-                    className="px-3 py-1.5 rounded-full text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors flex items-center space-x-1"
+                    title="Padam Rekaan"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Padam</span>
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -302,24 +304,24 @@ export default function AdminCatalogPage() {
         </div>
       ) : (
         /* Data Table View */
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+        <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-[11px] font-semibold text-slate-500">
-                  <th className="py-3 px-4">Gambar</th>
-                  <th className="py-3 px-4">Tajuk & Kategori</th>
-                  <th className="py-3 px-4">Teknik</th>
-                  <th className="py-3 px-4">Tag</th>
-                  <th className="py-3 px-4">Pilihan Utama</th>
-                  <th className="py-3 px-4 text-right">Tindakan</th>
+                <tr className="bg-slate-50/80 border-b border-slate-200 text-xs font-medium text-slate-500">
+                  <th className="py-3.5 px-4">Gambar</th>
+                  <th className="py-3.5 px-4">Tajuk & Kategori</th>
+                  <th className="py-3.5 px-4">Teknik</th>
+                  <th className="py-3.5 px-4">Tag</th>
+                  <th className="py-3.5 px-4">Pilihan Utama</th>
+                  <th className="py-3.5 px-4 text-right">Tindakan</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
+              <tbody className="divide-y divide-slate-100 text-sm">
                 {filteredDesigns.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3 px-4">
-                      <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden border border-slate-200 shrink-0">
+                    <td className="py-3.5 px-4">
+                      <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-200 shrink-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={item.thumbnail_url}
@@ -328,50 +330,52 @@ export default function AdminCatalogPage() {
                         />
                       </div>
                     </td>
-                    <td className="py-3 px-4">
-                      <p className="font-semibold text-slate-800">{item.title}</p>
-                      <p className="text-[11px] text-slate-400">{item.category}</p>
+                    <td className="py-3.5 px-4">
+                      <p className="font-medium text-slate-800">{item.title}</p>
+                      <p className="text-xs text-slate-400">{item.category}</p>
                     </td>
-                    <td className="py-3 px-4">
-                      <span className="text-[10px] font-medium uppercase text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
+                    <td className="py-3.5 px-4">
+                      <span className="text-xs font-medium uppercase text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full">
                         {item.print_type}
                       </span>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3.5 px-4">
                       <div className="flex flex-wrap gap-1 max-w-xs">
                         {(item.tags || []).map((t, idx) => (
                           <span
                             key={idx}
-                            className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-slate-100 text-slate-600"
+                            className="text-xs font-normal px-2 py-0.5 rounded-full bg-slate-100 text-slate-600"
                           >
                             #{t}
                           </span>
                         ))}
                       </div>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3.5 px-4">
                       {item.is_featured ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600">
-                          <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600">
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                           Ya
                         </span>
                       ) : (
-                        <span className="text-[11px] text-slate-400">Tidak</span>
+                        <span className="text-xs text-slate-400">Tidak</span>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
+                          type="button"
                           onClick={() => handleOpenEdit(item)}
-                          className="p-1.5 rounded-full hover:bg-slate-100 text-slate-700 transition-colors"
-                          title="Edit"
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                          title="Ubah Rekaan"
                         >
-                          <Edit className="w-4 h-4 text-[#0052FF]" />
+                          <Edit className="w-4 h-4" />
                         </button>
                         <button
+                          type="button"
                           onClick={() => handleDelete(item.id)}
-                          className="p-1.5 rounded-full hover:bg-rose-50 text-rose-600 transition-colors"
-                          title="Padam"
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                          title="Padam Rekaan"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

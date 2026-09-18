@@ -667,28 +667,32 @@ export default function AdminCmsPage() {
 
                       {/* Bottom Actions */}
                       <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full ${banner.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                        <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${banner.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
                           {banner.is_active ? 'Aktif' : 'Tidak Aktif'}
                         </span>
 
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-1">
                           <button
+                            type="button"
                             onClick={() => handleOpenBannerModal(banner)}
-                            className="px-3.5 py-1.5 rounded-full border border-slate-300 hover:border-slate-400 text-[#0B57D0] hover:bg-blue-50/40 text-xs font-medium transition-all"
+                            title="Ubah Banner"
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                           >
-                            Ubah
+                            <Edit3 className="w-4 h-4" />
                           </button>
                           {heroBanners.length > 1 && (
                             <button
+                              type="button"
                               onClick={() => {
                                 if (confirm('Padam slide banner ini?')) {
                                   deleteHeroBanner(banner.id);
                                   triggerToast('Banner berjaya dipadam.');
                                 }
                               }}
-                              className="px-3 py-1.5 rounded-full text-rose-600 hover:bg-rose-50 text-xs font-medium transition-all"
+                              title="Padam Banner"
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                             >
-                              Padam
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           )}
                         </div>
@@ -699,60 +703,64 @@ export default function AdminCmsPage() {
               </div>
             ) : (
               /* List Mode Table */
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-[11px] font-medium tracking-wider border-b border-slate-200">
+              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-xs font-medium tracking-wider border-b border-slate-200">
                     <tr>
-                      <th className="py-3 px-4">Susunan & Imej</th>
-                      <th className="py-3 px-4">Tajuk Banner</th>
-                      <th className="py-3 px-4">Tag / Status Pill</th>
-                      <th className="py-3 px-4">Pautan Butang</th>
-                      <th className="py-3 px-4">Status</th>
-                      <th className="py-3 px-4 text-center">Tindakan</th>
+                      <th className="py-3.5 px-4">Susunan & Imej</th>
+                      <th className="py-3.5 px-4">Tajuk Banner</th>
+                      <th className="py-3.5 px-4">Tag / Status Pill</th>
+                      <th className="py-3.5 px-4">Pautan Butang</th>
+                      <th className="py-3.5 px-4">Status</th>
+                      <th className="py-3.5 px-4 text-center">Tindakan</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-normal">
                     {heroBanners.map((banner, idx) => (
                       <tr key={banner.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3 px-4">
+                        <td className="py-3.5 px-4">
                           <div className="flex items-center space-x-3">
                             <span className="text-slate-400 font-mono text-xs">#{idx + 1}</span>
-                            <div className="w-14 h-9 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                            <div className="w-16 h-10 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={banner.image_url} alt={banner.title} className="w-full h-full object-cover" />
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-4 font-medium text-slate-800">{banner.title}</td>
-                        <td className="py-3 px-4">
+                        <td className="py-3.5 px-4 font-medium text-slate-800">{banner.title}</td>
+                        <td className="py-3.5 px-4">
                           <span className="text-slate-700 block">{banner.tag_text}</span>
-                          <span className="text-[11px] text-slate-400">{banner.status_pill}</span>
+                          <span className="text-xs text-slate-400">{banner.status_pill}</span>
                         </td>
-                        <td className="py-3 px-4 font-mono text-[#0B57D0]">{banner.button_text} ({banner.button_link})</td>
-                        <td className="py-3 px-4">
-                          <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${banner.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                        <td className="py-3.5 px-4 font-mono text-[#0B57D0]">{banner.button_text} ({banner.button_link})</td>
+                        <td className="py-3.5 px-4">
+                          <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${banner.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
                             {banner.is_active ? 'Aktif' : 'Tidak Aktif'}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-center">
-                          <div className="flex items-center justify-center space-x-1.5">
+                        <td className="py-3.5 px-4 text-center">
+                          <div className="flex items-center justify-center space-x-1">
                             <button
+                              type="button"
                               onClick={() => handleOpenBannerModal(banner)}
-                              className="px-3 py-1 rounded-full border border-slate-300 hover:border-slate-400 text-[#0B57D0] hover:bg-blue-50/40 text-xs font-medium transition-all"
+                              title="Ubah Banner"
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                             >
-                              Ubah
+                              <Edit3 className="w-4 h-4" />
                             </button>
                             {heroBanners.length > 1 && (
                               <button
+                                type="button"
                                 onClick={() => {
                                   if (confirm('Padam slide banner ini?')) {
                                     deleteHeroBanner(banner.id);
                                     triggerToast('Banner berjaya dipadam.');
                                   }
                                 }}
-                                className="px-2.5 py-1 rounded-full text-rose-600 hover:bg-rose-50 text-xs font-medium"
+                                title="Padam Banner"
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                               >
-                                Padam
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             )}
                           </div>
@@ -831,25 +839,29 @@ export default function AdminCmsPage() {
                       </div>
 
                       <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <span className="text-[11px] text-slate-400">{item.details?.length || 0} butiran</span>
-                        <div className="flex items-center space-x-1.5">
+                        <span className="text-xs text-slate-500">{item.details?.length || 0} butiran</span>
+                        <div className="flex items-center space-x-1">
                           <button
+                            type="button"
                             onClick={() => handleOpenServiceModal(item)}
-                            className="px-3.5 py-1.5 rounded-full border border-slate-300 hover:border-slate-400 text-[#0B57D0] hover:bg-blue-50/40 text-xs font-medium transition-all"
+                            title="Ubah Servis"
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                           >
-                            Ubah
+                            <Edit3 className="w-4 h-4" />
                           </button>
                           {services.length > 1 && (
                             <button
+                              type="button"
                               onClick={() => {
                                 if (confirm('Padam servis ini?')) {
                                   deleteService(item.id);
                                   triggerToast('Servis berjaya dipadam.');
                                 }
                               }}
-                              className="px-2.5 py-1.5 rounded-full text-rose-600 hover:bg-rose-50 text-xs font-medium"
+                              title="Padam Servis"
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                             >
-                              Padam
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           )}
                         </div>
@@ -860,53 +872,57 @@ export default function AdminCmsPage() {
               </div>
             ) : (
               /* List View Table */
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-[11px] font-medium tracking-wider border-b border-slate-200">
+              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-xs font-medium tracking-wider border-b border-slate-200">
                     <tr>
-                      <th className="py-3 px-4">Imej & Kategori</th>
-                      <th className="py-3 px-4">Tajuk Servis</th>
-                      <th className="py-3 px-4">Sorotan / Highlight</th>
-                      <th className="py-3 px-4">Harga Bermula</th>
-                      <th className="py-3 px-4 text-center">Tindakan</th>
+                      <th className="py-3.5 px-4">Imej & Kategori</th>
+                      <th className="py-3.5 px-4">Tajuk Servis</th>
+                      <th className="py-3.5 px-4">Sorotan / Highlight</th>
+                      <th className="py-3.5 px-4">Harga Bermula</th>
+                      <th className="py-3.5 px-4 text-center">Tindakan</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-normal">
                     {services.map((item) => (
                       <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3 px-4">
+                        <td className="py-3.5 px-4">
                           <div className="flex items-center space-x-3">
-                            <div className="w-12 h-9 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                            <div className="w-14 h-10 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
                             </div>
                             <span className="font-medium text-slate-800">{item.category}</span>
                           </div>
                         </td>
-                        <td className="py-3 px-4 font-medium text-slate-800">{item.title}</td>
-                        <td className="py-3 px-4 text-slate-500 max-w-[240px] truncate">{item.highlight}</td>
-                        <td className="py-3 px-4 font-mono font-medium text-[#0B57D0]">
+                        <td className="py-3.5 px-4 font-medium text-slate-800">{item.title}</td>
+                        <td className="py-3.5 px-4 text-slate-600 max-w-[240px] truncate">{item.highlight}</td>
+                        <td className="py-3.5 px-4 font-mono font-medium text-[#0B57D0]">
                           {item.price_prefix} {item.price_amount} {item.price_unit}
                         </td>
-                        <td className="py-3 px-4 text-center">
-                          <div className="flex items-center justify-center space-x-1.5">
+                        <td className="py-3.5 px-4 text-center">
+                          <div className="flex items-center justify-center space-x-1">
                             <button
+                              type="button"
                               onClick={() => handleOpenServiceModal(item)}
-                              className="px-3 py-1 rounded-full border border-slate-300 hover:border-slate-400 text-[#0B57D0] hover:bg-blue-50/40 text-xs font-medium"
+                              title="Ubah Servis"
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                             >
-                              Ubah
+                              <Edit3 className="w-4 h-4" />
                             </button>
                             {services.length > 1 && (
                               <button
+                                type="button"
                                 onClick={() => {
                                   if (confirm('Padam servis ini?')) {
                                     deleteService(item.id);
                                     triggerToast('Servis berjaya dipadam.');
                                   }
                                 }}
-                                className="px-2.5 py-1 rounded-full text-rose-600 hover:bg-rose-50 text-xs font-medium"
+                                title="Padam Servis"
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                               >
-                                Padam
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             )}
                           </div>
@@ -1085,30 +1101,34 @@ export default function AdminCmsPage() {
                           href={`https://www.youtube.com/watch?v=${video.youtube_id}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-[#0B57D0] hover:underline flex items-center space-x-1"
+                          title="Tonton di YouTube"
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                         >
-                          <span>Tonton</span>
-                          <ExternalLink className="w-3 h-3" />
+                          <ExternalLink className="w-4 h-4" />
                         </a>
 
-                        <div className="flex items-center space-x-1.5">
+                        <div className="flex items-center space-x-1">
                           <button
+                            type="button"
                             onClick={() => handleOpenVideoModal(video)}
-                            className="px-3 py-1 rounded-full border border-slate-300 hover:border-slate-400 text-[#0B57D0] hover:bg-blue-50/40 text-xs font-medium"
+                            title="Ubah Video"
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                           >
-                            Ubah
+                            <Edit3 className="w-4 h-4" />
                           </button>
                           {productionVideos.length > 1 && (
                             <button
+                              type="button"
                               onClick={() => {
                                 if (confirm('Padam video ini?')) {
                                   deleteProductionVideo(video.id);
                                   triggerToast('Video berjaya dipadam.');
                                 }
                               }}
-                              className="px-2 py-1 rounded-full text-rose-600 hover:bg-rose-50 text-xs font-medium"
+                              title="Padam Video"
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                             >
-                              Padam
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           )}
                         </div>
@@ -1119,61 +1139,65 @@ export default function AdminCmsPage() {
               </div>
             ) : (
               /* List View Table */
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-[11px] font-medium tracking-wider border-b border-slate-200">
+              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-xs font-medium tracking-wider border-b border-slate-200">
                     <tr>
-                      <th className="py-3 px-4">Thumbnail & Kategori</th>
-                      <th className="py-3 px-4">Tajuk Video</th>
-                      <th className="py-3 px-4">YouTube ID</th>
-                      <th className="py-3 px-4">Pautan Semakan</th>
-                      <th className="py-3 px-4 text-center">Tindakan</th>
+                      <th className="py-3.5 px-4">Thumbnail & Kategori</th>
+                      <th className="py-3.5 px-4">Tajuk Video</th>
+                      <th className="py-3.5 px-4">YouTube ID</th>
+                      <th className="py-3.5 px-4">Pautan Semakan</th>
+                      <th className="py-3.5 px-4 text-center">Tindakan</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-normal">
                     {productionVideos.map((video) => (
                       <tr key={video.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3 px-4">
+                        <td className="py-3.5 px-4">
                           <div className="flex items-center space-x-3">
-                            <div className="w-10 h-14 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                            <div className="w-12 h-16 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
                             </div>
                             <span className="font-medium text-slate-800">{video.category}</span>
                           </div>
                         </td>
-                        <td className="py-3 px-4 font-medium text-slate-800">{video.title}</td>
-                        <td className="py-3 px-4 font-mono text-slate-600">{video.youtube_id}</td>
-                        <td className="py-3 px-4">
+                        <td className="py-3.5 px-4 font-medium text-slate-800">{video.title}</td>
+                        <td className="py-3.5 px-4 font-mono text-slate-600">{video.youtube_id}</td>
+                        <td className="py-3.5 px-4">
                           <a
                             href={`https://www.youtube.com/watch?v=${video.youtube_id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#0B57D0] hover:underline flex items-center space-x-1"
+                            className="text-[#0B57D0] hover:underline inline-flex items-center space-x-1"
                           >
                             <span>Buka YouTube</span>
-                            <ExternalLink className="w-3 h-3" />
+                            <ExternalLink className="w-3.5 h-3.5" />
                           </a>
                         </td>
-                        <td className="py-3 px-4 text-center">
-                          <div className="flex items-center justify-center space-x-1.5">
+                        <td className="py-3.5 px-4 text-center">
+                          <div className="flex items-center justify-center space-x-1">
                             <button
+                              type="button"
                               onClick={() => handleOpenVideoModal(video)}
-                              className="px-3 py-1 rounded-full border border-slate-300 hover:border-slate-400 text-[#0B57D0] hover:bg-blue-50/40 text-xs font-medium"
+                              title="Ubah Video"
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                             >
-                              Ubah
+                              <Edit3 className="w-4 h-4" />
                             </button>
                             {productionVideos.length > 1 && (
                               <button
+                                type="button"
                                 onClick={() => {
                                   if (confirm('Padam video ini?')) {
                                     deleteProductionVideo(video.id);
                                     triggerToast('Video berjaya dipadam.');
                                   }
                                 }}
-                                className="px-2.5 py-1 rounded-full text-rose-600 hover:bg-rose-50 text-xs font-medium"
+                                title="Padam Video"
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                               >
-                                Padam
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             )}
                           </div>
@@ -1251,24 +1275,28 @@ export default function AdminCmsPage() {
 
                       <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                         <span className="text-xs text-slate-400">{item.category}</span>
-                        <div className="flex items-center space-x-1.5">
+                        <div className="flex items-center space-x-1">
                           <button
+                            type="button"
                             onClick={() => handleOpenGalleryModal(item)}
-                            className="px-3.5 py-1.5 rounded-full border border-slate-300 hover:border-slate-400 text-[#0B57D0] hover:bg-blue-50/40 text-xs font-medium transition-all"
+                            title="Ubah Item Galeri"
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                           >
-                            Ubah
+                            <Edit3 className="w-4 h-4" />
                           </button>
                           {productionGallery.length > 1 && (
                             <button
+                              type="button"
                               onClick={() => {
                                 if (confirm('Padam item galeri ini?')) {
                                   deleteGalleryItem(item.id);
                                   triggerToast('Item galeri berjaya dipadam.');
                                 }
                               }}
-                              className="px-2.5 py-1.5 rounded-full text-rose-600 hover:bg-rose-50 text-xs font-medium"
+                              title="Padam Item Galeri"
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                             >
-                              Padam
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           )}
                         </div>
@@ -1279,51 +1307,55 @@ export default function AdminCmsPage() {
               </div>
             ) : (
               /* List View Table */
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-[11px] font-medium tracking-wider border-b border-slate-200">
+              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-xs font-medium tracking-wider border-b border-slate-200">
                     <tr>
-                      <th className="py-3 px-4">Foto & Tag</th>
-                      <th className="py-3 px-4">Tajuk Tempahan</th>
-                      <th className="py-3 px-4">Spesifikasi Fabrik</th>
-                      <th className="py-3 px-4">Klien & Kuantiti</th>
-                      <th className="py-3 px-4 text-center">Tindakan</th>
+                      <th className="py-3.5 px-4">Foto & Tag</th>
+                      <th className="py-3.5 px-4">Tajuk Tempahan</th>
+                      <th className="py-3.5 px-4">Spesifikasi Fabrik</th>
+                      <th className="py-3.5 px-4">Klien & Kuantiti</th>
+                      <th className="py-3.5 px-4 text-center">Tindakan</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-normal">
                     {productionGallery.map((item) => (
                       <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3 px-4">
+                        <td className="py-3.5 px-4">
                           <div className="flex items-center space-x-3">
-                            <div className="w-12 h-9 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                            <div className="w-14 h-10 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
                             </div>
                             <span className="font-medium text-slate-800">{item.tag}</span>
                           </div>
                         </td>
-                        <td className="py-3 px-4 font-medium text-slate-800">{item.title}</td>
-                        <td className="py-3 px-4 text-slate-600">{item.fabric}</td>
-                        <td className="py-3 px-4 text-slate-800">{item.client}</td>
-                        <td className="py-3 px-4 text-center">
-                          <div className="flex items-center justify-center space-x-1.5">
+                        <td className="py-3.5 px-4 font-medium text-slate-800">{item.title}</td>
+                        <td className="py-3.5 px-4 text-slate-600">{item.fabric}</td>
+                        <td className="py-3.5 px-4 text-slate-800">{item.client}</td>
+                        <td className="py-3.5 px-4 text-center">
+                          <div className="flex items-center justify-center space-x-1">
                             <button
+                              type="button"
                               onClick={() => handleOpenGalleryModal(item)}
-                              className="px-3 py-1 rounded-full border border-slate-300 hover:border-slate-400 text-[#0B57D0] hover:bg-blue-50/40 text-xs font-medium"
+                              title="Ubah Item Galeri"
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                             >
-                              Ubah
+                              <Edit3 className="w-4 h-4" />
                             </button>
                             {productionGallery.length > 1 && (
                               <button
+                                type="button"
                                 onClick={() => {
                                   if (confirm('Padam item galeri ini?')) {
                                     deleteGalleryItem(item.id);
                                     triggerToast('Item galeri berjaya dipadam.');
                                   }
                                 }}
-                                className="px-2.5 py-1 rounded-full text-rose-600 hover:bg-rose-50 text-xs font-medium"
+                                title="Padam Item Galeri"
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                               >
-                                Padam
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             )}
                           </div>
@@ -1348,7 +1380,7 @@ export default function AdminCmsPage() {
                 <p className="text-xs text-slate-500 mt-0.5">Uruskan ulasan di bahagian Apa Kata Mereka di Halaman Utama</p>
               </div>
               <div className="flex items-center space-x-3 self-end sm:self-auto">
-                <span className="text-xs text-slate-500 hidden sm:inline-block">{testimonials.length} tersedia</span>
+                <span className="text-xs text-slate-500 hidden sm:inline-block">{testimonials.length} ulasan</span>
                 
                 <div className="flex items-center bg-slate-100 p-1 rounded-full border border-slate-200">
                   <button
@@ -1378,52 +1410,56 @@ export default function AdminCmsPage() {
             </div>
 
             {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {testimonials.map((t) => (
-                  <div key={t.id} className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col justify-between space-y-3 shadow-xs hover:shadow-md transition-shadow">
+                  <div key={t.id} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between space-y-4">
                     <div className="space-y-3">
-                      <div className="flex justify-between items-start">
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2.5">
                           <div className={`w-8 h-8 rounded-full ${t.avatar_bg} ${t.avatar_text} font-medium text-xs flex items-center justify-center`}>
                             {t.initial}
                           </div>
                           <div>
-                            <h4 className="font-medium text-xs text-slate-800">{t.name}</h4>
-                            <p className="text-[11px] text-slate-500">{t.location}</p>
+                            <h4 className="font-medium text-sm text-slate-800">{t.name}</h4>
+                            <p className="text-xs text-slate-500">{t.location}</p>
                           </div>
                         </div>
-                        <span className="text-[10px] font-medium uppercase px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                        <span className="text-xs font-medium uppercase px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
                           {t.platform}
                         </span>
                       </div>
 
                       <div className="flex text-amber-400">
                         {Array.from({ length: t.rating }).map((_, i) => (
-                          <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
+                          <Star key={i} className="w-4 h-4 fill-amber-400" />
                         ))}
                       </div>
 
-                      <p className="text-xs text-slate-600 leading-relaxed line-clamp-4">&quot;{t.review.replace(/"/g, '')}&quot;</p>
+                      <p className="text-sm text-slate-600 leading-relaxed line-clamp-4">&quot;{t.review.replace(/"/g, '')}&quot;</p>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-100 flex justify-end space-x-1.5">
+                    <div className="pt-3 border-t border-slate-100 flex justify-end space-x-1">
                       <button
+                        type="button"
                         onClick={() => handleOpenTestiModal(t)}
-                        className="px-3 py-1 rounded-full border border-slate-300 hover:border-slate-400 text-[#0B57D0] hover:bg-blue-50/40 text-xs font-medium"
+                        title="Ubah Testimoni"
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                       >
-                        Ubah
+                        <Edit3 className="w-4 h-4" />
                       </button>
                       {testimonials.length > 1 && (
                         <button
+                          type="button"
                           onClick={() => {
                             if (confirm('Padam ulasan ini?')) {
                               deleteTestimonial(t.id);
                               triggerToast('Testimoni berjaya dipadam.');
                             }
                           }}
-                          className="px-2 py-1 rounded-full text-rose-600 hover:bg-rose-50 text-xs font-medium"
+                          title="Padam Testimoni"
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                         >
-                          Padam
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       )}
                     </div>
@@ -1432,59 +1468,63 @@ export default function AdminCmsPage() {
               </div>
             ) : (
               /* List View Table */
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-[11px] font-medium tracking-wider border-b border-slate-200">
+              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-xs font-medium tracking-wider border-b border-slate-200">
                     <tr>
-                      <th className="py-3 px-4">Pelanggan & Lokasi</th>
-                      <th className="py-3 px-4">Platform</th>
-                      <th className="py-3 px-4">Penilaian</th>
-                      <th className="py-3 px-4">Isi Ulasan</th>
-                      <th className="py-3 px-4 text-center">Tindakan</th>
+                      <th className="py-3.5 px-4">Pelanggan & Lokasi</th>
+                      <th className="py-3.5 px-4">Platform</th>
+                      <th className="py-3.5 px-4">Penilaian</th>
+                      <th className="py-3.5 px-4">Isi Ulasan</th>
+                      <th className="py-3.5 px-4 text-center">Tindakan</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-normal">
                     {testimonials.map((t) => (
                       <tr key={t.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3 px-4">
+                        <td className="py-3.5 px-4">
                           <div className="flex items-center space-x-2.5">
-                            <div className={`w-7 h-7 rounded-full ${t.avatar_bg} ${t.avatar_text} font-medium text-xs flex items-center justify-center`}>
+                            <div className={`w-8 h-8 rounded-full ${t.avatar_bg} ${t.avatar_text} font-medium text-xs flex items-center justify-center`}>
                               {t.initial}
                             </div>
                             <div>
                               <h4 className="font-medium text-slate-800">{t.name}</h4>
-                              <p className="text-[11px] text-slate-500">{t.location}</p>
+                              <p className="text-xs text-slate-500">{t.location}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-4 uppercase font-medium text-[11px] text-slate-600">{t.platform}</td>
-                        <td className="py-3 px-4">
+                        <td className="py-3.5 px-4 uppercase font-medium text-xs text-slate-600">{t.platform}</td>
+                        <td className="py-3.5 px-4">
                           <div className="flex text-amber-400">
                             {Array.from({ length: t.rating }).map((_, i) => (
-                              <Star key={i} className="w-3 h-3 fill-amber-400" />
+                              <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
                             ))}
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-slate-600 max-w-[320px] truncate">&quot;{t.review}&quot;</td>
-                        <td className="py-3 px-4 text-center">
-                          <div className="flex items-center justify-center space-x-1.5">
+                        <td className="py-3.5 px-4 text-slate-600 max-w-[320px] truncate">&quot;{t.review}&quot;</td>
+                        <td className="py-3.5 px-4 text-center">
+                          <div className="flex items-center justify-center space-x-1">
                             <button
+                              type="button"
                               onClick={() => handleOpenTestiModal(t)}
-                              className="px-3 py-1 rounded-full border border-slate-300 hover:border-slate-400 text-[#0B57D0] hover:bg-blue-50/40 text-xs font-medium"
+                              title="Ubah Testimoni"
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                             >
-                              Ubah
+                              <Edit3 className="w-4 h-4" />
                             </button>
                             {testimonials.length > 1 && (
                               <button
+                                type="button"
                                 onClick={() => {
                                   if (confirm('Padam ulasan ini?')) {
                                     deleteTestimonial(t.id);
                                     triggerToast('Testimoni berjaya dipadam.');
                                   }
                                 }}
-                                className="px-2.5 py-1 rounded-full text-rose-600 hover:bg-rose-50 text-xs font-medium"
+                                title="Padam Testimoni"
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                               >
-                                Padam
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             )}
                           </div>
