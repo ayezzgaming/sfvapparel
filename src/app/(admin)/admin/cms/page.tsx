@@ -941,82 +941,82 @@ export default function AdminCmsPage() {
            ========================================================================= */}
         {activeTab === 'slogan' && (
           <div className="max-w-4xl space-y-6">
-            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-5">
+            <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-xs space-y-5">
               <div className="border-b border-slate-100 pb-3">
                 <h2 className="text-base font-normal text-slate-800">Slogan & Ajakan WhatsApp</h2>
-                <p className="text-xs text-slate-500 mt-0.5">Ubah teks slogan rasmi, keterangan, dan mesej templat WhatsApp</p>
+                <p className="text-sm text-slate-500 mt-0.5">Ubah teks slogan rasmi, keterangan, dan mesej templat WhatsApp</p>
               </div>
 
               {/* Status Box */}
-              <div className="bg-[#F0F4F9] rounded-2xl p-4 flex items-center justify-between">
+              <div className="bg-[#F0F4F9] rounded-2xl p-5 flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] text-slate-500 font-medium block">Headline Semasa</span>
-                  <span className="text-sm font-medium text-slate-800">{sloganQuote.headline} {sloganQuote.highlight_text}</span>
+                  <span className="text-xs text-slate-500 font-medium block">Headline Semasa</span>
+                  <span className="text-base font-medium text-slate-800">{sloganQuote.headline} {sloganQuote.highlight_text}</span>
                 </div>
-                <span className="text-xs text-[#0B57D0] font-medium bg-white px-3 py-1 rounded-full border border-slate-200">
+                <span className="text-sm text-slate-700 font-medium bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs">
                   Aktif di Laman Web
                 </span>
               </div>
 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-slate-700">Baris Utama Slogan</label>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-slate-700">Baris Utama Slogan</label>
                     <input
                       type="text"
                       value={sloganQuote.headline}
                       onChange={(e) => updateSloganQuote({ headline: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                     />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-slate-700">Teks Sorotan (Highlight)</label>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-slate-700">Teks Sorotan (Highlight)</label>
                     <input
                       type="text"
                       value={sloganQuote.highlight_text}
                       onChange={(e) => updateSloganQuote({ highlight_text: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Ayat Soalan</label>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700">Ayat Soalan</label>
                   <input
                     type="text"
                     value={sloganQuote.question_text}
                     onChange={(e) => updateSloganQuote({ question_text: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Keterangan Ajakan</label>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700">Keterangan Ajakan</label>
                   <textarea
                     rows={3}
                     value={sloganQuote.description_text}
                     onChange={(e) => updateSloganQuote({ description_text: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-slate-700">Label Butang WhatsApp</label>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-slate-700">Label Butang WhatsApp</label>
                     <input
                       type="text"
                       value={sloganQuote.button_text}
                       onChange={(e) => updateSloganQuote({ button_text: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                     />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-slate-700">Mesej Templat WhatsApp</label>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-slate-700">Mesej Templat WhatsApp</label>
                     <input
                       type="text"
                       value={sloganQuote.whatsapp_message}
                       onChange={(e) => updateSloganQuote({ whatsapp_message: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                     />
                   </div>
                 </div>
@@ -1024,9 +1024,9 @@ export default function AdminCmsPage() {
                 <div className="pt-2 flex justify-end">
                   <button
                     onClick={() => triggerToast('Slogan & ajakan WhatsApp berjaya disimpan!')}
-                    className="flex items-center space-x-1.5 px-5 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
+                    className="flex items-center space-x-1.5 px-6 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white text-sm font-medium shadow-xs transition-all"
                   >
-                    <Save className="w-3.5 h-3.5" />
+                    <Save className="w-4 h-4" />
                     <span>Simpan Perubahan Slogan</span>
                   </button>
                 </div>
@@ -1555,60 +1555,58 @@ export default function AdminCmsPage() {
                 <button
                   type="button"
                   onClick={() => toggleCompanyAcc('basic')}
-                  className="w-full p-5 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
+                  className="w-full p-5 sm:p-6 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
                 >
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-8 h-8 rounded-full bg-blue-50 text-[#0B57D0] flex items-center justify-center">
-                      <Building2 className="w-4 h-4" />
-                    </div>
+                    <Building2 className="w-5 h-5 text-slate-600 shrink-0" />
                     <div>
-                      <h3 className="text-sm font-medium text-slate-800">Maklumat Asas Syarikat & Jenama</h3>
-                      <p className="text-xs text-slate-500">Nama berdaftar SSM, jenama rasmi, dan no. pendaftaran</p>
+                      <h3 className="text-base font-medium text-slate-800">Maklumat Asas Syarikat & Jenama</h3>
+                      <p className="text-sm text-slate-500">Nama berdaftar SSM, jenama rasmi, dan no. pendaftaran</p>
                     </div>
                   </div>
-                  {companyAccordion.basic ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+                  {companyAccordion.basic ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
                 </button>
 
                 {companyAccordion.basic && (
-                  <div className="p-6 bg-slate-50/40 border-t border-slate-100 space-y-4 animate-in fade-in duration-150">
+                  <div className="p-6 sm:p-7 bg-slate-50/40 border-t border-slate-100 space-y-4 animate-in fade-in duration-150">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-700">Nama Syarikat Berdaftar</label>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">Nama Syarikat Berdaftar</label>
                         <input
                           type="text"
                           value={companySettings.company_name}
                           onChange={(e) => updateCompanySettings({ company_name: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-700">Nama Jenama (Brand)</label>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">Nama Jenama (Brand)</label>
                         <input
                           type="text"
                           value={companySettings.brand_name}
                           onChange={(e) => updateCompanySettings({ brand_name: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-700">Nombor Pendaftaran Syarikat (SSM)</label>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">Nombor Pendaftaran Syarikat (SSM)</label>
                         <input
                           type="text"
                           value={companySettings.registration_number}
                           onChange={(e) => updateCompanySettings({ registration_number: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-700">Nombor WhatsApp Rasmi</label>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">Nombor WhatsApp Rasmi</label>
                         <input
                           type="text"
                           value={companySettings.whatsapp_number}
                           onChange={(e) => updateCompanySettings({ whatsapp_number: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                         />
                       </div>
                     </div>
@@ -1621,60 +1619,58 @@ export default function AdminCmsPage() {
                 <button
                   type="button"
                   onClick={() => toggleCompanyAcc('contact')}
-                  className="w-full p-5 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
+                  className="w-full p-5 sm:p-6 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
                 >
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                      <MapPin className="w-4 h-4" />
-                    </div>
+                    <MapPin className="w-5 h-5 text-slate-600 shrink-0" />
                     <div>
-                      <h3 className="text-sm font-medium text-slate-800">Hubungi & Alamat Kilang</h3>
-                      <p className="text-xs text-slate-500">Email perkhidmatan, telefon pejabat, alamat fizikal, dan tagline</p>
+                      <h3 className="text-base font-medium text-slate-800">Hubungi & Alamat Kilang</h3>
+                      <p className="text-sm text-slate-500">Email perkhidmatan, telefon pejabat, alamat fizikal, dan tagline</p>
                     </div>
                   </div>
-                  {companyAccordion.contact ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+                  {companyAccordion.contact ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
                 </button>
 
                 {companyAccordion.contact && (
-                  <div className="p-6 bg-slate-50/40 border-t border-slate-100 space-y-4 animate-in fade-in duration-150">
+                  <div className="p-6 sm:p-7 bg-slate-50/40 border-t border-slate-100 space-y-4 animate-in fade-in duration-150">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-700">Email Khidmat Pelanggan</label>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">Email Khidmat Pelanggan</label>
                         <input
                           type="email"
                           value={companySettings.email}
                           onChange={(e) => updateCompanySettings({ email: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-700">No Telefon Pejabat</label>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">No Telefon Pejabat</label>
                         <input
                           type="text"
                           value={companySettings.phone}
                           onChange={(e) => updateCompanySettings({ phone: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                         />
                       </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-700">Alamat Kilang / Pejabat</label>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700">Alamat Kilang / Pejabat</label>
                       <input
                         type="text"
                         value={companySettings.address}
                         onChange={(e) => updateCompanySettings({ address: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                       />
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-700">Tagline Syarikat (Footer)</label>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700">Tagline Syarikat (Footer)</label>
                       <textarea
                         rows={2}
                         value={companySettings.tagline}
                         onChange={(e) => updateCompanySettings({ tagline: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
                       />
                     </div>
                   </div>
@@ -1686,57 +1682,55 @@ export default function AdminCmsPage() {
                 <button
                   type="button"
                   onClick={() => toggleCompanyAcc('social')}
-                  className="w-full p-5 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
+                  className="w-full p-5 sm:p-6 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
                 >
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
-                      <Globe className="w-4 h-4" />
-                    </div>
+                    <Globe className="w-5 h-5 text-slate-600 shrink-0" />
                     <div>
-                      <h3 className="text-sm font-medium text-slate-800">Pautan Media Sosial</h3>
-                      <p className="text-xs text-slate-500">Telegram, Facebook, Instagram, dan TikTok</p>
+                      <h3 className="text-base font-medium text-slate-800">Pautan Media Sosial</h3>
+                      <p className="text-sm text-slate-500">Telegram, Facebook, Instagram, dan TikTok</p>
                     </div>
                   </div>
-                  {companyAccordion.social ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+                  {companyAccordion.social ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
                 </button>
 
                 {companyAccordion.social && (
-                  <div className="p-6 bg-slate-50/40 border-t border-slate-100 space-y-4 animate-in fade-in duration-150">
+                  <div className="p-6 sm:p-7 bg-slate-50/40 border-t border-slate-100 space-y-4 animate-in fade-in duration-150">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-700">Telegram Katalog</label>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">Telegram Katalog</label>
                         <input
                           type="text"
                           value={companySettings.telegram_catalog_url}
                           onChange={(e) => updateCompanySettings({ telegram_catalog_url: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-800"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-800"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-700">Facebook URL</label>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">Facebook URL</label>
                         <input
                           type="text"
                           value={companySettings.facebook_url}
                           onChange={(e) => updateCompanySettings({ facebook_url: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-800"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-800"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-700">Instagram URL</label>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">Instagram URL</label>
                         <input
                           type="text"
                           value={companySettings.instagram_url}
                           onChange={(e) => updateCompanySettings({ instagram_url: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-800"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-800"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-700">TikTok URL</label>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">TikTok URL</label>
                         <input
                           type="text"
                           value={companySettings.tiktok_url}
                           onChange={(e) => updateCompanySettings({ tiktok_url: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-800"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-800"
                         />
                       </div>
                     </div>
@@ -1749,41 +1743,39 @@ export default function AdminCmsPage() {
                 <button
                   type="button"
                   onClick={() => toggleCompanyAcc('developer')}
-                  className="w-full p-5 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
+                  className="w-full p-5 sm:p-6 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
                 >
                   <div className="flex items-center space-x-3.5">
-                    <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
-                      <Sparkles className="w-4 h-4" />
-                    </div>
+                    <Sparkles className="w-5 h-5 text-slate-600 shrink-0" />
                     <div>
-                      <h3 className="text-sm font-medium text-slate-800">Kredit Pembangun Web</h3>
-                      <p className="text-xs text-slate-500">Papar pengiktirafan pembangun sistem di footer</p>
+                      <h3 className="text-base font-medium text-slate-800">Kredit Pembangun Web</h3>
+                      <p className="text-sm text-slate-500">Papar pengiktirafan pembangun sistem di footer</p>
                     </div>
                   </div>
-                  {companyAccordion.developer ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+                  {companyAccordion.developer ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
                 </button>
 
                 {companyAccordion.developer && (
-                  <div className="p-6 bg-slate-50/40 border-t border-slate-100 space-y-4 animate-in fade-in duration-150">
+                  <div className="p-6 sm:p-7 bg-slate-50/40 border-t border-slate-100 space-y-4 animate-in fade-in duration-150">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-700">Nama Pembangun Web</label>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">Nama Pembangun Web</label>
                         <input
                           type="text"
                           value={companySettings.developer_name || 'AYEZZ Studio'}
                           onChange={(e) => updateCompanySettings({ developer_name: e.target.value })}
                           placeholder="cth: AYEZZ Studio"
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 font-medium"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-800 font-medium"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-700">Pautan URL Pembangun (Portfolio/Web)</label>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">Pautan URL Pembangun (Portfolio/Web)</label>
                         <input
                           type="text"
                           value={companySettings.developer_url || 'https://ayezz.com'}
                           onChange={(e) => updateCompanySettings({ developer_url: e.target.value })}
                           placeholder="https://..."
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 font-mono"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-800 font-mono"
                         />
                       </div>
                     </div>
@@ -1795,9 +1787,9 @@ export default function AdminCmsPage() {
             <div className="flex justify-end">
               <button
                 onClick={() => triggerToast('Identiti syarikat berjaya dikemaskini!')}
-                className="flex items-center space-x-1.5 px-6 py-2.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
+                className="flex items-center space-x-1.5 px-6 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white text-sm font-medium shadow-xs transition-all"
               >
-                <Save className="w-3.5 h-3.5" />
+                <Save className="w-4 h-4" />
                 <span>Simpan Maklumat Syarikat</span>
               </button>
             </div>
@@ -1811,7 +1803,7 @@ export default function AdminCmsPage() {
           <div className="max-w-4xl space-y-6">
             <div>
               <h2 className="text-base font-normal text-slate-800">Dasar & Polisi Kilang</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Ubah isi kandungan terma, privasi, jaminan pemulangan dan dasar penghantaran</p>
+              <p className="text-sm text-slate-500 mt-0.5">Ubah isi kandungan terma, privasi, jaminan pemulangan dan dasar penghantaran</p>
             </div>
 
             <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs divide-y divide-slate-200">
@@ -1823,23 +1815,16 @@ export default function AdminCmsPage() {
                     <button
                       type="button"
                       onClick={() => togglePolicyAcc(key)}
-                      className="w-full p-5 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
+                      className="w-full p-5 sm:p-6 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
                     >
                       <div className="flex items-center space-x-3.5">
-                        <div className="w-8 h-8 rounded-full bg-blue-50 text-[#0B57D0] flex items-center justify-center">
-                          <ShieldCheck className="w-4 h-4" />
-                        </div>
+                        <ShieldCheck className="w-5 h-5 text-slate-600 shrink-0" />
                         <div>
-                          <div className="flex items-center space-x-2">
-                            <h3 className="text-sm font-medium text-slate-800">{pol.title}</h3>
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-blue-50 text-[#0B57D0]">
-                              {pol.badge}
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-500 mt-0.5">{pol.description}</p>
+                          <h3 className="text-base font-medium text-slate-800">{pol.title}</h3>
+                          <p className="text-sm text-slate-500 mt-0.5">{pol.description}</p>
                         </div>
                       </div>
-                      {isOpen ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+                      {isOpen ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
                     </button>
 
                     {isOpen && (
@@ -1891,9 +1876,9 @@ export default function AdminCmsPage() {
             <div className="flex justify-end">
               <button
                 onClick={() => triggerToast('Dasar & polisi berjaya dikemaskini!')}
-                className="flex items-center space-x-1.5 px-6 py-2.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
+                className="flex items-center space-x-1.5 px-6 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white text-sm font-medium shadow-xs transition-all"
               >
-                <Save className="w-3.5 h-3.5" />
+                <Save className="w-4 h-4" />
                 <span>Simpan Semua Polisi</span>
               </button>
             </div>
