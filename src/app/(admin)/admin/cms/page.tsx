@@ -521,290 +521,78 @@ export default function AdminCmsPage() {
         <main className="flex-1 min-w-0 space-y-6">
 
         {/* =========================================================================
-            TAB 0: TEMA & WARNA (THEME STUDIO)
+            TAB 0: TEMA & WARNA (GOOGLE ONE CLEAN SETTINGS STYLE)
            ========================================================================= */}
         {activeTab === 'theme' && (
-          <div className="space-y-6">
-            {/* Presets */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-              <h2 className="text-sm font-medium text-slate-800">Tema Pratetap</h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {/* Preset 1: Hybrid */}
-                <div 
-                  onClick={() => {
-                    applyThemePreset('hybrid');
-                    triggerToast('Tema "Royal Blue Hybrid" telah digunakan');
-                  }}
-                  className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
-                    themeSettings?.preset === 'hybrid'
-                      ? 'border-[#0B57D0] bg-blue-50/30 shadow-xs'
-                      : 'border-slate-200 hover:border-slate-300 bg-white'
-                  }`}
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-xs text-slate-800">Royal Blue Hybrid</span>
-                      {themeSettings?.preset === 'hybrid' && (
-                        <Check className="w-3.5 h-3.5 text-[#0B57D0]" />
-                      )}
-                    </div>
-                    {/* Visual representation */}
-                    <div className="rounded-xl border border-slate-200 overflow-hidden text-[9px]">
-                      <div className="bg-[#0052FF] text-white px-2.5 py-1.5 flex items-center justify-between font-medium">
-                        <span>SFV APPAREL</span>
-                        <div className="flex gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
-                        </div>
-                      </div>
-                      <div className="bg-slate-50 p-2 text-center text-slate-400">Kandungan</div>
-                      <div className="bg-white border-t border-slate-200 px-2 py-1 flex justify-around text-[#0052FF] font-medium">
-                        <span>Utama</span>
-                        <span className="text-slate-400">Katalog</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Preset 2: Clean Minimal White */}
-                <div 
-                  onClick={() => {
-                    applyThemePreset('clean_white');
-                    triggerToast('Tema "Clean Minimal White" telah digunakan');
-                  }}
-                  className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
-                    themeSettings?.preset === 'clean_white'
-                      ? 'border-[#0B57D0] bg-blue-50/30 shadow-xs'
-                      : 'border-slate-200 hover:border-slate-300 bg-white'
-                  }`}
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-xs text-slate-800">Clean Minimal White</span>
-                      {themeSettings?.preset === 'clean_white' && (
-                        <Check className="w-3.5 h-3.5 text-[#0B57D0]" />
-                      )}
-                    </div>
-                    {/* Visual representation */}
-                    <div className="rounded-xl border border-slate-200 overflow-hidden text-[9px]">
-                      <div className="bg-white border-b border-slate-200 text-[#0052FF] px-2.5 py-1.5 flex items-center justify-between font-medium">
-                        <span>SFV APPAREL</span>
-                        <div className="flex gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                        </div>
-                      </div>
-                      <div className="bg-slate-50 p-2 text-center text-slate-400">Kandungan</div>
-                      <div className="bg-white border-t border-slate-200 px-2 py-1 flex justify-around text-[#0052FF] font-medium">
-                        <span>Utama</span>
-                        <span className="text-slate-400">Katalog</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Preset 3: Full Royal Blue */}
-                <div 
-                  onClick={() => {
-                    applyThemePreset('full_blue');
-                    triggerToast('Tema "Full Royal Blue" telah digunakan');
-                  }}
-                  className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
-                    themeSettings?.preset === 'full_blue'
-                      ? 'border-[#0B57D0] bg-blue-50/30 shadow-xs'
-                      : 'border-slate-200 hover:border-slate-300 bg-white'
-                  }`}
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-xs text-slate-800">Full Royal Blue</span>
-                      {themeSettings?.preset === 'full_blue' && (
-                        <Check className="w-3.5 h-3.5 text-[#0B57D0]" />
-                      )}
-                    </div>
-                    {/* Visual representation */}
-                    <div className="rounded-xl border border-slate-200 overflow-hidden text-[9px]">
-                      <div className="bg-[#0052FF] text-white px-2.5 py-1.5 flex items-center justify-between font-medium">
-                        <span>SFV APPAREL</span>
-                        <div className="flex gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
-                        </div>
-                      </div>
-                      <div className="bg-slate-50 p-2 text-center text-slate-400">Kandungan</div>
-                      <div className="bg-[#0052FF] border-t border-blue-600 px-2 py-1 flex justify-around text-white font-medium">
-                        <span>Utama</span>
-                        <span className="text-blue-200">Katalog</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Custom Color Settings Grid & Live Preview */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Controls Column */}
-              <div className="lg:col-span-2 space-y-4">
-                {/* Header Customizer */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-                  <h3 className="font-medium text-xs text-slate-800">Bar Atas (Header)</h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Header BG */}
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] text-slate-500">Warna Latar</label>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="color"
-                          value={themeSettings?.header_bg?.startsWith('#') ? themeSettings.header_bg : '#0052FF'}
-                          onChange={(e) => updateThemeSettings({ header_bg: e.target.value, preset: 'custom' })}
-                          className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer p-0.5"
-                        />
-                        <input
-                          type="text"
-                          value={themeSettings?.header_bg || '#0052FF'}
-                          onChange={(e) => updateThemeSettings({ header_bg: e.target.value, preset: 'custom' })}
-                          className="flex-1 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:bg-white"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Logo Mode */}
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] text-slate-500">Mod Logo</label>
-                      <select
-                        value={themeSettings?.header_logo_mode || 'inverted_white'}
-                        onChange={(e) => updateThemeSettings({ header_logo_mode: e.target.value as any, preset: 'custom' })}
-                        className="w-full px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white"
-                      >
-                        <option value="inverted_white">Putih (Latar Gelap / Biru)</option>
-                        <option value="original_blue">Biru Asal (Latar Putih / Cerah)</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom Navigation Customizer */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-                  <h3 className="font-medium text-xs text-slate-800">Navigasi Bawah</h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Bottom Nav BG */}
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] text-slate-500">Warna Latar</label>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="color"
-                          value={themeSettings?.bottom_nav_bg?.startsWith('#') ? themeSettings.bottom_nav_bg : '#FFFFFF'}
-                          onChange={(e) => updateThemeSettings({ bottom_nav_bg: e.target.value, preset: 'custom' })}
-                          className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer p-0.5"
-                        />
-                        <input
-                          type="text"
-                          value={themeSettings?.bottom_nav_bg || '#FFFFFF'}
-                          onChange={(e) => updateThemeSettings({ bottom_nav_bg: e.target.value, preset: 'custom' })}
-                          className="flex-1 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:bg-white"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Active Color */}
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] text-slate-500">Warna Ikon Aktif</label>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="color"
-                          value={themeSettings?.bottom_nav_active_color || '#0052FF'}
-                          onChange={(e) => updateThemeSettings({ bottom_nav_active_color: e.target.value, preset: 'custom' })}
-                          className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer p-0.5"
-                        />
-                        <input
-                          type="text"
-                          value={themeSettings?.bottom_nav_active_color || '#0052FF'}
-                          onChange={(e) => updateThemeSettings({ bottom_nav_active_color: e.target.value, preset: 'custom' })}
-                          className="flex-1 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:bg-white"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 flex justify-end">
-                    <button
-                      onClick={() => triggerToast('Tetapan tema berjaya disimpan')}
-                      className="px-4 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
-                    >
-                      Simpan Tema
-                    </button>
-                  </div>
-                </div>
+          <div className="max-w-4xl space-y-6">
+            <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-xs space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h2 className="text-base font-normal text-slate-800">Tema & Penjenamaan Laman</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Pilih tema warna rasmi untuk bar atas, butang dan navigasi laman awam</p>
               </div>
 
-              {/* Mini Mobile Preview Frame */}
-              <div className="space-y-2">
-                <span className="text-xs font-medium text-slate-700 block">
-                  Pratonton Mobile
+              {/* Status Box (Google One style) */}
+              <div className="bg-[#F0F4F9] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <span className="text-[11px] text-slate-500 font-medium uppercase tracking-wider block">Tema Semasa</span>
+                  <span className="text-base font-medium text-slate-800">
+                    {themeSettings?.preset === 'clean_white'
+                      ? 'Clean Minimal White'
+                      : themeSettings?.preset === 'full_blue'
+                      ? 'Full Royal Blue'
+                      : 'Royal Blue Hybrid (Lalai)'}
+                  </span>
+                </div>
+                <span className="text-xs font-medium text-[#0B57D0] bg-white px-4 py-1.5 rounded-full border border-slate-200 shadow-xs self-start sm:self-auto">
+                  Sedang Aktif di Web Awam
                 </span>
+              </div>
 
-                <div className="w-full rounded-3xl border-2 border-slate-300 bg-white overflow-hidden shadow-sm flex flex-col h-[460px]">
-                  {/* Mock Header */}
-                  <div 
-                    className="p-3 flex items-center justify-between border-b transition-colors"
-                    style={{ 
-                      backgroundColor: themeSettings?.header_bg || '#0052FF',
-                      borderColor: themeSettings?.header_bg === '#FFFFFF' ? '#E2E8F0' : 'rgba(255,255,255,0.15)'
-                    }}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <div className={`w-5 h-5 rounded flex items-center justify-center font-bold text-[10px] ${
-                        themeSettings?.header_logo_mode === 'inverted_white' || themeSettings?.header_bg === '#0052FF'
-                          ? 'bg-white text-[#0052FF]'
-                          : 'bg-[#0052FF] text-white'
-                      }`}>
-                        S
+              {/* Clean Theme Option Cards (Google One Benefits style, NO messy preview widgets) */}
+              <div className="space-y-3 pt-2">
+                <span className="text-xs font-medium text-slate-700 block">Pilihan Tema Pratetap:</span>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[
+                    { key: 'hybrid', title: 'Royal Blue Hybrid', desc: 'Bar atas biru diraja, kandungan latar putih cerah & navigasi bawah bersih.' },
+                    { key: 'clean_white', title: 'Clean Minimal White', desc: 'Tema putih minimalis moden, kemas dan elegan untuk katalog.' },
+                    { key: 'full_blue', title: 'Full Royal Blue', desc: 'Warna biru penuh pada bar atas dan navigasi bawah untuk jenama tegap.' },
+                  ].map((item) => {
+                    const isSelected = (themeSettings?.preset || 'hybrid') === item.key;
+                    return (
+                      <div
+                        key={item.key}
+                        onClick={() => {
+                          applyThemePreset(item.key as any);
+                          triggerToast(`Tema "${item.title}" telah diaktifkan`);
+                        }}
+                        className={`p-5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between space-y-4 ${
+                          isSelected
+                            ? 'border-[#0B57D0] bg-blue-50/20 shadow-xs'
+                            : 'border-slate-200 hover:border-slate-300 bg-white'
+                        }`}
+                      >
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-sm text-slate-800">{item.title}</span>
+                            {isSelected && <Check className="w-4 h-4 text-[#0B57D0]" />}
+                          </div>
+                          <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
+                        </div>
+
+                        <button
+                          type="button"
+                          className={`w-full py-2 rounded-full text-xs font-medium transition-all ${
+                            isSelected
+                              ? 'bg-[#0B57D0] text-white shadow-xs'
+                              : 'border border-slate-300 text-[#0B57D0] hover:bg-blue-50/40'
+                          }`}
+                        >
+                          {isSelected ? 'Sedang Digunakan' : 'Gunakan Tema'}
+                        </button>
                       </div>
-                      <span className={`font-bold text-xs ${
-                        themeSettings?.header_logo_mode === 'inverted_white' || themeSettings?.header_bg === '#0052FF'
-                          ? 'text-white'
-                          : 'text-[#0052FF]'
-                      }`}>
-                        SFV APPAREL
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Mock Content */}
-                  <div className="flex-1 p-3 bg-slate-50 space-y-2.5 overflow-hidden text-xs">
-                    <div className="h-24 rounded-xl bg-slate-800 text-white p-3 flex flex-col justify-end">
-                      <span className="text-[10px] text-blue-200">Koleksi 2026</span>
-                      <span className="font-medium text-xs">Studio Jersi & DTF</span>
-                    </div>
-
-                    <div className="p-2.5 rounded-xl bg-white border border-slate-200 space-y-1">
-                      <span className="text-[10px] text-slate-500 block">Servis Utama</span>
-                      <div className="grid grid-cols-2 gap-1.5 text-[10px]">
-                        <div className="p-1.5 rounded bg-slate-50 border border-slate-100 text-slate-700">Sublimasi Jersi</div>
-                        <div className="p-1.5 rounded bg-slate-50 border border-slate-100 text-slate-700">Cetak DTF Baju</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Mock Bottom Nav */}
-                  <div 
-                    className="p-2 border-t flex items-center justify-around transition-colors"
-                    style={{ 
-                      backgroundColor: themeSettings?.bottom_nav_bg || '#FFFFFF',
-                      borderColor: '#E2E8F0'
-                    }}
-                  >
-                    <div className="flex flex-col items-center" style={{ color: themeSettings?.bottom_nav_active_color || '#0052FF' }}>
-                      <span className="text-[10px] font-medium">Utama</span>
-                    </div>
-                    <div className="flex flex-col items-center text-slate-400">
-                      <span className="text-[10px]">Katalog</span>
-                    </div>
-                    <div className="flex flex-col items-center text-slate-400">
-                      <span className="text-[10px]">Pesanan</span>
-                    </div>
-                  </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
