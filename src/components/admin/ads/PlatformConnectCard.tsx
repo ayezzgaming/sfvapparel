@@ -7,7 +7,8 @@ import {
   Link2,
   Unlink,
   ExternalLink,
-  HelpCircle,
+  ChevronDown,
+  ChevronUp,
   X,
   Sparkles,
   ShieldCheck,
@@ -15,7 +16,8 @@ import {
   EyeOff,
   CheckCircle2,
   RefreshCw,
-  Info
+  Info,
+  BookOpen
 } from 'lucide-react';
 import {
   GoogleAdsLogo,
@@ -40,6 +42,7 @@ export default function PlatformConnectCard({
 }: PlatformConnectCardProps) {
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showHelpGuide, setShowHelpGuide] = useState(true);
 
   // Form State for API Credentials
   const [accountIdInput, setAccountIdInput] = useState(platform.accountId || '');
@@ -48,9 +51,6 @@ export default function PlatformConnectCard({
   const [showToken, setShowToken] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-
-  // Active Tooltip State
-  const [activeTooltip, setActiveTooltip] = useState<'accountId' | 'accessToken' | 'pixelId' | null>(null);
 
   const handleSaveConnection = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +76,7 @@ export default function PlatformConnectCard({
           totalLeads: 62,
           costPerLead: 5.00,
           healthScore: 'cemerlang',
-          humanAdvice: `Akaun ${platform.name} berjaya disambungkan dan sedia melancarkan iklan.`,
+          humanAdvice: `Akaun ${platform.name} berjaya disambungkan dan sedia melancarkan kempen iklan.`,
           nextStepRecommendation: 'Gunakan AI Ads Generator untuk melancarkan kempen pertama anda.'
         }
       };
@@ -205,17 +205,17 @@ export default function PlatformConnectCard({
         </div>
       </div>
 
-      {/* ================= MODAL 1: SAMBUNG API DENGAN TOOLTIP (?) ================= */}
+      {/* ================= MODAL 1: SAMBUNG API DENGAN PANDUAN JELAS ================= */}
       {showConnectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl space-y-5 animate-in zoom-in-95">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-xl w-full shadow-2xl space-y-5 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center space-x-3">
                 {renderIcon()}
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">Sambung API {platform.name}</h3>
-                  <p className="text-xs text-slate-400">Masukkan kredensial rasmi akaun pengiklanan anda</p>
+                  <p className="text-xs text-slate-400">Hubungkan akaun rasmi untuk kawalan kempen secara terus</p>
                 </div>
               </div>
               <button
@@ -227,47 +227,96 @@ export default function PlatformConnectCard({
               </button>
             </div>
 
+            {/* EXPANDABLE INLINE STEP-BY-STEP GUIDE (JELAS & BOLEH KLIK) */}
+            <div className="bg-slate-50 rounded-2xl border border-slate-200/80 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowHelpGuide(!showHelpGuide)}
+                className="w-full px-4 py-3 flex items-center justify-between text-left text-xs font-semibold text-slate-800 hover:bg-slate-100/80 transition-colors"
+              >
+                <div className="flex items-center space-x-2">
+                  <BookOpen className="w-4 h-4 text-indigo-600" />
+                  <span>Panduan 3 Langkah Mendapatkan ID & Token</span>
+                </div>
+                {showHelpGuide ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+              </button>
+
+              {showHelpGuide && (
+                <div className="px-4 pb-4 pt-1 space-y-3 text-xs text-slate-600 border-t border-slate-200/60 font-sans">
+                  {/* Step 1 */}
+                  <div className="flex items-start space-x-2.5">
+                    <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                      1
+                    </span>
+                    <div className="space-y-1">
+                      <p className="text-slate-800 font-medium">Dapatkan Ad Account ID:</p>
+                      <p className="text-slate-500 text-[11px] leading-relaxed">
+                        Buka Meta Ads Manager. ID Akaun anda berada di menu atas sebelah kiri profil (format: <code className="text-indigo-600 font-mono font-semibold">act_1234567890</code>).
+                      </p>
+                      <a
+                        href="https://business.facebook.com/adsmanager"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center space-x-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs mt-1"
+                      >
+                        <span>Buka Meta Ads Manager</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Step 2 */}
+                  <div className="flex items-start space-x-2.5">
+                    <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                      2
+                    </span>
+                    <div className="space-y-1">
+                      <p className="text-slate-800 font-medium">Jana Meta Access Token (Kunci API):</p>
+                      <p className="text-slate-500 text-[11px] leading-relaxed">
+                        Buka <strong>Graph API Explorer</strong> rasmi Meta &gt; tandakan kebenaran <code className="text-indigo-600 font-mono font-semibold">ads_management</code> &amp; <code className="text-indigo-600 font-mono font-semibold">ads_read</code> &gt; klik <em>Generate Access Token</em>.
+                      </p>
+                      <a
+                        href="https://developers.facebook.com/tools/explorer/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center space-x-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs mt-1"
+                      >
+                        <span>Buka Graph API Explorer</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Step 3 */}
+                  <div className="flex items-start space-x-2.5">
+                    <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                      3
+                    </span>
+                    <p className="text-slate-600 text-[11px] leading-relaxed pt-0.5">
+                      Tampalkan ID Akaun dan Access Token tersebut ke dalam borang di bawah, lalu klik <strong>Sahkan &amp; Sambung</strong>.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Form */}
             <form onSubmit={handleSaveConnection} className="space-y-4">
-              {/* FIELD 1: AD ACCOUNT ID WITH TOOLTIP (?) */}
+              {/* FIELD 1: AD ACCOUNT ID */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-slate-700 flex items-center space-x-1.5">
-                    <span>Ad Account ID</span>
-                    <div className="relative inline-block">
-                      <button
-                        type="button"
-                        onClick={() => setActiveTooltip(activeTooltip === 'accountId' ? null : 'accountId')}
-                        onMouseEnter={() => setActiveTooltip('accountId')}
-                        onMouseLeave={() => setActiveTooltip(null)}
-                        className="text-slate-400 hover:text-slate-600 focus:outline-none"
-                        title="Cara mendapatkan Ad Account ID"
-                      >
-                        <HelpCircle className="w-3.5 h-3.5" />
-                      </button>
-
-                      {/* Tooltip Content */}
-                      {activeTooltip === 'accountId' && (
-                        <div className="absolute left-0 bottom-6 z-50 w-72 p-3 bg-slate-900 text-white text-[11px] rounded-2xl shadow-xl space-y-1.5 animate-in fade-in">
-                          <p className="font-semibold text-slate-200">Cara Mendapatkan Ad Account ID:</p>
-                          <p className="text-slate-300 leading-relaxed">
-                            Buka <strong>Meta Ads Manager</strong> (business.facebook.com/adsmanager). ID Akaun anda tertera di menu kiri atas sebelah profil, biasanya bermula dengan <code className="text-amber-300 font-mono">act_123456789</code>.
-                          </p>
-                          <a
-                            href="https://business.facebook.com/adsmanager"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center space-x-1 text-indigo-300 hover:text-indigo-200 font-medium pt-1"
-                          >
-                            <span>Buka Ads Manager</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        </div>
-                      )}
-                    </div>
+                  <label className="text-xs font-semibold text-slate-800">
+                    Ad Account ID <span className="text-rose-500">*</span>
                   </label>
-
-                  <span className="text-[10px] text-slate-400 font-mono">Contoh: act_839201948201</span>
+                  <a
+                    href="https://business.facebook.com/adsmanager"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center space-x-1"
+                  >
+                    <span>Cari ID di Ads Manager</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
                 </div>
 
                 <input
@@ -276,47 +325,25 @@ export default function PlatformConnectCard({
                   value={accountIdInput}
                   onChange={(e) => setAccountIdInput(e.target.value)}
                   placeholder={platform.id === 'google' ? 'Contoh: 849-201-9482' : 'act_839201948201'}
-                  className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200/80 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
                 />
               </div>
 
-              {/* FIELD 2: ACCESS TOKEN WITH TOOLTIP (?) */}
+              {/* FIELD 2: ACCESS TOKEN */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-slate-700 flex items-center space-x-1.5">
-                    <span>Meta Access Token (Kunci API)</span>
-                    <div className="relative inline-block">
-                      <button
-                        type="button"
-                        onClick={() => setActiveTooltip(activeTooltip === 'accessToken' ? null : 'accessToken')}
-                        onMouseEnter={() => setActiveTooltip('accessToken')}
-                        onMouseLeave={() => setActiveTooltip(null)}
-                        className="text-slate-400 hover:text-slate-600 focus:outline-none"
-                        title="Cara mendapatkan Meta Access Token"
-                      >
-                        <HelpCircle className="w-3.5 h-3.5" />
-                      </button>
-
-                      {/* Tooltip Content */}
-                      {activeTooltip === 'accessToken' && (
-                        <div className="absolute left-0 bottom-6 z-50 w-72 p-3 bg-slate-900 text-white text-[11px] rounded-2xl shadow-xl space-y-1.5 animate-in fade-in">
-                          <p className="font-semibold text-slate-200">Cara Mendapatkan Meta Access Token:</p>
-                          <p className="text-slate-300 leading-relaxed">
-                            Boleh dijana melalui <strong>Meta Business Settings &gt; System Users</strong> (kebenaran <code className="text-amber-300">ads_management</code>) ATAU dijana pantas di <strong>Meta Graph API Explorer</strong>.
-                          </p>
-                          <a
-                            href="https://developers.facebook.com/tools/explorer/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center space-x-1 text-indigo-300 hover:text-indigo-200 font-medium pt-1"
-                          >
-                            <span>Buka Graph API Explorer</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        </div>
-                      )}
-                    </div>
+                  <label className="text-xs font-semibold text-slate-800">
+                    Meta Access Token (Kunci API) <span className="text-rose-500">*</span>
                   </label>
+                  <a
+                    href="https://developers.facebook.com/tools/explorer/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center space-x-1"
+                  >
+                    <span>Jana Token di Graph Explorer</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
                 </div>
 
                 <div className="relative">
@@ -326,7 +353,7 @@ export default function PlatformConnectCard({
                     value={accessTokenInput}
                     onChange={(e) => setAccessTokenInput(e.target.value)}
                     placeholder="EAAG... (Tampal Token Meta anda di sini)"
-                    className="w-full px-3.5 py-2.5 pr-10 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200/80 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                    className="w-full px-3.5 py-2.5 pr-10 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
                   />
                   <button
                     type="button"
@@ -339,34 +366,13 @@ export default function PlatformConnectCard({
                 </div>
               </div>
 
-              {/* FIELD 3: PIXEL ID (OPTIONAL) WITH TOOLTIP (?) */}
+              {/* FIELD 3: PIXEL ID (OPTIONAL) */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-slate-700 flex items-center space-x-1.5">
-                    <span>Meta Pixel ID (Pilihan)</span>
-                    <div className="relative inline-block">
-                      <button
-                        type="button"
-                        onClick={() => setActiveTooltip(activeTooltip === 'pixelId' ? null : 'pixelId')}
-                        onMouseEnter={() => setActiveTooltip('pixelId')}
-                        onMouseLeave={() => setActiveTooltip(null)}
-                        className="text-slate-400 hover:text-slate-600 focus:outline-none"
-                        title="Cara mendapatkan Pixel ID"
-                      >
-                        <HelpCircle className="w-3.5 h-3.5" />
-                      </button>
-
-                      {/* Tooltip Content */}
-                      {activeTooltip === 'pixelId' && (
-                        <div className="absolute left-0 bottom-6 z-50 w-72 p-3 bg-slate-900 text-white text-[11px] rounded-2xl shadow-xl space-y-1.5 animate-in fade-in">
-                          <p className="font-semibold text-slate-200">Meta Pixel ID:</p>
-                          <p className="text-slate-300 leading-relaxed">
-                            Didapati di <strong>Meta Events Manager</strong>. Digunakan untuk menjejak pesanan jersi daripada katalog web.
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                  <label className="text-xs font-medium text-slate-700">
+                    Meta Pixel ID <span className="text-slate-400 font-normal">(Pilihan)</span>
                   </label>
+                  <span className="text-[10px] text-slate-400">Untuk jejak pesanan borang web</span>
                 </div>
 
                 <input
@@ -374,13 +380,13 @@ export default function PlatformConnectCard({
                   value={pixelIdInput}
                   onChange={(e) => setPixelIdInput(e.target.value)}
                   placeholder="Contoh: 920194820192"
-                  className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200/80 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
                 />
               </div>
 
               <div className="flex items-center space-x-2 text-[11px] text-slate-400 pt-1">
                 <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Token disimpan dengan selamat di pangkalan data anda dan tidak dikongsi.</span>
+                <span>Kredensial disimpan dengan selamat dan digunakan khusus untuk melancarkan kempen anda.</span>
               </div>
 
               {/* Submit Buttons */}
@@ -401,7 +407,7 @@ export default function PlatformConnectCard({
                   {isSaving ? (
                     <>
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      <span>Mengesahkan API...</span>
+                      <span>Mengesahkan Sambungan...</span>
                     </>
                   ) : saveSuccess ? (
                     <>
@@ -409,7 +415,7 @@ export default function PlatformConnectCard({
                       <span>Berjaya Disambungkan!</span>
                     </>
                   ) : (
-                    <span>Sahkan & Sambung Akaun</span>
+                    <span>Sahkan &amp; Sambung Akaun</span>
                   )}
                 </button>
               </div>
