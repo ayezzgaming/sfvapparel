@@ -370,127 +370,137 @@ ${activeVariation.whatsappMessage}`;
         {/* ======================= TAB 1: STUDIO IKLAN AI ======================= */}
         {activeTab === 'create' && (
           <div>
-            {/* STEP 1: ULTRA-CLEAN CENTRAL INPUT (NO TEXT OUTSIDE) */}
+            {/* STEP 1: EXACT GOOGLE GEMINI CLEAN PROMPT SCREEN */}
             {studioStep === 'prompt' && (
-              <div className="py-12 sm:py-20 max-w-3xl mx-auto animate-in fade-in">
-                {/* Central Clean Input Container */}
-                <div className="bg-white rounded-3xl border border-slate-200/90 p-4 sm:p-5 shadow-sm hover:border-slate-300 transition-all space-y-3">
-                  {/* Selected Asset Pill (if catalog or uploaded image attached) */}
+              <div className="min-h-[60vh] flex flex-col justify-center items-center py-12 px-4 animate-in fade-in relative">
+                {/* Soft Radiant Background Aura */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
+                  <div className="w-[500px] h-[350px] bg-blue-100/40 rounded-full blur-3xl" />
+                </div>
+
+                <div className="w-full max-w-2xl space-y-7 text-center">
+                  {/* Greeting */}
+                  <h2 className="text-2xl sm:text-3xl font-normal text-slate-800 tracking-tight">
+                    Halo AYEZZ, yuk kita bahas lebih lanjut
+                  </h2>
+
+                  {/* Attached Asset Pill (if chosen) */}
                   {(customImage || activeDesign) && (
-                    <div className="flex items-center space-x-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-2xl w-fit">
-                      <div className="w-7 h-7 rounded-xl overflow-hidden bg-slate-200 border border-slate-300 shrink-0">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.jpg'}
-                          alt="Asset Preview"
-                          className="w-full h-full object-cover"
-                        />
+                    <div className="flex items-center justify-center">
+                      <div className="flex items-center space-x-2 bg-white/90 backdrop-blur-xs border border-slate-200 shadow-xs px-3.5 py-1.5 rounded-full animate-in zoom-in-95">
+                        <div className="w-5 h-5 rounded-full overflow-hidden bg-slate-200 border border-slate-300 shrink-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.jpg'}
+                            alt="Asset Preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className="text-xs text-slate-700 font-medium truncate max-w-[220px]">
+                          {customTitle || activeDesign?.title}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomImage(null);
+                            setCustomTitle(null);
+                          }}
+                          className="p-0.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+                          title="Padam lampiran"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                      <span className="text-xs text-slate-700 font-medium truncate max-w-[200px] sm:max-w-xs">
-                        {customTitle || activeDesign?.title}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCustomImage(null);
-                          setCustomTitle(null);
-                        }}
-                        className="p-1 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-colors"
-                        title="Padam lampiran"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
                     </div>
                   )}
 
-                  {/* Clean Textarea */}
-                  <div>
-                    <textarea
-                      rows={3}
-                      value={userPrompt}
-                      onChange={(e) => setUserPrompt(e.target.value)}
-                      placeholder="Tulis arahan kempen iklan anda di sini..."
-                      className="w-full p-2 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none transition-all leading-relaxed resize-none font-sans"
-                    />
-                  </div>
-
-                  {/* Bottom Controls Row: + Button on Left, Action on Right */}
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                    {/* + (Plus) Attachment Button with Popover */}
-                    <div className="relative" ref={attachMenuRef}>
+                  {/* Gemini Floating Pill Prompt Bar */}
+                  <div className="relative" ref={attachMenuRef}>
+                    <div className="bg-white rounded-full border border-slate-200/90 shadow-sm hover:shadow-md transition-all px-4 py-3 flex items-center gap-3">
+                      {/* + (Plus) Attachment Button */}
                       <button
                         type="button"
                         onClick={() => setShowAttachMenu(!showAttachMenu)}
-                        className={`p-2 rounded-full border transition-all flex items-center justify-center ${
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0 ${
                           showAttachMenu
-                            ? 'bg-slate-900 text-white border-slate-900'
-                            : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                            ? 'bg-slate-900 text-white'
+                            : 'hover:bg-slate-100 text-slate-600'
                         }`}
                         title="Tambah gambar atau pilih produk katalog"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
 
-                      {/* Dropdown Menu */}
-                      {showAttachMenu && (
-                        <div className="absolute left-0 bottom-12 z-40 bg-white rounded-2xl border border-slate-200 shadow-xl p-1.5 w-56 space-y-1 animate-in fade-in zoom-in-95">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowCatalogModal(true);
-                              setShowAttachMenu(false);
-                            }}
-                            className="w-full px-3 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
-                          >
-                            <FolderArchive className="w-4 h-4 text-blue-600" />
-                            <span>Pilih dari Katalog</span>
-                          </button>
+                      {/* Main Clean Input Field */}
+                      <input
+                        type="text"
+                        value={userPrompt}
+                        onChange={(e) => setUserPrompt(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && userPrompt.trim() && !isGeneratingAi) {
+                            handleGenerateAi();
+                          }
+                        }}
+                        placeholder="Minta Gemini..."
+                        className="flex-1 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none font-sans px-1"
+                      />
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              fileInputRef.current?.click();
-                              setShowAttachMenu(false);
-                            }}
-                            className="w-full px-3 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
-                          >
-                            <Upload className="w-4 h-4 text-emerald-600" />
-                            <span>Muat Naik Gambar / Mockup</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Right Side: Key config & Submit button */}
-                    <div className="flex items-center space-x-2">
+                      {/* Model Selector Pill (● Flash ∨) */}
                       <button
                         type="button"
                         onClick={() => setShowKeyModal(true)}
-                        className="p-2 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-800 transition-colors"
-                        title="Tetapan Kunci API Model"
+                        className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-xs font-medium text-slate-700 transition-colors shrink-0"
+                        title="Tukar model atau kunci AI"
                       >
-                        <Key className="w-3.5 h-3.5" />
+                        <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                        <span>{aiSource === 'groq' ? 'Groq' : aiSource === 'gemini' ? 'Flash' : 'AI'}</span>
+                        <ChevronRight className="w-3 h-3 text-slate-400 rotate-90" />
                       </button>
 
+                      {/* Send Button */}
                       <button
                         type="button"
                         onClick={handleGenerateAi}
                         disabled={isGeneratingAi || !userPrompt.trim()}
-                        className="px-5 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium shadow-xs transition-all flex items-center space-x-2 disabled:opacity-50"
+                        className="w-8 h-8 rounded-full bg-slate-900 hover:bg-black text-white flex items-center justify-center shadow-xs transition-colors shrink-0 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                        title="Jana kempen iklan"
                       >
                         {isGeneratingAi ? (
-                          <>
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            <span>Menjana Iklan...</span>
-                          </>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                         ) : (
-                          <>
-                            <Wand2 className="w-3.5 h-3.5" />
-                            <span>Jana Kempen Iklan</span>
-                          </>
+                          <SendHorizontal className="w-3.5 h-3.5" />
                         )}
                       </button>
                     </div>
+
+                    {/* Attachment Popover (+ Menu) */}
+                    {showAttachMenu && (
+                      <div className="absolute left-4 top-16 z-40 bg-white rounded-2xl border border-slate-200 shadow-xl p-1.5 w-60 space-y-1 text-left animate-in fade-in zoom-in-95">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowCatalogModal(true);
+                            setShowAttachMenu(false);
+                          }}
+                          className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
+                        >
+                          <FolderArchive className="w-4 h-4 text-blue-600" />
+                          <span>Pilih dari Katalog</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            fileInputRef.current?.click();
+                            setShowAttachMenu(false);
+                          }}
+                          className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
+                        >
+                          <Upload className="w-4 h-4 text-emerald-600" />
+                          <span>Muat Naik Gambar / Mockup</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
