@@ -211,7 +211,7 @@ export default function AdminPricingRulesPage() {
                             {isEditing ? (
                               <button
                                 onClick={() => handleSaveFabric(f.id)}
-                                className="px-3.5 py-1.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs transition-all"
+                                className="px-3.5 py-1.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs shadow-xs transition-all"
                               >
                                 Simpan
                               </button>
@@ -221,7 +221,7 @@ export default function AdminPricingRulesPage() {
                                   setEditingFabricId(f.id);
                                   setFabricPriceInput(f.sublimation_base_price);
                                 }}
-                                className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-all"
+                                className="px-3.5 py-1 rounded-full border border-slate-300 hover:border-slate-400 text-[#0B57D0] hover:bg-blue-50/40 text-xs font-medium transition-all"
                               >
                                 Ubah
                               </button>
@@ -279,7 +279,7 @@ export default function AdminPricingRulesPage() {
                             {isEditing ? (
                               <button
                                 onClick={() => handleSaveCut(c.id)}
-                                className="px-3.5 py-1.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs transition-all"
+                                className="px-3.5 py-1.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs shadow-xs transition-all"
                               >
                                 Simpan
                               </button>
@@ -289,7 +289,7 @@ export default function AdminPricingRulesPage() {
                                   setEditingCutId(c.id);
                                   setCutPriceInput(c.cut_add_on_price);
                                 }}
-                                className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-all"
+                                className="px-3.5 py-1 rounded-full border border-slate-300 hover:border-slate-400 text-[#0B57D0] hover:bg-blue-50/40 text-xs font-medium transition-all"
                               >
                                 Ubah
                               </button>
@@ -358,7 +358,7 @@ export default function AdminPricingRulesPage() {
                             {isEditing ? (
                               <button
                                 onClick={() => handleSaveDtf(d.id)}
-                                className="px-3.5 py-1.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs transition-all"
+                                className="px-3.5 py-1.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs shadow-xs transition-all"
                               >
                                 Simpan
                               </button>
@@ -369,7 +369,7 @@ export default function AdminPricingRulesPage() {
                                   setDtfBasePriceInput(d.base_price);
                                   setDtfGarmentPriceInput(d.garment_included_base_price);
                                 }}
-                                className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-all"
+                                className="px-3.5 py-1 rounded-full border border-slate-300 hover:border-slate-400 text-[#0B57D0] hover:bg-blue-50/40 text-xs font-medium transition-all"
                               >
                                 Ubah
                               </button>
@@ -429,7 +429,7 @@ export default function AdminPricingRulesPage() {
                             {isEditing ? (
                               <button
                                 onClick={() => handleSaveTier(t.id)}
-                                className="px-3.5 py-1.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs transition-all"
+                                className="px-3.5 py-1.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white font-medium text-xs shadow-xs transition-all"
                               >
                                 Simpan
                               </button>
@@ -439,7 +439,7 @@ export default function AdminPricingRulesPage() {
                                   setEditingTierId(t.id);
                                   setTierDiscountInput(t.discount_percentage);
                                 }}
-                                className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-all"
+                                className="px-3.5 py-1 rounded-full border border-slate-300 hover:border-slate-400 text-[#0B57D0] hover:bg-blue-50/40 text-xs font-medium transition-all"
                               >
                                 Ubah
                               </button>
