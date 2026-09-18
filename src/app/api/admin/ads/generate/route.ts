@@ -231,18 +231,20 @@ async function callGroqApi(
     'llama-3.1-8b-instant',
   ];
 
-  const systemPrompt = `Anda ialah Ketua Pakar Strategi Pemasaran Digital & Penulis Copywriting Berprestasi Tinggi untuk kilang pakaian SVF APPAREL Malaysia.
-Gunakan maklumat pangkalan data kilang di bawah untuk menghasilkan 3 variasi sudut iklan yang sangat persuasif, tepat dari segi fakta teknikal fabrik dan harga kilang.
+  const systemPrompt = `Anda ialah Ketua Pakar Strategi Pemasaran Digital & Penulis Copywriting Berprestasi Tinggi untuk jenama pakaian sukan dan kilang cetak.
+Gunakan maklumat pangkalan data kilang di bawah untuk menghasilkan 5 variasi sudut iklan yang sangat persuasif, tepat dari segi fakta teknikal fabrik dan harga:
 
 ${params.dbGroundingContext}
 
 PERATURAN KETAT:
 1. SIFAR EMOJI & EMOTIKON. Dilarang sama sekali meletakkan emoji dalam sebarang teks output.
 2. Gunakan Bahasa Melayu profesional dan meyakinkan (fokus kepada pasaran sukan, kelab, sekolah, korporat Malaysia).
-3. Hasilkan tepat 3 sudut strategi jualan yang berbeza:
-   - Variasi 1: Sudut Penjimatan & Harga Kilang Tanpa Perantara (Kerangka PAS)
-   - Variasi 2: Sudut Kualiti Drifit Milano & Rekaan Kustom Eksklusif (Kerangka AIDA)
-   - Variasi 3: Sudut Kelajuan & Jaminan Siap Pantas 7 Hari (Kerangka FAB)
+3. Hasilkan tepat 5 sudut strategi jualan yang berbeza:
+   - Variasi 1: Sudut Penjimatan & Harga Kilang Tanpa Perantara
+   - Variasi 2: Sudut Kualiti Fabrik Drifit Milano & Kemasan HD
+   - Variasi 3: Sudut Kelajuan & Jaminan Siap Pantas 7 Hari
+   - Variasi 4: Sudut Identiti Pasukan & Percuma Rekaan Grafik
+   - Variasi 5: Sudut Korporat & Pukal Borong
 4. Sesuaikan mengikut platform "${params.platform}":
    - Format Facebook / Instagram: Tajuk padu, kepsyen penerangan manfaat mendalam, CTA jelas.
    - Format Google Search: Tajuk SEO padat (< 30 aksara), huraian SEO (< 90 aksara).
@@ -251,21 +253,21 @@ PERATURAN KETAT:
 [
   {
     "id": "var-1",
-    "angleName": "Sudut Harga Kilang & Penjimatan Pukal",
+    "angleName": "Sudut Harga Kilang & Penjimatan",
     "tagline": "Diskaun Kuantiti Terus Dari Kilang",
     "headline": "Tajuk Iklan Padat dan Berimpak Tinggi",
     "secondaryHeadline": "Sub-tajuk penegasan nilai USP",
     "primaryText": "Perenggan copywriting 2-4 ayat yang persuasif berasaskan konteks produk dan prompt.",
     "callToAction": "Dapatkan Sebut Harga",
-    "whatsappMessage": "Salam SVF Apparel, saya ingin bertanyakan tentang sebut harga..."
-  },
-  ...
+    "whatsappMessage": "Salam, saya ingin bertanyakan tentang sebut harga..."
+  }
 ]`;
 
   const userContent = `ARAHAN PENGGUNA: "${params.prompt}"
 PRODUK: ${params.productName} (${params.category})
 PLATFORM: ${params.platform}
-OBJEKTIF: ${params.objective}`;
+OBJEKTIF: ${params.objective}
+Hasilkan 5 variasi JSON array tanpa emoji.`;
 
   let lastError = '';
 
@@ -298,7 +300,7 @@ OBJEKTIF: ${params.objective}`;
       if (!rawText) continue;
 
       const parsed = parseCleanAiVariations(rawText);
-      if (parsed && parsed.length >= 3) {
+      if (parsed && parsed.length >= 2) {
         return { success: true, variations: parsed };
       }
     } catch (e: any) {
@@ -323,13 +325,13 @@ async function callOpenRouterApi(
     dbGroundingContext: string;
   }
 ): Promise<{ success: boolean; variations?: AiVariation[]; error?: string }> {
-  const systemPrompt = `Anda ialah Pakar Copywriting Pemasaran Iklan SVF APPAREL Malaysia.
-Gunakan maklumat database kilang berikut:
+  const systemPrompt = `Anda ialah Pakar Copywriting Pemasaran Iklan Pakaian & Jersi Malaysia.
+Gunakan maklumat database berikut:
 ${params.dbGroundingContext}
 
-ARAHAN: Sifar emoji. Jana 3 sudut copywriting iklan JSON mengikut tema pengguna untuk platform ${params.platform}.`;
+ARAHAN: Sifar emoji. Jana 5 sudut copywriting iklan JSON mengikut tema pengguna untuk platform ${params.platform}.`;
 
-  const userContent = `Arahan: "${params.prompt}", Produk: ${params.productName}, Platform: ${params.platform}. Output HANYA JSON array tepat 3 objek: id, angleName, tagline, headline, secondaryHeadline, primaryText, callToAction, whatsappMessage.`;
+  const userContent = `Arahan: "${params.prompt}", Produk: ${params.productName}, Platform: ${params.platform}. Output HANYA JSON array tepat 5 objek: id, angleName, tagline, headline, secondaryHeadline, primaryText, callToAction, whatsappMessage.`;
 
   try {
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -358,7 +360,7 @@ ARAHAN: Sifar emoji. Jana 3 sudut copywriting iklan JSON mengikut tema pengguna 
     if (!rawText) return { success: false, error: 'Respons OpenRouter kosong' };
 
     const parsed = parseCleanAiVariations(rawText);
-    if (parsed && parsed.length >= 3) {
+    if (parsed && parsed.length >= 2) {
       return { success: true, variations: parsed };
     }
     return { success: false, error: 'Struktur JSON tidak sah' };
@@ -387,14 +389,14 @@ async function callGeminiApi(
     'gemini-1.5-pro',
   ];
 
-  const systemInstruction = `Anda ialah Pakar Copywriting SVF APPAREL Malaysia.
-Gunakan maklumat rasmi pangkalan data kilang berikut:
+  const systemInstruction = `Anda ialah Pakar Copywriting Iklan Sukan & Pakaian.
+Gunakan maklumat database berikut:
 ${params.dbGroundingContext}
 
 ARAHAN KETAT:
-1. SIFAR EMOJI & EMOTIKON.
-2. Hasilkan 3 sudut iklan berprestasi tinggi dalam Bahasa Melayu.
-3. Hasilkan output HANYA JSON array 3 objek (id, angleName, tagline, headline, secondaryHeadline, primaryText, callToAction, whatsappMessage).`;
+1. SIFAR EMOJI & EMOTIKON. Dilarang sama sekali meletakkan sebarang simbol emoji.
+2. Hasilkan tepat 5 variasi sudut iklan berprestasi tinggi dalam Bahasa Melayu.
+3. Hasilkan output HANYA JSON array 5 objek (id, angleName, tagline, headline, secondaryHeadline, primaryText, callToAction, whatsappMessage).`;
 
   const promptText = `TEMA IKLAN: "${params.prompt}"
 PRODUK: ${params.productName} (${params.category})
