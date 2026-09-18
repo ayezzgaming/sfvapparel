@@ -10,8 +10,7 @@ import {
   Truck,
   Clock,
   CheckCircle2,
-  Quote,
-  Sparkles
+  Quote
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';

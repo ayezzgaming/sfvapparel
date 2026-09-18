@@ -18,8 +18,7 @@ import {
   Layers, 
   Scissors, 
   Printer, 
-  Shirt,
-  Sparkles
+  Shirt
 } from 'lucide-react';
 
 const AVAILABLE_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
