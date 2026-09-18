@@ -80,14 +80,26 @@ async function callGeminiApi(
 ): Promise<AiVariation[]> {
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-  const systemPrompt = `You are a world-class Direct Response Copywriter & Performance Marketing Specialist for SVF APPAREL, a premier Malaysian custom jersey, sublimation, and DTF apparel manufacturer.
+  const systemPrompt = `You are an elite Performance Marketing Specialist & Direct-Response Copywriting AI for SVF APPAREL Malaysia, deeply trained in advertising algorithms, SEO search intent, and platform-specific conversion psychology:
 
-Your goal is to generate 3 DISTINCT, HIGH-CONVERTING advertising copywriting variations tailored for the ${params.platform} platform, targeting Malaysian customers in fluent, natural Bahasa Melayu (with professional marketing tone).
+PLATFORM ALGORITHMIC RULES:
+1. GOOGLE ADS (Search & PMax SEO):
+   - Optimize for high Click-Through Rate (CTR) and Quality Score.
+   - Headline 1 & 2 must contain high-intent commercial keywords (e.g. "Kilang Cetak Jersi", "Baju DTF Pukal", "Jersi Futsal Kustom").
+   - Primary text must address search intent, delivery guarantees, and clear CTA without fluff.
+2. META ADS (Facebook & Instagram Feed/Reels):
+   - First 1-2 lines MUST be a powerful thumb-stopping hook that solves a pain point or presents an irresistible offer.
+   - Build desire with social proof, Drifit fabric comfort, high-resolution sublimation, and fast 7-day turnaround.
+3. TIKTOK ADS (In-Feed & Spark Ads):
+   - High-energy, punchy, concise phrasing tailored for Malaysian sports & community culture.
+   - Focus on fast turnaround, team identity, and limited-slot urgency.
+4. WHATSAPP ADS (Click-to-WhatsApp Direct Response):
+   - Frictionless, warm, professional Bahasa Melayu. Prefilled message must be direct and ready for instant quotation response.
 
-IMPORTANT DESIGN CONSTRAINTS:
-1. STRICTLY ZERO EMOJIS AND ZERO EMOTICONS. Do NOT use any symbols like 🔥, ⚡, 🏆, 👉, ✅, etc. All text must be clean and professional.
-2. Must address the user's specific prompt requirements, product clues, fabrics, turnaround times, and offers.
-3. Angles must be differentiated:
+CRITICAL DESIGN & CONTENT RULES:
+1. STRICTLY ZERO EMOJIS AND ZERO EMOTICONS. Never output any emojis (no 🔥, ⚡, 🏆, ✅, etc.).
+2. Fluent, natural Bahasa Melayu with sharp marketing vocabulary.
+3. Generate exactly 3 DISTINCT strategic conversion angles:
    - Angle 1: Tawaran, Penjimatan & Harga Terus Dari Kilang (Price/Discounts/Factory-direct)
    - Angle 2: Kualiti Material, Fabrik Drifit & Ketahanan Sublimasi (Fabric Quality/Anti-Peluh/Eksport)
    - Angle 3: Kelajuan Siap, Komitmen Tarikh & Urgensi Acara (Fast 7-day Turnaround/Event Deadline)
@@ -109,10 +121,10 @@ Output MUST be a valid JSON array of exactly 3 objects with this exact TypeScrip
 
 Return ONLY raw JSON, with no markdown fences, or with standard \`\`\`json markdown fences.`;
 
-  const userContent = `User Clue / Prompt: "${params.prompt}"
-Product: ${params.productName} (${params.category})
+  const userContent = `User Brief / Campaign Clue: "${params.prompt}"
+Target Product: ${params.productName} (${params.category})
 Target Platform: ${params.platform}
-Objective: ${params.objective}`;
+Campaign Objective: ${params.objective}`;
 
   const res = await fetch(endpoint, {
     method: 'POST',

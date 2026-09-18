@@ -23,9 +23,12 @@ import {
   Wand2,
   CheckCircle2,
   Key,
-  SlidersHorizontal,
   Bot,
-  X
+  X,
+  ArrowLeft,
+  SlidersHorizontal,
+  ChevronRight,
+  SendHorizontal
 } from 'lucide-react';
 
 interface AiVariation {
@@ -49,8 +52,9 @@ const AI_PROMPT_PRESETS = [
 export default function AdminAdsGeneratorPage() {
   const { designs } = useAppStore();
 
-  // Navigation Tab
+  // Navigation Tabs & Generation Workflow Steps
   const [activeTab, setActiveTab] = useState<'create' | 'connections' | 'campaigns'>('create');
+  const [studioStep, setStudioStep] = useState<'prompt' | 'result'>('prompt');
 
   // Platforms & Campaigns Data
   const [platforms, setPlatforms] = useState<AdPlatformConnection[]>(INITIAL_PLATFORMS);
@@ -143,7 +147,7 @@ export default function AdminAdsGeneratorPage() {
 
   // Active Design & Current Creative
   const activeDesign = designs.find((d) => d.id === selectedDesignId) || designs[0];
-  const activeVariation = aiVariations[selectedVariationIndex];
+  const activeVariation = aiVariations[selectedVariationIndex] || aiVariations[0];
 
   const currentCreative: AdCreative = {
     id: 'active-preview',
@@ -188,8 +192,10 @@ export default function AdminAdsGeneratorPage() {
           }
         }
       }
+      setStudioStep('result');
     } catch (err) {
       console.error('Failed to generate ads copy:', err);
+      setStudioStep('result');
     } finally {
       setIsGeneratingAi(false);
     }
@@ -278,7 +284,7 @@ ${activeVariation.whatsappMessage}`;
             Ads Generator
           </h1>
           <p className="text-sm text-slate-500 mt-0.5">
-            Penjanaan kandungan kempen iklan AI merentasi Google, Meta, TikTok, dan WhatsApp.
+            Penjanaan kandungan kempen iklan pintar berasaskan algoritma Google, Meta, TikTok, dan WhatsApp.
           </p>
         </div>
 
@@ -326,210 +332,41 @@ ${activeVariation.whatsappMessage}`;
       {/* ======================= TAB 1: STUDIO IKLAN AI ======================= */}
       {activeTab === 'create' && (
         <div className="space-y-6">
-          {/* Top Hero: Clean AI Prompt Bar */}
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-7 shadow-xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-slate-100">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center border border-slate-200">
-                  <Sparkles className="w-4 h-4 text-slate-600" />
+          {/* STEP 1: CLEAN GEMINI-STYLE INITIAL PROMPT SCREEN */}
+          {studioStep === 'prompt' && (
+            <div className="py-8 sm:py-12 max-w-3xl mx-auto space-y-6 animate-in fade-in">
+              <div className="text-center space-y-2">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-50 text-blue-600 border border-blue-100 shadow-xs mb-1">
+                  <Sparkles className="w-6 h-6" />
                 </div>
-                <div>
-                  <h2 className="text-base font-medium text-slate-800">
-                    Arahkan AI Untuk Menjana Kempen Iklan
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Taipkan kata kunci, tawaran, material, atau pilih templat pantas di bawah.
-                  </p>
-                </div>
+                <h2 className="text-2xl sm:text-3xl font-normal text-slate-800 tracking-tight">
+                  Apa kempen iklan yang ingin anda lancarkan?
+                </h2>
+                <p className="text-sm text-slate-500 max-w-lg mx-auto leading-relaxed">
+                  Masukkan petunjuk promosi anda. Enjin AI dilatih memahami algoritma dan SEO setiap platform untuk menghasilkan iklan berkadar konversi tinggi.
+                </p>
               </div>
 
-              {/* AI Engine Status Pill & Settings */}
-              <div className="flex items-center space-x-2 self-start sm:self-auto">
-                <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-xs">
-                  <Bot className="w-3.5 h-3.5 text-blue-600" />
-                  <span className="text-slate-700 font-medium">
-                    {aiSource === 'gemini' ? 'Google Gemini 1.5 Flash' : 'Enjin AI Pintar'}
-                  </span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              {/* Central Gemini-Style Prompt Box */}
+              <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-sm hover:border-slate-300 transition-all space-y-4">
+                <div className="relative">
+                  <textarea
+                    rows={4}
+                    value={userPrompt}
+                    onChange={(e) => setUserPrompt(e.target.value)}
+                    placeholder="Contoh: Buat kempen jersi futsal sempena liga komuniti, kain sejuk Drifit Milano, siap 7 hari, percuma rekaan nama dan nombor..."
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all leading-relaxed resize-none font-sans"
+                  />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowKeyModal(true)}
-                  className="p-1.5 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 transition-colors"
-                  title="Tetapan Kunci API Google Gemini"
-                >
-                  <Key className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
 
-            {/* Prompt Input Box */}
-            <div>
-              <textarea
-                rows={2}
-                value={userPrompt}
-                onChange={(e) => setUserPrompt(e.target.value)}
-                placeholder="Contoh: Buat kempen jersi futsal sempena liga komuniti, diskaun 20% untuk 10 helai ke atas, kain sejuk Drifit Milano..."
-                className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all leading-relaxed"
-              />
-            </div>
-
-            {/* Quick Inspiration Chips & Generate Button */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-xs text-slate-400 mr-1 font-medium">Pilihan Pantas:</span>
-                {AI_PROMPT_PRESETS.map((preset) => (
-                  <button
-                    key={preset.label}
-                    type="button"
-                    onClick={() => setUserPrompt(preset.prompt)}
-                    className="px-3.5 py-1 rounded-full text-xs font-normal bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 transition-colors"
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={handleGenerateAi}
-                disabled={isGeneratingAi || !userPrompt.trim()}
-                className="px-6 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium shadow-xs transition-all flex items-center justify-center space-x-2 shrink-0 disabled:opacity-50"
-              >
-                {isGeneratingAi ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Otak AI Sedang Menulis...</span>
-                  </>
-                ) : (
-                  <>
-                    <Wand2 className="w-3.5 h-3.5" />
-                    <span>Jana Variasi AI</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Main 2-Column Section: Left Controls, Right Live Preview */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left 7 Columns */}
-            <div className="lg:col-span-7 space-y-6">
-              {/* Platform Selector with Clean Light Badges */}
-              <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-3">
-                <label className="text-xs font-medium text-slate-700 block">
-                  Pilih Platform Pengiklanan
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                  {/* Google Ads */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPlatform('google')}
-                    className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
-                      selectedPlatform === 'google'
-                        ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
-                        : 'bg-white border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
-                        <GoogleAdsLogo className="w-4 h-4" />
-                      </div>
-                      <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                        API
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-xs font-semibold text-slate-900 block">Google Ads</span>
-                      <span className="text-[11px] text-slate-400">Search & Display</span>
-                    </div>
-                  </button>
-
-                  {/* Meta Ads */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPlatform('meta')}
-                    className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
-                      selectedPlatform === 'meta'
-                        ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
-                        : 'bg-white border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
-                        <MetaLogo className="w-4 h-4" />
-                      </div>
-                      <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                        API
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-xs font-semibold text-slate-900 block">Meta Ads</span>
-                      <span className="text-[11px] text-slate-400">FB & Instagram</span>
-                    </div>
-                  </button>
-
-                  {/* TikTok Ads */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPlatform('tiktok')}
-                    className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
-                      selectedPlatform === 'tiktok'
-                        ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
-                        : 'bg-white border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
-                        <TikTokLogo className="w-4 h-4" />
-                      </div>
-                      <span className="text-[10px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
-                        Manual
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-xs font-semibold text-slate-900 block">TikTok Ads</span>
-                      <span className="text-[11px] text-slate-400">In-Feed 9:16</span>
-                    </div>
-                  </button>
-
-                  {/* WhatsApp Ads */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPlatform('whatsapp')}
-                    className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
-                      selectedPlatform === 'whatsapp'
-                        ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
-                        : 'bg-white border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
-                        <WhatsAppLogo className="w-4 h-4" />
-                      </div>
-                      <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                        API
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-xs font-semibold text-slate-900 block">WhatsApp</span>
-                      <span className="text-[11px] text-slate-400">Click-to-Chat</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              {/* Product Design & Budget Settings */}
-              <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-medium text-slate-700 block mb-1.5">
-                      Mockup / Produk Terpilih
-                    </label>
+                {/* Target Mockup Selection & AI Model Pill */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1 border-t border-slate-100">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-slate-400 font-medium">Produk:</span>
                     <select
                       value={selectedDesignId}
                       onChange={(e) => setSelectedDesignId(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium"
+                      className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs text-slate-700 focus:outline-none cursor-pointer font-medium"
                     >
                       {designs.map((d) => (
                         <option key={d.id} value={d.id}>
@@ -539,129 +376,362 @@ ${activeVariation.whatsappMessage}`;
                     </select>
                   </div>
 
-                  <div>
-                    <label className="text-xs font-medium text-slate-700 block mb-1.5">
-                      Belanjawan Harian (RM)
-                    </label>
-                    <input
-                      type="number"
-                      min="10"
-                      step="5"
-                      value={dailyBudget}
-                      onChange={(e) => setDailyBudget(Number(e.target.value))}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
-                    />
+                  <div className="flex items-center space-x-2 self-end sm:self-auto">
+                    <button
+                      type="button"
+                      onClick={() => setShowKeyModal(true)}
+                      className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs text-slate-600 transition-colors"
+                      title="Tetapan API Google Gemini"
+                    >
+                      <Bot className="w-3.5 h-3.5 text-blue-600" />
+                      <span>{aiSource === 'gemini' ? 'Google Gemini 1.5' : 'Enjin AI Pintar'}</span>
+                      <Key className="w-3 h-3 text-slate-400" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleGenerateAi}
+                      disabled={isGeneratingAi || !userPrompt.trim()}
+                      className="px-6 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium shadow-xs transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                    >
+                      {isGeneratingAi ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Otak AI Sedang Menulis...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="w-3.5 h-3.5" />
+                          <span>Jana Kempen Iklan</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
 
-              {/* 3 AI Generated Variations Card Selection (Clean Google One Light Style) */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between px-1">
-                  <label className="text-xs font-medium text-slate-700">
-                    Pilih Sudut Strategi Iklan AI
-                  </label>
-                  <span className="text-[11px] text-slate-400">3 Sudut Penukaran Dijana</span>
+              {/* Quick Inspiration Chips */}
+              <div className="space-y-2 text-center sm:text-left">
+                <span className="text-xs text-slate-400 block font-medium">Cadangan Pantas:</span>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  {AI_PROMPT_PRESETS.map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => setUserPrompt(preset.prompt)}
+                      className="px-3.5 py-1.5 rounded-full text-xs font-normal bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-xs transition-colors"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: RESULT STUDIO - LEFT NAVIGATION & RIGHT LIVE PREVIEW */}
+          {studioStep === 'result' && (
+            <div className="space-y-6 animate-in fade-in">
+              {/* Back / Prompt Summary Ribbon */}
+              <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setStudioStep('prompt')}
+                    className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors shrink-0"
+                    title="Kembali ke halaman input prompt"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                  </button>
+                  <div>
+                    <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider block">
+                      Arahan Prompt AI
+                    </span>
+                    <p className="text-xs font-normal text-slate-800 line-clamp-1 max-w-xl">
+                      &ldquo;{userPrompt}&rdquo;
+                    </p>
+                  </div>
                 </div>
 
-                <div className="space-y-2.5">
-                  {aiVariations.map((variation, idx) => {
-                    const isSelected = selectedVariationIndex === idx;
-                    return (
-                      <div
-                        key={variation.id}
-                        onClick={() => setSelectedVariationIndex(idx)}
-                        className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-blue-50/60 border-blue-400 ring-1 ring-blue-400 shadow-xs'
-                            : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300'
+                <div className="flex items-center space-x-2 self-end sm:self-auto shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setStudioStep('prompt')}
+                    className="px-4 py-1.5 rounded-full text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
+                  >
+                    Ubah Arahan Prompt
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleGenerateAi}
+                    disabled={isGeneratingAi}
+                    className="px-4 py-1.5 rounded-full text-xs font-medium bg-slate-900 hover:bg-black text-white shadow-xs transition-colors flex items-center space-x-1.5"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${isGeneratingAi ? 'animate-spin' : ''}`} />
+                    <span>Jana Semula</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 2-Column Split: Left Navigation Controls, Right Live Ad Preview */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Left 7 Columns: Platform Switcher & Strategic Angles */}
+                <div className="lg:col-span-7 space-y-6">
+                  {/* Platform Switcher Navigation (Google Ads, Meta Ads, TikTok Ads, WhatsApp Business) */}
+                  <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-slate-700">
+                        Navigasi Platform Pengiklanan
+                      </label>
+                      <span className="text-[11px] text-slate-400">Pilih format iklan di bawah</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      {/* Google Ads */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPlatform('google')}
+                        className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
+                          selectedPlatform === 'google'
+                            ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
+                            : 'bg-white border-slate-200 hover:border-slate-300'
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <div className="flex items-center space-x-1.5">
-                            {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
-                            <span className="text-[11px] font-semibold text-slate-900 uppercase tracking-wider">
-                              {variation.angleName}
-                            </span>
+                        <div className="flex items-center justify-between">
+                          <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
+                            <GoogleAdsLogo className="w-4 h-4" />
                           </div>
-                          <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">
-                            {variation.tagline}
+                          <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                            API
                           </span>
                         </div>
+                        <div>
+                          <span className="text-xs font-semibold text-slate-900 block">Google Ads</span>
+                          <span className="text-[11px] text-slate-400">Search & SEO</span>
+                        </div>
+                      </button>
 
-                        <h4 className="text-sm font-medium text-slate-900 leading-snug line-clamp-1">
-                          {variation.headline}
-                        </h4>
-                        <p className="text-xs mt-1 text-slate-600 line-clamp-2 leading-relaxed">
-                          {variation.primaryText}
-                        </p>
+                      {/* Meta Ads */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPlatform('meta')}
+                        className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
+                          selectedPlatform === 'meta'
+                            ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
+                            : 'bg-white border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
+                            <MetaLogo className="w-4 h-4" />
+                          </div>
+                          <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                            API
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-xs font-semibold text-slate-900 block">Meta Ads</span>
+                          <span className="text-[11px] text-slate-400">FB & Instagram</span>
+                        </div>
+                      </button>
+
+                      {/* TikTok Ads */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPlatform('tiktok')}
+                        className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
+                          selectedPlatform === 'tiktok'
+                            ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
+                            : 'bg-white border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
+                            <TikTokLogo className="w-4 h-4" />
+                          </div>
+                          <span className="text-[10px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
+                            Manual
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-xs font-semibold text-slate-900 block">TikTok Ads</span>
+                          <span className="text-[11px] text-slate-400">In-Feed 9:16</span>
+                        </div>
+                      </button>
+
+                      {/* WhatsApp Ads */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPlatform('whatsapp')}
+                        className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2.5 ${
+                          selectedPlatform === 'whatsapp'
+                            ? 'bg-blue-50/70 border-blue-400 ring-1 ring-blue-400 shadow-xs'
+                            : 'bg-white border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center shadow-xs border border-slate-200 p-1">
+                            <WhatsAppLogo className="w-4 h-4" />
+                          </div>
+                          <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                            API
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-xs font-semibold text-slate-900 block">WhatsApp</span>
+                          <span className="text-[11px] text-slate-400">Click-to-Chat</span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 3 AI Generated Conversion Angles */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between px-1">
+                      <label className="text-xs font-medium text-slate-700">
+                        Pilih Sudut Strategi Iklan AI
+                      </label>
+                      <span className="text-[11px] text-slate-400">
+                        {aiVariations.length} Sudut Dijana Mengikut Algoritma
+                      </span>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      {aiVariations.map((variation, idx) => {
+                        const isSelected = selectedVariationIndex === idx;
+                        return (
+                          <div
+                            key={variation.id}
+                            onClick={() => setSelectedVariationIndex(idx)}
+                            className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-blue-50/60 border-blue-400 ring-1 ring-blue-400 shadow-xs'
+                                : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1.5">
+                              <div className="flex items-center space-x-1.5">
+                                {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
+                                <span className="text-[11px] font-semibold text-slate-900 uppercase tracking-wider">
+                                  {variation.angleName}
+                                </span>
+                              </div>
+                              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">
+                                {variation.tagline}
+                              </span>
+                            </div>
+
+                            <h4 className="text-sm font-medium text-slate-900 leading-snug line-clamp-1">
+                              {variation.headline}
+                            </h4>
+                            <p className="text-xs mt-1 text-slate-600 line-clamp-2 leading-relaxed">
+                              {variation.primaryText}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Budget & Target Settings */}
+                  <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-medium text-slate-700 block mb-1.5">
+                          Produk Terpilih
+                        </label>
+                        <select
+                          value={selectedDesignId}
+                          onChange={(e) => setSelectedDesignId(e.target.value)}
+                          className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium"
+                        >
+                          {designs.map((d) => (
+                            <option key={d.id} value={d.id}>
+                              {d.title} ({d.category})
+                            </option>
+                          ))}
+                        </select>
                       </div>
-                    );
-                  })}
+
+                      <div>
+                        <label className="text-xs font-medium text-slate-700 block mb-1.5">
+                          Belanjawan Harian (RM)
+                        </label>
+                        <input
+                          type="number"
+                          min="10"
+                          step="5"
+                          value={dailyBudget}
+                          onChange={(e) => setDailyBudget(Number(e.target.value))}
+                          className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right 5 Columns: Live Ad Preview & Launch API */}
+                <div className="lg:col-span-5 space-y-4 sticky top-6">
+                  <div className="bg-slate-50/80 rounded-3xl border border-slate-200 p-6 space-y-4 text-center">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-medium text-slate-700 uppercase tracking-wider">
+                        Pratonton Iklan Sebenar
+                      </h3>
+                      <span className="text-[11px] text-slate-400 capitalize">{selectedPlatform} Live</span>
+                    </div>
+
+                    {/* Ad Preview Card */}
+                    <AdPreviewCard platform={selectedPlatform} creative={currentCreative} />
+
+                    {/* Action Buttons Bar */}
+                    <div className="pt-2 border-t border-slate-200/80 space-y-2">
+                      <button
+                        type="button"
+                        onClick={handlePublishCampaign}
+                        disabled={isPublishing}
+                        className="w-full py-3 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium shadow-xs transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                      >
+                        {isPublishing ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                            <span>Menolak ke API {selectedPlatform.toUpperCase()}...</span>
+                          </>
+                        ) : publishSuccess ? (
+                          <>
+                            <Check className="w-4 h-4 text-emerald-400" />
+                            <span>Kempen Berjaya Dilancarkan!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Rocket className="w-4 h-4" />
+                            <span>Lancar Kempen Terus via API</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleCopyContent}
+                        className="w-full py-2.5 rounded-full text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 transition-all flex items-center justify-center space-x-1.5 shadow-xs"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Tersalin ke Papan Keratan!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Salin Semua Teks (Copywriting)</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-
-            {/* Right 5 Columns: Live Ad Preview & 1-Click Actions */}
-            <div className="lg:col-span-5 space-y-4 sticky top-6">
-              <div className="bg-slate-50/80 rounded-3xl border border-slate-200 p-6 space-y-4 text-center">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-medium text-slate-700 uppercase tracking-wider">
-                    Pratonton Iklan Sebenar
-                  </h3>
-                  <span className="text-[11px] text-slate-400 capitalize">{selectedPlatform} Live</span>
-                </div>
-
-                {/* Ad Preview Card */}
-                <AdPreviewCard platform={selectedPlatform} creative={currentCreative} />
-
-                {/* Action Buttons Bar */}
-                <div className="pt-2 border-t border-slate-200/80 space-y-2">
-                  <button
-                    type="button"
-                    onClick={handlePublishCampaign}
-                    disabled={isPublishing}
-                    className="w-full py-3 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium shadow-xs transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
-                  >
-                    {isPublishing ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Menolak ke API {selectedPlatform.toUpperCase()}...</span>
-                      </>
-                    ) : publishSuccess ? (
-                      <>
-                        <Check className="w-4 h-4 text-emerald-400" />
-                        <span>Kempen Berjaya Dilancarkan!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Rocket className="w-4 h-4" />
-                        <span>Lancar Kempen Terus via API</span>
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleCopyContent}
-                    className="w-full py-2.5 rounded-full text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 transition-all flex items-center justify-center space-x-1.5 shadow-xs"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Tersalin ke Papan Keratan!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Salin Semua Teks (Copywriting)</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -856,4 +926,3 @@ ${activeVariation.whatsappMessage}`;
     </div>
   );
 }
-
