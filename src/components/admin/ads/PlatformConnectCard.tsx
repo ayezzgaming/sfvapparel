@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { AdPlatformConnection } from '@/types/ads';
-import { Check, Link2, Unlink, RefreshCw, Globe, MessageSquare, Video, ShieldCheck } from 'lucide-react';
+import { Check, Link2, Unlink, RefreshCw } from 'lucide-react';
+import { GoogleAdsLogo, MetaLogo, TikTokLogo, WhatsAppLogo } from '@/components/admin/ads/PlatformLogos';
 
 interface PlatformConnectCardProps {
   platform: AdPlatformConnection;
@@ -27,26 +28,26 @@ export default function PlatformConnectCard({
     switch (platform.id) {
       case 'google':
         return (
-          <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-bold text-slate-800 text-sm border border-slate-200 shrink-0">
-            G
+          <div className="w-11 h-11 rounded-2xl bg-white flex items-center justify-center border border-slate-200 shadow-xs shrink-0 p-2">
+            <GoogleAdsLogo className="w-6 h-6" />
           </div>
         );
       case 'meta':
         return (
-          <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-bold text-slate-800 text-sm border border-slate-200 shrink-0">
-            M
+          <div className="w-11 h-11 rounded-2xl bg-white flex items-center justify-center border border-slate-200 shadow-xs shrink-0 p-2">
+            <MetaLogo className="w-6 h-6" />
           </div>
         );
       case 'tiktok':
         return (
-          <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-bold text-slate-800 text-sm border border-slate-200 shrink-0">
-            <Video className="w-5 h-5 text-slate-700" />
+          <div className="w-11 h-11 rounded-2xl bg-white flex items-center justify-center border border-slate-200 shadow-xs shrink-0 p-2">
+            <TikTokLogo className="w-6 h-6" />
           </div>
         );
       case 'whatsapp':
         return (
-          <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-bold text-slate-800 text-sm border border-slate-200 shrink-0">
-            <MessageSquare className="w-5 h-5 text-slate-700" />
+          <div className="w-11 h-11 rounded-2xl bg-white flex items-center justify-center border border-slate-200 shadow-xs shrink-0 p-2">
+            <WhatsAppLogo className="w-6 h-6" />
           </div>
         );
     }
