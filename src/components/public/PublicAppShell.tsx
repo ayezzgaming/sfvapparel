@@ -115,9 +115,9 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             {children}
           </main>
 
-          {/* Pixel-Perfect iOS Bottom Tab Bar (Royal Blue, White text & icons) */}
+          {/* Pixel-Perfect iOS Bottom Tab Bar (Option 2: Clean Frosted Glass White with Royal Blue Active Accents) */}
           <nav 
-            className={`shrink-0 z-40 w-full bg-[#0052FF] border-t border-white/15 px-3 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.65rem)] flex items-center justify-between shadow-[0_-4px_20px_rgba(0,82,255,0.25)] select-none touch-none overscroll-none transition-all duration-300 ease-in-out transform ${
+            className={`shrink-0 z-40 w-full bg-white/95 backdrop-blur-xl border-t border-slate-200/80 px-3 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.65rem)] flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.05)] select-none touch-none overscroll-none transition-all duration-300 ease-in-out transform ${
               shouldHideBottomNav
                 ? 'translate-y-full opacity-0 pointer-events-none'
                 : 'translate-y-0 opacity-100'
@@ -129,18 +129,18 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             <Link
               href="/"
               draggable={false}
-              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation ${
-                isHome ? 'text-white' : 'text-white/65 hover:text-white'
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative group ${
+                isHome ? 'text-[#0052FF]' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               <div className="flex items-center justify-center h-6 w-6">
                 {isHome ? (
-                  <IoHome className="w-5.5 h-5.5 transition-transform duration-200 scale-105 text-white" />
+                  <IoHome className="w-5.5 h-5.5 transition-transform duration-200 scale-110 text-[#0052FF]" />
                 ) : (
-                  <IoHomeOutline className="w-5.5 h-5.5" />
+                  <IoHomeOutline className="w-5.5 h-5.5 text-slate-400 group-hover:text-slate-600 transition-colors" />
                 )}
               </div>
-              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isHome ? 'font-bold text-white' : 'font-medium text-white/70'}`}>
+              <span className={`text-[10.5px] tracking-tight mt-0.5 transition-colors ${isHome ? 'font-bold text-[#0052FF]' : 'font-medium text-slate-500'}`}>
                 Utama
               </span>
             </Link>
@@ -149,18 +149,18 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             <Link
               href="/catalog"
               draggable={false}
-              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation ${
-                isCatalog ? 'text-white' : 'text-white/65 hover:text-white'
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative group ${
+                isCatalog ? 'text-[#0052FF]' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               <div className="flex items-center justify-center h-6 w-6">
                 {isCatalog ? (
-                  <IoGrid className="w-5.5 h-5.5 transition-transform duration-200 scale-105 text-white" />
+                  <IoGrid className="w-5.5 h-5.5 transition-transform duration-200 scale-110 text-[#0052FF]" />
                 ) : (
-                  <IoGridOutline className="w-5.5 h-5.5" />
+                  <IoGridOutline className="w-5.5 h-5.5 text-slate-400 group-hover:text-slate-600 transition-colors" />
                 )}
               </div>
-              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isCatalog ? 'font-bold text-white' : 'font-medium text-white/70'}`}>
+              <span className={`text-[10.5px] tracking-tight mt-0.5 transition-colors ${isCatalog ? 'font-bold text-[#0052FF]' : 'font-medium text-slate-500'}`}>
                 Katalog
               </span>
             </Link>
@@ -169,21 +169,21 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             <Link
               href="/history"
               draggable={false}
-              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative ${
-                isHistory ? 'text-white' : 'text-white/65 hover:text-white'
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative group ${
+                isHistory ? 'text-[#0052FF]' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               <div className="flex items-center justify-center h-6 w-6 relative">
                 {isHistory ? (
-                  <IoTime className="w-5.5 h-5.5 transition-transform duration-200 scale-105 text-white" />
+                  <IoTime className="w-5.5 h-5.5 transition-transform duration-200 scale-110 text-[#0052FF]" />
                 ) : (
-                  <IoTimeOutline className="w-5.5 h-5.5" />
+                  <IoTimeOutline className="w-5.5 h-5.5 text-slate-400 group-hover:text-slate-600 transition-colors" />
                 )}
                 {activeOrdersCount > 0 && !isHistory && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#FF3B30] ring-2 ring-[#0052FF]" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#FF3B30] ring-2 ring-white" />
                 )}
               </div>
-              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isHistory ? 'font-bold text-white' : 'font-medium text-white/70'}`}>
+              <span className={`text-[10.5px] tracking-tight mt-0.5 transition-colors ${isHistory ? 'font-bold text-[#0052FF]' : 'font-medium text-slate-500'}`}>
                 Pesanan
               </span>
             </Link>
@@ -192,18 +192,18 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             <Link
               href="/profile"
               draggable={false}
-              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation ${
-                isProfile ? 'text-white' : 'text-white/65 hover:text-white'
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative group ${
+                isProfile ? 'text-[#0052FF]' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               <div className="flex items-center justify-center h-6 w-6">
                 {isProfile ? (
-                  <IoPerson className="w-5.5 h-5.5 transition-transform duration-200 scale-105 text-white" />
+                  <IoPerson className="w-5.5 h-5.5 transition-transform duration-200 scale-110 text-[#0052FF]" />
                 ) : (
-                  <IoPersonOutline className="w-5.5 h-5.5" />
+                  <IoPersonOutline className="w-5.5 h-5.5 text-slate-400 group-hover:text-slate-600 transition-colors" />
                 )}
               </div>
-              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isProfile ? 'font-bold text-white' : 'font-medium text-white/70'}`}>
+              <span className={`text-[10.5px] tracking-tight mt-0.5 transition-colors ${isProfile ? 'font-bold text-[#0052FF]' : 'font-medium text-slate-500'}`}>
                 Profil
               </span>
             </Link>
