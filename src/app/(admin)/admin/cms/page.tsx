@@ -445,97 +445,91 @@ export default function AdminCmsPage() {
         </div>
       </div>
 
-      {/* ----------------- CMS SECTION TABS ----------------- */}
-      <div className="bg-slate-100 p-1 rounded-full border border-slate-200 flex items-center space-x-1 overflow-x-auto scrollbar-none">
-        {[
-          { id: 'theme', label: 'Tema & Warna', icon: Palette },
-          { id: 'hero', label: 'Hero Banner', icon: ImageIcon, count: heroBanners.length },
-          { id: 'services', label: 'Servis', icon: Layers, count: services.length },
-          { id: 'slogan', label: 'Slogan & CTA', icon: Quote },
-          { id: 'videos', label: 'Video', icon: Video, count: productionVideos.length },
-          { id: 'gallery', label: 'Galeri Kilang', icon: ImageIcon, count: productionGallery.length },
-          { id: 'testimonials', label: 'Testimoni', icon: Star, count: testimonials.length },
-          { id: 'company', label: 'Syarikat', icon: Building2 },
-          { id: 'policies', label: 'Polisi', icon: FileText },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
-                isActive
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              <span>{tab.label}</span>
-              {tab.count !== undefined && (
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-medium ${isActive ? 'bg-slate-100 text-slate-700' : 'text-slate-400'}`}>
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* ----------------- 2-PANEL LAYOUT ----------------- */}
+      <div className="flex flex-col md:flex-row gap-6 items-start">
+        {/* LEFT PANEL: Vertical Section Navigation */}
+        <aside className="w-full md:w-56 shrink-0 bg-white p-2 rounded-2xl border border-slate-200 shadow-xs space-y-1 md:sticky md:top-20">
+          {[
+            { id: 'theme', label: 'Tema & Warna', icon: Palette },
+            { id: 'hero', label: 'Hero Banner', icon: ImageIcon, count: heroBanners.length },
+            { id: 'services', label: 'Servis', icon: Layers, count: services.length },
+            { id: 'slogan', label: 'Slogan & CTA', icon: Quote },
+            { id: 'videos', label: 'Video', icon: Video, count: productionVideos.length },
+            { id: 'gallery', label: 'Galeri Kilang', icon: ImageIcon, count: productionGallery.length },
+            { id: 'testimonials', label: 'Testimoni', icon: Star, count: testimonials.length },
+            { id: 'company', label: 'Syarikat', icon: Building2 },
+            { id: 'policies', label: 'Polisi', icon: FileText },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-full text-xs font-medium transition-all ${
+                  isActive
+                    ? 'bg-[#C2E7FF] text-[#001D35] font-semibold'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                <div className="flex items-center space-x-2.5">
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#001D35]' : 'text-slate-500'}`} />
+                  <span>{tab.label}</span>
+                </div>
+                {tab.count !== undefined && (
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/70 text-[#001D35] font-semibold' : 'text-slate-400'}`}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </aside>
 
-      {/* ----------------- MAIN TAB CONTENT AREA ----------------- */}
-      <div className="space-y-6">
+        {/* RIGHT PANEL: Active Section Content */}
+        <main className="flex-1 min-w-0 space-y-6">
 
         {/* =========================================================================
             TAB 0: TEMA & WARNA (THEME STUDIO)
            ========================================================================= */}
         {activeTab === 'theme' && (
-          <div className="space-y-6 max-w-6xl">
-            {/* 1-Click Presets */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-              <div>
-                <h2 className="text-base font-bold text-slate-900">Pilihan Tema Pratetap (1-Click Presets)</h2>
-                <p className="text-xs text-slate-500">Pilih skema warna standard identiti jenama yang telah dioptimumkan</p>
-              </div>
+          <div className="space-y-6">
+            {/* Presets */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+              <h2 className="text-sm font-medium text-slate-800">Tema Pratetap</h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {/* Preset 1: Hybrid */}
                 <div 
                   onClick={() => {
                     applyThemePreset('hybrid');
-                    triggerToast('Tema "Royal Blue Hybrid" telah digunakan!');
+                    triggerToast('Tema "Royal Blue Hybrid" telah digunakan');
                   }}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                  className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
                     themeSettings?.preset === 'hybrid'
-                      ? 'border-[#0052FF] bg-blue-50/40 shadow-xs'
+                      ? 'border-[#0B57D0] bg-blue-50/30 shadow-xs'
                       : 'border-slate-200 hover:border-slate-300 bg-white'
                   }`}
                 >
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-sm text-slate-900">Royal Blue Hybrid</span>
+                      <span className="font-medium text-xs text-slate-800">Royal Blue Hybrid</span>
                       {themeSettings?.preset === 'hybrid' && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0052FF] text-white flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Dipilih
-                        </span>
+                        <Check className="w-3.5 h-3.5 text-[#0B57D0]" />
                       )}
                     </div>
-                    <p className="text-xs text-slate-500">
-                      Header Royal Blue pekat dengan logo putih. Bottom Nav warna putih berkabut (frosted) dengan ikon Royal Blue.
-                    </p>
                     {/* Visual representation */}
-                    <div className="rounded-lg border border-slate-200 overflow-hidden text-[10px]">
-                      <div className="bg-[#0052FF] text-white px-3 py-2 flex items-center justify-between font-bold">
+                    <div className="rounded-xl border border-slate-200 overflow-hidden text-[9px]">
+                      <div className="bg-[#0052FF] text-white px-2.5 py-1.5 flex items-center justify-between font-medium">
                         <span>SFV APPAREL</span>
                         <div className="flex gap-1">
-                          <span className="w-2 h-2 rounded-full bg-white/80" />
-                          <span className="w-2 h-2 rounded-full bg-white/80" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
                         </div>
                       </div>
-                      <div className="bg-slate-100 p-3 text-center text-slate-400">Kandungan Utama</div>
-                      <div className="bg-white border-t border-slate-200 px-3 py-1.5 flex justify-around text-[#0052FF] font-semibold">
+                      <div className="bg-slate-50 p-2 text-center text-slate-400">Kandungan</div>
+                      <div className="bg-white border-t border-slate-200 px-2 py-1 flex justify-around text-[#0052FF] font-medium">
                         <span>Utama</span>
                         <span className="text-slate-400">Katalog</span>
-                        <span className="text-slate-400">Pesanan</span>
                       </div>
                     </div>
                   </div>
@@ -545,40 +539,33 @@ export default function AdminCmsPage() {
                 <div 
                   onClick={() => {
                     applyThemePreset('clean_white');
-                    triggerToast('Tema "Clean Minimal White" telah digunakan!');
+                    triggerToast('Tema "Clean Minimal White" telah digunakan');
                   }}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                  className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
                     themeSettings?.preset === 'clean_white'
-                      ? 'border-[#0052FF] bg-blue-50/40 shadow-xs'
+                      ? 'border-[#0B57D0] bg-blue-50/30 shadow-xs'
                       : 'border-slate-200 hover:border-slate-300 bg-white'
                   }`}
                 >
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-sm text-slate-900">Clean Minimal White</span>
+                      <span className="font-medium text-xs text-slate-800">Clean Minimal White</span>
                       {themeSettings?.preset === 'clean_white' && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0052FF] text-white flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Dipilih
-                        </span>
+                        <Check className="w-3.5 h-3.5 text-[#0B57D0]" />
                       )}
                     </div>
-                    <p className="text-xs text-slate-500">
-                      Header putih bersih dengan logo biru asal. Bottom Nav putih minimalis.
-                    </p>
                     {/* Visual representation */}
-                    <div className="rounded-lg border border-slate-200 overflow-hidden text-[10px]">
-                      <div className="bg-white border-b border-slate-200 text-[#0052FF] px-3 py-2 flex items-center justify-between font-bold">
+                    <div className="rounded-xl border border-slate-200 overflow-hidden text-[9px]">
+                      <div className="bg-white border-b border-slate-200 text-[#0052FF] px-2.5 py-1.5 flex items-center justify-between font-medium">
                         <span>SFV APPAREL</span>
                         <div className="flex gap-1">
-                          <span className="w-2 h-2 rounded-full bg-slate-400" />
-                          <span className="w-2 h-2 rounded-full bg-slate-400" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
                         </div>
                       </div>
-                      <div className="bg-slate-100 p-3 text-center text-slate-400">Kandungan Utama</div>
-                      <div className="bg-white border-t border-slate-200 px-3 py-1.5 flex justify-around text-[#0052FF] font-semibold">
+                      <div className="bg-slate-50 p-2 text-center text-slate-400">Kandungan</div>
+                      <div className="bg-white border-t border-slate-200 px-2 py-1 flex justify-around text-[#0052FF] font-medium">
                         <span>Utama</span>
                         <span className="text-slate-400">Katalog</span>
-                        <span className="text-slate-400">Pesanan</span>
                       </div>
                     </div>
                   </div>
@@ -588,40 +575,33 @@ export default function AdminCmsPage() {
                 <div 
                   onClick={() => {
                     applyThemePreset('full_blue');
-                    triggerToast('Tema "Full Royal Blue" telah digunakan!');
+                    triggerToast('Tema "Full Royal Blue" telah digunakan');
                   }}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                  className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
                     themeSettings?.preset === 'full_blue'
-                      ? 'border-[#0052FF] bg-blue-50/40 shadow-xs'
+                      ? 'border-[#0B57D0] bg-blue-50/30 shadow-xs'
                       : 'border-slate-200 hover:border-slate-300 bg-white'
                   }`}
                 >
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-sm text-slate-900">Full Royal Blue</span>
+                      <span className="font-medium text-xs text-slate-800">Full Royal Blue</span>
                       {themeSettings?.preset === 'full_blue' && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0052FF] text-white flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Dipilih
-                        </span>
+                        <Check className="w-3.5 h-3.5 text-[#0B57D0]" />
                       )}
                     </div>
-                    <p className="text-xs text-slate-500">
-                      Header dan Bottom Navigation keduanya berwarna Royal Blue penuh dengan teks & ikon putih.
-                    </p>
                     {/* Visual representation */}
-                    <div className="rounded-lg border border-slate-200 overflow-hidden text-[10px]">
-                      <div className="bg-[#0052FF] text-white px-3 py-2 flex items-center justify-between font-bold">
+                    <div className="rounded-xl border border-slate-200 overflow-hidden text-[9px]">
+                      <div className="bg-[#0052FF] text-white px-2.5 py-1.5 flex items-center justify-between font-medium">
                         <span>SFV APPAREL</span>
                         <div className="flex gap-1">
-                          <span className="w-2 h-2 rounded-full bg-white/80" />
-                          <span className="w-2 h-2 rounded-full bg-white/80" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
                         </div>
                       </div>
-                      <div className="bg-slate-100 p-3 text-center text-slate-400">Kandungan Utama</div>
-                      <div className="bg-[#0052FF] border-t border-blue-600 px-3 py-1.5 flex justify-around text-white font-semibold">
+                      <div className="bg-slate-50 p-2 text-center text-slate-400">Kandungan</div>
+                      <div className="bg-[#0052FF] border-t border-blue-600 px-2 py-1 flex justify-around text-white font-medium">
                         <span>Utama</span>
                         <span className="text-blue-200">Katalog</span>
-                        <span className="text-blue-200">Pesanan</span>
                       </div>
                     </div>
                   </div>
@@ -632,203 +612,125 @@ export default function AdminCmsPage() {
             {/* Custom Color Settings Grid & Live Preview */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Controls Column */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-4">
                 {/* Header Customizer */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-                  <div className="border-b border-slate-100 pb-3">
-                    <h3 className="font-bold text-sm text-slate-900">Kustomisasi Header / Bar Atas</h3>
-                    <p className="text-xs text-slate-500">Kawal warna latar, mod warna logo dan gaya header</p>
-                  </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                  <h3 className="font-medium text-xs text-slate-800">Bar Atas (Header)</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Header BG */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-slate-700">Warna Latar Header</label>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] text-slate-500">Warna Latar</label>
                       <div className="flex items-center space-x-2">
                         <input
                           type="color"
                           value={themeSettings?.header_bg?.startsWith('#') ? themeSettings.header_bg : '#0052FF'}
                           onChange={(e) => updateThemeSettings({ header_bg: e.target.value, preset: 'custom' })}
-                          className="w-10 h-10 rounded-lg border border-slate-200 cursor-pointer p-0.5"
+                          className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer p-0.5"
                         />
                         <input
                           type="text"
                           value={themeSettings?.header_bg || '#0052FF'}
                           onChange={(e) => updateThemeSettings({ header_bg: e.target.value, preset: 'custom' })}
-                          className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:bg-white"
+                          className="flex-1 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:bg-white"
                         />
-                      </div>
-                      <div className="flex gap-1.5 pt-1">
-                        {['#0052FF', '#FFFFFF', '#0F172A', '#1E293B', '#2563EB', '#4F46E5'].map((color) => (
-                          <button
-                            key={color}
-                            type="button"
-                            onClick={() => updateThemeSettings({ header_bg: color, preset: 'custom' })}
-                            className="w-6 h-6 rounded-md border border-slate-200 shadow-xs transition-transform active:scale-95"
-                            style={{ backgroundColor: color }}
-                            title={color}
-                          />
-                        ))}
                       </div>
                     </div>
 
                     {/* Logo Mode */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-slate-700">Mod Warna Logo Header</label>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] text-slate-500">Mod Logo</label>
                       <select
                         value={themeSettings?.header_logo_mode || 'inverted_white'}
                         onChange={(e) => updateThemeSettings({ header_logo_mode: e.target.value as any, preset: 'custom' })}
-                        className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white"
+                        className="w-full px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white"
                       >
-                        <option value="inverted_white">Putih Bersih (Invert - Untuk Latar Gelap/Biru)</option>
-                        <option value="original_blue">Biru Asal Jenama (Untuk Latar Putih/Terang)</option>
+                        <option value="inverted_white">Putih (Latar Gelap / Biru)</option>
+                        <option value="original_blue">Biru Asal (Latar Putih / Cerah)</option>
                       </select>
-                      <p className="text-[11px] text-slate-400">
-                        Gunakan mod Putih jika header anda berwarna biru atau gelap.
-                      </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Bottom Navigation Customizer */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-                  <div className="border-b border-slate-100 pb-3">
-                    <h3 className="font-bold text-sm text-slate-900">Kustomisasi Navigasi Bawah (Bottom Tab Bar)</h3>
-                    <p className="text-xs text-slate-500">Kawal warna tab bar, warna ikon aktif dan tab pasif</p>
-                  </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                  <h3 className="font-medium text-xs text-slate-800">Navigasi Bawah</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Bottom Nav BG */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-slate-700">Warna Latar Tab Bar</label>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] text-slate-500">Warna Latar</label>
                       <div className="flex items-center space-x-2">
                         <input
                           type="color"
                           value={themeSettings?.bottom_nav_bg?.startsWith('#') ? themeSettings.bottom_nav_bg : '#FFFFFF'}
                           onChange={(e) => updateThemeSettings({ bottom_nav_bg: e.target.value, preset: 'custom' })}
-                          className="w-10 h-10 rounded-lg border border-slate-200 cursor-pointer p-0.5"
+                          className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer p-0.5"
                         />
                         <input
                           type="text"
-                          value={themeSettings?.bottom_nav_bg || 'rgba(255, 255, 255, 0.95)'}
+                          value={themeSettings?.bottom_nav_bg || '#FFFFFF'}
                           onChange={(e) => updateThemeSettings({ bottom_nav_bg: e.target.value, preset: 'custom' })}
-                          className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:bg-white"
+                          className="flex-1 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:bg-white"
                         />
-                      </div>
-                      <div className="flex gap-1.5 pt-1">
-                        {['rgba(255, 255, 255, 0.95)', '#FFFFFF', '#0052FF', '#0F172A', '#F8FAFC'].map((color) => (
-                          <button
-                            key={color}
-                            type="button"
-                            onClick={() => updateThemeSettings({ bottom_nav_bg: color, preset: 'custom' })}
-                            className="w-6 h-6 rounded-md border border-slate-200 shadow-xs transition-transform active:scale-95"
-                            style={{ backgroundColor: color }}
-                            title={color}
-                          />
-                        ))}
                       </div>
                     </div>
 
                     {/* Active Color */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-slate-700">Warna Tab / Ikon Aktif</label>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] text-slate-500">Warna Ikon Aktif</label>
                       <div className="flex items-center space-x-2">
                         <input
                           type="color"
                           value={themeSettings?.bottom_nav_active_color || '#0052FF'}
                           onChange={(e) => updateThemeSettings({ bottom_nav_active_color: e.target.value, preset: 'custom' })}
-                          className="w-10 h-10 rounded-lg border border-slate-200 cursor-pointer p-0.5"
+                          className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer p-0.5"
                         />
                         <input
                           type="text"
                           value={themeSettings?.bottom_nav_active_color || '#0052FF'}
                           onChange={(e) => updateThemeSettings({ bottom_nav_active_color: e.target.value, preset: 'custom' })}
-                          className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:bg-white"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Inactive Color */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-slate-700">Warna Tab Tidak Aktif</label>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="color"
-                          value={themeSettings?.bottom_nav_inactive_color || '#94A3B8'}
-                          onChange={(e) => updateThemeSettings({ bottom_nav_inactive_color: e.target.value, preset: 'custom' })}
-                          className="w-10 h-10 rounded-lg border border-slate-200 cursor-pointer p-0.5"
-                        />
-                        <input
-                          type="text"
-                          value={themeSettings?.bottom_nav_inactive_color || '#94A3B8'}
-                          onChange={(e) => updateThemeSettings({ bottom_nav_inactive_color: e.target.value, preset: 'custom' })}
-                          className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:bg-white"
-                        />
-                      </div>
-                    </div>
-
-                    {/* WhatsApp FAB Color */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-slate-700">Warna Butang Terapung WhatsApp</label>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="color"
-                          value={themeSettings?.whatsapp_fab_bg || '#25D366'}
-                          onChange={(e) => updateThemeSettings({ whatsapp_fab_bg: e.target.value, preset: 'custom' })}
-                          className="w-10 h-10 rounded-lg border border-slate-200 cursor-pointer p-0.5"
-                        />
-                        <input
-                          type="text"
-                          value={themeSettings?.whatsapp_fab_bg || '#25D366'}
-                          onChange={(e) => updateThemeSettings({ whatsapp_fab_bg: e.target.value, preset: 'custom' })}
-                          className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:bg-white"
+                          className="flex-1 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 focus:bg-white"
                         />
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-slate-100 flex justify-end">
+                  <div className="pt-2 flex justify-end">
                     <button
-                      onClick={() => triggerToast('Tetapan tema dan warna berjaya disimpan!')}
-                      className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-[#0052FF] hover:bg-blue-600 text-white text-xs font-bold shadow-xs transition-all active:scale-95"
+                      onClick={() => triggerToast('Tetapan tema berjaya disimpan')}
+                      className="px-4 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
                     >
-                      <Save className="w-4 h-4" />
-                      <span>Simpan Tetapan Tema</span>
+                      Simpan Tema
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* Live Mini Mobile Preview Frame */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                    <Smartphone className="w-4 h-4 text-[#0052FF]" />
-                    Pratonton Langsung Mobile
-                  </span>
-                  <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    Masa Nyata
-                  </span>
-                </div>
+              {/* Mini Mobile Preview Frame */}
+              <div className="space-y-2">
+                <span className="text-xs font-medium text-slate-700 block">
+                  Pratonton Mobile
+                </span>
 
-                <div className="w-full rounded-3xl border-4 border-slate-800 bg-white overflow-hidden shadow-xl flex flex-col h-[520px]">
+                <div className="w-full rounded-3xl border-2 border-slate-300 bg-white overflow-hidden shadow-sm flex flex-col h-[460px]">
                   {/* Mock Header */}
                   <div 
-                    className="p-3.5 flex items-center justify-between border-b transition-colors"
+                    className="p-3 flex items-center justify-between border-b transition-colors"
                     style={{ 
                       backgroundColor: themeSettings?.header_bg || '#0052FF',
                       borderColor: themeSettings?.header_bg === '#FFFFFF' ? '#E2E8F0' : 'rgba(255,255,255,0.15)'
                     }}
                   >
                     <div className="flex items-center space-x-2">
-                      <div className={`w-5 h-5 rounded flex items-center justify-center font-black text-[10px] ${
+                      <div className={`w-5 h-5 rounded flex items-center justify-center font-bold text-[10px] ${
                         themeSettings?.header_logo_mode === 'inverted_white' || themeSettings?.header_bg === '#0052FF'
                           ? 'bg-white text-[#0052FF]'
                           : 'bg-[#0052FF] text-white'
                       }`}>
                         S
                       </div>
-                      <span className={`font-black text-xs tracking-tight ${
+                      <span className={`font-bold text-xs ${
                         themeSettings?.header_logo_mode === 'inverted_white' || themeSettings?.header_bg === '#0052FF'
                           ? 'text-white'
                           : 'text-[#0052FF]'
@@ -836,28 +738,20 @@ export default function AdminCmsPage() {
                         SFV APPAREL
                       </span>
                     </div>
-                    <div className="flex space-x-1">
-                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] ${
-                        themeSettings?.header_bg === '#0052FF' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
-                      }`}>♥</span>
-                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] ${
-                        themeSettings?.header_bg === '#0052FF' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
-                      }`}>🛍</span>
-                    </div>
                   </div>
 
                   {/* Mock Content */}
-                  <div className="flex-1 p-3 bg-slate-100/70 space-y-3 overflow-hidden text-xs">
-                    <div className="h-28 rounded-xl bg-slate-800 text-white p-3 flex flex-col justify-end">
-                      <span className="text-[9px] uppercase font-bold text-blue-300">Koleksi 2026</span>
-                      <span className="font-extrabold text-sm">Studio Jersi & DTF</span>
+                  <div className="flex-1 p-3 bg-slate-50 space-y-2.5 overflow-hidden text-xs">
+                    <div className="h-24 rounded-xl bg-slate-800 text-white p-3 flex flex-col justify-end">
+                      <span className="text-[10px] text-blue-200">Koleksi 2026</span>
+                      <span className="font-medium text-xs">Studio Jersi & DTF</span>
                     </div>
 
                     <div className="p-2.5 rounded-xl bg-white border border-slate-200 space-y-1">
-                      <span className="font-bold text-[11px] text-slate-800 block">Pilihan Servis Utama</span>
+                      <span className="text-[10px] text-slate-500 block">Servis Utama</span>
                       <div className="grid grid-cols-2 gap-1.5 text-[10px]">
-                        <div className="p-2 rounded bg-slate-50 border border-slate-100 font-semibold text-slate-700">Sublimasi Jersi</div>
-                        <div className="p-2 rounded bg-slate-50 border border-slate-100 font-semibold text-slate-700">Cetak DTF Baju</div>
+                        <div className="p-1.5 rounded bg-slate-50 border border-slate-100 text-slate-700">Sublimasi Jersi</div>
+                        <div className="p-1.5 rounded bg-slate-50 border border-slate-100 text-slate-700">Cetak DTF Baju</div>
                       </div>
                     </div>
                   </div>
@@ -866,25 +760,18 @@ export default function AdminCmsPage() {
                   <div 
                     className="p-2 border-t flex items-center justify-around transition-colors"
                     style={{ 
-                      backgroundColor: themeSettings?.bottom_nav_bg || 'rgba(255, 255, 255, 0.95)',
-                      borderColor: themeSettings?.bottom_nav_bg === '#0052FF' ? '#0044D6' : '#E2E8F0'
+                      backgroundColor: themeSettings?.bottom_nav_bg || '#FFFFFF',
+                      borderColor: '#E2E8F0'
                     }}
                   >
                     <div className="flex flex-col items-center" style={{ color: themeSettings?.bottom_nav_active_color || '#0052FF' }}>
-                      <span className="text-xs">⌂</span>
-                      <span className="text-[9px] font-bold">Utama</span>
+                      <span className="text-[10px] font-medium">Utama</span>
                     </div>
-                    <div className="flex flex-col items-center" style={{ color: themeSettings?.bottom_nav_inactive_color || '#94A3B8' }}>
-                      <span className="text-xs">▦</span>
-                      <span className="text-[9px]">Katalog</span>
+                    <div className="flex flex-col items-center text-slate-400">
+                      <span className="text-[10px]">Katalog</span>
                     </div>
-                    <div className="flex flex-col items-center" style={{ color: themeSettings?.bottom_nav_inactive_color || '#94A3B8' }}>
-                      <span className="text-xs">⏱</span>
-                      <span className="text-[9px]">Pesanan</span>
-                    </div>
-                    <div className="flex flex-col items-center" style={{ color: themeSettings?.bottom_nav_inactive_color || '#94A3B8' }}>
-                      <span className="text-xs">👤</span>
-                      <span className="text-[9px]">Profil</span>
+                    <div className="flex flex-col items-center text-slate-400">
+                      <span className="text-[10px]">Pesanan</span>
                     </div>
                   </div>
                 </div>
@@ -2029,7 +1916,7 @@ export default function AdminCmsPage() {
             </div>
           </div>
         )}
-
+        </main>
       </div>
 
       {/* =========================================================================
