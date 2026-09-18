@@ -15,13 +15,15 @@ import {
   Grip,
   HelpCircle,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Megaphone
 } from 'lucide-react';
 
 const ADMIN_NAV = [
   { href: '/admin', label: 'Beranda', icon: Home, exact: true },
   { href: '/admin/orders', label: 'Saluran Pesanan', icon: ClipboardList },
   { href: '/admin/catalog', label: 'Katalog Rekaan', icon: Shirt },
+  { href: '/admin/ads-generator', label: 'Ads Generator', icon: Megaphone },
   { href: '/admin/cms', label: 'Pengurus Web', icon: Globe },
   { href: '/admin/customers', label: 'Pelanggan', icon: Users },
   { href: '/admin/pricing-rules', label: 'Formula Harga', icon: SlidersHorizontal },

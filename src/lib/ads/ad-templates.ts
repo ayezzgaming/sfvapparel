@@ -1,0 +1,109 @@
+import { AdCreative, AdPlatformConnection, AdCampaign } from '@/types/ads';
+
+export const INITIAL_PLATFORMS: AdPlatformConnection[] = [
+  {
+    id: 'google',
+    name: 'Google Ads',
+    description: 'Kempen Google Search, Display Network, dan Performance Max.',
+    isConnected: true,
+    accountId: 'GADS-948-281-9012',
+    accountName: 'SVF Apparel Malaysia (Official)',
+    lastSynced: '10 minit lalu',
+    currency: 'MYR',
+    balance: 1450.00,
+  },
+  {
+    id: 'meta',
+    name: 'Meta Ads (FB & IG)',
+    description: 'Pengiklanan berprestasi tinggi di Facebook Feed, Reels, & Instagram Stories.',
+    isConnected: true,
+    accountId: 'ACT-481920849182',
+    accountName: 'SVF Apparel Marketing Studio',
+    lastSynced: 'Baru sahaja',
+    currency: 'MYR',
+    balance: 890.50,
+  },
+  {
+    id: 'tiktok',
+    name: 'TikTok Ads',
+    description: 'Kempen video pendek In-Feed Ads dengan sasaran audiens belia & komuniti sukan.',
+    isConnected: false,
+  },
+  {
+    id: 'whatsapp',
+    name: 'WhatsApp Ads & API',
+    description: 'Iklan terus ke perbualan WhatsApp perniagaan (*Click to WhatsApp Ads*).',
+    isConnected: true,
+    accountId: 'WA-BIZ-60193321100',
+    accountName: '+60 19-332 1100 (Sales Desk)',
+    lastSynced: '1 jam lalu',
+  },
+];
+
+export const HEADLINE_PRESETS = [
+  'Kilang Cetak Jersi Sublimasi & DTF No. 1 Malaysia',
+  'Tempah Jersi Pasukan Anda | Siap Pantas 7-10 Hari',
+  'Kain Drifit Premium Anti-Peluh | Rekaan Percuma',
+  'Pakar Cetakan Baju DTF Pukal & Sublimasi Penuh',
+  'Tawaran Khas Jersi Korporat & Sukan | Diskaun Kuantiti',
+];
+
+export const PRIMARY_TEXT_PRESETS = [
+  'Mencari kilang jersi sublimasi yang pantas dan berkualiti? SVF Apparel menyediakan cetakan berkualiti tinggi, warna tajam tak luntur, dan kain Drifit Milano yang sejuk dipakai. Dapatkan sebut harga segera!',
+  'Jersi kustom berkualiti eksport untuk pasukan bola sepak, esports, futsal & syarikat anda. Minimum order serendah 10 helai dengan rekaan eksklusif. Tekan pautan untuk berhubung dengan team kami!',
+  'Cetak baju DTF & jersi sublimasi terus dari kilang dengan harga borong. Kualiti warna ultra-vibrant, kemasan jahitan kemas, dan penghantaran selamat ke seluruh Malaysia.',
+];
+
+export const INITIAL_CAMPAIGNS: AdCampaign[] = [
+  {
+    id: 'camp-1',
+    name: 'Google Search - Jersi Sublimasi 2026',
+    platform: 'google',
+    objective: 'whatsapp_leads',
+    status: 'active',
+    dailyBudget: 50.00,
+    spent: 420.00,
+    clicks: 312,
+    impressions: 4820,
+    leadsOrConversions: 48,
+    cpc: 1.34,
+    createdAt: '2026-09-10',
+    creative: {
+      id: 'cr-1',
+      productName: 'Jersi Sublimasi Harimau Malaya',
+      imageUrl: '/images/prod_sportswear.jpg',
+      headline: 'Kilang Cetak Jersi Sublimasi & Baju DTF',
+      secondaryHeadline: 'Tempah Terus Dari Kilang | Harga Borong',
+      primaryText: 'Pakar cetak jersi sukan & korporat di Malaysia. Kain sejuk berkualiti, jahitan kemas, siap 7 hari.',
+      callToAction: 'Dapatkan Sebut Harga',
+      targetUrl: 'https://svfapparel.my/catalog',
+      whatsappMessage: 'Salam SVF, saya berminat untuk buat tempahan jersi melalui iklan Google.',
+      tags: ['jersi', 'sublimasi', 'kilang'],
+    },
+  },
+  {
+    id: 'camp-2',
+    name: 'Meta Ads - Promo Jersi Pasukan Bola',
+    platform: 'meta',
+    objective: 'whatsapp_leads',
+    status: 'active',
+    dailyBudget: 40.00,
+    spent: 310.00,
+    clicks: 580,
+    impressions: 12400,
+    leadsOrConversions: 62,
+    cpc: 0.53,
+    createdAt: '2026-09-12',
+    creative: {
+      id: 'cr-2',
+      productName: 'Cyber Pro Esports Kit',
+      imageUrl: '/images/prod_merchandise.jpg',
+      headline: 'Jersi Sukan Kustom Eksklusif | Kain Milano Sejuk',
+      primaryText: 'Upgrade jersi team anda sekarang! Cetakan sublimasi penuh warna tahan luntur & rekaan mantap.',
+      callToAction: 'Kirim Mesej WhatsApp',
+      targetUrl: 'https://svfapparel.my',
+      whatsappMessage: 'Hai SVF, saya nak tanya pasal promo jersi sukan.',
+      tags: ['esports', 'jersey', 'bola'],
+    },
+  },
+];
