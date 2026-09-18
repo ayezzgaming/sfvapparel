@@ -10,7 +10,10 @@ import {
   Truck,
   Clock,
   CheckCircle2,
-  Quote
+  Quote,
+  Building2,
+  Zap,
+  PackageCheck
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
@@ -379,6 +382,49 @@ export default function HomePage() {
               <span>{currentBanner.button_text}</span>
               <ChevronRight className="w-3.5 h-3.5 text-slate-700" />
             </Link>
+          </div>
+        </div>
+
+        {/* 1.5 VALUE PROPOSITION / TRUST PILLARS (Ad Relevance & High Quality Score) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+          <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#0052FF] flex items-center justify-center shrink-0 border border-blue-100">
+              <Building2 className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold text-slate-900 block leading-tight">Harga Direct Kilang</span>
+              <span className="text-[9.5px] text-slate-500 block mt-0.5">Jimat Tanpa Orang Tengah</span>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
+              <PackageCheck className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold text-slate-900 block leading-tight">Tiada Minimum Order</span>
+              <span className="text-[9.5px] text-slate-500 block mt-0.5">Untuk Cetakan DTF & Kustom</span>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+              <Zap className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold text-slate-900 block leading-tight">Siap Pantas 5-7 Hari</span>
+              <span className="text-[9.5px] text-slate-500 block mt-0.5">Produksi Teknologi Jepun</span>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold text-slate-900 block leading-tight">Jaminan 1-to-1 QC</span>
+              <span className="text-[9.5px] text-slate-500 block mt-0.5">Pemeriksaan Kualiti Rapi</span>
+            </div>
           </div>
         </div>
 
