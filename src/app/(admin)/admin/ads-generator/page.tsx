@@ -343,7 +343,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-slate-900 font-sans">
+    <div className="space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 text-slate-900 font-sans">
       {/* Hidden File Input for Image Upload */}
       <input
         ref={fileInputRef}
@@ -353,26 +353,17 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
         className="hidden"
       />
 
-      <div className="space-y-6">
-        {/* Header Tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
-              Ads Generator
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Penjanaan kandungan kempen iklan pintar berasaskan algoritma Google, Meta, TikTok, dan WhatsApp.
-            </p>
-          </div>
-
+      <div className="space-y-4">
+        {/* Sleek Top Navigation Bar - Ultra Clean & Minimal */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
           {/* Tab Switcher */}
-          <div className="flex items-center space-x-1 bg-slate-100/80 p-1 rounded-2xl">
+          <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl">
             <button
               type="button"
               onClick={() => setActiveTab('create')}
-              className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
+              className={`px-4 py-1.5 rounded-xl text-xs font-medium transition-all ${
                 activeTab === 'create'
-                  ? 'bg-white text-slate-900 font-semibold'
+                  ? 'bg-white text-slate-900 font-semibold shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -381,9 +372,9 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
             <button
               type="button"
               onClick={() => setActiveTab('connections')}
-              className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
+              className={`px-4 py-1.5 rounded-xl text-xs font-medium transition-all ${
                 activeTab === 'connections'
-                  ? 'bg-white text-slate-900 font-semibold'
+                  ? 'bg-white text-slate-900 font-semibold shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -392,15 +383,27 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
             <button
               type="button"
               onClick={() => setActiveTab('campaigns')}
-              className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
+              className={`px-4 py-1.5 rounded-xl text-xs font-medium transition-all ${
                 activeTab === 'campaigns'
-                  ? 'bg-white text-slate-900 font-semibold'
+                  ? 'bg-white text-slate-900 font-semibold shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Kempen Aktif ({campaigns.length})
             </button>
           </div>
+
+          {/* AI Model / Key Selector Quick Pill */}
+          <button
+            type="button"
+            onClick={() => setShowKeyModal(true)}
+            className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-xs font-medium text-slate-700 transition-colors shrink-0"
+            title="Tetapan Model AI & Kunci API"
+          >
+            <Bot className="w-3.5 h-3.5 text-slate-500" />
+            <span>{aiSource === 'groq' ? 'Groq Llama 3.3' : aiSource === 'gemini' ? 'Gemini 1.5' : 'OpenRouter'}</span>
+            <ChevronDown className="w-3 h-3 text-slate-400" />
+          </button>
         </div>
 
         {/* ======================= TAB 1: STUDIO IKLAN AI ======================= */}
@@ -408,8 +411,8 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
           <div>
             {/* STEP 1: INDUSTRY STANDARD UNIFIED PROMPT CARD */}
             {studioStep === 'prompt' && (
-              <div className="min-h-[62vh] flex flex-col justify-center items-center py-12 px-4 animate-in fade-in">
-                <div className="w-full max-w-3xl space-y-4">
+              <div className="min-h-[60vh] flex flex-col justify-center items-center py-8 px-4 animate-in fade-in">
+                <div className="w-full max-w-2xl space-y-4">
                   {/* Error Notification Banner if API error occurs */}
                   {generationError && (
                     <div className="bg-red-50 text-red-700 text-xs rounded-2xl p-4 flex items-start justify-between gap-3">
@@ -476,7 +479,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                           handleGenerateAi();
                         }
                       }}
-                      placeholder="Tulis arahan prompt iklan anda di sini..."
+                      placeholder="Tulis arahan promosi iklan anda di sini..."
                       className="w-full bg-transparent text-sm sm:text-base text-slate-900 placeholder-slate-400 focus:outline-none resize-none font-sans px-1 pt-1"
                     />
 
@@ -500,7 +503,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
                           {/* Attachment Popover (+ Menu) */}
                           {showAttachMenu && (
-                            <div className="absolute left-0 bottom-11 z-40 bg-white rounded-2xl p-1.5 w-60 space-y-1 text-left animate-in fade-in zoom-in-95">
+                            <div className="absolute left-0 bottom-11 z-40 bg-white rounded-2xl p-1.5 w-60 space-y-1 text-left animate-in fade-in zoom-in-95 shadow-lg">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -536,17 +539,6 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                           onChange={handleFileUpload}
                           className="hidden"
                         />
-
-                        {/* Model Selector Pill */}
-                        <button
-                          type="button"
-                          onClick={() => setShowKeyModal(true)}
-                          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-100 text-xs font-medium text-slate-700 transition-colors shrink-0"
-                          title="Tetapan Model AI & Kunci API"
-                        >
-                          <span>{aiSource === 'groq' ? 'Groq' : aiSource === 'gemini' ? 'Gemini' : 'OpenRouter'}</span>
-                          <ChevronDown className="w-3 h-3 text-slate-500" />
-                        </button>
                       </div>
 
                       {/* Send Button */}
@@ -569,97 +561,48 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
               </div>
             )}
 
-            {/* STEP 2: RESULT STUDIO - SPACIOUS 2-COLUMN PREVIEW STUDIO */}
+            {/* STEP 2: RESULT STUDIO - ULTRA-CLEAN SPACIOUS 2-COLUMN STUDIO */}
             {studioStep === 'result' && (
-              <div className="space-y-6 animate-in fade-in">
-                {/* Back / Prompt Summary Ribbon */}
-                <div className="bg-slate-50/80 rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-center space-x-3">
-                    <button
-                      type="button"
-                      onClick={() => setStudioStep('prompt')}
-                      className="p-2 rounded-full bg-white hover:bg-slate-200 text-slate-700 transition-colors shrink-0"
-                      title="Kembali ke halaman input"
-                    >
-                      <ArrowLeft className="w-4 h-4" />
-                    </button>
-                    <div>
-                      <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider block">
-                        Arahan Prompt AI
-                      </span>
-                      <p className="text-xs font-normal text-slate-800 line-clamp-1 max-w-xl">
-                        &ldquo;{userPrompt}&rdquo;
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2 self-end sm:self-auto shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setStudioStep('prompt')}
-                      className="px-4 py-1.5 rounded-full text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 transition-colors"
-                    >
-                      Ubah Arahan Prompt
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleGenerateAi}
-                      disabled={isGeneratingAi}
-                      className="px-4 py-1.5 rounded-full text-xs font-medium bg-slate-900 hover:bg-black text-white transition-colors flex items-center space-x-1.5"
-                    >
-                      <RefreshCw className={`w-3 h-3 ${isGeneratingAi ? 'animate-spin' : ''}`} />
-                      <span>Jana Semula</span>
-                    </button>
-                  </div>
-                </div>
-
+              <div className="animate-in fade-in">
                 {/* 2-Column Split: Left Platform Nav & Settings, Right Full Live Preview Studio */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                  {/* LEFT COLUMN (lg:col-span-4): Static Platform Navigation & Quick Settings */}
-                  <div className="lg:col-span-4 lg:sticky lg:top-20 space-y-4">
-                    <div>
-                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block px-1 mb-2">
-                        Platform Pengiklanan
-                      </span>
-                      <div className="bg-slate-50/80 rounded-3xl p-2 space-y-1">
-                        {[
-                          { id: 'facebook' as AdPlatform, name: 'Facebook Ads', logo: FacebookLogo },
-                          { id: 'instagram' as AdPlatform, name: 'Instagram Ads', logo: InstagramLogo },
-                          { id: 'google' as AdPlatform, name: 'Google Ads', logo: GoogleAdsLogo },
-                          { id: 'tiktok' as AdPlatform, name: 'TikTok Ads', logo: TikTokLogo },
-                          { id: 'whatsapp' as AdPlatform, name: 'WhatsApp Ads', logo: WhatsAppLogo },
-                        ].map((plat) => {
-                          const Logo = plat.logo;
-                          const isSelected = selectedPlatform === plat.id;
-                          return (
-                            <button
-                              key={plat.id}
-                              type="button"
-                              onClick={() => setSelectedPlatform(plat.id)}
-                              className={`w-full px-3.5 py-3 rounded-2xl flex items-center space-x-3 transition-all text-left ${
-                                isSelected
-                                  ? 'bg-white text-slate-900 font-semibold'
-                                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                              }`}
-                            >
-                              <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                                <Logo className="w-4 h-4" />
-                              </div>
-                              <span className="text-xs tracking-tight">{plat.name}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  {/* LEFT COLUMN (lg:col-span-4): Clean Platform Navigation & Quick Settings */}
+                  <div className="lg:col-span-4 lg:sticky lg:top-4 space-y-3">
+                    {/* Platform Selector */}
+                    <div className="bg-slate-50/80 rounded-3xl p-2 space-y-1">
+                      {[
+                        { id: 'facebook' as AdPlatform, name: 'Facebook Ads', logo: FacebookLogo },
+                        { id: 'instagram' as AdPlatform, name: 'Instagram Ads', logo: InstagramLogo },
+                        { id: 'google' as AdPlatform, name: 'Google Ads', logo: GoogleAdsLogo },
+                        { id: 'tiktok' as AdPlatform, name: 'TikTok Ads', logo: TikTokLogo },
+                        { id: 'whatsapp' as AdPlatform, name: 'WhatsApp Ads', logo: WhatsAppLogo },
+                      ].map((plat) => {
+                        const Logo = plat.logo;
+                        const isSelected = selectedPlatform === plat.id;
+                        return (
+                          <button
+                            key={plat.id}
+                            type="button"
+                            onClick={() => setSelectedPlatform(plat.id)}
+                            className={`w-full px-3.5 py-2.5 rounded-2xl flex items-center space-x-3 transition-all text-left ${
+                              isSelected
+                                ? 'bg-slate-100 text-slate-900 font-semibold'
+                                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                            }`}
+                          >
+                            <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                              <Logo className="w-4 h-4" />
+                            </div>
+                            <span className="text-xs tracking-tight">{plat.name}</span>
+                          </button>
+                        );
+                      })}
                     </div>
 
                     {/* Quick Settings: Product & Budget */}
-                    <div className="bg-slate-50/80 rounded-3xl p-4 sm:p-5 space-y-3.5">
-                      <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                        Tetapan Kempen
-                      </span>
-
+                    <div className="bg-slate-50/80 rounded-3xl p-4 space-y-3">
                       <div>
-                        <label className="text-xs font-medium text-slate-700 block mb-1">
+                        <label className="text-[11px] font-medium text-slate-600 block mb-1">
                           Produk Katalog
                         </label>
                         <select
@@ -669,7 +612,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                             setCustomImage(null);
                             setCustomTitle(null);
                           }}
-                          className="w-full px-3 py-2 rounded-xl bg-white text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate"
+                          className="w-full px-3 py-2 rounded-xl bg-white text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-300 font-medium truncate"
                         >
                           {designs.map((d) => (
                             <option key={d.id} value={d.id}>
@@ -680,7 +623,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                       </div>
 
                       <div>
-                        <label className="text-xs font-medium text-slate-700 block mb-1">
+                        <label className="text-[11px] font-medium text-slate-600 block mb-1">
                           Belanjawan Harian (RM)
                         </label>
                         <input
@@ -689,11 +632,32 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                           step="5"
                           value={dailyBudget}
                           onChange={(e) => setDailyBudget(Number(e.target.value))}
-                          className="w-full px-3 py-2 rounded-xl bg-white text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                          className="w-full px-3 py-2 rounded-xl bg-white text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-300 font-mono"
                         />
                       </div>
                     </div>
+
+                    {/* Prompt Actions (Ubah / Jana Semula) */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setStudioStep('prompt')}
+                        className="flex-1 py-2 rounded-2xl text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-50/80 hover:bg-slate-100 transition-colors text-center"
+                      >
+                        Ubah Arahan
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleGenerateAi}
+                        disabled={isGeneratingAi}
+                        className="px-4 py-2 rounded-2xl text-xs font-medium bg-slate-900 hover:bg-black text-white transition-colors flex items-center justify-center space-x-1.5"
+                      >
+                        <RefreshCw className={`w-3 h-3 ${isGeneratingAi ? 'animate-spin' : ''}`} />
+                        <span>Jana Semula</span>
+                      </button>
+                    </div>
                   </div>
+
 
                   {/* RIGHT COLUMN (lg:col-span-8): Spacious Live Ad Preview with Angle Switcher */}
                   <div className="lg:col-span-8 space-y-4">
