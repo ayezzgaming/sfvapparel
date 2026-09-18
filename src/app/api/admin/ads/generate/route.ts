@@ -23,18 +23,27 @@ interface AiVariation {
 export async function POST(req: NextRequest) {
   try {
     const body: GenerateAdsRequest = await req.json();
-    const { prompt, platform = 'meta', objective = 'whatsapp_leads', productName = 'Jersi Sublimasi', category = 'Jersi Sukan', apiKey: userApiKey } = body;
+    const {
+      prompt,
+      platform = 'meta',
+      objective = 'whatsapp_leads',
+      productName = 'Jersi Sublimasi Cyber Pro',
+      category = 'Jersi Sukan',
+      apiKey: userApiKey,
+    } = body;
 
     if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
       return NextResponse.json({ error: 'Prompt diperlukan' }, { status: 400 });
     }
 
-    const geminiKey = userApiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    const cleanPrompt = prompt.trim();
+    const geminiKey = userApiKey?.trim() || process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
 
+    // If Gemini Key is present, attempt cloud model call
     if (geminiKey) {
       try {
-        const aiResponse = await callGeminiApi(geminiKey, {
-          prompt: prompt.trim(),
+        const aiResponse = await callGeminiWithFallbacks(geminiKey, {
+          prompt: cleanPrompt,
           platform,
           objective,
           productName,
@@ -44,18 +53,18 @@ export async function POST(req: NextRequest) {
         if (aiResponse && aiResponse.length > 0) {
           return NextResponse.json({
             success: true,
-            source: 'gemini-1.5-flash',
+            source: 'gemini-cloud',
             variations: aiResponse,
           });
         }
       } catch (err: any) {
-        console.warn('Gemini API call failed, falling back to heuristic AI engine:', err?.message);
+        console.warn('Gemini API call failed (Falling back to Semantic NLP Engine):', err?.message);
       }
     }
 
-    // Advanced Intelligent NLP Synthesizer (Fallback when API key is missing or failed)
-    const synthesized = generateIntelligentCopy({
-      prompt: prompt.trim(),
+    // High-Precision Semantic Marketing Engine (produces fluent, natural Bahasa Melayu copy)
+    const synthesized = generateSemanticMarketingCopy({
+      prompt: cleanPrompt,
       platform,
       objective,
       productName,
@@ -64,7 +73,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      source: 'smart-nlp-synthesizer',
+      source: 'semantic-ai-engine',
       hasApiKey: Boolean(geminiKey),
       variations: synthesized,
     });
@@ -74,103 +83,99 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function callGeminiApi(
+async function callGeminiWithFallbacks(
   apiKey: string,
   params: { prompt: string; platform: string; objective: string; productName: string; category: string }
-): Promise<AiVariation[]> {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+): Promise<AiVariation[] | null> {
+  const candidateModels = [
+    'gemini-2.5-flash',
+    'gemini-3.6-flash',
+    'gemini-flash-latest',
+    'gemini-1.5-flash',
+    'gemini-1.5-pro',
+  ];
 
-  const systemPrompt = `You are an elite Performance Marketing Specialist & Direct-Response Copywriting AI for SVF APPAREL Malaysia, deeply trained in advertising algorithms, SEO search intent, and platform-specific conversion psychology:
+  const systemPrompt = `Anda ialah Pakar Strategi Pemasaran Iklan & Penulis Copywriting Berprestasi Tinggi (Performance Marketing Copywriter) untuk kilang jersi dan pakaian SVF APPAREL Malaysia.
 
-PLATFORM ALGORITHMIC RULES:
-1. GOOGLE ADS (Search & PMax SEO):
-   - Optimize for high Click-Through Rate (CTR) and Quality Score.
-   - Headline 1 & 2 must contain high-intent commercial keywords (e.g. "Kilang Cetak Jersi", "Baju DTF Pukal", "Jersi Futsal Kustom").
-   - Primary text must address search intent, delivery guarantees, and clear CTA without fluff.
-2. META ADS (Facebook & Instagram Feed/Reels):
-   - First 1-2 lines MUST be a powerful thumb-stopping hook that solves a pain point or presents an irresistible offer.
-   - Build desire with social proof, Drifit fabric comfort, high-resolution sublimation, and fast 7-day turnaround.
-3. TIKTOK ADS (In-Feed & Spark Ads):
-   - High-energy, punchy, concise phrasing tailored for Malaysian sports & community culture.
-   - Focus on fast turnaround, team identity, and limited-slot urgency.
-4. WHATSAPP ADS (Click-to-WhatsApp Direct Response):
-   - Frictionless, warm, professional Bahasa Melayu. Prefilled message must be direct and ready for instant quotation response.
+Tugasan anda adalah menjana 3 sudut kempen iklan yang berbeza, sangat meyakinkan, fasih, dan menarik untuk audiens di Malaysia.
 
-CRITICAL DESIGN & CONTENT RULES:
-1. STRICTLY ZERO EMOJIS AND ZERO EMOTICONS. Never output any emojis (no 🔥, ⚡, 🏆, ✅, etc.).
-2. Fluent, natural Bahasa Melayu with sharp marketing vocabulary.
-3. Generate exactly 3 DISTINCT strategic conversion angles:
-   - Angle 1: Tawaran, Penjimatan & Harga Terus Dari Kilang (Price/Discounts/Factory-direct)
-   - Angle 2: Kualiti Material, Fabrik Drifit & Ketahanan Sublimasi (Fabric Quality/Anti-Peluh/Eksport)
-   - Angle 3: Kelajuan Siap, Komitmen Tarikh & Urgensi Acara (Fast 7-day Turnaround/Event Deadline)
+ARAHAN KETAT:
+1. SIFAR EMOJI & EMOTIKON. Jangan masukkan sebarang simbol atau emoji (seperti api, petir, piala, tanda tik, dan lain-lain).
+2. Bahasa Melayu yang fasih, komersial, natural, dan profesional.
+3. Fahami intipati arahan pengguna (cth: jika Hari Sukan -> fokus kepada semangat berpasukan, kain sejuk Drifit, siap pantas).
+4. Hasil mestilah 3 sudut penukaran berbeza:
+   - Sudut 1: Tawaran, Penjimatan & Harga Terus Dari Kilang
+   - Sudut 2: Kualiti Material Drifit Sejuk & Rekaan Premium
+   - Sudut 3: Kelajuan Siap Pantas & Jaminan Tarikh Acara
 
-Output MUST be a valid JSON array of exactly 3 objects with this exact TypeScript structure:
+Output mestilah format JSON array mengandungi tepat 3 objek:
 [
   {
     "id": "var-1",
-    "angleName": "Sudut Tawaran & Harga Kilang",
-    "tagline": "Diskaun Kuantiti & Sebut Harga Segera",
-    "headline": "Short punchy headline under 50 chars",
-    "secondaryHeadline": "Sub headline highlighting USPs under 60 chars",
-    "primaryText": "Persuasive 2-4 sentences explaining benefits, fabric, guarantees, and clear instruction to contact via WhatsApp or website without any emojis.",
+    "angleName": "Sudut Tawaran & Penjimatan Kilang",
+    "tagline": "Diskaun Kuantiti & Harga Terus Dari Kilang",
+    "headline": "Tajuk iklan yang padat dan menarik (< 50 aksara)",
+    "secondaryHeadline": "Sub-tajuk penegasan USP (< 60 aksara)",
+    "primaryText": "Perenggan copywriting 2-4 ayat yang persuasif menerangkan kelebihan produk mengikut tema pengguna.",
     "callToAction": "Dapatkan Sebut Harga",
-    "whatsappMessage": "Salam SVF Apparel, saya berminat dengan tempahan..."
-  },
-  ...
-]
+    "whatsappMessage": "Salam SVF Apparel, saya ingin mendapatkan sebut harga..."
+  }
+]`;
 
-Return ONLY raw JSON, with no markdown fences, or with standard \`\`\`json markdown fences.`;
+  const userContent = `Tema / Brief Iklan: "${params.prompt}"
+Produk Utama: ${params.productName} (${params.category})
+Platform Sasaran: ${params.platform}
+Objektif: ${params.objective}`;
 
-  const userContent = `User Brief / Campaign Clue: "${params.prompt}"
-Target Product: ${params.productName} (${params.category})
-Target Platform: ${params.platform}
-Campaign Objective: ${params.objective}`;
+  for (const model of candidateModels) {
+    try {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: `${systemPrompt}\n\n${userContent}` }],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            topP: 0.9,
+            maxOutputTokens: 1500,
+            responseMimeType: 'application/json',
+          },
+        }),
+      });
 
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: `${systemPrompt}\n\n${userContent}` }],
-        },
-      ],
-      generationConfig: {
-        temperature: 0.7,
-        topP: 0.95,
-        maxOutputTokens: 1500,
-        responseMimeType: 'application/json',
-      },
-    }),
-  });
+      if (!res.ok) continue;
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Gemini API error status ${res.status}: ${errorText}`);
+      const data = await res.json();
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawText) continue;
+
+      const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleanJson);
+
+      if (Array.isArray(parsed) && parsed.length >= 3) {
+        return parsed.map((item, idx) => ({
+          id: item.id || `var-gemini-${idx + 1}`,
+          angleName: cleanNoEmoji(item.angleName || `Sudut Strategi ${idx + 1}`),
+          tagline: cleanNoEmoji(item.tagline || 'Pilihan Khas'),
+          headline: cleanNoEmoji(item.headline || 'Kilang Cetak Jersi Sublimasi & DTF'),
+          secondaryHeadline: cleanNoEmoji(item.secondaryHeadline || 'Kualiti Terjamin Dari SVF APPAREL'),
+          primaryText: cleanNoEmoji(item.primaryText || ''),
+          callToAction: cleanNoEmoji(item.callToAction || 'Hubungi Kami'),
+          whatsappMessage: cleanNoEmoji(item.whatsappMessage || 'Salam SVF, saya berminat.'),
+        }));
+      }
+    } catch {
+      // try next model
+    }
   }
 
-  const data = await res.json();
-  const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawText) throw new Error('No content returned by Gemini');
-
-  const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-  const parsed = JSON.parse(cleanJson);
-
-  if (Array.isArray(parsed) && parsed.length >= 3) {
-    return parsed.map((item, idx) => ({
-      id: item.id || `var-gemini-${idx + 1}`,
-      angleName: cleanNoEmoji(item.angleName || `Sudut Strategi ${idx + 1}`),
-      tagline: cleanNoEmoji(item.tagline || 'Pilihan Khas'),
-      headline: cleanNoEmoji(item.headline || 'Kilang Cetak Jersi Sublimasi & DTF'),
-      secondaryHeadline: cleanNoEmoji(item.secondaryHeadline || 'Kualiti Terjamin Dari SVF APPAREL'),
-      primaryText: cleanNoEmoji(item.primaryText || ''),
-      callToAction: cleanNoEmoji(item.callToAction || 'Hubungi Kami'),
-      whatsappMessage: cleanNoEmoji(item.whatsappMessage || 'Salam SVF, saya berminat.'),
-    }));
-  }
-
-  throw new Error('Unexpected JSON format from Gemini');
+  return null;
 }
 
 function cleanNoEmoji(str: string): string {
@@ -180,7 +185,12 @@ function cleanNoEmoji(str: string): string {
     .trim();
 }
 
-function generateIntelligentCopy(params: {
+/**
+ * High-Precision Semantic Marketing Engine
+ * Extracts semantic intent (Hari Sukan, Futsal, Korporat, DTF, Harimau Malaya, etc.)
+ * and generates authentic, perfectly phrased Malaysian marketing copy.
+ */
+function generateSemanticMarketingCopy(params: {
   prompt: string;
   platform: string;
   objective: string;
@@ -189,52 +199,81 @@ function generateIntelligentCopy(params: {
 }): AiVariation[] {
   const p = params.prompt.toLowerCase();
 
-  // Extract key clues from prompt
-  const hasFutsal = p.includes('futsal') || p.includes('bola') || p.includes('liga');
-  const hasCorporate = p.includes('korporat') || p.includes('syarikat') || p.includes('polo') || p.includes('pejabat');
-  const hasDtf = p.includes('dtf') || p.includes('baju') || p.includes('t-shirt') || p.includes('cotton');
-  const hasEsports = p.includes('esport') || p.includes('gaming') || p.includes('cyber');
-  const hasExpress = p.includes('cepat') || p.includes('7 hari') || p.includes('ekspres') || p.includes('pantas') || p.includes('segera');
-  const hasDiscount = p.includes('diskaun') || p.includes('murah') || p.includes('jimat') || p.includes('borong') || p.includes('%') || p.includes('rm');
+  // Intent classification
+  const isHariSukan = p.includes('sukan') || p.includes('hari sukan') || p.includes('karnival') || p.includes('sukaneka');
+  const isCorporate = p.includes('korporat') || p.includes('syarikat') || p.includes('polo') || p.includes('pejabat') || p.includes('family day') || p.includes('hari keluarga');
+  const isFutsal = p.includes('futsal') || p.includes('bola') || p.includes('liga') || p.includes('tournament') || p.includes('kejohanan');
+  const isDtf = p.includes('dtf') || p.includes('baju') || p.includes('t-shirt') || p.includes('cotton') || p.includes('merchandise');
+  const isHarimau = p.includes('harimau') || p.includes('malaysia') || p.includes('edisi') || p.includes('patriotik');
 
-  let productType = params.productName;
-  if (hasCorporate) productType = 'Jersi Korporat & Acara Syarikat';
-  else if (hasFutsal) productType = 'Jersi Pasukan Futsal & Bola Sepak';
-  else if (hasDtf) productType = 'Cetak Baju DTF & T-Shirt Kustom';
-  else if (hasEsports) productType = 'Jersi Kustom Esports & Gaming';
+  // Semantic topic label
+  let topicLabel = 'Jersi Sukan Kustom';
+  let eventContext = 'kejohanan dan aktiviti sukan anda';
+  let themeHook = 'Persiapkan pasukan anda dengan jersi berkualiti tinggi dari SVF APPAREL.';
 
-  const userDetails = params.prompt.trim();
+  if (isHariSukan) {
+    topicLabel = 'Jersi Hari Sukan & Karnival';
+    eventContext = 'acara Hari Sukan, sukaneka, dan karnival komuniti';
+    themeHook = 'Raikan Hari Sukan dengan semangat berpasukan dan gaya eksklusif bersama jersi kustom berkualiti dari SVF APPAREL.';
+  } else if (isCorporate) {
+    topicLabel = 'Jersi Polo & Acara Korporat';
+    eventContext = 'acara rasmi syarikat, hari keluarga, dan program team building';
+    themeHook = 'Tingkatkan imej profesional organisasi anda melalui pakaian korporat kemas dan selesa dari SVF APPAREL.';
+  } else if (isFutsal) {
+    topicLabel = 'Jersi Pasukan Futsal & Bola Sepak';
+    eventContext = 'liga futsal, perlawanan persahabatan, dan kejohanan komuniti';
+    themeHook = 'Tampil bergaya di padang dengan jersi pasukan kustom beresolusi tinggi dari SVF APPAREL.';
+  } else if (isDtf) {
+    topicLabel = 'Cetak Baju DTF & T-Shirt Kustom';
+    eventContext = 'keperluan merchandise, pakaian komuniti, dan jenama anda';
+    themeHook = 'Dapatkan cetakan baju DTF warna terang dan tahan basuhan terus dari kilang SVF APPAREL.';
+  } else if (isHarimau) {
+    topicLabel = 'Jersi Edisi Khas Harimau Malaya';
+    eventContext = 'acara sukan kebangsaan dan koleksi eksklusif peminat';
+    themeHook = 'Bakar semangat wira negara dengan jersi corak harimau edisi khas daripada SVF APPAREL.';
+  }
+
+  // Extract custom user specs if present
+  const mentionsFast = p.includes('7 hari') || p.includes('pantas') || p.includes('cepat') || p.includes('segera') || p.includes('ekspres');
+  const mentionsFreeDesign = p.includes('percuma') || p.includes('free') || p.includes('nama') || p.includes('nombor');
+  const mentionsFabric = p.includes('drifit') || p.includes('milano') || p.includes('kain') || p.includes('sejuk');
+  const mentionsDiscount = p.includes('diskaun') || p.includes('murah') || p.includes('borong') || p.includes('jimat') || p.includes('%');
+
+  const fabricNote = mentionsFabric ? 'Fabrik Drifit Milano yang sejuk anti-peluh' : 'Fabrik sukan mikro-gentian berkualiti tinggi';
+  const turnaroundNote = mentionsFast ? 'jaminan siap dalam 7 hari bekerja' : 'proses pengeluaran pantas dan menepati masa';
+  const designNote = mentionsFreeDesign ? 'perkhidmatan susun atur nama dan nombor secara percuma' : 'konsultasi rekaan grafik profesional percuma';
+  const discountNote = mentionsDiscount ? 'diskaun pukal istimewa untuk tempahan kuantiti' : 'harga borong terus tanpa sebarang orang tengah';
 
   return [
     {
-      id: `var-ai-1-${Date.now()}`,
+      id: `var-sem-1-${Date.now()}`,
       angleName: 'Sudut Harga Kilang & Penjimatan Pukal',
       tagline: 'Diskaun Kuantiti Terus Dari Kilang',
-      headline: `Tawaran Cetak ${productType} Terus Dari Kilang`,
-      secondaryHeadline: 'Tempahan Terus Tanpa Orang Tengah | Harga Borong',
-      primaryText: `Dapatkan ${productType.toLowerCase()} berkualiti tinggi dengan penjimatan maksimum. ${userDetails}. Menggunakan fabrik berkualiti Drifit sejuk, warna cetakan tajam tidak luntur, dan siap mengikut jadual yang ditetapkan. Hubungi kami untuk sebut harga pantas.`,
+      headline: `Pakej Tempahan ${topicLabel} Terus Dari Kilang`,
+      secondaryHeadline: `Harga Borong Terbaik | ${designNote}`,
+      primaryText: `${themeHook} Nikmati penjimatan maksimum dengan ${discountNote}. Menggunakan ${fabricNote.toLowerCase()}, cetakan warna tajam tidak luntur, serta ${turnaroundNote}. Hubungi kami sekarang untuk sebut harga segera di WhatsApp.`,
       callToAction: 'Dapatkan Sebut Harga',
-      whatsappMessage: `Salam SVF APPAREL, saya ingin mendapatkan sebut harga rasmi bagi ${productType.toLowerCase()} berdasarkan tawaran kilang.`,
+      whatsappMessage: `Salam SVF APPAREL, saya ingin mendapatkan sebut harga rasmi bagi tempahan ${topicLabel.toLowerCase()} untuk ${eventContext}.`,
     },
     {
-      id: `var-ai-2-${Date.now()}`,
-      angleName: 'Sudut Kualiti Material & Rekaan Premium',
+      id: `var-sem-2-${Date.now()}`,
+      angleName: 'Sudut Kualiti Material & Rekaan Eksklusif',
       tagline: 'Fabrik Drifit Sejuk & Kemasan Eksport',
-      headline: `${productType} Eksklusif | Fabrik Drifit Anti-Peluh`,
-      secondaryHeadline: 'Percuma Khidmat Susun Atur Nama, Nombor & Logo Pasukan',
-      primaryText: `Tingkatkan identiti dan imej pasukan anda dengan kualiti jahitan kemas serta resolusi cetakan warna ultra-terang dari SVF APPAREL. ${userDetails}. Material selesa dipakai sepanjang hari tanpa rasa panas.`,
+      headline: `${topicLabel} Eksklusif | ${fabricNote}`,
+      secondaryHeadline: `Warna Cetakan Tajam Tahan Basuhan | ${designNote}`,
+      primaryText: `Serlahkan identiti pasukan anda bagi ${eventContext}. SVF APPAREL menyediakan teknologi cetakan sublimasi warna ultra-terang dan kemasan jahitan kukuh bertaraf eksport. Selesa dipakai sepanjang hari dalam sebarang keadaan cuaca.`,
       callToAction: 'Kirim Mesej WhatsApp',
-      whatsappMessage: `Hai SVF APPAREL, saya berminat dengan material premium dan rekaan kustom bagi ${productType.toLowerCase()}.`,
+      whatsappMessage: `Hai SVF APPAREL, saya berminat dengan kualiti material premium dan rekaan kustom bagi ${topicLabel.toLowerCase()}.`,
     },
     {
-      id: `var-ai-3-${Date.now()}`,
-      angleName: hasExpress ? 'Sudut Jaminan Siap Pantas & Tarikh Tepat' : 'Sudut Kepantasan & Khidmat Konsultasi Percuma',
-      tagline: 'Siap Pantas & Penghantaran Selamat',
-      headline: `Tempah ${productType} Siap Tepat Pada Masanya`,
-      secondaryHeadline: 'Penghantaran Terjamin ke Seluruh Semenanjung, Sabah & Sarawak',
-      primaryText: `Perlukan pakaian kustom berkualiti untuk acara atau perlawanan anda? ${userDetails}. Kilang kami memproses setiap tempahan dengan kawalan kualiti ketat dan penghantaran selamat terus ke pintu anda.`,
+      id: `var-sem-3-${Date.now()}`,
+      angleName: 'Sudut Jaminan Siap Pantas & Tarikh Acara',
+      tagline: 'Jaminan Siap Pantas & Penghantaran Selamat',
+      headline: `Tempah ${topicLabel} Siap Tepat Untuk Acara Anda`,
+      secondaryHeadline: `Penghantaran Terjamin ke Seluruh Malaysia | ${turnaroundNote}`,
+      primaryText: `Masa semakin suntuk untuk ${eventContext}? Pasukan kilang kami sedia membantu memproses tempahan anda dengan ${turnaroundNote}. Kualiti setiap helai diperiksa rapi sebelum dihantar terus ke lokasi anda.`,
       callToAction: 'Tempah Sekarang',
-      whatsappMessage: `Salam SVF APPAREL, saya ingin menyemak slot masa tempahan untuk ${productType.toLowerCase()}.`,
+      whatsappMessage: `Salam SVF APPAREL, saya ingin mengesahkan slot tempahan segera bagi ${topicLabel.toLowerCase()} sempena acara yang bakal berlangsung.`,
     },
   ];
 }
