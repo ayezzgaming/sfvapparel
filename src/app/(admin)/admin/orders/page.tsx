@@ -16,7 +16,9 @@ import {
   ShieldAlert,
   ChevronDown,
   Printer,
-  Scissors
+  Scissors,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 
 const STATUS_LIST: { status: OrderStatus; label: string; color: string }[] = [
@@ -34,6 +36,7 @@ const STATUS_LIST: { status: OrderStatus; label: string; color: string }[] = [
 export default function AdminOrdersPage() {
   const { orders, updateOrderStatus } = useAppStore();
 
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [filterType, setFilterType] = useState<'all' | 'sublimation' | 'dtf'>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -114,8 +117,8 @@ export default function AdminOrdersPage() {
           />
         </div>
 
-        {/* Print Type Filter */}
-        <div className="flex items-center space-x-2">
+        {/* Print Type Filter & Switcher */}
+        <div className="flex flex-wrap items-center gap-2">
           <div className="bg-slate-100 p-1 rounded-xl border border-slate-200 flex items-center">
             <button
               onClick={() => setFilterType('all')}
@@ -162,132 +165,240 @@ export default function AdminOrdersPage() {
               </option>
             ))}
           </select>
+
+          {/* List vs Grid Switcher */}
+          <div className="bg-slate-100 p-1 rounded-xl border border-slate-200 flex items-center">
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                viewMode === 'list'
+                  ? 'bg-white text-[#0052FF] shadow-xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+              title="Paparan Jadual / Senarai"
+            >
+              <List className="w-4 h-4" />
+              <span className="hidden sm:inline text-[11px]">Jadual</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                viewMode === 'grid'
+                  ? 'bg-white text-[#0052FF] shadow-xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+              title="Paparan Grid Kad"
+            >
+              <LayoutGrid className="w-4 h-4" />
+              <span className="hidden sm:inline text-[11px]">Grid</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Orders Data Table */}
-      <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
-              <tr>
-                <th className="p-3.5">No Pesanan</th>
-                <th className="p-3.5">Rekaan & Pratonton</th>
-                <th className="p-3.5">Pelanggan & Telefon</th>
-                <th className="p-3.5">Teknik & Spesifikasi</th>
-                <th className="p-3.5">Kuantiti & Saiz</th>
-                <th className="p-3.5">Status</th>
-                <th className="p-3.5 text-right">Jumlah Sebut Harga</th>
-                <th className="p-3.5 text-center">Tindakan</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-medium">
-              {filteredOrders.length > 0 ? (
-                filteredOrders.map((ord) => {
-                  const statusObj = STATUS_LIST.find((s) => s.status === ord.status) || STATUS_LIST[0];
-
-                  return (
-                    <tr key={ord.id} className="hover:bg-slate-50 transition-colors">
-                      {/* Order Number */}
-                      <td className="p-3.5 font-mono font-bold text-[#0052FF] whitespace-nowrap">
-                        {ord.order_number}
-                        <span className="text-[10px] text-slate-400 block font-normal">
-                          {new Date(ord.created_at).toLocaleDateString()}
-                        </span>
-                      </td>
-
-                      {/* Design & Preview Thumbnail */}
-                      <td className="p-3.5">
-                        <div className="flex items-center space-x-2.5">
-                          {ord.mockup_url && (
-                            <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={ord.mockup_url}
-                                alt={ord.design_title}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <div>
-                            <span className="font-bold text-slate-900 block line-clamp-1 max-w-[160px]">
-                              {ord.design_title}
-                            </span>
-                            <span className="text-[10px] text-slate-500 font-semibold">
-                              {ord.print_type.toUpperCase()}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Customer */}
-                      <td className="p-3.5">
-                        <span className="font-bold text-slate-900 block">{ord.customer_name}</span>
-                        <span className="text-[10px] text-slate-500 font-mono block">{ord.customer_phone}</span>
-                      </td>
-
-                      {/* Technique & Specs */}
-                      <td className="p-3.5">
-                        <span className="text-slate-800 block font-medium">
-                          {ord.fabric_name || ord.dtf_dimension_name || 'Standard'}
-                        </span>
-                        {ord.cut_name && (
-                          <span className="text-[10px] text-slate-500 block">Kolar: {ord.cut_name}</span>
-                        )}
-                      </td>
-
-                      {/* Qty & Sizes */}
-                      <td className="p-3.5 font-mono">
-                        <span className="font-bold text-slate-900 block">{ord.total_quantity} helai</span>
-                        <div className="text-[10px] text-slate-500 flex flex-wrap gap-1 max-w-[120px]">
-                          {Object.entries(ord.sizing_breakdown || {}).map(([s, q]) => {
-                            if (Number(q) <= 0) return null;
-                            return (
-                              <span key={s} className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">
-                                {s}:{q}
-                              </span>
-                            );
-                          })}
-                        </div>
-                      </td>
-
-                      {/* Status Badge */}
-                      <td className="p-3.5 whitespace-nowrap">
-                        <span
-                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${statusObj.color}`}
-                        >
-                          {statusObj.label}
-                        </span>
-                      </td>
-
-                      {/* Total */}
-                      <td className="p-3.5 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
-                        {formatCurrency(ord.total_amount)}
-                      </td>
-
-                      {/* Action */}
-                      <td className="p-3.5 text-center">
-                        <button
-                          onClick={() => handleOpenEdit(ord)}
-                          className="px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-[#0052FF] text-[#0052FF] hover:text-white font-semibold text-xs transition-all border border-blue-200"
-                        >
-                          Semak & Status
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
+      {/* Main Content Area: List Table vs Grid Cards */}
+      {viewMode === 'list' ? (
+        <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left">
+              <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-slate-400">
-                    Tiada pesanan sepadan dengan kriteria carian.
-                  </td>
+                  <th className="p-3.5">No Pesanan</th>
+                  <th className="p-3.5">Rekaan & Pratonton</th>
+                  <th className="p-3.5">Pelanggan & Telefon</th>
+                  <th className="p-3.5">Teknik & Spesifikasi</th>
+                  <th className="p-3.5">Kuantiti & Saiz</th>
+                  <th className="p-3.5">Status</th>
+                  <th className="p-3.5 text-right">Jumlah Sebut Harga</th>
+                  <th className="p-3.5 text-center">Tindakan</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium">
+                {filteredOrders.length > 0 ? (
+                  filteredOrders.map((ord) => {
+                    const statusObj = STATUS_LIST.find((s) => s.status === ord.status) || STATUS_LIST[0];
+
+                    return (
+                      <tr key={ord.id} className="hover:bg-slate-50 transition-colors">
+                        {/* Order Number */}
+                        <td className="p-3.5 font-mono font-bold text-[#0052FF] whitespace-nowrap">
+                          {ord.order_number}
+                          <span className="text-[10px] text-slate-400 block font-normal">
+                            {new Date(ord.created_at).toLocaleDateString()}
+                          </span>
+                        </td>
+
+                        {/* Design & Preview Thumbnail */}
+                        <td className="p-3.5">
+                          <div className="flex items-center space-x-2.5">
+                            {ord.mockup_url && (
+                              <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={ord.mockup_url}
+                                  alt={ord.design_title}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+                            <div>
+                              <span className="font-bold text-slate-900 block line-clamp-1 max-w-[160px]">
+                                {ord.design_title}
+                              </span>
+                              <span className="text-[10px] text-slate-500 font-semibold">
+                                {ord.print_type.toUpperCase()}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Customer */}
+                        <td className="p-3.5">
+                          <span className="font-bold text-slate-900 block">{ord.customer_name}</span>
+                          <span className="text-[10px] text-slate-500 font-mono block">{ord.customer_phone}</span>
+                        </td>
+
+                        {/* Technique & Specs */}
+                        <td className="p-3.5">
+                          <span className="text-slate-800 block font-medium">
+                            {ord.fabric_name || ord.dtf_dimension_name || 'Standard'}
+                          </span>
+                          {ord.cut_name && (
+                            <span className="text-[10px] text-slate-500 block">Kolar: {ord.cut_name}</span>
+                          )}
+                        </td>
+
+                        {/* Qty & Sizes */}
+                        <td className="p-3.5 font-mono">
+                          <span className="font-bold text-slate-900 block">{ord.total_quantity} helai</span>
+                          <div className="text-[10px] text-slate-500 flex flex-wrap gap-1 max-w-[120px]">
+                            {Object.entries(ord.sizing_breakdown || {}).map(([s, q]) => {
+                              if (Number(q) <= 0) return null;
+                              return (
+                                <span key={s} className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">
+                                  {s}:{q}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </td>
+
+                        {/* Status Badge */}
+                        <td className="p-3.5 whitespace-nowrap">
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${statusObj.color}`}
+                          >
+                            {statusObj.label}
+                          </span>
+                        </td>
+
+                        {/* Total */}
+                        <td className="p-3.5 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
+                          {formatCurrency(ord.total_amount)}
+                        </td>
+
+                        {/* Action */}
+                        <td className="p-3.5 text-center">
+                          <button
+                            onClick={() => handleOpenEdit(ord)}
+                            className="px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-[#0052FF] text-[#0052FF] hover:text-white font-semibold text-xs transition-all border border-blue-200"
+                          >
+                            Semak & Status
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="p-8 text-center text-slate-400">
+                      Tiada pesanan sepadan dengan kriteria carian.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      ) : (
+        /* Grid Cards View */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredOrders.length > 0 ? (
+            filteredOrders.map((ord) => {
+              const statusObj = STATUS_LIST.find((s) => s.status === ord.status) || STATUS_LIST[0];
+
+              return (
+                <div
+                  key={ord.id}
+                  className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-3"
+                >
+                  <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div>
+                      <span className="text-xs font-mono font-bold text-[#0052FF] block">
+                        {ord.order_number}
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        {new Date(ord.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${statusObj.color}`}>
+                      {statusObj.label}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    {ord.mockup_url && (
+                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={ord.mockup_url}
+                          alt={ord.design_title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-bold text-sm text-slate-900 truncate">{ord.design_title}</h4>
+                      <p className="text-xs text-slate-600 font-semibold truncate">{ord.customer_name}</p>
+                      <p className="text-[11px] text-slate-400 font-mono truncate">{ord.customer_phone}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1">
+                    <div className="flex justify-between text-slate-600">
+                      <span>Kuantiti:</span>
+                      <span className="font-bold text-slate-900">{ord.total_quantity} helai</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600">
+                      <span>Spesifikasi:</span>
+                      <span className="font-medium text-slate-800">{ord.fabric_name || ord.dtf_dimension_name || 'Standard'}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600 pt-1 border-t border-slate-200/60">
+                      <span>Jumlah:</span>
+                      <span className="font-bold font-mono text-[#0052FF]">{formatCurrency(ord.total_amount)}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-1">
+                    <button
+                      onClick={() => handleOpenEdit(ord)}
+                      className="w-full py-2 rounded-xl bg-blue-50 hover:bg-[#0052FF] text-[#0052FF] hover:text-white font-bold text-xs transition-all border border-blue-200"
+                    >
+                      Semak & Kemaskini Status
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="col-span-full bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400">
+              Tiada pesanan sepadan dengan kriteria carian.
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ===================== STATUS UPDATE MODAL ===================== */}
       {activeOrder && (
