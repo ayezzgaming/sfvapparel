@@ -826,3 +826,46 @@ export const INITIAL_CMS_POLICIES = {
   },
 };
 
+export const THEME_PRESETS = {
+  hybrid: {
+    preset: 'hybrid' as const,
+    header_bg: '#0052FF',
+    header_style: 'solid_blue' as const,
+    header_logo_mode: 'inverted_white' as const,
+    bottom_nav_bg: 'rgba(255, 255, 255, 0.95)',
+    bottom_nav_style: 'glass_light' as const,
+    bottom_nav_active_color: '#0052FF',
+    bottom_nav_inactive_color: '#94A3B8',
+    primary_accent_color: '#0052FF',
+    whatsapp_fab_bg: '#25D366',
+  },
+  clean_white: {
+    preset: 'clean_white' as const,
+    header_bg: '#FFFFFF',
+    header_style: 'frosted_white' as const,
+    header_logo_mode: 'original_blue' as const,
+    bottom_nav_bg: 'rgba(255, 255, 255, 0.95)',
+    bottom_nav_style: 'glass_light' as const,
+    bottom_nav_active_color: '#0052FF',
+    bottom_nav_inactive_color: '#94A3B8',
+    primary_accent_color: '#0052FF',
+    whatsapp_fab_bg: '#25D366',
+  },
+  full_blue: {
+    preset: 'full_blue' as const,
+    header_bg: '#0052FF',
+    header_style: 'solid_blue' as const,
+    header_logo_mode: 'inverted_white' as const,
+    bottom_nav_bg: '#0052FF',
+    bottom_nav_style: 'solid_blue' as const,
+    bottom_nav_active_color: '#FFFFFF',
+    bottom_nav_inactive_color: '#93C5FD',
+    primary_accent_color: '#0052FF',
+    whatsapp_fab_bg: '#25D366',
+  },
+};
+
+export const INITIAL_CMS_THEME_SETTINGS = THEME_PRESETS.hybrid;
+
+
+

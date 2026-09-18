@@ -253,3 +253,20 @@ export interface CmsPolicy {
   sections: CmsPolicySection[];
 }
 
+export type CmsThemePresetKey = 'hybrid' | 'clean_white' | 'full_blue' | 'custom';
+
+export interface CmsThemeSettings {
+  preset: CmsThemePresetKey;
+  header_bg: string; // e.g. '#0052FF' or '#FFFFFF'
+  header_style: 'solid_blue' | 'frosted_white' | 'custom';
+  header_logo_mode: 'inverted_white' | 'original_blue';
+  bottom_nav_bg: string; // e.g. 'rgba(255, 255, 255, 0.95)' or '#0052FF'
+  bottom_nav_style: 'glass_light' | 'solid_blue' | 'custom';
+  bottom_nav_active_color: string; // e.g. '#0052FF' or '#FFFFFF'
+  bottom_nav_inactive_color: string; // e.g. '#94A3B8' or '#93C5FD'
+  primary_accent_color: string; // e.g. '#0052FF'
+  whatsapp_fab_bg: string; // e.g. '#25D366'
+}
+
+
+

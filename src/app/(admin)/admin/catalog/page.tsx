@@ -58,7 +58,7 @@ export default function AdminCatalogPage() {
     setMockupFrontUrl('https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=80');
     setMockupBackUrl('');
     setDescription('');
-    setTagsInput('custom, jersey');
+    setTagsInput('kustom, jersi');
     setIsFeatured(false);
     setIsModalOpen(true);
   };
@@ -109,7 +109,6 @@ export default function AdminCatalogPage() {
         description,
         tags,
         is_featured: isFeatured,
-        is_active: true,
       });
     }
 
@@ -117,7 +116,7 @@ export default function AdminCatalogPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('Delete this design mockup from the catalog?')) {
+    if (confirm('Padam mockup rekaan ini daripada katalog?')) {
       deleteDesign(id);
     }
   };
@@ -127,63 +126,63 @@ export default function AdminCatalogPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">
-            Catalog & Mockup Assets
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            Katalog & Aset Mockup
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Manage product templates (prices are computed dynamically by material & cut rules).
+          <p className="text-xs text-slate-500 mt-1">
+            Urus templat reka bentuk produk (harga dikira secara dinamik mengikut formula fabrik & potongan).
           </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-blue-600/20 flex items-center space-x-1.5"
+          className="px-4 py-2.5 rounded-xl bg-[#0052FF] hover:bg-blue-600 text-white text-xs font-bold transition-all shadow-xs flex items-center space-x-1.5"
         >
           <Plus className="w-4 h-4" />
-          <span>Add New Design Mockup</span>
+          <span>Tambah Mockup Rekaan</span>
         </button>
       </div>
 
       {/* Toolbar */}
-      <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search mockups by title, tag, or category..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Cari mockup mengikut tajuk, tag, atau kategori..."
+            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30 focus:border-[#0052FF]"
           />
         </div>
 
-        <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center">
+        <div className="bg-slate-100 p-1 rounded-xl border border-slate-200 flex items-center">
           <button
             onClick={() => setFilterType('all')}
             className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
               filterType === 'all'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#0052FF] text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            All ({designs.length})
+            Semua ({designs.length})
           </button>
           <button
             onClick={() => setFilterType('sublimation')}
             className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
               filterType === 'sublimation'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#0052FF] text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Sublimation
+            Sublimasi
           </button>
           <button
             onClick={() => setFilterType('dtf')}
             className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
               filterType === 'dtf'
-                ? 'bg-orange-600 text-white shadow-xs'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-amber-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             DTF
@@ -196,10 +195,10 @@ export default function AdminCatalogPage() {
         {filteredDesigns.map((item) => (
           <div
             key={item.id}
-            className="group bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-lg hover:border-slate-700 transition-all flex flex-col justify-between"
+            className="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between"
           >
             {/* Image Preview */}
-            <div className="relative aspect-square w-full bg-slate-950 overflow-hidden">
+            <div className="relative aspect-square w-full bg-slate-100 overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={item.thumbnail_url}
@@ -211,10 +210,10 @@ export default function AdminCatalogPage() {
                 <span
                   className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider backdrop-blur-md ${
                     item.print_type === 'sublimation'
-                      ? 'bg-blue-600/90 text-white'
+                      ? 'bg-[#0052FF] text-white'
                       : item.print_type === 'dtf'
-                      ? 'bg-orange-600/90 text-white'
-                      : 'bg-emerald-600/90 text-white'
+                      ? 'bg-amber-600 text-white'
+                      : 'bg-emerald-600 text-white'
                   }`}
                 >
                   {item.print_type}
@@ -231,13 +230,13 @@ export default function AdminCatalogPage() {
             </div>
 
             {/* Info */}
-            <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+            <div className="p-4 space-y-2 flex-1 flex flex-col justify-between bg-white">
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-500 block">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">
                   {item.category}
                 </span>
-                <h3 className="text-sm font-bold text-white line-clamp-1">{item.title}</h3>
-                <p className="text-xs text-slate-400 line-clamp-2 mt-1">{item.description}</p>
+                <h3 className="text-sm font-bold text-slate-900 line-clamp-1">{item.title}</h3>
+                <p className="text-xs text-slate-500 line-clamp-2 mt-1">{item.description}</p>
               </div>
 
               {/* Tags */}
@@ -245,7 +244,7 @@ export default function AdminCatalogPage() {
                 {(item.tags || []).map((t, idx) => (
                   <span
                     key={idx}
-                    className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-slate-800 text-slate-400"
+                    className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600"
                   >
                     #{t}
                   </span>
@@ -253,21 +252,21 @@ export default function AdminCatalogPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                 <button
                   onClick={() => handleOpenEdit(item)}
-                  className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors flex items-center space-x-1"
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors flex items-center space-x-1"
                 >
-                  <Edit className="w-3.5 h-3.5 text-blue-400" />
+                  <Edit className="w-3.5 h-3.5 text-[#0052FF]" />
                   <span>Edit</span>
                 </button>
 
                 <button
                   onClick={() => handleDelete(item.id)}
-                  className="px-2.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold transition-colors flex items-center space-x-1"
+                  className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold transition-colors flex items-center space-x-1"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                  <span>Delete</span>
+                  <span>Padam</span>
                 </button>
               </div>
             </div>
@@ -277,44 +276,44 @@ export default function AdminCatalogPage() {
 
       {/* ===================== ADD / EDIT DESIGN MODAL ===================== */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white">
-                {editingDesign ? 'Edit Design Asset' : 'Add New Design Mockup'}
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-bold text-slate-900">
+                {editingDesign ? 'Kemaskini Mockup Rekaan' : 'Tambah Mockup Rekaan Baharu'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-xs text-slate-400 hover:text-white"
+                className="text-xs text-slate-400 hover:text-slate-600"
               >
-                Cancel
+                Batal
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3.5">
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">
-                  Design Title *
+                <label className="text-xs font-bold text-slate-800 block mb-1">
+                  Tajuk Rekaan *
                 </label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Phoenix Rising Sublimation Jersey"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="cth: Jersi Sublimasi Harimau Malaya 2026"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
-                    Garment Category
+                  <label className="text-xs font-bold text-slate-800 block mb-1">
+                    Kategori Pakaian
                   </label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30"
                   >
                     {CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>
@@ -325,24 +324,24 @@ export default function AdminCatalogPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
-                    Print Technology
+                  <label className="text-xs font-bold text-slate-800 block mb-1">
+                    Teknologi Cetakan
                   </label>
                   <select
                     value={printType}
                     onChange={(e) => setPrintType(e.target.value as PrintType)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30"
                   >
-                    <option value="sublimation">Sublimation Dye</option>
+                    <option value="sublimation">Sublimasi Penuh</option>
                     <option value="dtf">DTF Direct Transfer</option>
-                    <option value="both">Both Supported</option>
+                    <option value="both">Menyokong Kedua-duanya</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">
-                  Thumbnail Image URL *
+                <label className="text-xs font-bold text-slate-800 block mb-1">
+                  URL Thumbnail Gambar *
                 </label>
                 <input
                   type="url"
@@ -350,61 +349,61 @@ export default function AdminCatalogPage() {
                   value={thumbnailUrl}
                   onChange={(e) => setThumbnailUrl(e.target.value)}
                   placeholder="https://images.unsplash.com/photo-..."
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-[11px]"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30 font-mono text-[11px]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
-                    Front Mockup URL
+                  <label className="text-xs font-bold text-slate-800 block mb-1">
+                    URL Mockup Hadapan
                   </label>
                   <input
                     type="url"
                     value={mockupFrontUrl}
                     onChange={(e) => setMockupFrontUrl(e.target.value)}
-                    placeholder="Same as thumbnail or custom"
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-[11px]"
+                    placeholder="Sama dengan thumbnail atau kustom"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30 font-mono text-[11px]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
-                    Back Mockup URL (Optional)
+                  <label className="text-xs font-bold text-slate-800 block mb-1">
+                    URL Mockup Belakang (Pilihan)
                   </label>
                   <input
                     type="url"
                     value={mockupBackUrl}
                     onChange={(e) => setMockupBackUrl(e.target.value)}
                     placeholder="https://..."
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-[11px]"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30 font-mono text-[11px]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">
-                  Description
+                <label className="text-xs font-bold text-slate-800 block mb-1">
+                  Keterangan & Perincian
                 </label>
                 <textarea
                   rows={2}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Apparel pattern details, weave suitability..."
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Perincian corak jersi, kesesuaian acara, jenis kolar..."
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">
-                  Tags (Comma separated)
+                <label className="text-xs font-bold text-slate-800 block mb-1">
+                  Tag Kata Kunci (Dipisahkan dengan koma)
                 </label>
                 <input
                   type="text"
                   value={tagsInput}
                   onChange={(e) => setTagsInput(e.target.value)}
-                  placeholder="football, esports, neon, gradient"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="bolasepak, korporat, esport, gradient"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30"
                 />
               </div>
 
@@ -414,19 +413,19 @@ export default function AdminCatalogPage() {
                   id="featuredCheck"
                   checked={isFeatured}
                   onChange={(e) => setIsFeatured(e.target.checked)}
-                  className="w-4 h-4 rounded text-blue-600 bg-slate-950 border-slate-800 focus:ring-blue-500"
+                  className="w-4 h-4 rounded text-[#0052FF] bg-slate-50 border-slate-300 focus:ring-[#0052FF]"
                 />
-                <label htmlFor="featuredCheck" className="text-xs font-semibold text-slate-300">
-                  Feature in Home Promo Carousel
+                <label htmlFor="featuredCheck" className="text-xs font-semibold text-slate-700">
+                  Paparkan dalam Carousel Promo Utama (Featured)
                 </label>
               </div>
 
               <div className="pt-3">
                 <button
                   type="submit"
-                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/20 transition-all"
+                  className="w-full py-2.5 rounded-xl bg-[#0052FF] hover:bg-blue-600 text-white font-bold text-xs shadow-xs transition-all"
                 >
-                  {editingDesign ? 'Save Changes' : 'Create Design Mockup'}
+                  {editingDesign ? 'Simpan Perubahan Mockup' : 'Cipta Mockup Rekaan'}
                 </button>
               </div>
             </form>

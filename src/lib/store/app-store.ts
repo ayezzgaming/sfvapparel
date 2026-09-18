@@ -18,6 +18,8 @@ import {
   CmsSloganQuote,
   CmsCompanySettings,
   CmsPolicy,
+  CmsThemeSettings,
+  CmsThemePresetKey,
 } from '@/types/database';
 import {
   INITIAL_APPAREL_CUTS,
@@ -35,6 +37,8 @@ import {
   INITIAL_CMS_SLOGAN_QUOTE,
   INITIAL_CMS_COMPANY_SETTINGS,
   INITIAL_CMS_POLICIES,
+  INITIAL_CMS_THEME_SETTINGS,
+  THEME_PRESETS,
 } from './seed-data';
 
 const STORAGE_KEYS = {
@@ -54,6 +58,7 @@ const STORAGE_KEYS = {
   SLOGAN: 'svf_cms_slogan_v3',
   COMPANY: 'svf_cms_company_v3',
   POLICIES: 'svf_cms_policies_v3',
+  THEME: 'svf_cms_theme_v3',
 };
 
 function getLocalData<T>(key: string, fallback: T): T {
@@ -92,6 +97,7 @@ interface AppStoreState {
   sloganQuote: CmsSloganQuote;
   companySettings: CmsCompanySettings;
   policies: Record<'privacy' | 'terms' | 'warranty' | 'shipping', CmsPolicy>;
+  themeSettings: CmsThemeSettings;
   isInitialized: boolean;
 }
 
@@ -112,6 +118,7 @@ let storeState: AppStoreState = {
   sloganQuote: INITIAL_CMS_SLOGAN_QUOTE,
   companySettings: INITIAL_CMS_COMPANY_SETTINGS,
   policies: INITIAL_CMS_POLICIES,
+  themeSettings: INITIAL_CMS_THEME_SETTINGS,
   isInitialized: false,
 };
 
@@ -140,6 +147,7 @@ function initStoreIfNeeded() {
     sloganQuote: getLocalData(STORAGE_KEYS.SLOGAN, INITIAL_CMS_SLOGAN_QUOTE),
     companySettings: getLocalData(STORAGE_KEYS.COMPANY, INITIAL_CMS_COMPANY_SETTINGS),
     policies: getLocalData(STORAGE_KEYS.POLICIES, INITIAL_CMS_POLICIES),
+    themeSettings: getLocalData(STORAGE_KEYS.THEME, INITIAL_CMS_THEME_SETTINGS),
     isInitialized: true,
   };
   notify();
@@ -165,6 +173,7 @@ if (typeof window !== 'undefined') {
       if (e.key === STORAGE_KEYS.SLOGAN) storeState.sloganQuote = JSON.parse(e.newValue);
       if (e.key === STORAGE_KEYS.COMPANY) storeState.companySettings = JSON.parse(e.newValue);
       if (e.key === STORAGE_KEYS.POLICIES) storeState.policies = JSON.parse(e.newValue);
+      if (e.key === STORAGE_KEYS.THEME) storeState.themeSettings = JSON.parse(e.newValue);
       notify();
     } catch {
       // Ignore parse error
@@ -200,6 +209,7 @@ const serverSnapshot: AppStoreState = {
   sloganQuote: INITIAL_CMS_SLOGAN_QUOTE,
   companySettings: INITIAL_CMS_COMPANY_SETTINGS,
   policies: INITIAL_CMS_POLICIES,
+  themeSettings: INITIAL_CMS_THEME_SETTINGS,
   isInitialized: false,
 };
 
@@ -503,6 +513,32 @@ export function useAppStore() {
     notify();
   }, []);
 
+  // Theme Settings
+  const updateThemeSettings = useCallback((updates: Partial<CmsThemeSettings>) => {
+    initStoreIfNeeded();
+    const next: CmsThemeSettings = {
+      ...storeState.themeSettings,
+      ...updates,
+    };
+    storeState = { ...storeState, themeSettings: next };
+    setLocalData(STORAGE_KEYS.THEME, next);
+    notify();
+  }, []);
+
+  const applyThemePreset = useCallback((presetKey: 'hybrid' | 'clean_white' | 'full_blue' | 'custom') => {
+    initStoreIfNeeded();
+    if (presetKey === 'custom') return;
+    const preset = THEME_PRESETS[presetKey];
+    if (!preset) return;
+    const next: CmsThemeSettings = {
+      ...preset,
+      preset: presetKey,
+    };
+    storeState = { ...storeState, themeSettings: next };
+    setLocalData(STORAGE_KEYS.THEME, next);
+    notify();
+  }, []);
+
   // Reset to seed data
   const resetToSeedData = useCallback(() => {
     storeState = {
@@ -522,6 +558,7 @@ export function useAppStore() {
       sloganQuote: INITIAL_CMS_SLOGAN_QUOTE,
       companySettings: INITIAL_CMS_COMPANY_SETTINGS,
       policies: INITIAL_CMS_POLICIES,
+      themeSettings: INITIAL_CMS_THEME_SETTINGS,
       isInitialized: true,
     };
     setLocalData(STORAGE_KEYS.DESIGNS, INITIAL_DESIGNS);
@@ -540,6 +577,7 @@ export function useAppStore() {
     setLocalData(STORAGE_KEYS.SLOGAN, INITIAL_CMS_SLOGAN_QUOTE);
     setLocalData(STORAGE_KEYS.COMPANY, INITIAL_CMS_COMPANY_SETTINGS);
     setLocalData(STORAGE_KEYS.POLICIES, INITIAL_CMS_POLICIES);
+    setLocalData(STORAGE_KEYS.THEME, INITIAL_CMS_THEME_SETTINGS);
     notify();
   }, []);
 
@@ -561,6 +599,7 @@ export function useAppStore() {
     sloganQuote: state.sloganQuote,
     companySettings: state.companySettings,
     policies: state.policies,
+    themeSettings: state.themeSettings,
     toggleFavorite,
     isFavorite,
     addOrder,
@@ -591,7 +630,10 @@ export function useAppStore() {
     updateSloganQuote,
     updateCompanySettings,
     updatePolicy,
+    updateThemeSettings,
+    applyThemePreset,
     resetToSeedData,
   };
 }
+
 
