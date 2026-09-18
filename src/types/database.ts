@@ -238,6 +238,8 @@ export interface CmsCompanySettings {
   facebook_url: string;
   instagram_url: string;
   tiktok_url: string;
+  developer_name?: string; // e.g. 'AYEZZ Studio'
+  developer_url?: string;
 }
 
 export interface CmsPolicySection {

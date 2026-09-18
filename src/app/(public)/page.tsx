@@ -944,9 +944,69 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="pt-4 border-t border-gray-200/60 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2">
+        {/* 3. Kaedah Pembayaran Selamat (Safe Payment Gateway Badges) */}
+        <div className="pt-5 border-t border-gray-200/70 space-y-2.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700">
+              <svg className="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span>Kaedah Pembayaran Selamat & Terpelihara</span>
+            </div>
+            <span className="text-[10px] text-slate-400">Enkripsi 256-Bit SSL • Transaksi Disahkan</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 pt-0.5">
+            {/* FPX */}
+            <div className="h-7 px-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[10px] font-extrabold text-[#0052FF] tracking-wider">
+              FPX
+            </div>
+            {/* DuitNow */}
+            <div className="h-7 px-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[10px] font-extrabold text-pink-600 tracking-wider">
+              DuitNow QR
+            </div>
+            {/* Touch 'n Go */}
+            <div className="h-7 px-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[10px] font-extrabold text-blue-600">
+              TNG eWallet
+            </div>
+            {/* Boost */}
+            <div className="h-7 px-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[10px] font-extrabold text-red-600">
+              Boost
+            </div>
+            {/* Visa */}
+            <div className="h-7 px-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[10px] font-extrabold text-blue-800 italic">
+              VISA
+            </div>
+            {/* Mastercard */}
+            <div className="h-7 px-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex items-center justify-center gap-0.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block opacity-90" />
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block -ml-1.5 opacity-90" />
+              <span className="text-[10px] font-bold text-slate-700 ml-1">Mastercard</span>
+            </div>
+            {/* Bank Transfer */}
+            <div className="h-7 px-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[10px] font-bold text-slate-600">
+              Pindahan Bank / CDM
+            </div>
+          </div>
+        </div>
+
+        {/* 4. Copyright & Developer Credit */}
+        <div className="pt-4 border-t border-gray-200/60 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2.5">
           <span>&copy; {new Date().getFullYear()} {companySettings.brand_name}. Hak Cipta Terpelihara.</span>
-          <span className="text-[10px] text-slate-400">Pakar Sublimasi & DTF Malaysia</span>
+          
+          {/* Developer Credit: AYEZZ Studio */}
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+            <span>Dibangunkan oleh</span>
+            <a
+              href={companySettings.developer_url || 'https://ayezz.com'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold text-slate-800 hover:text-[#0052FF] transition-colors inline-flex items-center gap-1 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs hover:border-[#0052FF]/40"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0052FF]" />
+              <span>{companySettings.developer_name || 'AYEZZ Studio'}</span>
+            </a>
+          </div>
         </div>
       </footer>
 

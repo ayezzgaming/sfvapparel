@@ -1915,6 +1915,36 @@ export default function AdminCmsPage() {
                   </div>
                 </div>
 
+                {/* Developer Credit Setting */}
+                <div className="pt-3 border-t border-slate-100 space-y-3">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-800">Kredit Pembangun Laman Web (Developer Credit)</h4>
+                    <p className="text-[11px] text-slate-400">Papar pengiktirafan pembangun sistem di bahagian paling bawah footer</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-slate-500">Nama Pembangun Web</label>
+                      <input
+                        type="text"
+                        value={companySettings.developer_name || 'AYEZZ Studio'}
+                        onChange={(e) => updateCompanySettings({ developer_name: e.target.value })}
+                        placeholder="cth: AYEZZ Studio"
+                        className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 font-semibold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-slate-500">Pautan URL Pembangun (Portfolio/Web)</label>
+                      <input
+                        type="text"
+                        value={companySettings.developer_url || 'https://ayezz.com'}
+                        onChange={(e) => updateCompanySettings({ developer_url: e.target.value })}
+                        placeholder="https://..."
+                        className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 font-mono text-[11px]"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="pt-3 flex justify-end">
                   <button
                     onClick={() => triggerToast('Identiti syarikat berjaya dikemaskini!')}
