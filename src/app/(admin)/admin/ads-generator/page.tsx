@@ -33,7 +33,10 @@ import {
   Upload,
   Trash2,
   ChevronRight,
-  SendHorizontal
+  ChevronDown,
+  SendHorizontal,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 interface AiVariation {
@@ -65,9 +68,10 @@ export default function AdminAdsGeneratorPage() {
   const [selectedDesignId, setSelectedDesignId] = useState<string>(designs[0]?.id || '');
   const [dailyBudget, setDailyBudget] = useState<number>(30);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
-  const [aiSource, setAiSource] = useState<'gemini' | 'groq' | 'nlp'>('nlp');
+  const [aiSource, setAiSource] = useState<'gemini' | 'groq' | 'openrouter' | 'nlp'>('groq');
   const [apiKey, setApiKey] = useState('');
   const [showKeyModal, setShowKeyModal] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
 
   // Attachments State (+ button)
   const [showAttachMenu, setShowAttachMenu] = useState(false);
@@ -88,13 +92,19 @@ export default function AdminAdsGeneratorPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Load API Key from localStorage
+  // Load API Key and Provider from localStorage
   useEffect(() => {
     try {
       const savedKey = localStorage.getItem('svf_ai_api_key');
+      const savedProvider = localStorage.getItem('svf_ai_model_provider') as 'gemini' | 'groq' | 'openrouter' | 'nlp';
       if (savedKey) {
         setApiKey(savedKey);
+      }
+      if (savedProvider) {
+        setAiSource(savedProvider);
+      } else if (savedKey) {
         if (savedKey.startsWith('gsk_')) setAiSource('groq');
+        else if (savedKey.startsWith('sk-or-')) setAiSource('openrouter');
         else setAiSource('gemini');
       }
     } catch {
@@ -102,17 +112,17 @@ export default function AdminAdsGeneratorPage() {
     }
   }, []);
 
-  const handleSaveApiKey = (key: string) => {
+  const handleSaveApiKey = (key: string, provider?: 'gemini' | 'groq' | 'openrouter' | 'nlp') => {
     setApiKey(key);
+    const targetProvider = provider || aiSource;
+    setAiSource(targetProvider);
     try {
       if (key.trim()) {
         localStorage.setItem('svf_ai_api_key', key.trim());
-        if (key.trim().startsWith('gsk_')) setAiSource('groq');
-        else setAiSource('gemini');
       } else {
         localStorage.removeItem('svf_ai_api_key');
-        setAiSource('nlp');
       }
+      localStorage.setItem('svf_ai_model_provider', targetProvider);
     } catch {
       // Ignore
     }
@@ -370,24 +380,14 @@ ${activeVariation.whatsappMessage}`;
         {/* ======================= TAB 1: STUDIO IKLAN AI ======================= */}
         {activeTab === 'create' && (
           <div>
-            {/* STEP 1: EXACT GOOGLE GEMINI CLEAN PROMPT SCREEN */}
+            {/* STEP 1: ULTRA-CLEAN ENLARGED PROMPT SCREEN */}
             {studioStep === 'prompt' && (
-              <div className="min-h-[60vh] flex flex-col justify-center items-center py-12 px-4 animate-in fade-in relative">
-                {/* Soft Radiant Background Aura */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
-                  <div className="w-[500px] h-[350px] bg-blue-100/40 rounded-full blur-3xl" />
-                </div>
-
-                <div className="w-full max-w-2xl space-y-7 text-center">
-                  {/* Greeting */}
-                  <h2 className="text-2xl sm:text-3xl font-normal text-slate-800 tracking-tight">
-                    Halo AYEZZ, yuk kita bahas lebih lanjut
-                  </h2>
-
+              <div className="min-h-[62vh] flex flex-col justify-center items-center py-12 px-4 animate-in fade-in">
+                <div className="w-full max-w-3xl space-y-4">
                   {/* Attached Asset Pill (if chosen) */}
                   {(customImage || activeDesign) && (
                     <div className="flex items-center justify-center">
-                      <div className="flex items-center space-x-2 bg-white/90 backdrop-blur-xs border border-slate-200 shadow-xs px-3.5 py-1.5 rounded-full animate-in zoom-in-95">
+                      <div className="flex items-center space-x-2 bg-slate-100 border border-slate-200/90 shadow-xs px-3.5 py-1.5 rounded-full animate-in zoom-in-95">
                         <div className="w-5 h-5 rounded-full overflow-hidden bg-slate-200 border border-slate-300 shrink-0">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
@@ -396,7 +396,7 @@ ${activeVariation.whatsappMessage}`;
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        <span className="text-xs text-slate-700 font-medium truncate max-w-[220px]">
+                        <span className="text-xs text-slate-700 font-medium truncate max-w-[260px]">
                           {customTitle || activeDesign?.title}
                         </span>
                         <button
@@ -405,7 +405,7 @@ ${activeVariation.whatsappMessage}`;
                             setCustomImage(null);
                             setCustomTitle(null);
                           }}
-                          className="p-0.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+                          className="p-0.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-colors"
                           title="Padam lampiran"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -414,21 +414,21 @@ ${activeVariation.whatsappMessage}`;
                     </div>
                   )}
 
-                  {/* Gemini Floating Pill Prompt Bar */}
+                  {/* Clean Floating Prompt Pill */}
                   <div className="relative" ref={attachMenuRef}>
-                    <div className="bg-white rounded-full border border-slate-200/90 shadow-sm hover:shadow-md transition-all px-4 py-3 flex items-center gap-3">
+                    <div className="bg-white rounded-full border border-slate-300 shadow-sm hover:border-slate-400 focus-within:border-slate-800 focus-within:shadow-md transition-all px-3.5 sm:px-4 py-2.5 sm:py-3.5 flex items-center gap-2 sm:gap-3">
                       {/* + (Plus) Attachment Button */}
                       <button
                         type="button"
                         onClick={() => setShowAttachMenu(!showAttachMenu)}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0 ${
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors shrink-0 ${
                           showAttachMenu
                             ? 'bg-slate-900 text-white'
-                            : 'hover:bg-slate-100 text-slate-600'
+                            : 'hover:bg-slate-100 text-slate-600 hover:text-slate-900'
                         }`}
                         title="Tambah gambar atau pilih produk katalog"
                       >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
 
                       {/* Main Clean Input Field */}
@@ -441,20 +441,19 @@ ${activeVariation.whatsappMessage}`;
                             handleGenerateAi();
                           }
                         }}
-                        placeholder="Minta Gemini..."
-                        className="flex-1 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none font-sans px-1"
+                        placeholder="Tulis arahan prompt iklan anda..."
+                        className="flex-1 bg-transparent text-sm sm:text-base text-slate-900 placeholder-slate-400 focus:outline-none font-sans px-1"
                       />
 
-                      {/* Model Selector Pill (● Flash ∨) */}
+                      {/* Model Selector Pill */}
                       <button
                         type="button"
                         onClick={() => setShowKeyModal(true)}
-                        className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-xs font-medium text-slate-700 transition-colors shrink-0"
-                        title="Tukar model atau kunci AI"
+                        className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200/80 text-xs font-medium text-slate-700 transition-colors shrink-0"
+                        title="Tetapan Model AI & Kunci API"
                       >
-                        <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-                        <span>{aiSource === 'groq' ? 'Groq' : aiSource === 'gemini' ? 'Flash' : 'AI'}</span>
-                        <ChevronRight className="w-3 h-3 text-slate-400 rotate-90" />
+                        <span>{aiSource === 'groq' ? 'Groq' : aiSource === 'gemini' ? 'Gemini' : aiSource === 'openrouter' ? 'OpenRouter' : 'Enjin AI'}</span>
+                        <ChevronDown className="w-3 h-3 text-slate-500" />
                       </button>
 
                       {/* Send Button */}
@@ -462,29 +461,29 @@ ${activeVariation.whatsappMessage}`;
                         type="button"
                         onClick={handleGenerateAi}
                         disabled={isGeneratingAi || !userPrompt.trim()}
-                        className="w-8 h-8 rounded-full bg-slate-900 hover:bg-black text-white flex items-center justify-center shadow-xs transition-colors shrink-0 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-900 hover:bg-black text-white flex items-center justify-center shadow-xs transition-colors shrink-0 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
                         title="Jana kempen iklan"
                       >
                         {isGeneratingAi ? (
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <RefreshCw className="w-4 h-4 animate-spin" />
                         ) : (
-                          <SendHorizontal className="w-3.5 h-3.5" />
+                          <SendHorizontal className="w-4 h-4" />
                         )}
                       </button>
                     </div>
 
                     {/* Attachment Popover (+ Menu) */}
                     {showAttachMenu && (
-                      <div className="absolute left-4 top-16 z-40 bg-white rounded-2xl border border-slate-200 shadow-xl p-1.5 w-60 space-y-1 text-left animate-in fade-in zoom-in-95">
+                      <div className="absolute left-2 sm:left-4 top-16 z-40 bg-white rounded-2xl border border-slate-200 shadow-xl p-1.5 w-60 space-y-1 text-left animate-in fade-in zoom-in-95">
                         <button
                           type="button"
                           onClick={() => {
                             setShowCatalogModal(true);
                             setShowAttachMenu(false);
                           }}
-                          className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
+                          className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
                         >
-                          <FolderArchive className="w-4 h-4 text-blue-600" />
+                          <FolderArchive className="w-4 h-4 text-slate-600" />
                           <span>Pilih dari Katalog</span>
                         </button>
 
@@ -494,9 +493,9 @@ ${activeVariation.whatsappMessage}`;
                             fileInputRef.current?.click();
                             setShowAttachMenu(false);
                           }}
-                          className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
+                          className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
                         >
-                          <Upload className="w-4 h-4 text-emerald-600" />
+                          <Upload className="w-4 h-4 text-slate-600" />
                           <span>Muat Naik Gambar / Mockup</span>
                         </button>
                       </div>
@@ -947,7 +946,7 @@ ${activeVariation.whatsappMessage}`;
           <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-7 max-w-2xl w-full shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center border border-slate-200">
                   <FolderArchive className="w-4 h-4" />
                 </div>
                 <div>
@@ -976,7 +975,7 @@ ${activeVariation.whatsappMessage}`;
                   }}
                   className={`p-3 rounded-2xl border cursor-pointer transition-all flex flex-col space-y-2 text-left hover:border-slate-300 ${
                     selectedDesignId === d.id && !customImage
-                      ? 'bg-blue-50/60 border-blue-400 ring-1 ring-blue-400'
+                      ? 'bg-slate-100 border-slate-900 ring-1 ring-slate-900'
                       : 'bg-white border-slate-200'
                   }`}
                 >
@@ -999,18 +998,18 @@ ${activeVariation.whatsappMessage}`;
         </div>
       )}
 
-      {/* MODAL 2: API KEY CONFIGURATION MODAL */}
+      {/* MODAL 2: API KEY & MODEL CONFIGURATION MODAL */}
       {showKeyModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-7 max-w-md w-full shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-7 max-w-md w-full shadow-2xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center border border-slate-200">
                   <Key className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-slate-900">Tetapan Model AI (Pilihan Anda)</h3>
-                  <p className="text-xs text-slate-400">Menyokong Groq (Llama 3.3 Percuma), OpenRouter, atau Gemini.</p>
+                  <h3 className="text-sm font-medium text-slate-900">Tetapan Model AI</h3>
+                  <p className="text-xs text-slate-500">Pilih penyedia model dan masukkan API key.</p>
                 </div>
               </div>
               <button
@@ -1022,41 +1021,54 @@ ${activeVariation.whatsappMessage}`;
               </button>
             </div>
 
-            <div className="space-y-3 pt-1">
+            <div className="space-y-4">
+              {/* Model Provider Selector */}
               <div>
                 <label className="text-xs font-medium text-slate-700 block mb-1.5">
-                  Kunci API (Groq / OpenRouter / Gemini)
+                  Penyedia Model AI
                 </label>
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="gsk_... / sk-or-... / AIzaSy..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
-                />
+                <select
+                  value={aiSource}
+                  onChange={(e) => setAiSource(e.target.value as any)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 cursor-pointer"
+                >
+                  <option value="groq">Groq (Llama 3.3 / GPT-OSS 120B)</option>
+                  <option value="gemini">Google Gemini (Flash / Pro)</option>
+                  <option value="openrouter">OpenRouter AI</option>
+                  <option value="nlp">Enjin Semantik SVF (Tempatan)</option>
+                </select>
               </div>
 
-              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 text-[11px] text-slate-600 space-y-2">
-                <p className="font-semibold text-slate-900">Pilihan Model AI Percuma:</p>
-                <div className="space-y-1">
-                  <p>
-                    <strong>1. Groq Cloud (Disyorkan - 100% Percuma):</strong>
-                    <br />
-                    Buka <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="font-mono text-blue-600 underline">console.groq.com/keys</a>, daftar percuma dan salin kunci bermula dengan <span className="font-mono text-slate-800 font-bold">gsk_...</span>.
-                  </p>
-                  <p>
-                    <strong>2. OpenRouter (Percuma):</strong>
-                    <br />
-                    Buka <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="font-mono text-blue-600 underline">openrouter.ai/keys</a> (kunci bermula dengan <span className="font-mono text-slate-800 font-bold">sk-or-...</span>).
-                  </p>
-                  <p className="text-slate-500 pt-1 border-t border-slate-200/60">
-                    <em>3. Tanpa Kunci: Kosongkan ruangan dan sistem akan menggunakan Enjin AI Semantik SVF secara automatik.</em>
-                  </p>
+              {/* API Key Input with Eye Toggle */}
+              <div>
+                <label className="text-xs font-medium text-slate-700 block mb-1.5">
+                  Kunci API (API Key)
+                </label>
+                <div className="relative flex items-center">
+                  <input
+                    type={showApiKey ? 'text' : 'password'}
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="Masukkan API key anda..."
+                    className="w-full pl-3.5 pr-10 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono tracking-wider"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                    className="absolute right-2.5 p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                    title={showApiKey ? 'Sembunyikan' : 'Lihat'}
+                  >
+                    {showApiKey ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => setShowKeyModal(false)}
@@ -1066,10 +1078,10 @@ ${activeVariation.whatsappMessage}`;
               </button>
               <button
                 type="button"
-                onClick={() => handleSaveApiKey(apiKey)}
+                onClick={() => handleSaveApiKey(apiKey, aiSource)}
                 className="px-5 py-2 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium shadow-xs transition-colors"
               >
-                Simpan & Aktifkan
+                Simpan
               </button>
             </div>
           </div>
