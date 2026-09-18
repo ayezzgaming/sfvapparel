@@ -459,7 +459,6 @@ interface ProductionGalleryItem {
   image: string;
   client: string;
   tag: string;
-  tagBg: string;
 }
 
 const PRODUCTION_GALLERY: ProductionGalleryItem[] = [
@@ -471,7 +470,6 @@ const PRODUCTION_GALLERY: ProductionGalleryItem[] = [
     image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1000&auto=format&fit=crop&q=80',
     client: '50 helai • FC Harimau Selangor',
     tag: 'Full Sublimation',
-    tagBg: 'bg-[#0052FF]',
   },
   {
     id: 'gal-2',
@@ -481,7 +479,6 @@ const PRODUCTION_GALLERY: ProductionGalleryItem[] = [
     image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1000&auto=format&fit=crop&q=80',
     client: '25 helai • Valkyrie MY E-Sports',
     tag: 'Esports Pro',
-    tagBg: 'bg-indigo-600',
   },
   {
     id: 'gal-3',
@@ -491,7 +488,6 @@ const PRODUCTION_GALLERY: ProductionGalleryItem[] = [
     image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=1000&auto=format&fit=crop&q=80',
     client: '80 helai • Neo Apparel Store',
     tag: 'DTF Transfer',
-    tagBg: 'bg-emerald-600',
   },
   {
     id: 'gal-4',
@@ -501,7 +497,6 @@ const PRODUCTION_GALLERY: ProductionGalleryItem[] = [
     image: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=1000&auto=format&fit=crop&q=80',
     client: '120 helai • KL Running Squad',
     tag: 'Running Kit',
-    tagBg: 'bg-amber-600',
   },
   {
     id: 'gal-5',
@@ -511,7 +506,6 @@ const PRODUCTION_GALLERY: ProductionGalleryItem[] = [
     image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=1000&auto=format&fit=crop&q=80',
     client: '35 helai • Glitch Society KL',
     tag: 'Heavy Hoodie',
-    tagBg: 'bg-purple-600',
   },
   {
     id: 'gal-6',
@@ -521,7 +515,6 @@ const PRODUCTION_GALLERY: ProductionGalleryItem[] = [
     image: 'https://images.unsplash.com/photo-1625910513413-7a718797f1df?w=1000&auto=format&fit=crop&q=80',
     client: '60 helai • Apex Engineering',
     tag: 'Corporate Polo',
-    tagBg: 'bg-sky-600',
   },
 ];
 
@@ -998,21 +991,17 @@ export default function HomePage() {
       </div>
 
       {/* =========================================================================
-          SECTION 3.5: HASIL PRODUKSI KILANG (Auto-Swap Showcase Image Slider)
+          SECTION 3.5: HASIL PRODUKSI KILANG (Clean, Bright & Royal Blue Brand Identity)
          ========================================================================= */}
-      <div className="w-full bg-[#0F172A] text-white pt-10 pb-14 px-4 relative overflow-hidden border-t border-slate-800">
-        {/* Subtle Background Glow Accent */}
-        <div className="absolute top-0 right-0 w-72 h-72 bg-[#0052FF]/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 mb-5 flex justify-between items-end">
+      <div className="w-full bg-[#F8FAFC] pt-10 pb-12 px-4 border-t border-slate-200/70">
+        <div className="mb-5 flex justify-between items-end">
           <div>
-            <h2 className="text-xl font-bold text-white tracking-tight">Hasil Produksi Kilang</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Koleksi gambar sebenar jersi & pakaian tempahan siap</p>
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Hasil Produksi Kilang</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Koleksi gambar sebenar tempahan jersi & pakaian siap</p>
           </div>
 
-          {/* Quick Counter */}
-          <span className="text-[11px] font-bold text-slate-300 bg-white/10 px-2.5 py-1 rounded-full border border-white/10">
+          {/* Quick Counter (Royal Blue Accent) */}
+          <span className="text-[11px] font-bold text-[#0052FF] bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100/80">
             {activeGalleryIndex + 1} / {PRODUCTION_GALLERY.length}
           </span>
         </div>
@@ -1025,7 +1014,7 @@ export default function HomePage() {
           onMouseLeave={() => setIsGalleryPaused(false)}
           onTouchStart={() => setIsGalleryPaused(true)}
           onTouchEnd={() => setIsGalleryPaused(false)}
-          className="relative z-10 flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar" 
+          className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar" 
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {PRODUCTION_GALLERY.map((item, idx) => {
@@ -1034,53 +1023,51 @@ export default function HomePage() {
               <div 
                 key={item.id}
                 onClick={() => scrollToGallery(idx)}
-                className={`shrink-0 w-[84vw] max-w-[340px] aspect-[4/4.5] rounded-[28px] overflow-hidden snap-center relative border transition-all duration-300 cursor-pointer shadow-xl ${
+                className={`shrink-0 w-[82vw] max-w-[320px] bg-white rounded-3xl overflow-hidden snap-center border transition-all duration-300 cursor-pointer flex flex-col justify-between ${
                   isActive 
-                    ? 'border-blue-400/60 shadow-blue-500/20 ring-2 ring-blue-500/30' 
-                    : 'border-white/10 opacity-85'
+                    ? 'border-[#0052FF] shadow-md shadow-blue-500/10 ring-2 ring-blue-500/20' 
+                    : 'border-slate-200/80 shadow-sm opacity-90'
                 }`}
               >
-                {/* Showcase Photo */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                  src={item.image} 
-                  alt={item.title} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                />
-
-                {/* Dark Vignette Bottom Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent pointer-events-none" />
-
-                {/* Top Badge */}
-                <div className="absolute top-3.5 left-3.5 z-10 flex items-center gap-2">
-                  <span className={`${item.tagBg} text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm`}>
-                    {item.tag}
-                  </span>
+                {/* 100% Bright, Crisp Photo (Natural Colors, No Heavy Dark Tint) */}
+                <div className="relative w-full aspect-[4/3.2] bg-slate-100 overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={item.image} 
+                    alt={item.title} 
+                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" 
+                  />
+                  <div className="absolute top-3 left-3">
+                    <span className="bg-white/95 backdrop-blur-md text-[#0052FF] font-bold text-[10px] px-2.5 py-1 rounded-full shadow-xs border border-blue-100/60">
+                      {item.tag}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Bottom Overlay Info */}
-                <div className="absolute inset-x-0 bottom-0 p-4 space-y-1.5 z-10">
-                  <span className="text-[10.5px] font-semibold text-blue-300 block">
-                    {item.client}
-                  </span>
-                  <h3 className="text-[16px] font-bold text-white leading-snug drop-shadow-md">
-                    {item.title}
-                  </h3>
-                  <p className="text-[11.5px] text-slate-300 leading-relaxed font-normal">
-                    {item.fabric}
-                  </p>
+                {/* Clean, Minimal Card Details Below Photo (Zero Pollution) */}
+                <div className="p-4 space-y-2 flex-1 flex flex-col justify-between bg-white">
+                  <div>
+                    <h3 className="font-bold text-[15px] text-slate-900 leading-snug">
+                      {item.title}
+                    </h3>
+                    <p className="text-[12px] text-slate-500 mt-1 line-clamp-1">
+                      {item.fabric}
+                    </p>
+                  </div>
 
-                  <div className="pt-2 flex items-center justify-between border-t border-white/15 text-[11px]">
-                    <span className="text-white/80 font-medium">Kualiti Piawai Kilang SFV</span>
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-slate-400">
+                      {item.client}
+                    </span>
                     <a
                       href={`https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20berminat%20dengan%20hasil%20produksi%20*${encodeURIComponent(item.title)}*`}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1 font-bold text-blue-300 hover:text-white transition-colors"
+                      className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[#0052FF] hover:text-blue-700 transition-colors"
                     >
+                      <FaWhatsapp className="w-3.5 h-3.5 text-[#25D366]" />
                       <span>Tempah Seperti Ini</span>
-                      <span>→</span>
                     </a>
                   </div>
                 </div>
@@ -1089,8 +1076,8 @@ export default function HomePage() {
           })}
         </div>
 
-        {/* Interactive Indicator Dots */}
-        <div className="relative z-10 flex justify-center items-center gap-1.5 pt-2">
+        {/* Interactive Indicator Dots (Royal Blue Accent) */}
+        <div className="flex justify-center items-center gap-1.5 pt-2">
           {PRODUCTION_GALLERY.map((_, idx) => {
             const isActive = idx === activeGalleryIndex;
             return (
@@ -1102,7 +1089,7 @@ export default function HomePage() {
                 className={`h-1.5 rounded-full transition-all duration-300 ${
                   isActive 
                     ? 'w-6 bg-[#0052FF]' 
-                    : 'w-2 bg-white/20 hover:bg-white/40'
+                    : 'w-2 bg-slate-300 hover:bg-slate-400'
                 }`}
               />
             );
