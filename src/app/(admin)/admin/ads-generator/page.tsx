@@ -272,6 +272,12 @@ export default function AdminAdsGeneratorPage() {
     }
   };
 
+  const handleUpdateConnection = (updated: AdPlatformConnection) => {
+    setPlatforms((prev) =>
+      prev.map((p) => (p.id === updated.id ? updated : p))
+    );
+  };
+
   const handleToggleConnect = (platformId: string) => {
     setPlatforms((prev) =>
       prev.map((p) => {
@@ -797,19 +803,19 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
         {/* ======================= TAB 2: SAMBUNGAN AKAUN API ======================= */}
         {activeTab === 'connections' && (
-          <div className="space-y-6">
-            <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200 text-xs text-slate-600 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="space-y-4">
+            <div className="bg-slate-50/80 p-4 sm:p-5 rounded-3xl border border-slate-100 text-xs text-slate-600 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
-                <p className="font-medium text-slate-800 text-sm">Status Gerbang Integrasi API</p>
+                <p className="font-semibold text-slate-900 text-sm">Status Gerbang & Kawalan Pemasaran</p>
                 <p className="text-slate-500 mt-0.5">
-                  Sambungkan akaun pengiklanan rasmi anda untuk membolehkan sistem melancarkan kempen secara terus.
+                  Sambungkan platform untuk membolehkan AI melancarkan kempen dan membaca analitik prestasi secara automatik.
                 </p>
               </div>
               <div className="text-right shrink-0">
-                <span className="font-medium text-slate-900">
+                <span className="font-semibold text-slate-900">
                   {platforms.filter((p) => p.isConnected).length} daripada {platforms.length}
                 </span>{' '}
-                platform aktif
+                saluran aktif
               </div>
             </div>
 
@@ -818,6 +824,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                 <PlatformConnectCard
                   key={platform.id}
                   platform={platform}
+                  onUpdateConnection={handleUpdateConnection}
                   onToggleConnect={handleToggleConnect}
                 />
               ))}
@@ -825,96 +832,131 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
           </div>
         )}
 
-        {/* ======================= TAB 3: SENARAI KEMPEN AKTIF ======================= */}
+        {/* ======================= TAB 3: SENARAI KEMPEN AKTIF & PENILAIAN AI ======================= */}
         {activeTab === 'campaigns' && (
-          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-slate-50/80 text-slate-500 text-xs font-medium border-b border-slate-200">
-                  <tr>
-                    <th className="py-3.5 px-4 font-medium">Nama Kempen & Platform</th>
-                    <th className="py-3.5 px-4 font-medium">Objektif</th>
-                    <th className="py-3.5 px-4 font-medium">Status</th>
-                    <th className="py-3.5 px-4 font-medium">Belanjawan / Hari</th>
-                    <th className="py-3.5 px-4 font-medium">Prestasi (Klik / Capaian)</th>
-                    <th className="py-3.5 px-4 font-medium">Jumlah Dibelanjakan</th>
-                    <th className="py-3.5 px-4 text-right font-medium">Tindakan</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-sm">
-                  {campaigns.map((camp) => (
-                    <tr key={camp.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={camp.creative.imageUrl}
-                              alt={camp.name}
-                              className="w-full h-full object-cover"
-                            />
+          <div className="space-y-4">
+            {/* KPI Summary Overview */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-slate-50/80 p-4 rounded-3xl text-center">
+                <span className="text-[10px] text-slate-400 font-medium uppercase block">Jumlah Belanja</span>
+                <span className="text-base font-semibold text-slate-900 font-mono">
+                  {formatCurrency(campaigns.reduce((acc, c) => acc + c.spent, 0))}
+                </span>
+              </div>
+              <div className="bg-slate-50/80 p-4 rounded-3xl text-center">
+                <span className="text-[10px] text-slate-400 font-medium uppercase block">Prospek WhatsApp Masuk</span>
+                <span className="text-base font-semibold text-emerald-600 font-mono">
+                  {campaigns.reduce((acc, c) => acc + c.leadsOrConversions, 0)} Orang
+                </span>
+              </div>
+              <div className="bg-slate-50/80 p-4 rounded-3xl text-center">
+                <span className="text-[10px] text-slate-400 font-medium uppercase block">Purata Kos / Prospek</span>
+                <span className="text-base font-semibold text-slate-900 font-mono">
+                  RM {(campaigns.reduce((acc, c) => acc + c.spent, 0) / Math.max(1, campaigns.reduce((acc, c) => acc + c.leadsOrConversions, 0))).toFixed(2)}
+                </span>
+              </div>
+              <div className="bg-slate-50/80 p-4 rounded-3xl text-center">
+                <span className="text-[10px] text-slate-400 font-medium uppercase block">Status Keseluruhan</span>
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full inline-block mt-1">
+                  ● Berjalan Baik
+                </span>
+              </div>
+            </div>
+
+            {/* Campaigns Table with AI Evaluation Notes */}
+            <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-xs">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-50/80 text-slate-500 text-xs font-medium border-b border-slate-100">
+                    <tr>
+                      <th className="py-3.5 px-4 font-medium">Nama Kempen & Platform</th>
+                      <th className="py-3.5 px-4 font-medium">Objektif</th>
+                      <th className="py-3.5 px-4 font-medium">Status</th>
+                      <th className="py-3.5 px-4 font-medium">Belanjawan</th>
+                      <th className="py-3.5 px-4 font-medium">Prestasi & Analitik</th>
+                      <th className="py-3.5 px-4 font-medium">Penilaian AI untuk Masa Depan</th>
+                      <th className="py-3.5 px-4 text-right font-medium">Tindakan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-sm">
+                    {campaigns.map((camp) => (
+                      <tr key={camp.id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={camp.creative.imageUrl}
+                                alt={camp.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div>
+                              <span className="font-medium text-slate-800 block text-xs">{camp.name}</span>
+                              <span className="text-[11px] text-slate-400 uppercase font-mono">
+                                {camp.platform} · {camp.createdAt}
+                              </span>
+                            </div>
                           </div>
-                          <div>
-                            <span className="font-medium text-slate-800 block text-sm">{camp.name}</span>
-                            <span className="text-[11px] text-slate-400 uppercase font-mono">
-                              {camp.platform} · {camp.createdAt}
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          <span className="text-xs text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap">
+                            {camp.objective.replace('_', ' ').toUpperCase()}
+                          </span>
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          {camp.status === 'active' ? (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                              ● Berjalan
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full whitespace-nowrap">
+                              Jeda
+                            </span>
+                          )}
+                        </td>
+
+                        <td className="py-3.5 px-4 font-mono text-slate-800 text-xs whitespace-nowrap">
+                          {formatCurrency(camp.dailyBudget)}/hari
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          <div className="text-xs space-y-0.5">
+                            <span className="font-semibold text-emerald-600 font-mono block">
+                              {camp.leadsOrConversions} Prospek WA
+                            </span>
+                            <span className="text-slate-400 text-[11px] block">
+                              {camp.clicks} klik • {camp.impressions.toLocaleString()} paparan
                             </span>
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      <td className="py-3.5 px-4">
-                        <span className="text-xs text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full font-medium">
-                          {camp.objective.replace('_', ' ').toUpperCase()}
-                        </span>
-                      </td>
+                        <td className="py-3.5 px-4 max-w-xs">
+                          <p className="text-xs text-slate-600 leading-snug">
+                            {camp.evaluationNote || 'Kempen memaparkan respons stabil. Teruskan pemantauan baki kredit.'}
+                          </p>
+                        </td>
 
-                      <td className="py-3.5 px-4">
-                        {camp.status === 'active' ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                            ● Berjalan
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
-                            Jeda (Paused)
-                          </span>
-                        )}
-                      </td>
-
-                      <td className="py-3.5 px-4 font-mono text-slate-800 text-xs">
-                        {formatCurrency(camp.dailyBudget)} / hari
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <div className="text-xs">
-                          <span className="font-medium text-slate-800 font-mono">{camp.clicks} klik</span>
-                          <span className="text-slate-400 text-[11px] block">
-                            {camp.impressions.toLocaleString()} paparan (CPC: {formatCurrency(camp.cpc)})
-                          </span>
-                        </div>
-                      </td>
-
-                      <td className="py-3.5 px-4 font-mono font-medium text-slate-900 text-xs">
-                        {formatCurrency(camp.spent)}
-                      </td>
-
-                      <td className="py-3.5 px-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => handleToggleCampaignStatus(camp.id)}
-                          className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                            camp.status === 'active'
-                              ? 'text-slate-600 hover:bg-slate-100 border-slate-200'
-                              : 'text-slate-900 bg-slate-100 hover:bg-slate-200 border-slate-300'
-                          }`}
-                        >
-                          {camp.status === 'active' ? 'Jeda' : 'Aktifkan'}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <td className="py-3.5 px-4 text-right">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleCampaignStatus(camp.id)}
+                            className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                              camp.status === 'active'
+                                ? 'text-slate-600 hover:bg-slate-100 border-slate-200'
+                                : 'text-slate-900 bg-slate-100 hover:bg-slate-200 border-slate-300'
+                            }`}
+                          >
+                            {camp.status === 'active' ? 'Jeda' : 'Aktifkan'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}

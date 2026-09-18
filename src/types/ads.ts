@@ -6,6 +6,15 @@ export type AdObjective =
   | 'brand_awareness'
   | 'traffic';
 
+export interface PlatformInsight {
+  totalSpent: number;
+  totalLeads: number;
+  costPerLead: number;
+  healthScore: 'cemerlang' | 'baik' | 'perlu_perhatian';
+  humanAdvice: string;
+  nextStepRecommendation: string;
+}
+
 export interface AdPlatformConnection {
   id: AdPlatform;
   name: string;
@@ -16,6 +25,8 @@ export interface AdPlatformConnection {
   lastSynced?: string;
   currency?: string;
   balance?: number;
+  pixelId?: string;
+  insight?: PlatformInsight;
 }
 
 export interface AdCreative {
@@ -46,4 +57,5 @@ export interface AdCampaign {
   cpc: number;
   createdAt: string;
   creative: AdCreative;
+  evaluationNote?: string;
 }
