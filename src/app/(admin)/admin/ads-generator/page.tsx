@@ -65,7 +65,7 @@ export default function AdminAdsGeneratorPage() {
   const [userPrompt, setUserPrompt] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState<AdPlatform>('meta');
   const [selectedObjective, setSelectedObjective] = useState<AdObjective>('whatsapp_leads');
-  const [selectedDesignId, setSelectedDesignId] = useState<string>(designs[0]?.id || '');
+  const [selectedDesignId, setSelectedDesignId] = useState<string | null>(null);
   const [dailyBudget, setDailyBudget] = useState<number>(30);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiSource, setAiSource] = useState<'gemini' | 'groq' | 'openrouter' | 'nlp'>('groq');
@@ -136,6 +136,7 @@ export default function AdminAdsGeneratorPage() {
       reader.onload = (event) => {
         setCustomImage(event.target?.result as string);
         setCustomTitle(file.name.replace(/\.[^/.]+$/, ''));
+        setSelectedDesignId(null);
       };
       reader.readAsDataURL(file);
     }
@@ -186,7 +187,7 @@ export default function AdminAdsGeneratorPage() {
   const [publishSuccess, setPublishSuccess] = useState(false);
 
   // Active Design & Current Creative
-  const activeDesign = designs.find((d) => d.id === selectedDesignId) || designs[0];
+  const activeDesign = selectedDesignId ? designs.find((d) => d.id === selectedDesignId) || null : null;
   const activeVariation = aiVariations[selectedVariationIndex] || aiVariations[0];
 
   const currentCreative: AdCreative = {
@@ -380,126 +381,138 @@ ${activeVariation.whatsappMessage}`;
         {/* ======================= TAB 1: STUDIO IKLAN AI ======================= */}
         {activeTab === 'create' && (
           <div>
-            {/* STEP 1: ULTRA-CLEAN ENLARGED PROMPT SCREEN */}
+            {/* STEP 1: INDUSTRY STANDARD UNIFIED PROMPT CARD */}
             {studioStep === 'prompt' && (
               <div className="min-h-[62vh] flex flex-col justify-center items-center py-12 px-4 animate-in fade-in">
-                <div className="w-full max-w-3xl space-y-4">
-                  {/* Attached Asset Pill (if chosen) */}
-                  {(customImage || activeDesign) && (
-                    <div className="flex items-center justify-center">
-                      <div className="flex items-center space-x-2 bg-slate-100 border border-slate-200/90 shadow-xs px-3.5 py-1.5 rounded-full animate-in zoom-in-95">
-                        <div className="w-5 h-5 rounded-full overflow-hidden bg-slate-200 border border-slate-300 shrink-0">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.jpg'}
-                            alt="Asset Preview"
-                            className="w-full h-full object-cover"
-                          />
+                <div className="w-full max-w-3xl">
+                  {/* Unified Industry Standard Prompt Card */}
+                  <div className="bg-white rounded-3xl border border-slate-300 shadow-sm focus-within:border-slate-800 focus-within:shadow-md transition-all p-3.5 sm:p-4 space-y-3">
+                    {/* Attachment Preview INSIDE Prompt Box at the top */}
+                    {(customImage || activeDesign) && (
+                      <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                        <div className="flex items-center space-x-3 bg-slate-50 border border-slate-200 rounded-2xl p-2 pr-3 max-w-sm">
+                          <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 border border-slate-300 shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.jpg'}
+                              alt="Lampiran"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-slate-800 truncate">
+                              {customTitle || activeDesign?.title}
+                            </p>
+                            <span className="text-[11px] text-slate-400 block truncate">
+                              {customImage ? 'Imej Dimuat Naik' : `Katalog SVF • ${activeDesign?.category || 'Jersi'}`}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCustomImage(null);
+                              setCustomTitle(null);
+                              setSelectedDesignId(null);
+                            }}
+                            className="w-6 h-6 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors shrink-0"
+                            title="Padam lampiran"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
                         </div>
-                        <span className="text-xs text-slate-700 font-medium truncate max-w-[260px]">
-                          {customTitle || activeDesign?.title}
-                        </span>
+                      </div>
+                    )}
+
+                    {/* Text Input / Textarea */}
+                    <textarea
+                      rows={2}
+                      value={userPrompt}
+                      onChange={(e) => setUserPrompt(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey && userPrompt.trim() && !isGeneratingAi) {
+                          e.preventDefault();
+                          handleGenerateAi();
+                        }
+                      }}
+                      placeholder="Tulis arahan prompt iklan anda di sini..."
+                      className="w-full bg-transparent text-sm sm:text-base text-slate-900 placeholder-slate-400 focus:outline-none resize-none font-sans px-1 pt-1"
+                    />
+
+                    {/* Bottom Action Bar inside the box */}
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                      <div className="flex items-center space-x-2" ref={attachMenuRef}>
+                        {/* + (Plus) Attachment Button with Popover */}
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setShowAttachMenu(!showAttachMenu)}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0 ${
+                              showAttachMenu
+                                ? 'bg-slate-900 text-white'
+                                : 'hover:bg-slate-100 text-slate-600 hover:text-slate-900'
+                            }`}
+                            title="Tambah gambar atau pilih produk katalog"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+
+                          {/* Attachment Popover (+ Menu) */}
+                          {showAttachMenu && (
+                            <div className="absolute left-0 bottom-11 z-40 bg-white rounded-2xl border border-slate-200 shadow-xl p-1.5 w-60 space-y-1 text-left animate-in fade-in zoom-in-95">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setShowCatalogModal(true);
+                                  setShowAttachMenu(false);
+                                }}
+                                className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
+                              >
+                                <FolderArchive className="w-4 h-4 text-slate-600" />
+                                <span>Pilih dari Katalog</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  fileInputRef.current?.click();
+                                  setShowAttachMenu(false);
+                                }}
+                                className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
+                              >
+                                <Upload className="w-4 h-4 text-slate-600" />
+                                <span>Muat Naik Gambar / Mockup</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Model Selector Pill */}
                         <button
                           type="button"
-                          onClick={() => {
-                            setCustomImage(null);
-                            setCustomTitle(null);
-                          }}
-                          className="p-0.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-colors"
-                          title="Padam lampiran"
+                          onClick={() => setShowKeyModal(true)}
+                          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200/80 text-xs font-medium text-slate-700 transition-colors shrink-0"
+                          title="Tetapan Model AI & Kunci API"
                         >
-                          <X className="w-3.5 h-3.5" />
+                          <span>{aiSource === 'groq' ? 'Groq' : aiSource === 'gemini' ? 'Gemini' : aiSource === 'openrouter' ? 'OpenRouter' : 'Enjin AI'}</span>
+                          <ChevronDown className="w-3 h-3 text-slate-500" />
                         </button>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Clean Floating Prompt Pill */}
-                  <div className="relative" ref={attachMenuRef}>
-                    <div className="bg-white rounded-full border border-slate-300 shadow-sm hover:border-slate-400 focus-within:border-slate-800 focus-within:shadow-md transition-all px-3.5 sm:px-4 py-2.5 sm:py-3.5 flex items-center gap-2 sm:gap-3">
-                      {/* + (Plus) Attachment Button */}
-                      <button
-                        type="button"
-                        onClick={() => setShowAttachMenu(!showAttachMenu)}
-                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors shrink-0 ${
-                          showAttachMenu
-                            ? 'bg-slate-900 text-white'
-                            : 'hover:bg-slate-100 text-slate-600 hover:text-slate-900'
-                        }`}
-                        title="Tambah gambar atau pilih produk katalog"
-                      >
-                        <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-                      </button>
-
-                      {/* Main Clean Input Field */}
-                      <input
-                        type="text"
-                        value={userPrompt}
-                        onChange={(e) => setUserPrompt(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && userPrompt.trim() && !isGeneratingAi) {
-                            handleGenerateAi();
-                          }
-                        }}
-                        placeholder="Tulis arahan prompt iklan anda..."
-                        className="flex-1 bg-transparent text-sm sm:text-base text-slate-900 placeholder-slate-400 focus:outline-none font-sans px-1"
-                      />
-
-                      {/* Model Selector Pill */}
-                      <button
-                        type="button"
-                        onClick={() => setShowKeyModal(true)}
-                        className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200/80 text-xs font-medium text-slate-700 transition-colors shrink-0"
-                        title="Tetapan Model AI & Kunci API"
-                      >
-                        <span>{aiSource === 'groq' ? 'Groq' : aiSource === 'gemini' ? 'Gemini' : aiSource === 'openrouter' ? 'OpenRouter' : 'Enjin AI'}</span>
-                        <ChevronDown className="w-3 h-3 text-slate-500" />
-                      </button>
 
                       {/* Send Button */}
                       <button
                         type="button"
                         onClick={handleGenerateAi}
                         disabled={isGeneratingAi || !userPrompt.trim()}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-900 hover:bg-black text-white flex items-center justify-center shadow-xs transition-colors shrink-0 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                        className="w-8 h-8 rounded-full bg-slate-900 hover:bg-black text-white flex items-center justify-center shadow-xs transition-colors shrink-0 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
                         title="Jana kempen iklan"
                       >
                         {isGeneratingAi ? (
-                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                         ) : (
-                          <SendHorizontal className="w-4 h-4" />
+                          <SendHorizontal className="w-3.5 h-3.5" />
                         )}
                       </button>
                     </div>
-
-                    {/* Attachment Popover (+ Menu) */}
-                    {showAttachMenu && (
-                      <div className="absolute left-2 sm:left-4 top-16 z-40 bg-white rounded-2xl border border-slate-200 shadow-xl p-1.5 w-60 space-y-1 text-left animate-in fade-in zoom-in-95">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowCatalogModal(true);
-                            setShowAttachMenu(false);
-                          }}
-                          className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
-                        >
-                          <FolderArchive className="w-4 h-4 text-slate-600" />
-                          <span>Pilih dari Katalog</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            fileInputRef.current?.click();
-                            setShowAttachMenu(false);
-                          }}
-                          className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
-                        >
-                          <Upload className="w-4 h-4 text-slate-600" />
-                          <span>Muat Naik Gambar / Mockup</span>
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -717,7 +730,7 @@ ${activeVariation.whatsappMessage}`;
                             Produk Terpilih
                           </label>
                           <select
-                            value={selectedDesignId}
+                            value={selectedDesignId || (designs[0]?.id ?? '')}
                             onChange={(e) => {
                               setSelectedDesignId(e.target.value);
                               setCustomImage(null);
