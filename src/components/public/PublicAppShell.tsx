@@ -53,18 +53,18 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
         {/* 2. MASTER CONTAINER APLIKASI (Fixed 100% height of the pinned frame) */}
         <div className="w-full max-w-md h-full bg-white shadow-2xl flex flex-col overflow-hidden relative overscroll-none touch-pan-y select-none">
           
-          {/* Header / Navbar (Anchored firmly at top) */}
+          {/* Header / Navbar (Anchored firmly at top in Royal Blue) */}
           <header 
-            className="shrink-0 z-40 bg-white px-5 py-3.5 pt-[calc(env(safe-area-inset-top,0px)+0.85rem)] flex items-center justify-between border-b border-black/[0.04] select-none touch-none"
+            className="shrink-0 z-40 bg-[#0052FF] px-5 py-3.5 pt-[calc(env(safe-area-inset-top,0px)+0.85rem)] flex items-center justify-between border-b border-blue-600/40 shadow-sm select-none touch-none text-white"
             style={{ touchAction: 'none' }}
           >
-            {/* Brand Logo with Animated Text */}
+            {/* Brand Logo with Animated White Text */}
             <Link href="/" draggable={false} className="inline-flex items-center gap-2.5 select-none active:opacity-80 transition-opacity">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo.svg"
                 alt="SFV Apparel Logo"
-                className="h-7 w-7 object-contain shrink-0 pointer-events-none"
+                className="h-7 w-7 object-contain shrink-0 pointer-events-none brightness-0 invert"
               />
               <div className="flex items-baseline">
                 <span className="font-black text-[21px] sm:text-[22px] tracking-tight brand-sfv-text leading-none">
@@ -76,17 +76,17 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               </div>
             </Link>
 
-            {/* Header Action Icons (Standard Industry Minimal Outline with Red Counter Badges) */}
+            {/* Header Action Icons (White with Red Counter Badges) */}
             <div className="flex items-center space-x-1">
               <button
                 type="button"
                 onClick={() => setIsFavoritesOpen(true)}
                 aria-label="Senarai Pilihan Kegemaran"
-                className="p-2 text-slate-700 hover:text-slate-900 relative transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-slate-50 touch-manipulation"
+                className="p-2 text-white hover:text-white/90 relative transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-white/10 touch-manipulation"
               >
-                <Heart className="w-5 h-5 stroke-[1.75]" />
+                <Heart className="w-5 h-5 stroke-[2] text-white" />
                 {favoritesCount > 0 && (
-                  <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#FF3B30] text-white text-[9.5px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs leading-none pointer-events-none">
+                  <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#FF3B30] text-white text-[9.5px] font-bold flex items-center justify-center ring-2 ring-[#0052FF] shadow-xs leading-none pointer-events-none">
                     {favoritesCount > 99 ? '99+' : favoritesCount}
                   </span>
                 )}
@@ -96,11 +96,11 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 type="button"
                 onClick={() => setIsBagOpen(true)}
                 aria-label="Bakul Pesanan Aktif"
-                className="p-2 text-slate-700 hover:text-slate-900 relative transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-slate-50 touch-manipulation"
+                className="p-2 text-white hover:text-white/90 relative transition-colors active:scale-90 flex items-center justify-center rounded-full hover:bg-white/10 touch-manipulation"
               >
-                <ShoppingBag className="w-5 h-5 stroke-[1.75]" />
+                <ShoppingBag className="w-5 h-5 stroke-[2] text-white" />
                 {activeOrdersCount > 0 && (
-                  <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#FF3B30] text-white text-[9.5px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs leading-none pointer-events-none">
+                  <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#FF3B30] text-white text-[9.5px] font-bold flex items-center justify-center ring-2 ring-[#0052FF] shadow-xs leading-none pointer-events-none">
                     {activeOrdersCount > 99 ? '99+' : activeOrdersCount}
                   </span>
                 )}
@@ -115,9 +115,9 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             {children}
           </main>
 
-          {/* Pixel-Perfect iOS Bottom Tab Bar (Fixed Anchored, Zero Drag/Lift) */}
+          {/* Pixel-Perfect iOS Bottom Tab Bar (Royal Blue, White text & icons) */}
           <nav 
-            className={`shrink-0 z-40 w-full bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-3 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.65rem)] flex items-center justify-between shadow-[0_-2px_12px_rgba(0,0,0,0.03)] select-none touch-none overscroll-none transition-all duration-300 ease-in-out transform ${
+            className={`shrink-0 z-40 w-full bg-[#0052FF] border-t border-white/15 px-3 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.65rem)] flex items-center justify-between shadow-[0_-4px_20px_rgba(0,82,255,0.25)] select-none touch-none overscroll-none transition-all duration-300 ease-in-out transform ${
               shouldHideBottomNav
                 ? 'translate-y-full opacity-0 pointer-events-none'
                 : 'translate-y-0 opacity-100'
@@ -130,17 +130,17 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               href="/"
               draggable={false}
               className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation ${
-                isHome ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
+                isHome ? 'text-white' : 'text-white/65 hover:text-white'
               }`}
             >
               <div className="flex items-center justify-center h-6 w-6">
                 {isHome ? (
-                  <IoHome className="w-5.5 h-5.5 transition-transform duration-200 scale-105" />
+                  <IoHome className="w-5.5 h-5.5 transition-transform duration-200 scale-105 text-white" />
                 ) : (
                   <IoHomeOutline className="w-5.5 h-5.5" />
                 )}
               </div>
-              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isHome ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
+              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isHome ? 'font-bold text-white' : 'font-medium text-white/70'}`}>
                 Utama
               </span>
             </Link>
@@ -150,17 +150,17 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               href="/catalog"
               draggable={false}
               className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation ${
-                isCatalog ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
+                isCatalog ? 'text-white' : 'text-white/65 hover:text-white'
               }`}
             >
               <div className="flex items-center justify-center h-6 w-6">
                 {isCatalog ? (
-                  <IoGrid className="w-5.5 h-5.5 transition-transform duration-200 scale-105" />
+                  <IoGrid className="w-5.5 h-5.5 transition-transform duration-200 scale-105 text-white" />
                 ) : (
                   <IoGridOutline className="w-5.5 h-5.5" />
                 )}
               </div>
-              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isCatalog ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
+              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isCatalog ? 'font-bold text-white' : 'font-medium text-white/70'}`}>
                 Katalog
               </span>
             </Link>
@@ -170,20 +170,20 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               href="/history"
               draggable={false}
               className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative ${
-                isHistory ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
+                isHistory ? 'text-white' : 'text-white/65 hover:text-white'
               }`}
             >
               <div className="flex items-center justify-center h-6 w-6 relative">
                 {isHistory ? (
-                  <IoTime className="w-5.5 h-5.5 transition-transform duration-200 scale-105" />
+                  <IoTime className="w-5.5 h-5.5 transition-transform duration-200 scale-105 text-white" />
                 ) : (
                   <IoTimeOutline className="w-5.5 h-5.5" />
                 )}
                 {activeOrdersCount > 0 && !isHistory && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#FF3B30] ring-2 ring-white" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#FF3B30] ring-2 ring-[#0052FF]" />
                 )}
               </div>
-              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isHistory ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
+              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isHistory ? 'font-bold text-white' : 'font-medium text-white/70'}`}>
                 Pesanan
               </span>
             </Link>
@@ -193,17 +193,17 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               href="/profile"
               draggable={false}
               className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation ${
-                isProfile ? 'text-[#0052FF]' : 'text-[#8E8E93] hover:text-slate-600'
+                isProfile ? 'text-white' : 'text-white/65 hover:text-white'
               }`}
             >
               <div className="flex items-center justify-center h-6 w-6">
                 {isProfile ? (
-                  <IoPerson className="w-5.5 h-5.5 transition-transform duration-200 scale-105" />
+                  <IoPerson className="w-5.5 h-5.5 transition-transform duration-200 scale-105 text-white" />
                 ) : (
                   <IoPersonOutline className="w-5.5 h-5.5" />
                 )}
               </div>
-              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isProfile ? 'font-bold text-[#0052FF]' : 'font-medium text-[#8E8E93]'}`}>
+              <span className={`text-[10.5px] tracking-tight mt-0.5 ${isProfile ? 'font-bold text-white' : 'font-medium text-white/70'}`}>
                 Profil
               </span>
             </Link>

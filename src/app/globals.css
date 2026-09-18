@@ -75,17 +75,17 @@ html, body {
 }
 
 .brand-sfv-text {
-  color: #0052FF;
-  /* Pure Royal Blue base with silky soft specular light sweep */
+  color: #FFFFFF;
+  /* Pure White base with silky soft platinum specular light sweep on Royal Blue */
   background: linear-gradient(
     115deg,
-    #0052FF 0%,
-    #0052FF 36%,
-    #5E94FF 46%,
+    #FFFFFF 0%,
+    #FFFFFF 36%,
+    #D0E2FF 46%,
     #FFFFFF 50%,
-    #5E94FF 54%,
-    #0052FF 64%,
-    #0052FF 100%
+    #D0E2FF 54%,
+    #FFFFFF 64%,
+    #FFFFFF 100%
   );
   background-size: 300% 100%;
   -webkit-background-clip: text;
@@ -95,17 +95,17 @@ html, body {
 }
 
 .brand-apparel-text {
-  color: #0F172A;
-  /* Deep Slate base with silky soft platinum light sweep */
+  color: #FFFFFF;
+  /* Crisp White with delicate light sweep on Royal Blue */
   background: linear-gradient(
     115deg,
-    #0F172A 0%,
-    #0F172A 36%,
-    #475569 46%,
-    #E2E8F0 50%,
-    #475569 54%,
-    #0F172A 64%,
-    #0F172A 100%
+    #FFFFFF 0%,
+    #FFFFFF 36%,
+    #BBD6FF 46%,
+    #FFFFFF 50%,
+    #BBD6FF 54%,
+    #FFFFFF 64%,
+    #FFFFFF 100%
   );
   background-size: 300% 100%;
   -webkit-background-clip: text;
