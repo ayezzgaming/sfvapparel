@@ -126,48 +126,48 @@ export default function AdminCatalogPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 select-none">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-            Katalog & Aset Mockup
+          <h1 className="text-2xl font-normal text-slate-800 tracking-normal">
+            Katalog Rekaan
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Urus templat reka bentuk produk (harga dikira secara dinamik mengikut formula fabrik & potongan).
+          <p className="text-sm text-slate-500 mt-0.5">
+            Senarai templat reka bentuk jersi sublimasi dan cetakan DTF.
           </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="px-4 py-2.5 rounded-xl bg-[#0052FF] hover:bg-blue-600 text-white text-xs font-bold transition-all shadow-xs flex items-center space-x-1.5"
+          className="px-5 py-2 rounded-full bg-[#0052FF] hover:bg-blue-600 text-white text-xs font-semibold transition-all shadow-xs flex items-center space-x-1.5 self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>Tambah Mockup Rekaan</span>
+          <span>Tambah Rekaan</span>
         </button>
       </div>
 
       {/* Toolbar */}
-      <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-        <div className="relative flex-1">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari mockup mengikut tajuk, tag, atau kategori..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30 focus:border-[#0052FF]"
+            placeholder="Cari mengikut tajuk, tag, atau kategori..."
+            className="w-full pl-9 pr-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#0052FF]"
           />
         </div>
 
         <div className="flex items-center gap-2">
           {/* Category/Type Filters */}
-          <div className="bg-slate-100 p-1 rounded-xl border border-slate-200 flex items-center">
+          <div className="bg-slate-100 p-1 rounded-full border border-slate-200 flex items-center">
             <button
               onClick={() => setFilterType('all')}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
+              className={`px-3.5 py-1 text-xs font-medium rounded-full transition-all ${
                 filterType === 'all'
-                  ? 'bg-[#0052FF] text-white shadow-xs'
+                  ? 'bg-white text-[#0052FF] shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -175,9 +175,9 @@ export default function AdminCatalogPage() {
             </button>
             <button
               onClick={() => setFilterType('sublimation')}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
+              className={`px-3.5 py-1 text-xs font-medium rounded-full transition-all ${
                 filterType === 'sublimation'
-                  ? 'bg-[#0052FF] text-white shadow-xs'
+                  ? 'bg-white text-[#0052FF] shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -185,9 +185,9 @@ export default function AdminCatalogPage() {
             </button>
             <button
               onClick={() => setFilterType('dtf')}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
+              className={`px-3.5 py-1 text-xs font-medium rounded-full transition-all ${
                 filterType === 'dtf'
-                  ? 'bg-amber-600 text-white shadow-xs'
+                  ? 'bg-white text-[#0052FF] shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -196,11 +196,11 @@ export default function AdminCatalogPage() {
           </div>
 
           {/* List vs Grid Switcher */}
-          <div className="bg-slate-100 p-1 rounded-xl border border-slate-200 flex items-center">
+          <div className="bg-slate-100 p-1 rounded-full border border-slate-200 flex items-center">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`p-1.5 rounded-full text-xs font-medium flex items-center gap-1 transition-all ${
                 viewMode === 'grid'
                   ? 'bg-white text-[#0052FF] shadow-xs'
                   : 'text-slate-500 hover:text-slate-900'
@@ -208,20 +208,18 @@ export default function AdminCatalogPage() {
               title="Paparan Grid"
             >
               <LayoutGrid className="w-4 h-4" />
-              <span className="hidden sm:inline text-[11px]">Grid</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode('list')}
-              className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`p-1.5 rounded-full text-xs font-medium flex items-center gap-1 transition-all ${
                 viewMode === 'list'
                   ? 'bg-white text-[#0052FF] shadow-xs'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
-              title="Paparan Jadual / Senarai"
+              title="Paparan Jadual"
             >
               <List className="w-4 h-4" />
-              <span className="hidden sm:inline text-[11px]">Jadual</span>
             </button>
           </div>
         </div>
@@ -233,7 +231,7 @@ export default function AdminCatalogPage() {
           {filteredDesigns.map((item) => (
             <div
               key={item.id}
-              className="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between"
+              className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between"
             >
               {/* Image Preview */}
               <div className="relative aspect-square w-full bg-slate-100 overflow-hidden">
@@ -241,27 +239,19 @@ export default function AdminCatalogPage() {
                 <img
                   src={item.thumbnail_url}
                   alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-cover"
                 />
 
-                <div className="absolute top-2 left-2 flex flex-col space-y-1">
-                  <span
-                    className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider backdrop-blur-md ${
-                      item.print_type === 'sublimation'
-                        ? 'bg-[#0052FF] text-white'
-                        : item.print_type === 'dtf'
-                        ? 'bg-amber-600 text-white'
-                        : 'bg-emerald-600 text-white'
-                    }`}
-                  >
+                <div className="absolute top-2.5 left-2.5">
+                  <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-white/90 text-slate-800 shadow-xs uppercase">
                     {item.print_type}
                   </span>
                 </div>
 
                 {item.is_featured && (
-                  <div className="absolute top-2 right-2">
-                    <span className="w-6 h-6 rounded-full bg-amber-400 text-slate-900 flex items-center justify-center shadow-xs">
-                      <Star className="w-3.5 h-3.5 fill-slate-900" />
+                  <div className="absolute top-2.5 right-2.5">
+                    <span className="w-6 h-6 rounded-full bg-white/90 text-amber-500 flex items-center justify-center shadow-xs">
+                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                     </span>
                   </div>
                 )}
@@ -270,11 +260,10 @@ export default function AdminCatalogPage() {
               {/* Info */}
               <div className="p-4 space-y-2 flex-1 flex flex-col justify-between bg-white">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                  <span className="text-[11px] font-medium text-slate-400 block">
                     {item.category}
                   </span>
-                  <h3 className="text-sm font-bold text-slate-900 line-clamp-1">{item.title}</h3>
-                  <p className="text-xs text-slate-500 line-clamp-2 mt-1">{item.description}</p>
+                  <h3 className="text-sm font-semibold text-slate-800 line-clamp-1">{item.title}</h3>
                 </div>
 
                 {/* Tags */}
@@ -282,7 +271,7 @@ export default function AdminCatalogPage() {
                   {(item.tags || []).map((t, idx) => (
                     <span
                       key={idx}
-                      className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600"
+                      className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-slate-100 text-slate-600"
                     >
                       #{t}
                     </span>
@@ -290,10 +279,10 @@ export default function AdminCatalogPage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-end space-x-1.5">
                   <button
                     onClick={() => handleOpenEdit(item)}
-                    className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors flex items-center space-x-1"
+                    className="px-3 py-1.5 rounded-full text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors flex items-center space-x-1"
                   >
                     <Edit className="w-3.5 h-3.5 text-[#0052FF]" />
                     <span>Edit</span>
@@ -301,7 +290,7 @@ export default function AdminCatalogPage() {
 
                   <button
                     onClick={() => handleDelete(item.id)}
-                    className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold transition-colors flex items-center space-x-1"
+                    className="px-3 py-1.5 rounded-full text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors flex items-center space-x-1"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Padam</span>
@@ -317,20 +306,20 @@ export default function AdminCatalogPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <tr className="bg-slate-50 border-b border-slate-100 text-[11px] font-semibold text-slate-500">
                   <th className="py-3 px-4">Gambar</th>
                   <th className="py-3 px-4">Tajuk & Kategori</th>
-                  <th className="py-3 px-4">Teknologi</th>
-                  <th className="py-3 px-4">Tag Kata Kunci</th>
-                  <th className="py-3 px-4">Featured</th>
+                  <th className="py-3 px-4">Teknik</th>
+                  <th className="py-3 px-4">Tag</th>
+                  <th className="py-3 px-4">Pilihan Utama</th>
                   <th className="py-3 px-4 text-right">Tindakan</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
                 {filteredDesigns.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="py-3 px-4">
-                      <div className="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden border border-slate-200 shrink-0">
+                      <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden border border-slate-200 shrink-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={item.thumbnail_url}
@@ -340,19 +329,11 @@ export default function AdminCatalogPage() {
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <p className="font-bold text-slate-900">{item.title}</p>
-                      <p className="text-[11px] text-slate-400 uppercase font-semibold">{item.category}</p>
+                      <p className="font-semibold text-slate-800">{item.title}</p>
+                      <p className="text-[11px] text-slate-400">{item.category}</p>
                     </td>
                     <td className="py-3 px-4">
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
-                          item.print_type === 'sublimation'
-                            ? 'bg-blue-50 text-[#0052FF] border border-blue-200'
-                            : item.print_type === 'dtf'
-                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        }`}
-                      >
+                      <span className="text-[10px] font-medium uppercase text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
                         {item.print_type}
                       </span>
                     </td>
@@ -361,7 +342,7 @@ export default function AdminCatalogPage() {
                         {(item.tags || []).map((t, idx) => (
                           <span
                             key={idx}
-                            className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600"
+                            className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-slate-100 text-slate-600"
                           >
                             #{t}
                           </span>
@@ -370,8 +351,8 @@ export default function AdminCatalogPage() {
                     </td>
                     <td className="py-3 px-4">
                       {item.is_featured ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                          <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600">
+                          <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                           Ya
                         </span>
                       ) : (
@@ -379,17 +360,17 @@ export default function AdminCatalogPage() {
                       )}
                     </td>
                     <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleOpenEdit(item)}
-                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                          className="p-1.5 rounded-full hover:bg-slate-100 text-slate-700 transition-colors"
                           title="Edit"
                         >
                           <Edit className="w-4 h-4 text-[#0052FF]" />
                         </button>
                         <button
                           onClick={() => handleDelete(item.id)}
-                          className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors"
+                          className="p-1.5 rounded-full hover:bg-rose-50 text-rose-600 transition-colors"
                           title="Padam"
                         >
                           <Trash2 className="w-4 h-4" />

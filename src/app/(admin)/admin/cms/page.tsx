@@ -400,68 +400,63 @@ export default function AdminCmsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-50 text-slate-900 overflow-hidden select-none">
-      {/* ----------------- TOP DESKTOP HEADER BAR ----------------- */}
-      <div className="h-16 px-8 border-b border-slate-200 bg-white flex items-center justify-between flex-shrink-0 shadow-xs">
-        <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#0052FF] border border-blue-100 flex items-center justify-center">
-            <Globe className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="font-extrabold text-base text-slate-900 tracking-tight">
-              Pengurus Kandungan & Tema (CMS Studio)
-            </h1>
-            <p className="text-xs text-slate-500">
-              Urus warna tema, banner hero, servis, video, testimoni dan maklumat syarikat secara terus
-            </p>
-          </div>
+    <div className="space-y-6">
+      {/* ----------------- TOP HEADER BAR ----------------- */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-normal text-slate-800 tracking-tight">
+            Kandungan & Tema
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Pengurusan tema warna, hero banner, senarai servis, galeri kilang, dan maklumat syarikat
+          </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2">
           {saveToast && (
-            <div className="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold animate-in fade-in slide-in-from-top-2">
-              <Check className="w-4 h-4 text-emerald-600" />
+            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium animate-in fade-in">
+              <Check className="w-3.5 h-3.5 text-emerald-600" />
               <span>{saveToast}</span>
             </div>
           )}
 
           <button
             onClick={() => {
-              if (confirm('Tetapkan semula semua data CMS dan Tema ke nilai asal kilang?')) {
+              if (confirm('Tetapkan semula semua data CMS dan Tema ke nilai asal?')) {
                 resetToSeedData();
-                triggerToast('Semua tetapan dikembalikan ke nilai lalai asal!');
+                triggerToast('Semua tetapan dikembalikan ke nilai lalai asal');
               }
             }}
-            className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition-colors"
+            className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-xs transition-colors"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Data Asal</span>
+            <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+            <span>Reset Lalai</span>
           </button>
 
           <Link
             href="/"
             target="_blank"
-            className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-[#0052FF] hover:bg-blue-600 text-white text-xs font-bold shadow-xs transition-colors"
+            className="flex items-center space-x-1.5 px-4 py-1.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-colors"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-3.5 h-3.5" />
             <span>Lihat Laman Awam</span>
-            <ExternalLink className="w-3.5 h-3.5" />
+            <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
           </Link>
         </div>
       </div>
 
       {/* ----------------- CMS SECTION TABS ----------------- */}
-      <div className="px-8 py-2.5 bg-white border-b border-slate-200 flex items-center space-x-2 overflow-x-auto scrollbar-none flex-shrink-0">
+      <div className="bg-slate-100 p-1 rounded-full border border-slate-200 flex items-center space-x-1 overflow-x-auto scrollbar-none">
         {[
-          { id: 'theme', label: 'Tema & Warna', icon: Palette, highlight: true },
+          { id: 'theme', label: 'Tema & Warna', icon: Palette },
           { id: 'hero', label: 'Hero Banner', icon: ImageIcon, count: heroBanners.length },
-          { id: 'services', label: 'Pilihan Servis', icon: Layers, count: services.length },
-          { id: 'slogan', label: 'Kad Slogan & CTA', icon: Quote },
-          { id: 'videos', label: 'Video Produksi', icon: Video, count: productionVideos.length },
-          { id: 'gallery', label: 'Hasil Produksi', icon: ImageIcon, count: productionGallery.length },
+          { id: 'services', label: 'Servis', icon: Layers, count: services.length },
+          { id: 'slogan', label: 'Slogan & CTA', icon: Quote },
+          { id: 'videos', label: 'Video', icon: Video, count: productionVideos.length },
+          { id: 'gallery', label: 'Galeri Kilang', icon: ImageIcon, count: productionGallery.length },
           { id: 'testimonials', label: 'Testimoni', icon: Star, count: testimonials.length },
-          { id: 'company', label: 'Identiti Syarikat', icon: Building2 },
-          { id: 'policies', label: 'Dasar & Polisi', icon: FileText },
+          { id: 'company', label: 'Syarikat', icon: Building2 },
+          { id: 'policies', label: 'Polisi', icon: FileText },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -469,16 +464,16 @@ export default function AdminCmsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap ${
+              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
                 isActive
-                  ? 'bg-[#0052FF] text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : tab.highlight ? 'text-[#0052FF]' : 'text-slate-500'}`} />
+              <Icon className="w-3.5 h-3.5" />
               <span>{tab.label}</span>
               {tab.count !== undefined && (
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-medium ${isActive ? 'bg-slate-100 text-slate-700' : 'text-slate-400'}`}>
                   {tab.count}
                 </span>
               )}
@@ -487,8 +482,8 @@ export default function AdminCmsPage() {
         })}
       </div>
 
-      {/* ----------------- MAIN DESKTOP TAB CONTENT AREA ----------------- */}
-      <div className="flex-1 overflow-y-auto p-8 bg-slate-50 space-y-6">
+      {/* ----------------- MAIN TAB CONTENT AREA ----------------- */}
+      <div className="space-y-6">
 
         {/* =========================================================================
             TAB 0: TEMA & WARNA (THEME STUDIO)
