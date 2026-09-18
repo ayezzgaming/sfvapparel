@@ -37,32 +37,75 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanPrompt = prompt.trim();
-    const geminiKey = userApiKey?.trim() || process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
+    const rawKey = userApiKey?.trim() || process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY || process.env.GEMINI_API_KEY;
 
-    // If Gemini Key is present, attempt cloud model call
-    if (geminiKey) {
+    // 1. Check if Key is a Free Groq API Key (starts with gsk_)
+    if (rawKey && rawKey.startsWith('gsk_')) {
       try {
-        const aiResponse = await callGeminiWithFallbacks(geminiKey, {
+        const groqResult = await callGroqApi(rawKey, {
           prompt: cleanPrompt,
           platform,
           objective,
           productName,
           category,
         });
-
-        if (aiResponse && aiResponse.length > 0) {
+        if (groqResult && groqResult.length > 0) {
           return NextResponse.json({
             success: true,
-            source: 'gemini-cloud',
-            variations: aiResponse,
+            source: 'groq-llama-3.3-70b',
+            variations: groqResult,
           });
         }
       } catch (err: any) {
-        console.warn('Gemini API call failed (Falling back to Semantic NLP Engine):', err?.message);
+        console.warn('Groq API call failed:', err?.message);
       }
     }
 
-    // High-Precision Semantic Marketing Engine (produces fluent, natural Bahasa Melayu copy)
+    // 2. Check if Key is OpenRouter Key (starts with sk-or-)
+    if (rawKey && rawKey.startsWith('sk-or-')) {
+      try {
+        const orResult = await callOpenRouterApi(rawKey, {
+          prompt: cleanPrompt,
+          platform,
+          objective,
+          productName,
+          category,
+        });
+        if (orResult && orResult.length > 0) {
+          return NextResponse.json({
+            success: true,
+            source: 'openrouter-free',
+            variations: orResult,
+          });
+        }
+      } catch (err: any) {
+        console.warn('OpenRouter API call failed:', err?.message);
+      }
+    }
+
+    // 3. Check Google Gemini Cloud Key
+    if (rawKey && !rawKey.startsWith('gsk_') && !rawKey.startsWith('sk-or-')) {
+      try {
+        const geminiResult = await callGeminiWithFallbacks(rawKey, {
+          prompt: cleanPrompt,
+          platform,
+          objective,
+          productName,
+          category,
+        });
+        if (geminiResult && geminiResult.length > 0) {
+          return NextResponse.json({
+            success: true,
+            source: 'gemini-cloud',
+            variations: geminiResult,
+          });
+        }
+      } catch (err: any) {
+        console.warn('Gemini API call failed:', err?.message);
+      }
+    }
+
+    // 4. Default High-Precision Semantic Marketing Engine (100% Free, Instant, Zero Dependency)
     const synthesized = generateSemanticMarketingCopy({
       prompt: cleanPrompt,
       platform,
@@ -74,7 +117,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       source: 'semantic-ai-engine',
-      hasApiKey: Boolean(geminiKey),
+      hasApiKey: Boolean(rawKey),
       variations: synthesized,
     });
   } catch (error: any) {
@@ -83,6 +126,133 @@ export async function POST(req: NextRequest) {
   }
 }
 
+/**
+ * Groq Llama 3.3 70B Versatile API (100% Free, Ultra Fast)
+ */
+async function callGroqApi(
+  apiKey: string,
+  params: { prompt: string; platform: string; objective: string; productName: string; category: string }
+): Promise<AiVariation[] | null> {
+  const systemPrompt = `Anda ialah Pakar Strategi Pemasaran Iklan & Penulis Copywriting Berprestasi Tinggi untuk kilang jersi dan pakaian SVF APPAREL Malaysia.
+Tugasan anda adalah menjana 3 sudut kempen iklan berbeza yang persuasif, natural dalam Bahasa Melayu, dan mengikut algoritma platform ${params.platform}.
+
+ARAHAN KETAT:
+1. SIFAR EMOJI & EMOTIKON. Jangan masukkan sebarang simbol atau emoji apa jua.
+2. Hasil mestilah format JSON array mengandungi tepat 3 objek:
+[
+  {
+    "id": "var-1",
+    "angleName": "Sudut Tawaran & Penjimatan Kilang",
+    "tagline": "Diskaun Kuantiti & Harga Terus Dari Kilang",
+    "headline": "Tajuk iklan yang padat dan menarik (< 50 aksara)",
+    "secondaryHeadline": "Sub-tajuk penegasan USP (< 60 aksara)",
+    "primaryText": "Perenggan copywriting 2-4 ayat yang persuasif menerangkan kelebihan produk mengikut tema pengguna.",
+    "callToAction": "Dapatkan Sebut Harga",
+    "whatsappMessage": "Salam SVF Apparel, saya ingin mendapatkan sebut harga..."
+  }
+]
+Keluarkan HANYA teks JSON sah.`;
+
+  const userContent = `Tema Iklan: "${params.prompt}"
+Produk: ${params.productName} (${params.category})
+Platform: ${params.platform}
+Objektif: ${params.objective}`;
+
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userContent },
+      ],
+      temperature: 0.7,
+      response_format: { type: 'json_object' },
+    }),
+  });
+
+  if (!res.ok) return null;
+  const data = await res.json();
+  const rawText = data.choices?.[0]?.message?.content;
+  if (!rawText) return null;
+
+  try {
+    const parsed = JSON.parse(rawText);
+    const arr = Array.isArray(parsed) ? parsed : parsed.variations || Object.values(parsed)[0];
+    if (Array.isArray(arr) && arr.length >= 3) {
+      return arr.slice(0, 3).map((item: any, idx: number) => ({
+        id: item.id || `var-groq-${idx + 1}`,
+        angleName: cleanNoEmoji(item.angleName || `Sudut Strategi ${idx + 1}`),
+        tagline: cleanNoEmoji(item.tagline || 'Pilihan Khas'),
+        headline: cleanNoEmoji(item.headline || 'Kilang Cetak Jersi Sublimasi & DTF'),
+        secondaryHeadline: cleanNoEmoji(item.secondaryHeadline || 'Kualiti Terjamin Dari SVF APPAREL'),
+        primaryText: cleanNoEmoji(item.primaryText || ''),
+        callToAction: cleanNoEmoji(item.callToAction || 'Hubungi Kami'),
+        whatsappMessage: cleanNoEmoji(item.whatsappMessage || 'Salam SVF, saya berminat.'),
+      }));
+    }
+  } catch {}
+  return null;
+}
+
+/**
+ * OpenRouter Free Tier Models API
+ */
+async function callOpenRouterApi(
+  apiKey: string,
+  params: { prompt: string; platform: string; objective: string; productName: string; category: string }
+): Promise<AiVariation[] | null> {
+  const systemPrompt = `Anda ialah Pakar Strategi Pemasaran Iklan SVF APPAREL Malaysia. Hasilkan 3 sudut copywriting iklan JSON tanpa sebarang emoji.`;
+  const userContent = `Tema: "${params.prompt}", Produk: ${params.productName}, Platform: ${params.platform}. Return JSON array of 3 variations with keys: id, angleName, tagline, headline, secondaryHeadline, primaryText, callToAction, whatsappMessage.`;
+
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'meta-llama/llama-3.3-70b-instruct:free',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userContent },
+      ],
+      temperature: 0.7,
+    }),
+  });
+
+  if (!res.ok) return null;
+  const data = await res.json();
+  const rawText = data.choices?.[0]?.message?.content;
+  if (!rawText) return null;
+
+  try {
+    const clean = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    const arr = Array.isArray(parsed) ? parsed : parsed.variations;
+    if (Array.isArray(arr) && arr.length >= 3) {
+      return arr.slice(0, 3).map((item: any, idx: number) => ({
+        id: item.id || `var-or-${idx + 1}`,
+        angleName: cleanNoEmoji(item.angleName || `Sudut Strategi ${idx + 1}`),
+        tagline: cleanNoEmoji(item.tagline || 'Pilihan Khas'),
+        headline: cleanNoEmoji(item.headline || 'Kilang Cetak Jersi Sublimasi & DTF'),
+        secondaryHeadline: cleanNoEmoji(item.secondaryHeadline || 'Kualiti Terjamin Dari SVF APPAREL'),
+        primaryText: cleanNoEmoji(item.primaryText || ''),
+        callToAction: cleanNoEmoji(item.callToAction || 'Hubungi Kami'),
+        whatsappMessage: cleanNoEmoji(item.whatsappMessage || 'Salam SVF, saya berminat.'),
+      }));
+    }
+  } catch {}
+  return null;
+}
+
+/**
+ * Gemini Multi-Model Call
+ */
 async function callGeminiWithFallbacks(
   apiKey: string,
   params: { prompt: string; platform: string; objective: string; productName: string; category: string }
@@ -95,33 +265,7 @@ async function callGeminiWithFallbacks(
     'gemini-1.5-pro',
   ];
 
-  const systemPrompt = `Anda ialah Pakar Strategi Pemasaran Iklan & Penulis Copywriting Berprestasi Tinggi (Performance Marketing Copywriter) untuk kilang jersi dan pakaian SVF APPAREL Malaysia.
-
-Tugasan anda adalah menjana 3 sudut kempen iklan yang berbeza, sangat meyakinkan, fasih, dan menarik untuk audiens di Malaysia.
-
-ARAHAN KETAT:
-1. SIFAR EMOJI & EMOTIKON. Jangan masukkan sebarang simbol atau emoji (seperti api, petir, piala, tanda tik, dan lain-lain).
-2. Bahasa Melayu yang fasih, komersial, natural, dan profesional.
-3. Fahami intipati arahan pengguna (cth: jika Hari Sukan -> fokus kepada semangat berpasukan, kain sejuk Drifit, siap pantas).
-4. Hasil mestilah 3 sudut penukaran berbeza:
-   - Sudut 1: Tawaran, Penjimatan & Harga Terus Dari Kilang
-   - Sudut 2: Kualiti Material Drifit Sejuk & Rekaan Premium
-   - Sudut 3: Kelajuan Siap Pantas & Jaminan Tarikh Acara
-
-Output mestilah format JSON array mengandungi tepat 3 objek:
-[
-  {
-    "id": "var-1",
-    "angleName": "Sudut Tawaran & Penjimatan Kilang",
-    "tagline": "Diskaun Kuantiti & Harga Terus Dari Kilang",
-    "headline": "Tajuk iklan yang padat dan menarik (< 50 aksara)",
-    "secondaryHeadline": "Sub-tajuk penegasan USP (< 60 aksara)",
-    "primaryText": "Perenggan copywriting 2-4 ayat yang persuasif menerangkan kelebihan produk mengikut tema pengguna.",
-    "callToAction": "Dapatkan Sebut Harga",
-    "whatsappMessage": "Salam SVF Apparel, saya ingin mendapatkan sebut harga..."
-  }
-]`;
-
+  const systemPrompt = `Anda ialah Pakar Strategi Pemasaran Iklan & Penulis Copywriting Berprestasi Tinggi untuk kilang jersi SVF APPAREL Malaysia. SIFAR EMOJI. Format JSON array of 3 objects.`;
   const userContent = `Tema / Brief Iklan: "${params.prompt}"
 Produk Utama: ${params.productName} (${params.category})
 Platform Sasaran: ${params.platform}
@@ -134,23 +278,12 @@ Objektif: ${params.objective}`;
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [
-            {
-              role: 'user',
-              parts: [{ text: `${systemPrompt}\n\n${userContent}` }],
-            },
-          ],
-          generationConfig: {
-            temperature: 0.7,
-            topP: 0.9,
-            maxOutputTokens: 1500,
-            responseMimeType: 'application/json',
-          },
+          contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${userContent}` }] }],
+          generationConfig: { temperature: 0.7, topP: 0.9, maxOutputTokens: 1500, responseMimeType: 'application/json' },
         }),
       });
 
       if (!res.ok) continue;
-
       const data = await res.json();
       const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!rawText) continue;
@@ -170,9 +303,7 @@ Objektif: ${params.objective}`;
           whatsappMessage: cleanNoEmoji(item.whatsappMessage || 'Salam SVF, saya berminat.'),
         }));
       }
-    } catch {
-      // try next model
-    }
+    } catch {}
   }
 
   return null;

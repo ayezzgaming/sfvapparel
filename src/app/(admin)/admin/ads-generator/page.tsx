@@ -869,8 +869,8 @@ ${activeVariation.whatsappMessage}`;
                   <Key className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-slate-900">Tetapan Google Gemini AI</h3>
-                  <p className="text-xs text-slate-400">Sambungkan kunci API untuk model LLM langsung.</p>
+                  <h3 className="text-sm font-medium text-slate-900">Tetapan Model AI (Pilihan Anda)</h3>
+                  <p className="text-xs text-slate-400">Menyokong Groq (Llama 3.3 Percuma), OpenRouter, atau Gemini.</p>
                 </div>
               </div>
               <button
@@ -885,23 +885,34 @@ ${activeVariation.whatsappMessage}`;
             <div className="space-y-3 pt-1">
               <div>
                 <label className="text-xs font-medium text-slate-700 block mb-1.5">
-                  Google Gemini API Key
+                  Kunci API (Groq / OpenRouter / Gemini)
                 </label>
                 <input
                   type="password"
                   value={geminiApiKey}
                   onChange={(e) => setGeminiApiKey(e.target.value)}
-                  placeholder="AIzaSy..."
+                  placeholder="gsk_... / sk-or-... / AIzaSy..."
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
                 />
               </div>
 
-              <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 text-[11px] text-slate-600 space-y-1.5">
-                <p className="font-medium text-slate-800">Panduan Kunci API Google AI Studio:</p>
-                <p>1. Buka <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="font-mono text-blue-600 underline">aistudio.google.com/app/apikey</a>.</p>
-                <p>2. Tekan butang <strong>&ldquo;Create API key&rdquo;</strong> dan pilih <em>&ldquo;Create API key in new project&rdquo;</em> (percuma & aktif serta-merta).</p>
-                <p>3. Salin kunci (bermula dengan <span className="font-mono text-slate-700">AIzaSy...</span>) dan tampalkan di atas.</p>
-                <p className="text-slate-500 pt-0.5"><em>Nota: Sekiranya dikosongkan atau menggunakan kunci lain, sistem menggunakan Enjin Semantik SVF secara automatik.</em></p>
+              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 text-[11px] text-slate-600 space-y-2">
+                <p className="font-semibold text-slate-900">Pilihan Model AI Percuma:</p>
+                <div className="space-y-1">
+                  <p>
+                    <strong>1. Groq Cloud (Disyorkan - 100% Percuma):</strong>
+                    <br />
+                    Buka <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="font-mono text-blue-600 underline">console.groq.com/keys</a>, daftar percuma dan salin kunci bermula dengan <span className="font-mono text-slate-800 font-bold">gsk_...</span>.
+                  </p>
+                  <p>
+                    <strong>2. OpenRouter (Percuma):</strong>
+                    <br />
+                    Buka <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="font-mono text-blue-600 underline">openrouter.ai/keys</a> (kunci bermula dengan <span className="font-mono text-slate-800 font-bold">sk-or-...</span>).
+                  </p>
+                  <p className="text-slate-500 pt-1 border-t border-slate-200/60">
+                    <em>3. Tanpa Kunci: Kosongkan ruangan dan sistem akan menggunakan Enjin AI Semantik SVF secara automatik.</em>
+                  </p>
+                </div>
               </div>
             </div>
 
