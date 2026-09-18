@@ -127,75 +127,87 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * Groq Llama 3.3 70B Versatile API (100% Free, Ultra Fast)
+ * Groq Cloud Models (100% Free, Ultra Fast & High Precision)
  */
 async function callGroqApi(
   apiKey: string,
   params: { prompt: string; platform: string; objective: string; productName: string; category: string }
 ): Promise<AiVariation[] | null> {
+  const candidateModels = [
+    'openai/gpt-oss-120b',
+    'qwen/qwen3.8-27b',
+    'groq/compound',
+    'openai/gpt-oss-20b',
+  ];
+
   const systemPrompt = `Anda ialah Pakar Strategi Pemasaran Iklan & Penulis Copywriting Berprestasi Tinggi untuk kilang jersi dan pakaian SVF APPAREL Malaysia.
-Tugasan anda adalah menjana 3 sudut kempen iklan berbeza yang persuasif, natural dalam Bahasa Melayu, dan mengikut algoritma platform ${params.platform}.
+Tugasan anda adalah menjana 3 sudut kempen iklan berbeza yang sangat meyakinkan dalam Bahasa Melayu untuk platform ${params.platform}.
 
 ARAHAN KETAT:
-1. SIFAR EMOJI & EMOTIKON. Jangan masukkan sebarang simbol atau emoji apa jua.
-2. Hasil mestilah format JSON array mengandungi tepat 3 objek:
+1. SIFAR EMOJI & EMOTIKON. Jangan gunakan sebarang simbol atau emoji (seperti api, petir, piala, dll).
+2. Keluarkan HANYA JSON array tepat 3 objek dengan struktur:
 [
   {
     "id": "var-1",
     "angleName": "Sudut Tawaran & Penjimatan Kilang",
-    "tagline": "Diskaun Kuantiti & Harga Terus Dari Kilang",
+    "tagline": "Diskaun Kuantiti Terus Dari Kilang",
     "headline": "Tajuk iklan yang padat dan menarik (< 50 aksara)",
     "secondaryHeadline": "Sub-tajuk penegasan USP (< 60 aksara)",
     "primaryText": "Perenggan copywriting 2-4 ayat yang persuasif menerangkan kelebihan produk mengikut tema pengguna.",
     "callToAction": "Dapatkan Sebut Harga",
     "whatsappMessage": "Salam SVF Apparel, saya ingin mendapatkan sebut harga..."
   }
-]
-Keluarkan HANYA teks JSON sah.`;
+]`;
 
   const userContent = `Tema Iklan: "${params.prompt}"
 Produk: ${params.productName} (${params.category})
 Platform: ${params.platform}
 Objektif: ${params.objective}`;
 
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userContent },
-      ],
-      temperature: 0.7,
-      response_format: { type: 'json_object' },
-    }),
-  });
+  for (const model of candidateModels) {
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userContent },
+          ],
+          temperature: 0.7,
+        }),
+      });
 
-  if (!res.ok) return null;
-  const data = await res.json();
-  const rawText = data.choices?.[0]?.message?.content;
-  if (!rawText) return null;
+      if (!res.ok) continue;
+      const data = await res.json();
+      const rawText = data.choices?.[0]?.message?.content;
+      if (!rawText) continue;
 
-  try {
-    const parsed = JSON.parse(rawText);
-    const arr = Array.isArray(parsed) ? parsed : parsed.variations || Object.values(parsed)[0];
-    if (Array.isArray(arr) && arr.length >= 3) {
-      return arr.slice(0, 3).map((item: any, idx: number) => ({
-        id: item.id || `var-groq-${idx + 1}`,
-        angleName: cleanNoEmoji(item.angleName || `Sudut Strategi ${idx + 1}`),
-        tagline: cleanNoEmoji(item.tagline || 'Pilihan Khas'),
-        headline: cleanNoEmoji(item.headline || 'Kilang Cetak Jersi Sublimasi & DTF'),
-        secondaryHeadline: cleanNoEmoji(item.secondaryHeadline || 'Kualiti Terjamin Dari SVF APPAREL'),
-        primaryText: cleanNoEmoji(item.primaryText || ''),
-        callToAction: cleanNoEmoji(item.callToAction || 'Hubungi Kami'),
-        whatsappMessage: cleanNoEmoji(item.whatsappMessage || 'Salam SVF, saya berminat.'),
-      }));
+      const cleanJson = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(cleanJson);
+      const arr = Array.isArray(parsed) ? parsed : parsed.variations || Object.values(parsed).find(Array.isArray);
+
+      if (Array.isArray(arr) && arr.length >= 3) {
+        return arr.slice(0, 3).map((item: any, idx: number) => ({
+          id: item.id || `var-groq-${idx + 1}`,
+          angleName: cleanNoEmoji(item.angleName || `Sudut Strategi ${idx + 1}`),
+          tagline: cleanNoEmoji(item.tagline || 'Pilihan Khas'),
+          headline: cleanNoEmoji(item.headline || 'Kilang Cetak Jersi Sublimasi & DTF'),
+          secondaryHeadline: cleanNoEmoji(item.secondaryHeadline || 'Kualiti Terjamin Dari SVF APPAREL'),
+          primaryText: cleanNoEmoji(item.primaryText || ''),
+          callToAction: cleanNoEmoji(item.callToAction || 'Hubungi Kami'),
+          whatsappMessage: cleanNoEmoji(item.whatsappMessage || 'Salam SVF, saya berminat.'),
+        }));
+      }
+    } catch {
+      // try next model
     }
-  } catch {}
+  }
+
   return null;
 }
 
