@@ -539,13 +539,13 @@ export default function PlatformConnectCard({
       // Ignore
     }
 
-    let cleanAccId = (testResult?.accountId || field1Input.trim());
+    let cleanInput = field1Input.trim();
     if (config.field1Prefix === 'act_') {
-      cleanAccId = `act_${cleanAccId.replace(/^act_/i, '')}`;
+      cleanInput = `act_${cleanInput.replace(/^act_/i, '')}`;
     } else if (config.field1Prefix === 'waba_') {
-      cleanAccId = `waba_${cleanAccId.replace(/^waba_/i, '')}`;
+      cleanInput = `waba_${cleanInput.replace(/^waba_/i, '')}`;
     }
-    const effectiveAccountId = cleanAccId;
+    const effectiveAccountId = cleanInput || testResult?.accountId || field1Input.trim();
 
     const effectivePixelId = field3Input.trim() 
       ? (config.field3Prefix === 'pix_' ? `pix_${field3Input.trim().replace(/^pix_/i, '')}` : field3Input.trim())

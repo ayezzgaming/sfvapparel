@@ -165,12 +165,26 @@ export async function verifyMetaConnection(
             });
             if (adAccRes.ok) {
               const adAccData = await adAccRes.json();
-              if (adAccData.data && adAccData.data.length > 0) {
-                const primaryAcc = adAccData.data[0];
-                adAccountName = primaryAcc.name || '';
-                actualAdAccountId = primaryAcc.id || formattedActId;
-                foundCurrency = primaryAcc.currency || 'MYR';
-                foundBalance = primaryAcc.balance ? Number(primaryAcc.balance) / 100 : 0;
+              if (adAccData.data && Array.isArray(adAccData.data)) {
+                const matchedAcc = adAccData.data.find(
+                  (a: any) =>
+                    a.id === formattedActId ||
+                    a.id === cleanId ||
+                    a.id === `act_${cleanId}` ||
+                    a.account_id === cleanId
+                );
+                if (matchedAcc) {
+                  adAccountName = matchedAcc.name || '';
+                  actualAdAccountId = matchedAcc.id?.startsWith('act_') ? matchedAcc.id : `act_${matchedAcc.id}`;
+                  foundCurrency = matchedAcc.currency || 'MYR';
+                  foundBalance = matchedAcc.balance ? Number(matchedAcc.balance) / 100 : 0;
+                } else if (adAccData.data.length > 0 && !cleanId) {
+                  const primaryAcc = adAccData.data[0];
+                  adAccountName = primaryAcc.name || '';
+                  actualAdAccountId = primaryAcc.id?.startsWith('act_') ? primaryAcc.id : `act_${primaryAcc.id}`;
+                  foundCurrency = primaryAcc.currency || 'MYR';
+                  foundBalance = primaryAcc.balance ? Number(primaryAcc.balance) / 100 : 0;
+                }
               }
             }
           } catch {
