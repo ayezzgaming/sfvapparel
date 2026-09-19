@@ -53,10 +53,14 @@ export interface AdCampaign {
   dailyBudget: number;
   spent: number;
   clicks: number;
+  linkClicks?: number;
   impressions: number;
+  reach?: number;
   leadsOrConversions: number;
+  resultLabel?: string;
   cpc: number;
   createdAt: string;
   creative: AdCreative;
   evaluationNote?: string;
+  rawActions?: { type: string; value: number }[];
 }

@@ -336,6 +336,9 @@ export default function PlatformConnectCard({
   const [liveTotalSpent, setLiveTotalSpent] = useState<number | null>(null);
   const [liveTotalLeads, setLiveTotalLeads] = useState<number | null>(null);
   const [liveCostPerLead, setLiveCostPerLead] = useState<number | null>(null);
+  const [livePrimaryResultLabel, setLivePrimaryResultLabel] = useState<string>('Hasil / Prospek');
+  const [liveTotalLinkClicks, setLiveTotalLinkClicks] = useState<number | null>(null);
+  const [liveTotalReach, setLiveTotalReach] = useState<number | null>(null);
   const [selectedDatePreset, setSelectedDatePreset] = useState<string>('maximum');
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
@@ -1183,18 +1186,37 @@ export default function PlatformConnectCard({
                   </span>
                 </div>
                 <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                  <span className="text-[10px] text-slate-400 block uppercase font-medium">Prospek WhatsApp</span>
+                  <span className="text-[10px] text-slate-400 block uppercase font-medium truncate" title={livePrimaryResultLabel}>
+                    {livePrimaryResultLabel}
+                  </span>
                   <span className="text-sm font-semibold text-emerald-600 font-mono">
-                    {realTotalLeads} Orang
+                    {realTotalLeads} {realTotalLeads > 0 ? (livePrimaryResultLabel.toLowerCase().includes('klik') ? 'Klik' : 'Orang') : ''}
                   </span>
                 </div>
                 <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                  <span className="text-[10px] text-slate-400 block uppercase font-medium">Kos / Prospek</span>
+                  <span className="text-[10px] text-slate-400 block uppercase font-medium">Kos / Hasil</span>
                   <span className="text-sm font-semibold text-slate-900 font-mono">
                     {realTotalLeads > 0 ? `RM ${realCostPerLead.toFixed(2)}` : 'Tiada Data'}
                   </span>
                 </div>
               </div>
+
+              {/* Secondary Live Breakdown: Jangkauan, Paparan, Klik Pautan */}
+              {(realTotalImpressions > 0 || (liveTotalReach !== null && liveTotalReach > 0)) && (
+                <div className="flex items-center justify-between px-3.5 py-2 bg-slate-50/90 rounded-2xl text-[10px] text-slate-600 font-mono border border-slate-200/60 shadow-2xs">
+                  <span>
+                    Jangkauan: <strong className="text-slate-900">{(liveTotalReach || 0).toLocaleString()}</strong>
+                  </span>
+                  <span>•</span>
+                  <span>
+                    Paparan: <strong className="text-slate-900">{realTotalImpressions.toLocaleString()}</strong>
+                  </span>
+                  <span>•</span>
+                  <span>
+                    Klik Pautan: <strong className="text-slate-900">{(liveTotalLinkClicks || 0).toLocaleString()}</strong>
+                  </span>
+                </div>
+              )}
 
               {/* Status synchronization info */}
               {syncStatusMsg && (
@@ -1256,10 +1278,16 @@ export default function PlatformConnectCard({
                               {c.status === 'active' ? 'Aktif' : 'Dijeda'}
                             </span>
                           </div>
-                          <div className="flex items-center space-x-3 text-[10px] text-slate-400 font-mono">
-                            <span>{c.clicks} klik</span>
+                          <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-mono flex-wrap">
+                            <span>{c.linkClicks && c.linkClicks > 0 ? `${c.linkClicks} klik pautan` : `${c.clicks} klik`}</span>
                             <span>•</span>
                             <span>{c.impressions.toLocaleString()} paparan</span>
+                            {c.reach && c.reach > 0 ? (
+                              <>
+                                <span>•</span>
+                                <span>{c.reach.toLocaleString()} jangkauan</span>
+                              </>
+                            ) : null}
                             <span>•</span>
                             <span>
                               {c.dailyBudget && c.dailyBudget > 0
@@ -1272,7 +1300,7 @@ export default function PlatformConnectCard({
                         <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-200/50">
                           <div className="text-left sm:text-right">
                             <span className="font-semibold text-emerald-600 font-mono text-xs block">
-                              {c.leadsOrConversions} Prospek
+                              {c.leadsOrConversions} {c.resultLabel || 'Hasil'}
                             </span>
                             <span className="text-[10px] text-slate-500 font-mono">
                               RM {c.spent.toFixed(2)}
