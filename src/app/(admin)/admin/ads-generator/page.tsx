@@ -75,6 +75,7 @@ export default function AdminAdsGeneratorPage() {
   const [apiKey, setApiKey] = useState('');
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
+  const [showAdvisor, setShowAdvisor] = useState(true);
 
   // Attachments State (+ button)
   const [showAttachMenu, setShowAttachMenu] = useState(false);
@@ -400,7 +401,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
   };
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 text-slate-900 font-sans">
+    <div className="space-y-4 w-full px-2 sm:px-4 lg:px-6 py-2 text-slate-900 font-sans">
       {/* Hidden File Input for Image Upload */}
       <input
         ref={fileInputRef}
@@ -684,8 +685,8 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
               <div className="animate-in fade-in">
                 {/* 2-Column Split: Left Platform Nav & Settings, Right Contained Live Preview Canvas */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-                  {/* LEFT COLUMN (lg:col-span-4): Clean Static Controls & Actions */}
-                  <div className="lg:col-span-4 space-y-3">
+                  {/* LEFT COLUMN (lg:col-span-4 xl:col-span-3): Clean Static Controls & Actions */}
+                  <div className="lg:col-span-4 xl:col-span-3 space-y-3">
                     {/* Platform Selector */}
                     <div className="bg-slate-50/90 rounded-3xl p-2 space-y-1 border border-slate-200/60 shadow-2xs">
                       {[
@@ -803,7 +804,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                           type="button"
                           onClick={handleGenerateAi}
                           disabled={isGeneratingAi}
-                          className="px-3.5 py-2 rounded-xl text-xs font-medium bg-slate-900 hover:bg-black text-white transition-colors flex items-center justify-center space-x-1.5"
+                          className="px-3.5 py-2 rounded-xl text-xs font-medium bg-slate-900 hover:bg-black text-white transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
                         >
                           <RefreshCw className={`w-3 h-3 ${isGeneratingAi ? 'animate-spin' : ''}`} />
                           <span>Jana Semula</span>
@@ -836,7 +837,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                         <button
                           type="button"
                           onClick={handleCopyContent}
-                          className="w-full py-2 rounded-xl text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 border border-slate-200/80 transition-all flex items-center justify-center space-x-1.5"
+                          className="w-full py-2 rounded-xl text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 border border-slate-200/80 transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
                         >
                           {copied ? (
                             <>
@@ -854,32 +855,57 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     </div>
                   </div>
 
-                  {/* RIGHT COLUMN (lg:col-span-8): Contained Live Preview & SMM Marketing Intelligence Studio */}
-                  <div className="lg:col-span-8">
+                  {/* RIGHT COLUMN (lg:col-span-8 xl:col-span-9): Spacious Contained Live Preview Studio */}
+                  <div className="lg:col-span-8 xl:col-span-9">
                     <div className="bg-slate-50/70 rounded-3xl p-4 sm:p-5 border border-slate-200/60 max-h-[calc(100vh-140px)] overflow-y-auto space-y-4">
-                      <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
-                        {/* Live Ad Preview Frame (xl:col-span-7) */}
-                        <div className="xl:col-span-7 flex flex-col items-center justify-center">
+                      {/* Top Action Bar inside Preview Canvas */}
+                      <div className="flex items-center justify-between gap-2 pb-1 border-b border-slate-200/40">
+                        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                          Kanvas Pratonton Interaktif
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setShowAdvisor(!showAdvisor)}
+                          className="px-3 py-1 rounded-full text-[11px] font-medium text-slate-700 hover:text-slate-900 bg-white border border-slate-200/80 shadow-2xs hover:bg-slate-50 transition-colors flex items-center space-x-1.5 cursor-pointer"
+                        >
+                          <SlidersHorizontal className="w-3 h-3 text-slate-500" />
+                          <span>{showAdvisor ? 'Sembunyi Penasihat SMM' : 'Buka Penasihat SMM (AI)'}</span>
+                        </button>
+                      </div>
+
+                      {showAdvisor ? (
+                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+                          {/* Live Ad Preview Frame (xl:col-span-7) */}
+                          <div className="xl:col-span-7 flex flex-col items-center justify-center">
+                            <AdPreviewCard
+                              platform={selectedPlatform}
+                              creative={currentCreative}
+                              connectedAccount={platforms.find((p) => p.id === selectedPlatform)}
+                            />
+                          </div>
+
+                          {/* SMM AI Marketing Advisor Panel (xl:col-span-5) */}
+                          <div className="xl:col-span-5">
+                            <AiAdAdvisorPanel
+                              platform={selectedPlatform}
+                              creative={currentCreative}
+                              dailyBudget={dailyBudget}
+                              productTitle={activeDesign?.title || customTitle || 'Jersi Sukan Sublimasi'}
+                              onApplyBudgetRecommendation={(b) => setDailyBudget(b)}
+                              onOptimizeCopy={handleGenerateAi}
+                              isOptimizing={isGeneratingAi}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-full max-w-xl mx-auto flex flex-col items-center justify-center py-2">
                           <AdPreviewCard
                             platform={selectedPlatform}
                             creative={currentCreative}
                             connectedAccount={platforms.find((p) => p.id === selectedPlatform)}
                           />
                         </div>
-
-                        {/* SMM AI Marketing Advisor Panel (xl:col-span-5) */}
-                        <div className="xl:col-span-5">
-                          <AiAdAdvisorPanel
-                            platform={selectedPlatform}
-                            creative={currentCreative}
-                            dailyBudget={dailyBudget}
-                            productTitle={activeDesign?.title || customTitle || 'Jersi Sukan Sublimasi'}
-                            onApplyBudgetRecommendation={(b) => setDailyBudget(b)}
-                            onOptimizeCopy={handleGenerateAi}
-                            isOptimizing={isGeneratingAi}
-                          />
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
