@@ -46,7 +46,8 @@ import {
   EyeOff,
   ArrowUp,
   Layers,
-  Bookmark
+  Bookmark,
+  Clock
 } from 'lucide-react';
 
 interface AiVariation {
@@ -68,6 +69,7 @@ export default function AdminAdsGeneratorPage() {
   const [activeTab, setActiveTab] = useState<'create' | 'connections' | 'campaigns'>('create');
   const [studioStep, setStudioStep] = useState<'prompt' | 'result'>('prompt');
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
   const [adFormat, setAdFormat] = useState<'feed' | 'story' | 'reels'>('feed');
 
   // Platforms & Campaigns Data
@@ -333,6 +335,7 @@ export default function AdminAdsGeneratorPage() {
         else if (data.source?.includes('openrouter')) setAiSource('openrouter');
         setStudioStep('result');
         setIsLeftPanelCollapsed(true);
+        setIsRightPanelOpen(true);
       } else {
         throw new Error('Respons model AI tidak mengandungi variasi yang sah.');
       }
@@ -786,7 +789,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
           {/* SISI KANAN: KARTU PANGGUNG UTAMA (The Floating Stage Card) */}
           <div
             className={`bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out ${
-              isLeftPanelCollapsed && studioStep !== 'result'
+              isLeftPanelCollapsed && !isRightPanelOpen
                 ? 'flex-1 mr-64 xl:mr-72'
                 : 'flex-1 mr-0'
             }`}
@@ -794,7 +797,14 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
             {/* Gagang Toggle Kapsul (Ghost Notch) */}
             <button
               type="button"
-              onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
+              onClick={() => {
+                const nextCollapsed = !isLeftPanelCollapsed;
+                setIsLeftPanelCollapsed(nextCollapsed);
+                if (!nextCollapsed) {
+                  // Opening Left Panel -> automatically close Right Panel
+                  setIsRightPanelOpen(false);
+                }
+              }}
               title={isLeftPanelCollapsed ? 'Buka Panel Konfigurasi' : 'Sembunyikan Panel Konfigurasi'}
               className={`absolute left-[5px] top-1/2 -translate-y-1/2 h-12 rounded-full flex items-center justify-center cursor-pointer select-none z-40 transition-all duration-200 ease-out group p-0 border-0 outline-none origin-left ${
                 isLeftPanelCollapsed
@@ -815,9 +825,9 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
               </span>
             </button>
             {/* Header Kanvas */}
-            <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 dark:border-zinc-800 shrink-0">
+            <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 dark:border-zinc-800 shrink-0 gap-3">
               {/* Sisi Kiri: Tab format */}
-              <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl">
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl shrink-0">
                 {[
                   { id: 'feed', label: 'Feed Post' },
                   { id: 'story', label: 'Stories' },
@@ -838,8 +848,36 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                 ))}
               </div>
 
+              {/* Quick Platform Switcher (Circle Icons Tanpa Teks) */}
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-zinc-800 rounded-full border border-slate-200/60 dark:border-zinc-700">
+                {[
+                  { id: 'facebook' as AdPlatform, name: 'Facebook', Icon: FacebookLogo },
+                  { id: 'instagram' as AdPlatform, name: 'Instagram', Icon: InstagramLogo },
+                  { id: 'google' as AdPlatform, name: 'Google Ads', Icon: GoogleAdsLogo },
+                  { id: 'tiktok' as AdPlatform, name: 'TikTok Ads', Icon: TikTokLogo },
+                  { id: 'whatsapp' as AdPlatform, name: 'WhatsApp', Icon: WhatsAppLogo }
+                ].map(({ id, name, Icon }) => {
+                  const isActive = selectedPlatform === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setSelectedPlatform(id)}
+                      title={`Alihkan Pratinjau ke ${name}`}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                        isActive 
+                          ? 'bg-white dark:bg-zinc-900 shadow-xs ring-2 ring-blue-500/30 scale-105' 
+                          : 'opacity-50 hover:opacity-100 hover:bg-white/60 dark:hover:bg-zinc-700/60'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                    </button>
+                  );
+                })}
+              </div>
+
               {/* Sisi Kanan: Tombol Aksi Salin Teks */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 {studioStep === 'result' && (
                   <button
                     type="button"
@@ -888,75 +926,119 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
             </div>
           </div>
 
-          {/* SISI KANAN: PANEL PENALAAN BERSIH (Hanya Muncul Pasca-Generate) */}
-          {studioStep === 'result' && (
+          {/* SISI KANAN: AI TARGETING & LAUNCH ADVISOR (Khusus Pemula SMM) */}
+          {isRightPanelOpen && studioStep === 'result' && (
             <div className="w-72 xl:w-80 shrink-0 h-full flex flex-col gap-3 transition-all duration-300 animate-in fade-in">
-              <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
-                {/* Sudut Penawaran (Angle) */}
-                <div className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2.5">
-                  <span className="text-xs font-medium text-slate-700 dark:text-zinc-300 block">
-                    Sudut Penawaran
+              <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1 text-slate-800 dark:text-zinc-100">
+
+                {/* Header Panel Kanan dengan Tombol Tutup Silang (X) */}
+                <div className="flex items-center justify-between pb-1">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                    Rekomendasi Pelancaran AI
                   </span>
-                  <select
-                    value={selectedVariationIndex}
-                    onChange={(e) => setSelectedVariationIndex(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate cursor-pointer"
+                  <button 
+                    type="button" 
+                    onClick={() => setIsRightPanelOpen(false)}
+                    className="w-5 h-5 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-800 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer transition-colors"
+                    title="Tutup Panel"
                   >
-                    {aiVariations.map((v, idx) => (
-                      <option key={v.id || idx} value={idx}>
-                        {v.angleName || `Variasi ${idx + 1}`}
-                      </option>
-                    ))}
-                  </select>
+                    <X className="w-3.5 h-3.5" />
+                  </button>
                 </div>
 
-                {/* Anggaran Harian */}
-                <div className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-3">
+                {/* 1. Target Sasaran Audiens AI */}
+                <div className="bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2">
+                  <span className="text-xs font-semibold text-slate-700 dark:text-zinc-200 block">
+                    Sasaran Audiens Optimal
+                  </span>
+                  <div className="space-y-1 text-xs text-slate-600 dark:text-zinc-300">
+                    <div className="flex justify-between py-0.5 border-b border-slate-100 dark:border-zinc-800">
+                      <span className="text-slate-400 dark:text-zinc-500">Demografi:</span>
+                      <span className="font-medium">Lelaki & Wanita (18 - 35 thn)</span>
+                    </div>
+                    <div className="flex justify-between py-0.5 border-b border-slate-100 dark:border-zinc-800">
+                      <span className="text-slate-400 dark:text-zinc-500">Minat Sasaran:</span>
+                      <span className="font-medium text-right truncate max-w-[140px]">Futsal, Sukan, Jersey Sublimation</span>
+                    </div>
+                    <div className="flex justify-between py-0.5">
+                      <span className="text-slate-400 dark:text-zinc-500">Lokasi Ideal:</span>
+                      <span className="font-medium">Malaysia (Semenanjung)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Waktu Peluncuran Terbaik */}
+                <div className="bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-1.5">
+                  <span className="text-xs font-semibold text-slate-700 dark:text-zinc-200 block">
+                    Waktu Siaran Terbaik
+                  </span>
+                  <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 font-medium">
+                    <Clock className="w-3.5 h-3.5 shrink-0" />
+                    <span>Khamis – Ahad (8:00 PM – 10:30 PM)</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 dark:text-zinc-500 leading-tight">
+                    Waktu interaksi prospek sukan paling aktif & kos per klik paling rendah.
+                  </p>
+                </div>
+
+                {/* 3. Penalaan Bajet Harian & Unjuran Hasil Dinamik */}
+                <div className="bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-700 dark:text-zinc-300">
-                      Anggaran Harian
-                    </span>
-                    <span className="text-xs font-semibold text-slate-900 dark:text-zinc-100 font-mono">
-                      RM {dailyBudget}
-                    </span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-zinc-200">Bajet Harian</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 font-mono">RM {dailyBudget}</span>
                   </div>
-                  <input
-                    type="range"
-                    min="10"
-                    max="500"
-                    step="5"
-                    value={dailyBudget}
-                    onChange={(e) => setDailyBudget(Number(e.target.value))}
-                    className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-slate-900 dark:accent-white"
+                  <input 
+                    type="range" 
+                    min="10" 
+                    max="200" 
+                    step="5" 
+                    value={dailyBudget} 
+                    onChange={(e) => setDailyBudget(Number(e.target.value))} 
+                    className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
                   />
-                  <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                    <span>RM 10</span>
-                    <span>RM 500</span>
+                  {/* Proyeksi Hasil Dinamis Berdasarkan Bajet */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div className="p-2 bg-slate-50 dark:bg-zinc-800 rounded-xl text-center">
+                      <div className="text-[10px] text-slate-400 dark:text-zinc-500">Anggaran Paparan</div>
+                      <div className="text-xs font-bold text-slate-800 dark:text-zinc-100 font-mono">
+                        {(dailyBudget * 140).toLocaleString()} – {(dailyBudget * 260).toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="p-2 bg-slate-50 dark:bg-zinc-800 rounded-xl text-center">
+                      <div className="text-[10px] text-slate-400 dark:text-zinc-500">Prospek WhatsApp</div>
+                      <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                        ~{Math.round(dailyBudget / 6.5)} orang
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Produk Katalog */}
-                <div className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2.5">
-                  <span className="text-xs font-medium text-slate-700 dark:text-zinc-300 block">
-                    Produk Katalog
-                  </span>
-                  <select
-                    value={selectedDesignId || (designs[0]?.id ?? '')}
-                    onChange={(e) => {
-                      setSelectedDesignId(e.target.value);
-                      setCustomImage(null);
-                      setCustomTitle(null);
-                    }}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate cursor-pointer"
-                  >
-                    {designs.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
               </div>
+
+              {/* Tombol Aksi di Dasar Panel Kanan */}
+              <div className="shrink-0 pt-1">
+                <button
+                  type="button"
+                  onClick={handlePostAd}
+                  disabled={isPublishing}
+                  className="w-full h-10 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-slate-900 text-xs font-medium rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {isPublishing ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Melancarkan...</span>
+                    </>
+                  ) : publishSuccess ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Iklan Berjaya Disiarkan!</span>
+                    </>
+                  ) : (
+                    <span>Siarkan Iklan Sekarang</span>
+                  )}
+                </button>
+              </div>
+
             </div>
           )}
         </div>
