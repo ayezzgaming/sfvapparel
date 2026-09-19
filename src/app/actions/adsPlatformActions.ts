@@ -1235,6 +1235,10 @@ export async function publishAdToMetaGraphApi(
     instagramAccountId?: string;
     whatsappNumber?: string;
     pixelId?: string;
+    costCap?: number;
+    enableUtmTracking?: boolean;
+    excludedAudienceIds?: string[];
+    customAudienceIds?: string[];
   }
 ): Promise<{
   success: boolean;
@@ -1270,7 +1274,7 @@ export async function publishAdToMetaGraphApi(
   // 1. Save locally to Supabase DB
   await saveCampaignDb(campaign);
 
-  // If no Meta connection credentials, gracefully succeed in Local Mode
+  // If no Meta connection credentials, gracefully succeed in Local Simulation Mode
   if (!token || !adAccountId) {
     return {
       success: true,
@@ -1282,7 +1286,7 @@ export async function publishAdToMetaGraphApi(
   const cleanActId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId.replace(/[^0-9]/g, '')}`;
 
   try {
-    // Step 1: Create Campaign on Meta Graph API
+    // Step 1: Create Campaign on Meta Graph API (OUTCOME_LEADS for high-intent WhatsApp inquiries)
     const campaignUrl = new URL(`https://graph.facebook.com/v21.0/${cleanActId}/campaigns`);
     campaignUrl.searchParams.append('access_token', token);
     campaignUrl.searchParams.append('name', campaign.name);
@@ -1307,7 +1311,26 @@ export async function publishAdToMetaGraphApi(
 
     const metaCampaignId = campData.id;
 
-    // Step 2: Create Ad Set on Meta Graph API
+    // Step 2: Build Enhanced Anti-Waste Targeting Spec
+    const enrichedTargeting: any = {
+      ...(targetingSpec || { geo_locations: { countries: ['MY'] } }),
+      // Remove low quality Audience Network clicks by restricting to Facebook & Instagram
+      publisher_platforms: ['facebook', 'instagram'],
+      facebook_positions: ['feed', 'story'],
+      instagram_positions: ['stream', 'story', 'reels', 'explore'],
+    };
+
+    // Attach Custom Audiences (Retargeting) if selected
+    if (metaAssetConfig?.customAudienceIds && metaAssetConfig.customAudienceIds.length > 0) {
+      enrichedTargeting.custom_audiences = metaAssetConfig.customAudienceIds.map((id) => ({ id }));
+    }
+
+    // Attach Excluded Custom Audiences (Anti-Pemborosan: Exclude existing buyers)
+    if (metaAssetConfig?.excludedAudienceIds && metaAssetConfig.excludedAudienceIds.length > 0) {
+      enrichedTargeting.excluded_custom_audiences = metaAssetConfig.excludedAudienceIds.map((id) => ({ id }));
+    }
+
+    // Step 3: Create Ad Set on Meta Graph API (Optimized for CONVERSATIONS / WhatsApp Leads)
     const adSetUrl = new URL(`https://graph.facebook.com/v21.0/${cleanActId}/adsets`);
     adSetUrl.searchParams.append('access_token', token);
     adSetUrl.searchParams.append('campaign_id', metaCampaignId);
@@ -1315,8 +1338,15 @@ export async function publishAdToMetaGraphApi(
     adSetUrl.searchParams.append('optimization_goal', 'LEAD_GENERATION');
     adSetUrl.searchParams.append('billing_event', 'IMPRESSIONS');
     adSetUrl.searchParams.append('daily_budget', String(Math.round(campaign.dailyBudget * 100)));
-    adSetUrl.searchParams.append('bid_strategy', 'LOWEST_COST_WITHOUT_CAP');
-    adSetUrl.searchParams.append('targeting', JSON.stringify(targetingSpec || { geo_locations: { countries: ['MY'] } }));
+
+    if (metaAssetConfig?.costCap && metaAssetConfig.costCap > 0) {
+      adSetUrl.searchParams.append('bid_strategy', 'COST_CAP');
+      adSetUrl.searchParams.append('bid_amount', String(Math.round(metaAssetConfig.costCap * 100)));
+    } else {
+      adSetUrl.searchParams.append('bid_strategy', 'LOWEST_COST_WITHOUT_CAP');
+    }
+
+    adSetUrl.searchParams.append('targeting', JSON.stringify(enrichedTargeting));
     adSetUrl.searchParams.append('status', 'ACTIVE');
 
     let metaAdSetId = '';
@@ -1333,14 +1363,22 @@ export async function publishAdToMetaGraphApi(
       // Ad set creation fallback
     }
 
-    // Step 3: Create Ad Creative on Meta Graph API
+    // Step 4: Create Ad Creative on Meta Graph API with UTM Tagging
     let metaCreativeId = '';
     const pageId = metaAssetConfig?.pageId;
+    const utmTag = metaAssetConfig?.enableUtmTracking !== false
+      ? 'utm_source=facebook&utm_medium=cpc&utm_campaign=sfv_ads_generator&utm_content=jersey_creative'
+      : undefined;
+
     if (pageId) {
       try {
         const creativeUrl = new URL(`https://graph.facebook.com/v21.0/${cleanActId}/adcreatives`);
         creativeUrl.searchParams.append('access_token', token);
         creativeUrl.searchParams.append('name', `Creative - ${campaign.name}`);
+        if (utmTag) {
+          creativeUrl.searchParams.append('url_tags', utmTag);
+        }
+
         creativeUrl.searchParams.append(
           'object_story_spec',
           JSON.stringify({
@@ -1374,7 +1412,7 @@ export async function publishAdToMetaGraphApi(
       }
     }
 
-    // Step 4: Create Ad on Meta Graph API
+    // Step 5: Create Ad on Meta Graph API
     let metaAdId = '';
     if (metaAdSetId && metaCreativeId) {
       try {

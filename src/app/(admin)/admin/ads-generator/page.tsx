@@ -50,7 +50,20 @@ import {
   Bookmark,
   Clock,
   RotateCw,
-  Pencil
+  Pencil,
+  Target,
+  Users,
+  ShieldAlert,
+  Sparkles,
+  Smartphone,
+  DollarSign,
+  Rocket,
+  Sliders,
+  ExternalLink,
+  HelpCircle,
+  TrendingUp,
+  Radio,
+  Filter
 } from 'lucide-react';
 
 interface AiVariation {
@@ -226,6 +239,7 @@ export default function AdminAdsGeneratorPage() {
   const [selectedHookStyle, setSelectedHookStyle] = useState<string>('diskon');
   const [isAudienceModalOpen, setIsAudienceModalOpen] = useState(false);
   const [isStudioModalOpen, setIsStudioModalOpen] = useState(false);
+  const [studioTab, setStudioTab] = useState<'targeting' | 'assets' | 'budget'>('targeting');
   const [bestTimeIndex, setBestTimeIndex] = useState(0);
 
   // Live Meta Marketing API Targeting Search States (Interests & Geolocation)
@@ -252,6 +266,10 @@ export default function AdminAdsGeneratorPage() {
     pixels: [],
   });
   const [isLoadingMetaAssets, setIsLoadingMetaAssets] = useState(false);
+
+  // Live Meta Custom Audiences & Lookalikes
+  const [customAudiences, setCustomAudiences] = useState<any[]>([]);
+  const [isLoadingCustomAudiences, setIsLoadingCustomAudiences] = useState(false);
 
   // Live Meta AI Delivery & Reach Estimates
   const [reachEstimate, setReachEstimate] = useState<{
@@ -293,6 +311,21 @@ export default function AdminAdsGeneratorPage() {
       console.warn('Could not fetch Meta assets:', err);
     } finally {
       setIsLoadingMetaAssets(false);
+    }
+  };
+
+  const fetchCustomAudiences = async () => {
+    setIsLoadingCustomAudiences(true);
+    try {
+      const res = await fetch('/api/meta/custom-audiences');
+      const json = await res.json();
+      if (json.success && json.audiences) {
+        setCustomAudiences(json.audiences);
+      }
+    } catch (err) {
+      console.warn('Could not fetch Meta custom audiences:', err);
+    } finally {
+      setIsLoadingCustomAudiences(false);
     }
   };
 
@@ -406,6 +439,8 @@ export default function AdminAdsGeneratorPage() {
     selectedInstagramAccountId: '',
     selectedWhatsappNumber: '',
     selectedPixelId: '',
+    selectedCustomAudienceIds: [] as string[],
+    selectedExcludedAudienceIds: [] as string[],
     ageMin: 18,
     ageMax: 35,
     gender: 'all', // 'all' | 'male' | 'female'
@@ -417,16 +452,19 @@ export default function AdminAdsGeneratorPage() {
       { id: '6003102379373', name: 'Sports clothing' },
     ] as { id: string; name: string }[],
     engagedShoppers: true, // Fitur Emas Meta (Behavior: Engaged Shoppers)
-    placementType: 'advantage', // 'advantage' | 'manual'
+    placementType: 'feed_reels', // 'advantage' | 'feed_reels' (Anti-Fraud: FB & IG only)
     manualPlacements: ['feed', 'stories', 'reels'],
     scheduleType: 'peak_hours', // 'all_day' | 'peak_hours' (Dayparting Meta)
     durationDays: 7,
     dailyBudget: 30,
+    costCap: 0,
+    enableUtmTracking: true,
   });
 
-  // Fetch initial Meta assets and calculate live reach on mount
+  // Fetch initial Meta assets, audiences, and calculate live reach on mount
   useEffect(() => {
     fetchMetaAccountAssets();
+    fetchCustomAudiences();
   }, []);
 
   // Update live reach estimate whenever budget or targeting changes
@@ -728,6 +766,10 @@ export default function AdminAdsGeneratorPage() {
       instagramAccountId: metaConfig.selectedInstagramAccountId,
       whatsappNumber: metaConfig.selectedWhatsappNumber,
       pixelId: metaConfig.selectedPixelId,
+      customAudienceIds: metaConfig.selectedCustomAudienceIds,
+      excludedAudienceIds: metaConfig.selectedExcludedAudienceIds,
+      costCap: metaConfig.costCap > 0 ? metaConfig.costCap : undefined,
+      enableUtmTracking: metaConfig.enableUtmTracking,
     });
     setIsPublishing(false);
     setPublishSuccess(true);
@@ -1226,113 +1268,764 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
             </div>
           </div>
 
-          {/* SISI KANAN: PANEL SETELAN IKLAN & SASARAN (Tingkat 1: Ringkasan Cerdas & Tombol Studio) */}
+          {/* SISI KANAN: PANEL INTEGRASI 3-TAB PRECISION META ADS STUDIO */}
           {isRightPanelOpen && studioStep === 'result' && (
-            <div className="w-72 xl:w-80 shrink-0 h-full flex flex-col justify-between p-4 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm transition-all duration-300">
-              <div className="space-y-4 overflow-y-auto pr-1">
-                {/* Header Panel Kanan */}
-                <div className="pb-2 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
-                  <span className="text-xs font-semibold tracking-wider text-slate-500 dark:text-zinc-400 uppercase">
-                    Ringkasan Kempen (Meta)
-                  </span>
-                  <span className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 font-medium">
-                    Auto-Optimized
+            <div className="w-80 xl:w-96 shrink-0 h-full flex flex-col justify-between p-3.5 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm transition-all duration-300 select-none">
+              {/* Header Panel Kanan: Tajuk & 3 Subtab Switcher */}
+              <div className="shrink-0 space-y-2.5 pb-2.5 border-b border-slate-100 dark:border-zinc-800">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-semibold tracking-wider text-slate-800 dark:text-zinc-100 uppercase">
+                      Setelan Iklan Meta
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold border border-indigo-200 dark:border-indigo-800/60">
+                      v21.0
+                    </span>
+                  </div>
+                  <span className="inline-flex items-center gap-1 text-[9px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Live Graph API
                   </span>
                 </div>
 
-                {/* 1. Gaya Copywriting (Hook Dropdown) */}
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-600 dark:text-zinc-400 block">
-                    Gaya Copywriting (Hook)
-                  </label>
-                  <select
-                    value={selectedHookStyle}
-                    onChange={(e) => handleSelectHookStyle(e.target.value)}
-                    className="w-full h-9 px-3 text-xs text-slate-700 dark:text-zinc-200 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl outline-none"
+                {/* 3 Subtab Buttons */}
+                <div className="grid grid-cols-3 gap-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl text-[11px] font-medium">
+                  <button
+                    type="button"
+                    onClick={() => setStudioTab('targeting')}
+                    className={`py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                      studioTab === 'targeting'
+                        ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 font-semibold shadow-xs'
+                        : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
+                    }`}
                   >
-                    <option value="diskon">Tawaran & Diskaun Langsung</option>
-                    <option value="fomo">Urgensi & Kouta Terhad (FOMO)</option>
-                    <option value="story">Komuniti & Pasukan</option>
-                    <option value="solusi">Kualiti Material & Ketahanan</option>
-                  </select>
-                </div>
-
-                {/* 2. Sasaran Audiens & Fitur Pembeli Aktif (Ringkasan) */}
-                <div className="p-3 bg-slate-50/70 dark:bg-zinc-800/40 rounded-xl border border-slate-200/60 dark:border-zinc-700/60 space-y-1.5 text-xs text-slate-600 dark:text-zinc-300">
-                  <div className="flex items-center justify-between font-medium text-slate-700 dark:text-zinc-200">
-                    <span>Sasaran Audiens</span>
-                    {metaConfig.engagedShoppers && (
-                      <span className="text-[10px] px-1.5 py-0.5 bg-slate-200 dark:bg-zinc-700 rounded text-slate-700 dark:text-zinc-300 font-medium">
-                        Pembeli Aktif ON
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-[11px] text-slate-500 dark:text-zinc-400">
-                    {metaConfig.ageMin}–{metaConfig.ageMax} thn • {metaConfig.gender === 'all' ? 'Semua' : metaConfig.gender === 'male' ? 'Lelaki' : 'Wanita'} • {metaConfig.locationName}
-                  </div>
-                  <div className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">
-                    Minat: {metaConfig.interests.map((i: any) => typeof i === 'string' ? i : i.name).join(', ')}
-                  </div>
-                </div>
-
-                {/* 3. Waktu & Durasi Siaran (Ringkasan) */}
-                <div className="p-3 bg-slate-50/70 dark:bg-zinc-800/40 rounded-xl border border-slate-200/60 dark:border-zinc-700/60 space-y-1.5 text-xs text-slate-600 dark:text-zinc-300">
-                  <div className="flex items-center justify-between font-medium text-slate-700 dark:text-zinc-200">
-                    <span>Jadual & Durasi</span>
-                    <span className="text-[11px] font-semibold text-slate-800 dark:text-zinc-200">
-                      {metaConfig.durationDays} Hari
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-slate-500 dark:text-zinc-400">
-                    {metaConfig.scheduleType === 'peak_hours'
-                      ? 'Waktu Emas: 7:30 PM – 11:00 PM (Admin Siap)'
-                      : '24 Jam Penuh'}
-                  </div>
-                </div>
-
-                {/* 4. Bajet Harian & Unjuran Telemetri Meta AI */}
-                <div className="p-3 bg-slate-50/70 dark:bg-zinc-800/40 rounded-xl border border-slate-200/60 dark:border-zinc-700/60 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 dark:text-zinc-400">Bajet Harian</span>
-                    <span className="font-semibold text-slate-800 dark:text-zinc-100">RM {dailyBudget}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="10"
-                    max="200"
-                    step="5"
-                    value={dailyBudget}
-                    onChange={(e) => setDailyBudget(Number(e.target.value))}
-                    className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-slate-600"
-                  />
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400 pt-0.5 border-t border-slate-200/40 dark:border-zinc-700/40">
-                    <span>Jumlah: RM {(dailyBudget * metaConfig.durationDays).toLocaleString()}</span>
-                    <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                      ~{reachEstimate.daily_reach_lower.toLocaleString()}–{reachEstimate.daily_reach_upper.toLocaleString()} jangkauan
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
-                    <span className="inline-flex items-center gap-1">
-                      {isEstimatingReach ? <RefreshCw className="w-2.5 h-2.5 animate-spin" /> : null}
-                      {reachEstimate.is_live ? 'Live Meta AI' : 'Unjuran Meta AI'}
-                    </span>
-                    <span className="font-medium text-slate-700 dark:text-zinc-300">
-                      ~{reachEstimate.daily_leads_lower}–{reachEstimate.daily_leads_upper} prospek/hari
-                    </span>
-                  </div>
+                    <Target className="w-3 h-3" />
+                    <span>Sasaran</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStudioTab('assets')}
+                    className={`py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                      studioTab === 'assets'
+                        ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 font-semibold shadow-xs'
+                        : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    <Smartphone className="w-3 h-3" />
+                    <span>Saluran</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStudioTab('budget')}
+                    className={`py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                      studioTab === 'budget'
+                        ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 font-semibold shadow-xs'
+                        : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    <DollarSign className="w-3 h-3" />
+                    <span>Bajet</span>
+                  </button>
                 </div>
               </div>
 
-              {/* Tombol Akses Konfigurasi Lengkap Meta (Buka Studio Lebar) */}
-              <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 shrink-0">
+              {/* Scrollable Body: Content based on active studioTab */}
+              <div className="flex-1 min-h-0 overflow-y-auto pr-1 py-2 space-y-3.5 text-xs text-slate-700 dark:text-zinc-300">
+                {/* ================= TAB 1: SASARAN & MINAT ================= */}
+                {studioTab === 'targeting' && (
+                  <div className="space-y-3.5 animate-in fade-in duration-150">
+                    {/* 1. Gaya Copywriting (Hook) */}
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 block">
+                        Gaya Copywriting (Hook AI)
+                      </label>
+                      <select
+                        value={selectedHookStyle}
+                        onChange={(e) => handleSelectHookStyle(e.target.value)}
+                        className="w-full h-8 px-2.5 text-xs text-slate-700 dark:text-zinc-200 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl outline-none cursor-pointer"
+                      >
+                        <option value="diskon">Tawaran & Diskaun Langsung</option>
+                        <option value="fomo">Urgensi & Kouta Terhad (FOMO)</option>
+                        <option value="story">Komuniti & Pasukan</option>
+                        <option value="solusi">Kualiti Material & Ketahanan</option>
+                      </select>
+                    </div>
+
+                    {/* 2. Kustom Audiens & Retargeting */}
+                    <div className="space-y-1.5 p-2.5 bg-slate-50/70 dark:bg-zinc-800/40 rounded-2xl border border-slate-200/60 dark:border-zinc-700/60">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-slate-800 dark:text-zinc-200 text-[11px] flex items-center gap-1">
+                          <Users className="w-3.5 h-3.5 text-indigo-500" />
+                          Kustom Audiens (Retargeting)
+                        </span>
+                        {isLoadingCustomAudiences && <RefreshCw className="w-2.5 h-2.5 animate-spin text-slate-400" />}
+                      </div>
+                      <p className="text-[10px] text-slate-400">
+                        Sasarkan pengguna yang pernah berinteraksi untuk ROI tertinggi.
+                      </p>
+                      <div className="space-y-1 max-h-28 overflow-y-auto">
+                        {customAudiences
+                          .filter((aud) => aud.type !== 'exclusion')
+                          .map((aud) => {
+                            const isSelected = metaConfig.selectedCustomAudienceIds.includes(aud.id);
+                            return (
+                              <button
+                                key={aud.id}
+                                type="button"
+                                onClick={() => {
+                                  setMetaConfig((prev) => ({
+                                    ...prev,
+                                    selectedCustomAudienceIds: isSelected
+                                      ? prev.selectedCustomAudienceIds.filter((id) => id !== aud.id)
+                                      : [...prev.selectedCustomAudienceIds, aud.id],
+                                  }));
+                                }}
+                                className={`w-full text-left p-1.5 rounded-lg border text-[11px] transition-all flex items-center justify-between cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-400 text-indigo-900 dark:text-indigo-200 font-medium'
+                                    : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 hover:border-slate-300'
+                                }`}
+                              >
+                                <span className="truncate pr-1">{aud.name}</span>
+                                <span className="text-[9px] px-1 py-0.2 bg-slate-100 dark:bg-zinc-700 rounded text-slate-500 dark:text-zinc-400 shrink-0 font-mono">
+                                  ~{(aud.approximate_count_upper_bound || 0).toLocaleString()}
+                                </span>
+                              </button>
+                            );
+                          })}
+                      </div>
+                    </div>
+
+                    {/* 3. Pengecualian Audiens (Anti-Pemborosan Bajet) */}
+                    <div className="space-y-1.5 p-2.5 bg-amber-50/50 dark:bg-amber-950/20 rounded-2xl border border-amber-200/60 dark:border-amber-800/40">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-amber-900 dark:text-amber-300 text-[11px] flex items-center gap-1">
+                          <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+                          Kecualikan Pembeli Sedia Ada
+                        </span>
+                        <span className="text-[9px] px-1.5 py-0.2 bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 rounded font-medium">
+                          Anti-Bazir
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80">
+                        Jimatkan bajet dengan tidak menayangkan iklan kepada pelanggan yang sudah membeli.
+                      </p>
+                      <div className="space-y-1">
+                        {customAudiences
+                          .filter((aud) => aud.type === 'exclusion' || aud.name.toLowerCase().includes('pembeli') || aud.name.toLowerCase().includes('exclude'))
+                          .map((aud) => {
+                            const isExcluded = metaConfig.selectedExcludedAudienceIds.includes(aud.id);
+                            return (
+                              <button
+                                key={aud.id}
+                                type="button"
+                                onClick={() => {
+                                  setMetaConfig((prev) => ({
+                                    ...prev,
+                                    selectedExcludedAudienceIds: isExcluded
+                                      ? prev.selectedExcludedAudienceIds.filter((id) => id !== aud.id)
+                                      : [...prev.selectedExcludedAudienceIds, aud.id],
+                                  }));
+                                }}
+                                className={`w-full text-left p-1.5 rounded-lg border text-[11px] transition-all flex items-center justify-between cursor-pointer ${
+                                  isExcluded
+                                    ? 'bg-amber-100 dark:bg-amber-900/40 border-amber-400 text-amber-900 dark:text-amber-200 font-medium'
+                                    : 'bg-white dark:bg-zinc-800 border-amber-200/70 dark:border-amber-800/50 text-slate-600 dark:text-zinc-400'
+                                }`}
+                              >
+                                <span className="truncate pr-1">🚫 {aud.name}</span>
+                                <span className="text-[9px] text-amber-700 dark:text-amber-400">
+                                  {isExcluded ? 'Dikecualikan' : '+ Kecualikan'}
+                                </span>
+                              </button>
+                            );
+                          })}
+                      </div>
+                    </div>
+
+                    {/* 4. Demografi: Umur & Jantina */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 block">
+                          Rentang Umur
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="number"
+                            min="18"
+                            max="65"
+                            value={metaConfig.ageMin}
+                            onChange={(e) => setMetaConfig({ ...metaConfig, ageMin: Number(e.target.value) })}
+                            className="w-12 h-8 border border-slate-200 dark:border-zinc-700 rounded-lg text-center bg-slate-50 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 font-medium text-xs"
+                          />
+                          <span className="text-slate-400 text-xs">-</span>
+                          <input
+                            type="number"
+                            min="18"
+                            max="65"
+                            value={metaConfig.ageMax}
+                            onChange={(e) => setMetaConfig({ ...metaConfig, ageMax: Number(e.target.value) })}
+                            className="w-12 h-8 border border-slate-200 dark:border-zinc-700 rounded-lg text-center bg-slate-50 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 font-medium text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 block">
+                          Jantina
+                        </label>
+                        <div className="grid grid-cols-3 gap-0.5 bg-slate-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-slate-200 dark:border-zinc-700">
+                          {[
+                            { id: 'all', label: 'Semua' },
+                            { id: 'male', label: 'L' },
+                            { id: 'female', label: 'W' },
+                          ].map((g) => (
+                            <button
+                              key={g.id}
+                              type="button"
+                              onClick={() => setMetaConfig({ ...metaConfig, gender: g.id })}
+                              className={`py-1 rounded text-center text-[10px] transition-colors cursor-pointer ${
+                                metaConfig.gender === g.id
+                                  ? 'bg-white dark:bg-zinc-900 font-semibold text-slate-800 dark:text-zinc-100 shadow-xs'
+                                  : 'text-slate-500 dark:text-zinc-400 hover:text-slate-800'
+                              }`}
+                            >
+                              {g.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 5. Wilayah Sasaran (Meta Geolocation) */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                          Wilayah Sasaran (Meta Geolocation)
+                        </label>
+                        {isSearchingGeo && <RefreshCw className="w-2.5 h-2.5 animate-spin text-slate-400" />}
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Cari negeri / bandar (Selangor, KL, Johor)..."
+                          value={geoSearchQuery}
+                          onChange={(e) => {
+                            setGeoSearchQuery(e.target.value);
+                            handleSearchGeo(e.target.value);
+                          }}
+                          className="w-full h-8 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs bg-slate-50 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 outline-none focus:border-slate-400"
+                        />
+                        {geoSearchResults.length > 0 && (
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-lg z-50 max-h-36 overflow-y-auto p-1">
+                            {geoSearchResults.map((geo: any) => (
+                              <div
+                                key={geo.key}
+                                onClick={() => {
+                                  setMetaConfig({
+                                    ...metaConfig,
+                                    locationKey: geo.key,
+                                    locationName: geo.name,
+                                  });
+                                  setGeoSearchResults([]);
+                                  setGeoSearchQuery('');
+                                }}
+                                className="px-2.5 py-1.5 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-lg cursor-pointer flex items-center justify-between text-xs"
+                              >
+                                <span className="font-medium text-slate-800 dark:text-zinc-200">{geo.name}</span>
+                                <span className="text-[9px] text-slate-400 uppercase">{geo.type}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-1.5 bg-slate-100/80 dark:bg-zinc-800 rounded-lg border border-slate-200 dark:border-zinc-700 flex items-center justify-between">
+                        <span className="text-[11px] text-slate-700 dark:text-zinc-200 font-medium truncate">
+                          📍 {metaConfig.locationName}
+                        </span>
+                        {metaConfig.locationKey !== 'MY' && (
+                          <button
+                            type="button"
+                            onClick={() => setMetaConfig({ ...metaConfig, locationKey: 'MY', locationName: 'Malaysia (Seluruh Negara)' })}
+                            className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline cursor-pointer shrink-0 ml-2"
+                          >
+                            Reset MY
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 6. Minat Sasaran (Meta Marketing API Interests) */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                          Minat Rasmi Meta API (Interests)
+                        </label>
+                        {isSearchingInterests && <RefreshCw className="w-2.5 h-2.5 animate-spin text-slate-400" />}
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Cari minat (futsal, jersi, sportswear)..."
+                          value={interestSearchQuery}
+                          onChange={(e) => {
+                            setInterestSearchQuery(e.target.value);
+                            handleSearchMetaInterests(e.target.value);
+                          }}
+                          className="w-full h-8 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs bg-slate-50 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 outline-none focus:border-slate-400"
+                        />
+                        {searchResults.length > 0 && (
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-lg z-50 max-h-36 overflow-y-auto p-1">
+                            {searchResults.map((item: any) => (
+                              <div
+                                key={item.id}
+                                onClick={() => {
+                                  if (!metaConfig.interests.some((i: any) => (typeof i === 'object' ? i.id === item.id : i === item.name))) {
+                                    setMetaConfig({
+                                      ...metaConfig,
+                                      interests: [...metaConfig.interests, { id: item.id, name: item.name }],
+                                    });
+                                  }
+                                  setSearchResults([]);
+                                  setInterestSearchQuery('');
+                                }}
+                                className="px-2.5 py-1.5 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-lg cursor-pointer flex items-center justify-between text-xs"
+                              >
+                                <span className="font-medium text-slate-800 dark:text-zinc-200">{item.name}</span>
+                                <span className="text-[9px] text-slate-400">
+                                  ~{(item.audience_size_lower_bound || 0).toLocaleString()}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Chip Minat Terpilih */}
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        {metaConfig.interests.map((item: any) => {
+                          const id = typeof item === 'object' ? item.id : item;
+                          const name = typeof item === 'object' ? item.name : item;
+                          return (
+                            <span
+                              key={id}
+                              className="inline-flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 px-2 py-0.5 rounded-md text-[10px] text-slate-700 dark:text-zinc-200 font-medium"
+                            >
+                              {name}
+                              <X
+                                className="w-3 h-3 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-100 cursor-pointer"
+                                onClick={() =>
+                                  setMetaConfig({
+                                    ...metaConfig,
+                                    interests: metaConfig.interests.filter((i: any) => (typeof i === 'object' ? i.id !== id : i !== name)),
+                                  })
+                                }
+                              />
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* 7. Fitur Emas: Sasaran Pembeli Aktif (Engaged Shoppers) */}
+                    <div className="p-2.5 bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/40 rounded-xl flex items-center justify-between">
+                      <div>
+                        <span className="font-semibold text-slate-800 dark:text-zinc-200 block text-[11px]">
+                          Pembeli Aktif (Engaged Shoppers)
+                        </span>
+                        <span className="text-[9px] text-slate-400">Meta Behavior ID: 6071559926818</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={metaConfig.engagedShoppers}
+                        onChange={(e) => setMetaConfig({ ...metaConfig, engagedShoppers: e.target.checked })}
+                        className="w-4 h-4 accent-amber-600 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* ================= TAB 2: ASET & SALURAN ================= */}
+                {studioTab === 'assets' && (
+                  <div className="space-y-3.5 animate-in fade-in duration-150">
+                    {/* Halaman Facebook Rasmi */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                          Halaman Facebook Rasmi (Meta Page)
+                        </label>
+                        {isLoadingMetaAssets && <RefreshCw className="w-2.5 h-2.5 animate-spin text-slate-400" />}
+                      </div>
+                      <select
+                        value={metaConfig.selectedPageId}
+                        onChange={(e) => setMetaConfig({ ...metaConfig, selectedPageId: e.target.value })}
+                        className="w-full h-8 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none"
+                      >
+                        {metaAssets.pages.length > 0 ? (
+                          metaAssets.pages.map((p: any) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} {p.whatsapp_number ? `(${p.whatsapp_number})` : ''}
+                            </option>
+                          ))
+                        ) : (
+                          <option value="">SFV Apparel Official (Meta Page)</option>
+                        )}
+                      </select>
+                    </div>
+
+                    {/* Saluran Destinasi Iklan */}
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                        Saluran Destinasi Iklan
+                      </label>
+                      <select
+                        value={metaConfig.destination}
+                        onChange={(e) => setMetaConfig({ ...metaConfig, destination: e.target.value })}
+                        className="w-full h-8 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none font-medium"
+                      >
+                        <option value="whatsapp">💬 WhatsApp Business (CTWA - Direct Chat)</option>
+                        <option value="instagram">📸 Instagram Direct Message (DM)</option>
+                        <option value="website">🌐 Laman Web / Katalog Tempahan</option>
+                      </select>
+                    </div>
+
+                    {/* Dynamic Asset Selector */}
+                    {metaConfig.destination === 'whatsapp' && (
+                      <div className="space-y-1 p-2.5 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl">
+                        <label className="text-emerald-800 dark:text-emerald-300 font-semibold block text-[11px]">
+                          Nombor WhatsApp Business
+                        </label>
+                        <select
+                          value={metaConfig.selectedWhatsappNumber}
+                          onChange={(e) => setMetaConfig({ ...metaConfig, selectedWhatsappNumber: e.target.value })}
+                          className="w-full h-8 px-2 border border-emerald-300 dark:border-emerald-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none"
+                        >
+                          {metaAssets.whatsappNumbers.map((w: any) => (
+                            <option key={w.id} value={w.number}>
+                              {w.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {metaConfig.destination === 'instagram' && (
+                      <div className="space-y-1 p-2.5 bg-pink-50/70 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-800/60 rounded-2xl">
+                        <label className="text-pink-800 dark:text-pink-300 font-semibold block text-[11px]">
+                          Akaun Instagram Business
+                        </label>
+                        <select
+                          value={metaConfig.selectedInstagramAccountId}
+                          onChange={(e) => setMetaConfig({ ...metaConfig, selectedInstagramAccountId: e.target.value })}
+                          className="w-full h-8 px-2 border border-pink-300 dark:border-pink-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none"
+                        >
+                          {metaAssets.instagramAccounts.map((ig: any) => (
+                            <option key={ig.id} value={ig.id}>
+                              @{ig.username} ({ig.name})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {metaConfig.destination === 'website' && (
+                      <div className="space-y-1 p-2.5 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-2xl">
+                        <label className="text-blue-800 dark:text-blue-300 font-semibold block text-[11px]">
+                          Meta Pixel Pelacak Laman Web
+                        </label>
+                        <select
+                          value={metaConfig.selectedPixelId}
+                          onChange={(e) => setMetaConfig({ ...metaConfig, selectedPixelId: e.target.value })}
+                          className="w-full h-8 px-2 border border-blue-300 dark:border-blue-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none"
+                        >
+                          {metaAssets.pixels.map((pix: any) => (
+                            <option key={pix.id} value={pix.id}>
+                              {pix.name} (ID: {pix.id})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Penempatan Iklan Bersih (Placements) */}
+                    <div className="space-y-1.5 pt-1">
+                      <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 block">
+                        Penempatan Iklan (Placement Control)
+                      </label>
+                      <div className="space-y-1.5">
+                        <label className="flex items-start gap-2 p-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl cursor-pointer">
+                          <input
+                            type="radio"
+                            name="placementFilter"
+                            value="feed_reels"
+                            checked={metaConfig.placementType === 'feed_reels'}
+                            onChange={() => setMetaConfig({ ...metaConfig, placementType: 'feed_reels' })}
+                            className="mt-0.5 accent-slate-700"
+                          />
+                          <div>
+                            <span className="font-semibold text-slate-800 dark:text-zinc-100 text-[11px] block">
+                              Penempatan Bersih (FB & IG Feed / Reels)
+                            </span>
+                            <span className="text-[9px] text-emerald-600 dark:text-emerald-400 block leading-tight font-medium">
+                              ✓ Anti-Fraud: Menyekat klik palsu Audience Network
+                            </span>
+                          </div>
+                        </label>
+
+                        <label className="flex items-start gap-2 p-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl cursor-pointer">
+                          <input
+                            type="radio"
+                            name="placementFilter"
+                            value="advantage"
+                            checked={metaConfig.placementType === 'advantage'}
+                            onChange={() => setMetaConfig({ ...metaConfig, placementType: 'advantage' })}
+                            className="mt-0.5 accent-slate-700"
+                          />
+                          <div>
+                            <span className="font-medium text-slate-700 dark:text-zinc-200 text-[11px] block">
+                              Advantage+ Placements
+                            </span>
+                            <span className="text-[9px] text-slate-400 block leading-tight">
+                              Meta AI mengedarkan iklan secara meluas ke semua saluran Meta
+                            </span>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Penjejakan UTM Kempen (Attribution Tagging) */}
+                    <div className="p-2.5 bg-slate-50 dark:bg-zinc-800/70 border border-slate-200 dark:border-zinc-700 rounded-xl flex items-center justify-between">
+                      <div>
+                        <span className="font-semibold text-slate-800 dark:text-zinc-200 block text-[11px]">
+                          Penjejakan UTM & Analitik
+                        </span>
+                        <span className="text-[9px] text-slate-400">utm_source=facebook&utm_medium=cpc</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={metaConfig.enableUtmTracking}
+                        onChange={(e) => setMetaConfig({ ...metaConfig, enableUtmTracking: e.target.checked })}
+                        className="w-4 h-4 accent-slate-700 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* ================= TAB 3: BAJET & LAUNCH ================= */}
+                {studioTab === 'budget' && (
+                  <div className="space-y-3.5 animate-in fade-in duration-150">
+                    {/* Belanjawan Harian */}
+                    <div className="space-y-2 p-2.5 bg-slate-50 dark:bg-zinc-800/60 rounded-2xl border border-slate-200 dark:border-zinc-700">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-slate-700 dark:text-zinc-300 text-[11px]">Belanjawan Harian</span>
+                        <span className="font-bold text-slate-900 dark:text-zinc-100 font-mono text-sm">RM {dailyBudget}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="10"
+                        max="300"
+                        step="5"
+                        value={dailyBudget}
+                        onChange={(e) => setDailyBudget(Number(e.target.value))}
+                        className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-slate-700"
+                      />
+                      <div className="grid grid-cols-4 gap-1 pt-1">
+                        {[20, 30, 50, 100].map((b) => (
+                          <button
+                            key={b}
+                            type="button"
+                            onClick={() => setDailyBudget(b)}
+                            className={`py-1 rounded text-[10px] font-mono transition-colors cursor-pointer border ${
+                              dailyBudget === b
+                                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-transparent font-bold'
+                                : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300'
+                            }`}
+                          >
+                            RM{b}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Durasi Tempoh Siaran */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Durasi Siaran</label>
+                        <span className="text-[11px] font-semibold text-slate-800 dark:text-zinc-200">
+                          Jumlah: RM {(dailyBudget * metaConfig.durationDays).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-1">
+                        {[
+                          { days: 3, label: '3 Hari' },
+                          { days: 7, label: '7 Hari' },
+                          { days: 14, label: '14 Hari' },
+                          { days: 30, label: '30 Hari' },
+                        ].map((d) => (
+                          <button
+                            key={d.days}
+                            type="button"
+                            onClick={() => setMetaConfig({ ...metaConfig, durationDays: d.days })}
+                            className={`py-1.5 rounded-lg border text-center text-[11px] transition-colors cursor-pointer ${
+                              metaConfig.durationDays === d.days
+                                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-semibold border-transparent'
+                                : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
+                            }`}
+                          >
+                            {d.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Mod Jam Siaran (Dayparting Meta) */}
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                        Mod Jam Siaran (Dayparting)
+                      </label>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setMetaConfig({ ...metaConfig, scheduleType: 'peak_hours' })}
+                          className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                            metaConfig.scheduleType === 'peak_hours'
+                              ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-400 text-indigo-950 dark:text-indigo-200'
+                              : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
+                          }`}
+                        >
+                          <span className="font-semibold text-[10px] block">🌙 Waktu Emas</span>
+                          <span className="text-[9px] text-slate-400 block">7:30 PM - 11:00 PM</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setMetaConfig({ ...metaConfig, scheduleType: 'all_day' })}
+                          className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                            metaConfig.scheduleType === 'all_day'
+                              ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-400 text-indigo-950 dark:text-indigo-200'
+                              : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
+                          }`}
+                        >
+                          <span className="font-semibold text-[10px] block">⚡ 24 Jam Penuh</span>
+                          <span className="text-[9px] text-slate-400 block">Sepanjang Hari</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Kawalan Had Kos (Cost Cap) */}
+                    <div className="space-y-1 p-2.5 bg-slate-50 dark:bg-zinc-800/60 rounded-xl border border-slate-200 dark:border-zinc-700">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-slate-700 dark:text-zinc-300 text-[11px]">
+                          Kawalan Had Kos / Prospek (Cost Cap)
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-mono">
+                          {metaConfig.costCap > 0 ? `Maks RM ${metaConfig.costCap.toFixed(2)}` : 'Auto (Lowest Cost)'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          max="20"
+                          placeholder="0 = Auto"
+                          value={metaConfig.costCap || ''}
+                          onChange={(e) => setMetaConfig({ ...metaConfig, costCap: Number(e.target.value) || 0 })}
+                          className="w-full h-7 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs bg-white dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Kad Live Telemetri Algoritma Meta AI */}
+                    <div className="p-3 bg-slate-900 dark:bg-zinc-950 text-white rounded-2xl border border-slate-800 shadow-sm space-y-2">
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                        <span className="font-semibold text-slate-200 text-[11px] flex items-center gap-1">
+                          <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                          Unjuran AI Meta Marketing
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-[8px] font-medium text-emerald-400 bg-emerald-950/60 px-1.5 py-0.2 rounded-full border border-emerald-800/60">
+                          <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></span>
+                          {reachEstimate.is_live ? 'Live Meta' : 'Calibrated MY'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                        <div>
+                          <span className="text-slate-400 text-[9px] block">Jangkauan Harian</span>
+                          <span className="font-bold text-white font-mono">
+                            {reachEstimate.daily_reach_lower.toLocaleString()}–{reachEstimate.daily_reach_upper.toLocaleString()}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 text-[9px] block">Potensi Paparan</span>
+                          <span className="font-bold text-white font-mono">
+                            {reachEstimate.daily_impressions_lower.toLocaleString()}–{reachEstimate.daily_impressions_upper.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+                        <span className="text-slate-400">Hasil WhatsApp Harian:</span>
+                        <span className="font-bold text-emerald-400 font-mono text-xs">
+                          ~{reachEstimate.daily_leads_lower}–{reachEstimate.daily_leads_upper} Prospek/hari
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Panel Kanan: Launch & Action Buttons */}
+              <div className="pt-2.5 border-t border-slate-100 dark:border-zinc-800 shrink-0 space-y-1.5">
                 <button
                   type="button"
-                  onClick={() => setIsStudioModalOpen(true)}
-                  className="w-full h-9 px-3 text-xs font-medium bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  onClick={handlePostAd}
+                  disabled={isPublishing}
+                  className="w-full h-10 px-4 text-xs font-semibold bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 text-white rounded-2xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
-                  Konfigurasi Lengkap Meta Ads
+                  {isPublishing ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Melancarkan ke Meta Ads API...</span>
+                    </>
+                  ) : publishSuccess ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Iklan Berjaya Dilancarkan!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Rocket className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Lancarkan Iklan Meta Sekarang</span>
+                    </>
+                  )}
                 </button>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={handleSaveDraft}
+                    disabled={isPublishing}
+                    className="flex-1 h-7 text-[11px] font-medium bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 rounded-xl transition-colors flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
+                  >
+                    <Bookmark className="w-3 h-3 text-slate-400" />
+                    <span>Simpan Draf</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyContent}
+                    className="flex-1 h-7 text-[11px] font-medium bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 rounded-xl transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-3 h-3 text-emerald-500" />
+                        <span>Disalin!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3 text-slate-400" />
+                        <span>Salin Teks</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -1662,545 +2355,6 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                 className="px-5 py-2 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium shadow-xs transition-colors"
               >
                 Simpan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 3: AUDIENCE TARGET MODAL */}
-      {isAudienceModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 p-6 sm:p-7 max-w-md w-full shadow-2xl space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 flex items-center justify-center border border-slate-200 dark:border-zinc-700">
-                  <Pencil className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-slate-900 dark:text-zinc-100">Sasaran Audiens</h3>
-                  <p className="text-xs text-slate-500">Konfigurasi segmen demografi dan minat.</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAudienceModalOpen(false)}
-                className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-3.5 text-xs">
-              <div>
-                <label className="text-slate-600 dark:text-zinc-400 font-medium block mb-1">Umur & Jantina</label>
-                <div className="p-2.5 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 rounded-xl text-slate-700 dark:text-zinc-200">
-                  Lelaki & Wanita (18 - 35 tahun)
-                </div>
-              </div>
-              <div>
-                <label className="text-slate-600 dark:text-zinc-400 font-medium block mb-1">Minat Utama</label>
-                <div className="p-2.5 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 rounded-xl text-slate-700 dark:text-zinc-200">
-                  Futsal, Bola Sepak, Jersey Sublimation, Sukan Komuniti
-                </div>
-              </div>
-              <div>
-                <label className="text-slate-600 dark:text-zinc-400 font-medium block mb-1">Wilayah / Geografi</label>
-                <div className="p-2.5 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 rounded-xl text-slate-700 dark:text-zinc-200">
-                  Malaysia (Semenanjung, Sabah & Sarawak)
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 dark:border-zinc-800">
-              <button
-                type="button"
-                onClick={() => setIsAudienceModalOpen(false)}
-                className="px-5 py-2 rounded-full bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-slate-900 text-xs font-medium shadow-xs transition-colors cursor-pointer"
-              >
-                Tutup & Simpan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 4: STUDIO KONFIGURASI META MARKETING API (GRID 3 KOLOM) */}
-      {isStudioModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-2xl w-full max-w-4xl p-6 flex flex-col gap-5 max-h-[90vh]">
-            {/* Header Modal */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800 shrink-0">
-              <div>
-                <h2 className="text-sm font-semibold text-slate-800 dark:text-zinc-100">
-                  Studio Konfigurasi Meta Marketing API
-                </h2>
-                <p className="text-xs text-slate-400">
-                  Parameter resmi pengiklanan Facebook, Instagram, dan WhatsApp Ads
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsStudioModalOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Body Modal: Grid 3 Kolom yang Lega */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 flex-1 overflow-y-auto pr-1 text-xs">
-              {/* KOLOM 1: SASARAN AUDIENS & WILAYAH */}
-              <div className="space-y-3.5 p-4 bg-slate-50/60 dark:bg-zinc-800/40 rounded-2xl border border-slate-200/70 dark:border-zinc-700/70">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-slate-700 dark:text-zinc-200 block uppercase tracking-wider text-[11px]">
-                    1. Sasaran Audiens & Wilayah
-                  </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200/80 dark:bg-zinc-700 text-slate-700 dark:text-zinc-300 font-medium">
-                    Meta v21.0
-                  </span>
-                </div>
-
-                {/* Umur */}
-                <div className="space-y-1">
-                  <label className="text-slate-500 dark:text-zinc-400">Rentang Umur</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="18"
-                      max="65"
-                      value={metaConfig.ageMin}
-                      onChange={(e) => setMetaConfig({ ...metaConfig, ageMin: Number(e.target.value) })}
-                      className="w-16 h-8 border border-slate-200 dark:border-zinc-700 rounded-lg text-center bg-white dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 font-medium"
-                    />
-                    <span className="text-slate-400">s/d</span>
-                    <input
-                      type="number"
-                      min="18"
-                      max="65"
-                      value={metaConfig.ageMax}
-                      onChange={(e) => setMetaConfig({ ...metaConfig, ageMax: Number(e.target.value) })}
-                      className="w-16 h-8 border border-slate-200 dark:border-zinc-700 rounded-lg text-center bg-white dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 font-medium"
-                    />
-                  </div>
-                </div>
-
-                {/* Jantina */}
-                <div className="space-y-1">
-                  <label className="text-slate-500 dark:text-zinc-400">Jantina</label>
-                  <div className="grid grid-cols-3 gap-1">
-                    {[
-                      { id: 'all', label: 'Semua' },
-                      { id: 'male', label: 'Lelaki' },
-                      { id: 'female', label: 'Wanita' },
-                    ].map((g) => (
-                      <button
-                        key={g.id}
-                        type="button"
-                        onClick={() => setMetaConfig({ ...metaConfig, gender: g.id })}
-                        className={`py-1.5 rounded-lg border text-center transition-colors cursor-pointer ${
-                          metaConfig.gender === g.id
-                            ? 'bg-slate-200 dark:bg-zinc-700 font-semibold text-slate-800 dark:text-zinc-100 border-slate-300 dark:border-zinc-600'
-                            : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
-                        }`}
-                      >
-                        {g.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Wilayah Sasaran (Geolocation Search Meta) */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-slate-500 dark:text-zinc-400 font-medium">Wilayah Sasaran (Meta Geolocation)</label>
-                    {isSearchingGeo && <RefreshCw className="w-3 h-3 animate-spin text-slate-400" />}
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Cari negeri / bandar (Selangor, KL, Johor)..."
-                      value={geoSearchQuery}
-                      onChange={(e) => {
-                        setGeoSearchQuery(e.target.value);
-                        handleSearchGeo(e.target.value);
-                      }}
-                      className="w-full h-8 px-3 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs bg-white dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 outline-none focus:border-slate-400"
-                    />
-
-                    {geoSearchResults.length > 0 && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-lg z-50 max-h-36 overflow-y-auto p-1">
-                        {geoSearchResults.map((geo: any) => (
-                          <div
-                            key={geo.key}
-                            onClick={() => {
-                              setMetaConfig({
-                                ...metaConfig,
-                                locationKey: geo.key,
-                                locationName: geo.name,
-                              });
-                              setGeoSearchResults([]);
-                              setGeoSearchQuery('');
-                            }}
-                            className="px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-lg cursor-pointer flex items-center justify-between text-xs"
-                          >
-                            <span className="font-medium text-slate-800 dark:text-zinc-200">{geo.name}</span>
-                            <span className="text-[10px] text-slate-400 uppercase">{geo.type}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-2 bg-slate-100 dark:bg-zinc-700/60 rounded-lg border border-slate-200 dark:border-zinc-600 flex items-center justify-between">
-                    <span className="text-[11px] text-slate-700 dark:text-zinc-200 font-medium truncate">
-                      📍 {metaConfig.locationName}
-                    </span>
-                    {metaConfig.locationKey !== 'MY' && (
-                      <button
-                        type="button"
-                        onClick={() => setMetaConfig({ ...metaConfig, locationKey: 'MY', locationName: 'Malaysia (Seluruh Negara)' })}
-                        className="text-[10px] text-blue-600 hover:underline cursor-pointer shrink-0 ml-2"
-                      >
-                        Reset Seluruh MY
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Minat Sasaran (Interests Live Typeahead) */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-slate-500 dark:text-zinc-400 font-medium">Cari Minat Rasmi Meta API (Interests)</label>
-                    {isSearchingInterests && <RefreshCw className="w-3 h-3 animate-spin text-slate-400" />}
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Taip kata kunci (futsal, jersey, sportswear)..."
-                      value={interestSearchQuery}
-                      onChange={(e) => {
-                        setInterestSearchQuery(e.target.value);
-                        handleSearchMetaInterests(e.target.value);
-                      }}
-                      className="w-full h-8 px-3 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs bg-white dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 outline-none focus:border-slate-400"
-                    />
-
-                    {searchResults.length > 0 && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-lg z-50 max-h-40 overflow-y-auto p-1">
-                        {searchResults.map((item: any) => (
-                          <div
-                            key={item.id}
-                            onClick={() => {
-                              if (!metaConfig.interests.some((i: any) => (typeof i === 'object' ? i.id === item.id : i === item.name))) {
-                                setMetaConfig({
-                                  ...metaConfig,
-                                  interests: [...metaConfig.interests, { id: item.id, name: item.name }],
-                                });
-                              }
-                              setSearchResults([]);
-                              setInterestSearchQuery('');
-                            }}
-                            className="px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-lg cursor-pointer flex items-center justify-between text-xs"
-                          >
-                            <span className="font-medium text-slate-800 dark:text-zinc-200">{item.name}</span>
-                            <span className="text-[10px] text-slate-400">
-                              Audience: {(item.audience_size_lower_bound || 0).toLocaleString()}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Chip Minat yang Terpilih */}
-                  <div className="flex flex-wrap gap-1 pt-1 min-h-[32px]">
-                    {metaConfig.interests.map((item: any) => {
-                      const id = typeof item === 'object' ? item.id : item;
-                      const name = typeof item === 'object' ? item.name : item;
-                      return (
-                        <span
-                          key={id}
-                          className="inline-flex items-center gap-1 bg-slate-100 dark:bg-zinc-700 border border-slate-200 dark:border-zinc-600 px-2 py-0.5 rounded-md text-[11px] text-slate-700 dark:text-zinc-200"
-                        >
-                          {name}
-                          <X
-                            className="w-3 h-3 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-100 cursor-pointer"
-                            onClick={() =>
-                              setMetaConfig({
-                                ...metaConfig,
-                                interests: metaConfig.interests.filter((i: any) => (typeof i === 'object' ? i.id !== id : i !== name)),
-                              })
-                            }
-                          />
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Toggle Emas: Pembeli Aktif (Engaged Shoppers) */}
-                <div className="pt-2 border-t border-slate-200/60 dark:border-zinc-700/60 flex items-center justify-between">
-                  <div>
-                    <span className="font-medium text-slate-700 dark:text-zinc-200 block">Sasaran Pembeli Aktif</span>
-                    <span className="text-[10px] text-slate-400">Behavior ID: 6071559926818</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={metaConfig.engagedShoppers}
-                    onChange={(e) => setMetaConfig({ ...metaConfig, engagedShoppers: e.target.checked })}
-                    className="w-4 h-4 accent-slate-700 cursor-pointer"
-                  />
-                </div>
-              </div>
-
-              {/* KOLOM 2: ASET META & PENEMPATAN IKLAN */}
-              <div className="space-y-3.5 p-4 bg-slate-50/60 dark:bg-zinc-800/40 rounded-2xl border border-slate-200/70 dark:border-zinc-700/70">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-slate-700 dark:text-zinc-200 block uppercase tracking-wider text-[11px]">
-                    2. Aset Meta & Penempatan
-                  </span>
-                  {isLoadingMetaAssets && <RefreshCw className="w-3 h-3 animate-spin text-slate-400" />}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="flex items-start gap-2.5 p-2.5 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl cursor-pointer">
-                    <input
-                      type="radio"
-                      name="placement"
-                      value="advantage"
-                      checked={metaConfig.placementType === 'advantage'}
-                      onChange={() => setMetaConfig({ ...metaConfig, placementType: 'advantage' })}
-                      className="mt-0.5 accent-slate-700"
-                    />
-                    <div>
-                      <span className="font-medium text-slate-800 dark:text-zinc-200 block">
-                        Advantage+ Placements (Disyorkan)
-                      </span>
-                      <span className="text-[10px] text-slate-400 leading-tight block">
-                        AI Meta mengedarkan iklan automatik ke Feed, Reels, dan Stories dengan kos termurah.
-                      </span>
-                    </div>
-                  </label>
-
-                  <label className="flex items-start gap-2.5 p-2.5 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl cursor-pointer">
-                    <input
-                      type="radio"
-                      name="placement"
-                      value="manual"
-                      checked={metaConfig.placementType === 'manual'}
-                      onChange={() => setMetaConfig({ ...metaConfig, placementType: 'manual' })}
-                      className="mt-0.5 accent-slate-700"
-                    />
-                    <div>
-                      <span className="font-medium text-slate-800 dark:text-zinc-200 block">Penempatan Manual</span>
-                      <span className="text-[10px] text-slate-400 leading-tight block">
-                        Pilih platform tertentu (Fokus Stories & Reels 9:16).
-                      </span>
-                    </div>
-                  </label>
-                </div>
-
-                {/* Halaman Facebook Rasmi (Meta Page) */}
-                <div className="space-y-1 pt-1">
-                  <label className="text-slate-500 dark:text-zinc-400 font-medium">Halaman Facebook Rasmi</label>
-                  <select
-                    value={metaConfig.selectedPageId}
-                    onChange={(e) => setMetaConfig({ ...metaConfig, selectedPageId: e.target.value })}
-                    className="w-full h-8 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer"
-                  >
-                    {metaAssets.pages.length > 0 ? (
-                      metaAssets.pages.map((p: any) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} {p.whatsapp_number ? `(${p.whatsapp_number})` : ''}
-                        </option>
-                      ))
-                    ) : (
-                      <option value="">SFV Apparel Official (Default Meta Page)</option>
-                    )}
-                  </select>
-                </div>
-
-                {/* Saluran & Destinasi Mesej Rasmi */}
-                <div className="space-y-1">
-                  <label className="text-slate-500 dark:text-zinc-400 font-medium">Saluran Destinasi Iklan</label>
-                  <select
-                    value={metaConfig.destination}
-                    onChange={(e) => setMetaConfig({ ...metaConfig, destination: e.target.value })}
-                    className="w-full h-8 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer"
-                  >
-                    <option value="whatsapp">WhatsApp Business (Nombor Utama)</option>
-                    <option value="instagram">Instagram Direct Message (DM)</option>
-                    <option value="website">Laman Web / Katalog Tempahan</option>
-                  </select>
-                </div>
-
-                {/* Dynamic Asset Selector depending on Destination */}
-                {metaConfig.destination === 'whatsapp' && (
-                  <div className="space-y-1 p-2 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-xl">
-                    <label className="text-emerald-800 dark:text-emerald-300 font-medium block text-[11px]">
-                      Nombor WhatsApp Business Aktif
-                    </label>
-                    <select
-                      value={metaConfig.selectedWhatsappNumber}
-                      onChange={(e) => setMetaConfig({ ...metaConfig, selectedWhatsappNumber: e.target.value })}
-                      className="w-full h-8 px-2 border border-emerald-300 dark:border-emerald-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer"
-                    >
-                      {metaAssets.whatsappNumbers.map((w: any) => (
-                        <option key={w.id} value={w.number}>
-                          {w.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {metaConfig.destination === 'instagram' && (
-                  <div className="space-y-1 p-2 bg-pink-50/70 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-800/60 rounded-xl">
-                    <label className="text-pink-800 dark:text-pink-300 font-medium block text-[11px]">
-                      Akaun Instagram Business Rasmi
-                    </label>
-                    <select
-                      value={metaConfig.selectedInstagramAccountId}
-                      onChange={(e) => setMetaConfig({ ...metaConfig, selectedInstagramAccountId: e.target.value })}
-                      className="w-full h-8 px-2 border border-pink-300 dark:border-pink-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer"
-                    >
-                      {metaAssets.instagramAccounts.map((ig: any) => (
-                        <option key={ig.id} value={ig.id}>
-                          @{ig.username} ({ig.name})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {metaConfig.destination === 'website' && (
-                  <div className="space-y-1 p-2 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-xl">
-                    <label className="text-blue-800 dark:text-blue-300 font-medium block text-[11px]">
-                      Meta Pixel Pelacak Laman Web
-                    </label>
-                    <select
-                      value={metaConfig.selectedPixelId}
-                      onChange={(e) => setMetaConfig({ ...metaConfig, selectedPixelId: e.target.value })}
-                      className="w-full h-8 px-2 border border-blue-300 dark:border-blue-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer"
-                    >
-                      {metaAssets.pixels.map((pix: any) => (
-                        <option key={pix.id} value={pix.id}>
-                          {pix.name} (ID: {pix.id})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </div>
-
-              {/* KOLOM 3: JADUAL, DAYPARTING & UNJURAN TELEMETRI META AI */}
-              <div className="space-y-3.5 p-4 bg-slate-50/60 dark:bg-zinc-800/40 rounded-2xl border border-slate-200/70 dark:border-zinc-700/70">
-                <span className="font-semibold text-slate-700 dark:text-zinc-200 block uppercase tracking-wider text-[11px]">
-                  3. Jadual & Unjuran Meta AI
-                </span>
-
-                <div className="space-y-1.5">
-                  <label className="text-slate-500 dark:text-zinc-400">Durasi Tempoh Siaran</label>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {[
-                      { days: 3, label: '3 Hari' },
-                      { days: 7, label: '7 Hari' },
-                      { days: 14, label: '14 Hari' },
-                    ].map((d) => (
-                      <button
-                        key={d.days}
-                        type="button"
-                        onClick={() => setMetaConfig({ ...metaConfig, durationDays: d.days })}
-                        className={`py-1.5 rounded-lg border text-center transition-colors cursor-pointer ${
-                          metaConfig.durationDays === d.days
-                            ? 'bg-slate-200 dark:bg-zinc-700 font-semibold text-slate-800 dark:text-zinc-100 border-slate-300 dark:border-zinc-600'
-                            : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
-                        }`}
-                      >
-                        {d.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5 pt-1">
-                  <label className="text-slate-500 dark:text-zinc-400">Mod Jam Siaran (Meta Dayparting)</label>
-                  <div className="space-y-1.5">
-                    <label className="flex items-center gap-2 p-2 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg cursor-pointer">
-                      <input
-                        type="radio"
-                        name="schedule"
-                        value="peak_hours"
-                        checked={metaConfig.scheduleType === 'peak_hours'}
-                        onChange={() => setMetaConfig({ ...metaConfig, scheduleType: 'peak_hours' })}
-                        className="accent-slate-700"
-                      />
-                      <span className="text-slate-700 dark:text-zinc-200">Waktu Emas (7:30 PM - 11:00 PM)</span>
-                    </label>
-                    <label className="flex items-center gap-2 p-2 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg cursor-pointer">
-                      <input
-                        type="radio"
-                        name="schedule"
-                        value="all_day"
-                        checked={metaConfig.scheduleType === 'all_day'}
-                        onChange={() => setMetaConfig({ ...metaConfig, scheduleType: 'all_day' })}
-                        className="accent-slate-700"
-                      />
-                      <span className="text-slate-700 dark:text-zinc-200">24 Jam Penuh Tanpa Henti</span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Kad Live Telemetri Algoritma Meta AI */}
-                <div className="p-3 bg-white dark:bg-zinc-800/80 rounded-xl border border-slate-200 dark:border-zinc-700 space-y-2">
-                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-700 pb-1.5">
-                    <span className="font-semibold text-slate-700 dark:text-zinc-200 text-[11px]">
-                      Unjuran Algoritma Meta
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-[9px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.2 rounded-full border border-emerald-200 dark:border-emerald-800/60">
-                      <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></span>
-                      {reachEstimate.is_live ? 'Live Meta Telemetry' : 'AI Calibrated MY'}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-[11px]">
-                    <div>
-                      <span className="text-slate-400 text-[10px] block">Jangkauan Harian</span>
-                      <span className="font-semibold text-slate-800 dark:text-zinc-200">
-                        {reachEstimate.daily_reach_lower.toLocaleString()} – {reachEstimate.daily_reach_upper.toLocaleString()}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 text-[10px] block">Potensi Paparan</span>
-                      <span className="font-semibold text-slate-800 dark:text-zinc-200">
-                        {reachEstimate.daily_impressions_lower.toLocaleString()} – {reachEstimate.daily_impressions_upper.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="pt-1 border-t border-slate-100 dark:border-zinc-700 flex items-center justify-between text-[11px]">
-                    <span className="text-slate-500">Taksiran Hasil:</span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                      ~{reachEstimate.daily_leads_lower}–{reachEstimate.daily_leads_upper} prospek/hari
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer Modal: Tombol Aksi */}
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-zinc-800 shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsStudioModalOpen(false)}
-                className="h-9 px-4 text-xs font-medium text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-xl transition-colors cursor-pointer"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsStudioModalOpen(false)}
-                className="h-9 px-5 text-xs font-medium bg-slate-900 text-white rounded-xl hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-zinc-200 transition-colors shadow-sm cursor-pointer"
-              >
-                Simpan & Terapkan ke Kempen
               </button>
             </div>
           </div>
