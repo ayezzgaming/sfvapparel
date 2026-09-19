@@ -437,7 +437,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
   };
 
   return (
-    <div className="w-full h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] overflow-hidden bg-[#f0f4f9] dark:bg-zinc-950 flex flex-col text-slate-900 dark:text-zinc-100 font-sans">
+    <div className="w-full h-full overflow-hidden bg-[#f0f4f9] dark:bg-zinc-950 flex flex-col p-4 gap-3 text-slate-900 dark:text-zinc-100 font-sans">
       {/* Hidden File Input for Image Upload */}
       <input
         ref={fileInputRef}
@@ -448,7 +448,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
       />
 
       {/* Baris Header Tab (Studio Iklan AI, Sambungan API, Kempen Aktif) */}
-      <div className="shrink-0 px-5 pt-3.5 pb-2 flex items-center justify-between">
+      <div className="shrink-0 flex items-center justify-between">
         {/* Tab Switcher */}
         <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-zinc-800/90 backdrop-blur-md p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
           <button
@@ -501,7 +501,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
       {/* ======================= TAB 1: STUDIO IKLAN AI ======================= */}
       {activeTab === 'create' && (
-        <div className="flex-1 min-h-0 overflow-hidden flex items-stretch px-5 pb-4 gap-4 relative animate-in fade-in">
+        <div className="flex-1 min-h-0 overflow-hidden flex items-stretch gap-4 relative animate-in fade-in">
           {/* SISI KIRI: PANEL KONTROL (Tanpa Kartu Putih, Langsung di Atas #f0f4f9) */}
           <div
             className={`flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out select-none ${
@@ -997,7 +997,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
         {/* ======================= TAB 2: SAMBUNGAN AKAUN API ======================= */}
         {activeTab === 'connections' && (
-          <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-4 space-y-4 animate-in fade-in">
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-4 animate-in fade-in">
             <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-4 sm:p-5 rounded-3xl border border-slate-200/80 dark:border-zinc-800 text-xs text-slate-600 dark:text-zinc-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
               <div className="space-y-1">
                 <div className="flex items-center space-x-2">
@@ -1048,7 +1048,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
         {/* ======================= TAB 3: SENARAI KEMPEN AKTIF & PENILAIAN AI ======================= */}
         {activeTab === 'campaigns' && (
-          <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-4 space-y-4 animate-in fade-in">
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-4 animate-in fade-in">
             {/* KPI Summary Overview */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-4 rounded-3xl border border-slate-200/80 dark:border-zinc-800 text-center">

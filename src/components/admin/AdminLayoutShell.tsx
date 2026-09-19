@@ -181,22 +181,30 @@ export default function AdminLayoutShell({
         </aside>
 
         {/* ----------------- MAIN VIEW CONTENT AREA ----------------- */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-white relative">
-          <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-[1700px] w-full mx-auto">
-            {children}
-          </main>
-
-          {/* Google Style Floating Help Icon Button (Bottom Right) */}
-          <div className="fixed bottom-4 right-4 z-20">
-            <button
-              type="button"
-              className="w-10 h-10 rounded-full bg-white hover:bg-slate-100 text-slate-600 shadow-sm border border-slate-200 flex items-center justify-center transition-transform active:scale-95 cursor-pointer"
-              title="Bantuan & Panduan"
-            >
-              <HelpCircle className="w-5 h-5" />
-            </button>
+        {pathname === '/admin/ads-generator' ? (
+          <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white relative">
+            <main className="flex-1 h-full overflow-hidden p-0">
+              {children}
+            </main>
           </div>
-        </div>
+        ) : (
+          <div className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-white relative">
+            <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-[1700px] w-full mx-auto">
+              {children}
+            </main>
+
+            {/* Google Style Floating Help Icon Button (Bottom Right) */}
+            <div className="fixed bottom-4 right-4 z-20">
+              <button
+                type="button"
+                className="w-10 h-10 rounded-full bg-white hover:bg-slate-100 text-slate-600 shadow-sm border border-slate-200 flex items-center justify-center transition-transform active:scale-95 cursor-pointer"
+                title="Bantuan & Panduan"
+              >
+                <HelpCircle className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
