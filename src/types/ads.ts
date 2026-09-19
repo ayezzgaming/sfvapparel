@@ -63,4 +63,5 @@ export interface AdCampaign {
   creative: AdCreative;
   evaluationNote?: string;
   rawActions?: { type: string; value: number }[];
+  targetingSpec?: any;
 }

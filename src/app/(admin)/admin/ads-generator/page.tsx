@@ -227,6 +227,40 @@ export default function AdminAdsGeneratorPage() {
   const [isStudioModalOpen, setIsStudioModalOpen] = useState(false);
   const [bestTimeIndex, setBestTimeIndex] = useState(0);
 
+  // Live Meta Marketing API Targeting Search States
+  const [interestSearchQuery, setInterestSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearchingInterests, setIsSearchingInterests] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleSearchMetaInterests = (query: string) => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    if (!query || query.trim().length < 2) {
+      setSearchResults([]);
+      setIsSearchingInterests(false);
+      return;
+    }
+    setIsSearchingInterests(true);
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/meta/targeting-search?type=adinterest&q=${encodeURIComponent(query.trim())}`);
+        const json = await res.json();
+        if (json.data && Array.isArray(json.data)) {
+          setSearchResults(json.data);
+        } else {
+          setSearchResults([]);
+        }
+      } catch (err) {
+        console.error('Failed to search Meta interests:', err);
+        setSearchResults([]);
+      } finally {
+        setIsSearchingInterests(false);
+      }
+    }, 300);
+  };
+
   // State data konfigurasi Meta Ads lengkap
   const [metaConfig, setMetaConfig] = useState({
     destination: 'whatsapp', // 'whatsapp' | 'instagram' | 'website'
@@ -234,7 +268,11 @@ export default function AdminAdsGeneratorPage() {
     ageMax: 35,
     gender: 'all', // 'all' | 'male' | 'female'
     location: 'Malaysia (Semenanjung)',
-    interests: ['Futsal', 'Jersey Printing', 'Sukan Komuniti'],
+    interests: [
+      { id: '6003139266472', name: 'Futsal' },
+      { id: '6003384218943', name: 'Jersey (clothing)' },
+      { id: '6003102379373', name: 'Sports clothing' }
+    ] as { id: string; name: string }[],
     engagedShoppers: true, // Fitur Emas Meta (Behavior: Engaged Shoppers)
     placementType: 'advantage', // 'advantage' | 'manual'
     manualPlacements: ['feed', 'stories', 'reels'],
@@ -483,6 +521,37 @@ export default function AdminAdsGeneratorPage() {
 
   const handlePublishCampaign = async () => {
     setIsPublishing(true);
+
+    const targetingSpec = {
+      age_min: metaConfig.ageMin,
+      age_max: metaConfig.ageMax,
+      genders: metaConfig.gender === 'male' ? [1] : metaConfig.gender === 'female' ? [2] : [1, 2],
+      geo_locations: {
+        countries: ['MY'], // Kode negara ISO resmi Meta
+      },
+      flexible_spec: [
+        // 1. Minat Resmi Meta dengan ID valid
+        ...(metaConfig.interests.length > 0
+          ? [
+              {
+                interests: metaConfig.interests.map((i: any) => ({
+                  id: typeof i === 'string' ? i : i.id,
+                  name: typeof i === 'string' ? i : i.name,
+                })),
+              },
+            ]
+          : []),
+        // 2. Behavior Resmi: Engaged Shoppers (jika aktif)
+        ...(metaConfig.engagedShoppers
+          ? [
+              {
+                behaviors: [{ id: '6071559926818', name: 'Engaged Shoppers' }],
+              },
+            ]
+          : []),
+      ],
+    };
+
     const newCampaign: AdCampaign = {
       id: `camp-${Date.now()}`,
       name: `${selectedPlatform.toUpperCase()} - ${currentCreative.headline.substring(0, 30)}`,
@@ -497,6 +566,7 @@ export default function AdminAdsGeneratorPage() {
       cpc: 0,
       createdAt: new Date().toISOString().split('T')[0],
       creative: currentCreative,
+      targetingSpec,
     };
     setCampaigns((prev) => [newCampaign, ...prev]);
     // Save newly launched campaign to shared Supabase DB
@@ -1043,7 +1113,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     {metaConfig.ageMin}–{metaConfig.ageMax} thn • {metaConfig.gender === 'all' ? 'Semua' : metaConfig.gender} • {metaConfig.location}
                   </div>
                   <div className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">
-                    Minat: {metaConfig.interests.join(', ')}
+                    Minat: {metaConfig.interests.map((i: any) => typeof i === 'string' ? i : i.name).join(', ')}
                   </div>
                 </div>
 
@@ -1566,27 +1636,76 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                   </div>
                 </div>
 
-                {/* Minat Resmi Meta */}
-                <div className="space-y-1">
-                  <label className="text-slate-500 dark:text-zinc-400">Minat Sasaran (Interests)</label>
-                  <div className="p-2 border border-slate-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 flex flex-wrap gap-1 min-h-[60px]">
-                    {metaConfig.interests.map((tag) => (
-                      <span
-                        key={tag}
-                        className="inline-flex items-center gap-1 bg-slate-100 dark:bg-zinc-700 px-2 py-0.5 rounded-md text-[11px] text-slate-700 dark:text-zinc-200"
-                      >
-                        {tag}
-                        <X
-                          className="w-3 h-3 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer"
-                          onClick={() =>
-                            setMetaConfig({
-                              ...metaConfig,
-                              interests: metaConfig.interests.filter((i) => i !== tag),
-                            })
-                          }
-                        />
-                      </span>
-                    ))}
+                {/* Minat Resmi Meta API (Interests Live Typeahead) */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-slate-500 dark:text-zinc-400 font-medium">Cari Minat Resmi Meta API (Interests)</label>
+                    {isSearchingInterests && <RefreshCw className="w-3 h-3 animate-spin text-slate-400" />}
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Ketik kata kunci (misal: futsal, jersi, sukan)..."
+                      value={interestSearchQuery}
+                      onChange={(e) => {
+                        setInterestSearchQuery(e.target.value);
+                        handleSearchMetaInterests(e.target.value);
+                      }}
+                      className="w-full h-8 px-3 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs bg-white dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 outline-none focus:border-slate-400"
+                    />
+
+                    {/* Dropdown Hasil Pencarian Live dari Meta Graph API */}
+                    {searchResults.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-lg z-50 max-h-40 overflow-y-auto p-1">
+                        {searchResults.map((item: any) => (
+                          <div
+                            key={item.id}
+                            onClick={() => {
+                              // Simpan objek resmi Meta { id, name }
+                              if (!metaConfig.interests.some((i: any) => (typeof i === 'object' ? i.id === item.id : i === item.name))) {
+                                setMetaConfig({
+                                  ...metaConfig,
+                                  interests: [...metaConfig.interests, { id: item.id, name: item.name }],
+                                });
+                              }
+                              setSearchResults([]);
+                              setInterestSearchQuery('');
+                            }}
+                            className="px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-lg cursor-pointer flex items-center justify-between text-xs"
+                          >
+                            <span className="font-medium text-slate-800 dark:text-zinc-200">{item.name}</span>
+                            <span className="text-[10px] text-slate-400">
+                              Audience: {(item.audience_size_lower_bound || 0).toLocaleString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Chip Minat yang Terpilih (Menyimpan ID Resmi Meta) */}
+                  <div className="flex flex-wrap gap-1 pt-1 min-h-[36px]">
+                    {metaConfig.interests.map((item: any) => {
+                      const id = typeof item === 'object' ? item.id : item;
+                      const name = typeof item === 'object' ? item.name : item;
+                      return (
+                        <span
+                          key={id}
+                          className="inline-flex items-center gap-1 bg-slate-100 dark:bg-zinc-700 border border-slate-200 dark:border-zinc-600 px-2 py-0.5 rounded-md text-[11px] text-slate-700 dark:text-zinc-200"
+                        >
+                          {name}
+                          <X
+                            className="w-3 h-3 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-100 cursor-pointer"
+                            onClick={() =>
+                              setMetaConfig({
+                                ...metaConfig,
+                                interests: metaConfig.interests.filter((i: any) => (typeof i === 'object' ? i.id !== id : i !== name)),
+                              })
+                            }
+                          />
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
 
