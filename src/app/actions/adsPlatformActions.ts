@@ -35,9 +35,22 @@ export async function verifyMetaConnection(
       };
     }
 
-    // Clean account ID - remove 'act_' if user pasted it
-    const rawId = accountId.trim().replace(/^act_/i, '');
-    const formattedActId = `act_${rawId}`;
+    // Robust Ad Account ID Sanitization (Handles act=123, act_123, act:123, full Ads Manager URLs, or raw numbers)
+    let rawId = accountId.trim();
+    if (rawId.includes('act=')) {
+      const match = rawId.match(/act=([0-9]+)/i);
+      if (match && match[1]) {
+        rawId = match[1];
+      } else {
+        rawId = rawId.replace(/^.*act[=_:]/i, '');
+      }
+    } else {
+      rawId = rawId.replace(/^act[=_:\s-]*/i, '');
+    }
+    // Clean to strictly digits if it contains numbers
+    const digitsOnly = rawId.replace(/[^0-9]/g, '');
+    const cleanId = digitsOnly.length > 0 ? digitsOnly : rawId.trim();
+    const formattedActId = `act_${cleanId}`;
 
     const url = new URL(`https://graph.facebook.com/v20.0/${formattedActId}`);
     url.searchParams.append('access_token', accessToken.trim());
@@ -46,7 +59,7 @@ export async function verifyMetaConnection(
       'id,name,account_status,currency,balance,amount_spent,spend_cap,business_name,timezone_name'
     );
 
-    const response = await fetch(url.toString(), {
+    let response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
         Accept: 'application/json'
@@ -54,8 +67,28 @@ export async function verifyMetaConnection(
       cache: 'no-store'
     });
 
-    const latencyMs = Date.now() - startTime;
-    const data = await response.json();
+    let latencyMs = Date.now() - startTime;
+    let data = await response.json();
+
+    // Fallback: If act_ prefix failed with object not exist, try direct ID in case it's a direct ad account ID / business ID
+    if (!response.ok && data?.error?.code === 100 && cleanId !== formattedActId) {
+      const fallbackUrl = new URL(`https://graph.facebook.com/v20.0/${cleanId}`);
+      fallbackUrl.searchParams.append('access_token', accessToken.trim());
+      fallbackUrl.searchParams.append(
+        'fields',
+        'id,name,account_status,currency,balance,amount_spent,spend_cap,business_name,timezone_name'
+      );
+      const fallbackRes = await fetch(fallbackUrl.toString(), {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        cache: 'no-store'
+      });
+      if (fallbackRes.ok) {
+        response = fallbackRes;
+        data = await fallbackRes.json();
+        latencyMs = Date.now() - startTime;
+      }
+    }
 
     if (!response.ok || data.error) {
       const err = data.error || {};
