@@ -333,6 +333,10 @@ export default function PlatformConnectCard({
 
   // Real Live Meta Campaigns State & Actions
   const [liveCampaigns, setLiveCampaigns] = useState<LiveCampaignData[] | null>(null);
+  const [liveTotalSpent, setLiveTotalSpent] = useState<number | null>(null);
+  const [liveTotalLeads, setLiveTotalLeads] = useState<number | null>(null);
+  const [liveCostPerLead, setLiveCostPerLead] = useState<number | null>(null);
+  const [selectedDatePreset, setSelectedDatePreset] = useState<string>('maximum');
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
   const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
@@ -341,17 +345,23 @@ export default function PlatformConnectCard({
   // Auto-sync real Meta campaigns when detail modal opens
   useEffect(() => {
     if (showDetailModal && platform.isConnected && liveCampaigns === null) {
-      handleSyncLiveMetrics();
+      handleSyncLiveMetrics(selectedDatePreset);
     }
   }, [showDetailModal, platform.isConnected]);
 
-  // LIVE METRICS CALCULATION (Prioritizes 100% Real Live Meta Graph Data)
+  // LIVE METRICS CALCULATION (Strictly 100% Genuine Meta Graph API Data)
   const displayCampaigns = liveCampaigns !== null ? liveCampaigns : campaigns.filter((c) => c.platform === platform.id);
-  const realTotalSpent = Math.max(platform.insight?.totalSpent || 0, displayCampaigns.reduce((acc, c) => acc + (c.spent || 0), 0));
-  const realTotalLeads = Math.max(platform.insight?.totalLeads || 0, displayCampaigns.reduce((acc, c) => acc + (c.leadsOrConversions || 0), 0));
+  const realTotalSpent = liveTotalSpent !== null
+    ? liveTotalSpent
+    : displayCampaigns.reduce((acc, c) => acc + (c.spent || 0), 0);
+  const realTotalLeads = liveTotalLeads !== null
+    ? liveTotalLeads
+    : displayCampaigns.reduce((acc, c) => acc + (c.leadsOrConversions || 0), 0);
   const realTotalClicks = displayCampaigns.reduce((acc, c) => acc + (c.clicks || 0), 0);
   const realTotalImpressions = displayCampaigns.reduce((acc, c) => acc + (c.impressions || 0), 0);
-  const realCostPerLead = realTotalLeads > 0 ? realTotalSpent / realTotalLeads : (platform.insight?.costPerLead || 0);
+  const realCostPerLead = liveCostPerLead !== null
+    ? liveCostPerLead
+    : (realTotalLeads > 0 ? realTotalSpent / realTotalLeads : 0);
   const activeCampaignsCount = displayCampaigns.filter((c) => c.status === 'active').length;
 
   // Open modal and populate initial values (strictly blank if not connected)
@@ -455,7 +465,7 @@ export default function PlatformConnectCard({
   };
 
   // Real-Time Live Sync Handshake with Meta Graph API
-  const handleSyncLiveMetrics = async () => {
+  const handleSyncLiveMetrics = async (targetPreset: string = selectedDatePreset) => {
     setIsSyncing(true);
     setSyncStatusMsg(null);
     try {
@@ -467,12 +477,16 @@ export default function PlatformConnectCard({
       const res = await fetchLivePlatformCampaigns(
         platform.id,
         effectiveAccountId,
-        storedToken
+        storedToken,
+        targetPreset
       );
 
       setIsSyncing(false);
       if (res.success) {
         setLiveCampaigns(res.campaigns);
+        setLiveTotalSpent(res.totalSpent);
+        setLiveTotalLeads(res.totalLeads);
+        setLiveCostPerLead(res.costPerLead);
         setSyncSuccess(true);
         setSyncStatusMsg(res.message);
 
@@ -1068,7 +1082,7 @@ export default function PlatformConnectCard({
               <div className="flex items-center space-x-2">
                 <button
                   type="button"
-                  onClick={handleSyncLiveMetrics}
+                  onClick={() => handleSyncLiveMetrics()}
                   disabled={isSyncing}
                   className="px-3 py-1.5 rounded-full text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center space-x-1"
                   title="Segerakkan data terkini daripada API"
@@ -1118,15 +1132,46 @@ export default function PlatformConnectCard({
               </div>
             </div>
 
-            {/* LIVE PERFORMANCE METRICS (DIKIRA DARI DATA KEMPEN SEBENAR DARI META GRAPH API) */}
+            {/* LIVE PERFORMANCE METRICS (100% REAL-TIME DARI META GRAPH API) */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  Metrik Analitik Sebenar
-                </span>
-                <span className="text-[11px] text-slate-500 font-medium">
-                  {displayCampaigns.length} Kempen Berdaftar
-                </span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                    Metrik Analitik Sebenar
+                  </span>
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    {displayCampaigns.length} Kempen Berdaftar
+                  </span>
+                </div>
+
+                {/* DATE PRESET FILTER PILLS */}
+                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto text-[10px]">
+                  {[
+                    { id: 'today', label: 'Hari Ini' },
+                    { id: 'yesterday', label: 'Semalam' },
+                    { id: 'last_7d', label: '7 Hari' },
+                    { id: 'last_30d', label: '30 Hari' },
+                    { id: 'this_month', label: 'Bulan Ini' },
+                    { id: 'maximum', label: 'Sepanjang Masa' },
+                  ].map((preset) => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDatePreset(preset.id);
+                        handleSyncLiveMetrics(preset.id);
+                      }}
+                      disabled={isSyncing}
+                      className={`px-2 py-1 rounded-lg font-medium whitespace-nowrap transition-all ${
+                        selectedDatePreset === preset.id
+                          ? 'bg-white text-slate-900 shadow-xs font-semibold'
+                          : 'text-slate-500 hover:text-slate-800'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* KPI Cards */}
@@ -1146,7 +1191,7 @@ export default function PlatformConnectCard({
                 <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
                   <span className="text-[10px] text-slate-400 block uppercase font-medium">Kos / Prospek</span>
                   <span className="text-sm font-semibold text-slate-900 font-mono">
-                    RM {realCostPerLead.toFixed(2)}
+                    {realTotalLeads > 0 ? `RM ${realCostPerLead.toFixed(2)}` : 'Tiada Data'}
                   </span>
                 </div>
               </div>
@@ -1215,12 +1260,12 @@ export default function PlatformConnectCard({
                             <span>{c.clicks} klik</span>
                             <span>•</span>
                             <span>{c.impressions.toLocaleString()} paparan</span>
-                            {c.dailyBudget && (
-                              <>
-                                <span>•</span>
-                                <span>Bajet: RM{c.dailyBudget}/hari</span>
-                              </>
-                            )}
+                            <span>•</span>
+                            <span>
+                              {c.dailyBudget && c.dailyBudget > 0
+                                ? `Bajet: RM${c.dailyBudget.toFixed(2)}/hari`
+                                : 'Bajet di Ad Set'}
+                            </span>
                           </div>
                         </div>
 

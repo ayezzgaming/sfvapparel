@@ -450,16 +450,18 @@ export interface FetchLiveCampaignsResult {
   totalClicks: number;
   totalImpressions: number;
   costPerLead: number;
+  datePreset?: string;
   message: string;
 }
 
 /**
- * Server Action: Fetches real live campaigns and analytics insights from Meta Graph API
+ * Server Action: Fetches 100% genuine live campaigns and analytics insights from Meta Graph API
  */
 export async function fetchLivePlatformCampaigns(
   platformId: AdPlatform,
   accountId: string,
-  accessToken?: string
+  accessToken?: string,
+  datePreset: string = 'maximum'
 ): Promise<FetchLiveCampaignsResult> {
   let effectiveToken = accessToken?.trim() || '';
   let effectiveAccountId = accountId?.trim() || '';
@@ -493,6 +495,7 @@ export async function fetchLivePlatformCampaigns(
       totalClicks: 0,
       totalImpressions: 0,
       costPerLead: 0,
+      datePreset,
       message: 'ID Akaun dan Token diperlukan untuk menyegerak data kempen. Sila sambung akaun terlebih dahulu.'
     };
   }
@@ -510,19 +513,26 @@ export async function fetchLivePlatformCampaigns(
       let cleanId = digitsOnly.length > 0 ? digitsOnly : rawId.trim();
       let formattedActId = `act_${cleanId}`;
 
-      // Helper function to extract leads from Meta actions array
+      // Helper function to extract 100% genuine leads / conversions from Meta actions array
       const extractLeads = (actions?: any[]): number => {
         if (!Array.isArray(actions)) return 0;
         let leadCount = 0;
         for (const a of actions) {
-          const type = a.action_type || '';
+          const type = (a.action_type || '').toLowerCase();
           if (
-            type === 'lead' ||
-            type === 'onsite_conversion.lead_grouped' ||
-            type === 'contact_total' ||
             type === 'onsite_conversion.messaging_conversation_started_7d' ||
+            type === 'onsite_conversion.messaging_first_reply' ||
+            type === 'onsite_conversion.messaging_user_initiated_conversation' ||
             type === 'onsite_conversion.total_messaging_connection' ||
             type === 'messages_started' ||
+            type === 'onsite_conversion.lead_grouped' ||
+            type === 'lead' ||
+            type === 'contact_total' ||
+            type === 'contact' ||
+            type === 'offsite_conversion.fb_pixel_lead' ||
+            type === 'complete_registration' ||
+            type === 'omni_complete_registration' ||
+            type === 'submit_application' ||
             type === 'omni_purchase' ||
             type === 'purchase'
           ) {
@@ -532,8 +542,8 @@ export async function fetchLivePlatformCampaigns(
         return leadCount;
       };
 
-      // 1. Fetch campaigns list with standard, robust fields (no unsupported nested edges)
-      let campaignsUrl = new URL(`https://graph.facebook.com/v20.0/${formattedActId}/campaigns`);
+      // 1. Fetch campaigns list from Meta Graph API
+      const campaignsUrl = new URL(`https://graph.facebook.com/v20.0/${formattedActId}/campaigns`);
       campaignsUrl.searchParams.append('access_token', effectiveToken);
       campaignsUrl.searchParams.append(
         'fields',
@@ -541,13 +551,13 @@ export async function fetchLivePlatformCampaigns(
       );
       campaignsUrl.searchParams.append('limit', '100');
 
-      let campaignsRes = await fetch(campaignsUrl.toString(), {
+      const campaignsRes = await fetch(campaignsUrl.toString(), {
         method: 'GET',
         headers: { Accept: 'application/json' },
         cache: 'no-store'
       });
 
-      let campaignsData = await campaignsRes.json();
+      const campaignsData = await campaignsRes.json();
 
       // If initial act_ ID failed, report exact error from Meta Graph API
       if (!campaignsRes.ok) {
@@ -561,17 +571,55 @@ export async function fetchLivePlatformCampaigns(
           totalClicks: 0,
           totalImpressions: 0,
           costPerLead: 0,
+          datePreset,
           message: `Ralat Meta Graph API: ${errMsg}${errCode}`
         };
       }
 
-      // 2. Fetch Campaign-Level Insights from Meta Graph API
+      // 1b. Fetch Ad Sets in parallel to get genuine budgets for campaigns that don't use CBO (Advantage Campaign Budget)
+      const campaignBudgetsMap: Record<string, { dailyBudget: number; lifetimeBudget: number }> = {};
+      try {
+        const adSetsUrl = new URL(`https://graph.facebook.com/v20.0/${formattedActId}/adsets`);
+        adSetsUrl.searchParams.append('access_token', effectiveToken);
+        adSetsUrl.searchParams.append('fields', 'campaign_id,daily_budget,lifetime_budget,status,effective_status');
+        adSetsUrl.searchParams.append('limit', '200');
+
+        const adSetsRes = await fetch(adSetsUrl.toString(), {
+          headers: { Accept: 'application/json' },
+          cache: 'no-store'
+        });
+        if (adSetsRes.ok) {
+          const adSetsData = await adSetsRes.json();
+          if (Array.isArray(adSetsData?.data)) {
+            for (const adset of adSetsData.data) {
+              const cId = adset.campaign_id;
+              if (!cId) continue;
+              if (!campaignBudgetsMap[cId]) {
+                campaignBudgetsMap[cId] = { dailyBudget: 0, lifetimeBudget: 0 };
+              }
+              const isAdsetActive = adset.status === 'ACTIVE' || adset.effective_status === 'ACTIVE';
+              const dBud = adset.daily_budget ? Number(adset.daily_budget) / 100 : 0;
+              const lBud = adset.lifetime_budget ? Number(adset.lifetime_budget) / 100 : 0;
+              if (isAdsetActive) {
+                campaignBudgetsMap[cId].dailyBudget += dBud;
+                campaignBudgetsMap[cId].lifetimeBudget += lBud;
+              } else if (campaignBudgetsMap[cId].dailyBudget === 0 && dBud > 0) {
+                campaignBudgetsMap[cId].dailyBudget = dBud;
+              }
+            }
+          }
+        }
+      } catch {
+        // Ignore adsets budget error
+      }
+
+      // 2. Fetch Campaign-Level Insights from Meta Graph API for the requested date preset
       const campaignInsightsMap: Record<string, { spend: number; clicks: number; impressions: number; leads: number }> = {};
       try {
         const campInsightsUrl = new URL(`https://graph.facebook.com/v20.0/${formattedActId}/insights`);
         campInsightsUrl.searchParams.append('access_token', effectiveToken);
         campInsightsUrl.searchParams.append('level', 'campaign');
-        campInsightsUrl.searchParams.append('date_preset', 'maximum');
+        campInsightsUrl.searchParams.append('date_preset', datePreset || 'maximum');
         campInsightsUrl.searchParams.append('fields', 'campaign_id,campaign_name,spend,clicks,impressions,actions');
         campInsightsUrl.searchParams.append('limit', '100');
 
@@ -580,8 +628,8 @@ export async function fetchLivePlatformCampaigns(
           cache: 'no-store'
         });
 
-        if (!campInsightsRes.ok) {
-          // Fallback to last_90d if maximum preset is not permitted
+        if (!campInsightsRes.ok && datePreset === 'maximum') {
+          // Fallback to last_90d if maximum preset is not permitted by Meta token permissions
           campInsightsUrl.searchParams.set('date_preset', 'last_90d');
           campInsightsRes = await fetch(campInsightsUrl.toString(), {
             headers: { Accept: 'application/json' },
@@ -594,11 +642,8 @@ export async function fetchLivePlatformCampaigns(
           if (Array.isArray(campInsightsData?.data)) {
             for (const row of campInsightsData.data) {
               if (row.campaign_id) {
-                let l = extractLeads(row.actions);
+                const l = extractLeads(row.actions);
                 const clk = Number(row.clicks || 0);
-                if (l === 0 && clk > 0) {
-                  l = Math.max(1, Math.round(clk * 0.08));
-                }
                 campaignInsightsMap[row.campaign_id] = {
                   spend: Number(row.spend || 0),
                   clicks: clk,
@@ -613,7 +658,7 @@ export async function fetchLivePlatformCampaigns(
         // Ignore campaign insights failure
       }
 
-      // 3. Fetch Account-Level Total Insights (Lifetime / Maximum)
+      // 3. Fetch Account-Level Total Insights from Meta Graph API
       let accountTotalSpent = 0;
       let accountTotalClicks = 0;
       let accountTotalImpressions = 0;
@@ -622,7 +667,7 @@ export async function fetchLivePlatformCampaigns(
       try {
         const accInsightsUrl = new URL(`https://graph.facebook.com/v20.0/${formattedActId}/insights`);
         accInsightsUrl.searchParams.append('access_token', effectiveToken);
-        accInsightsUrl.searchParams.append('date_preset', 'maximum');
+        accInsightsUrl.searchParams.append('date_preset', datePreset || 'maximum');
         accInsightsUrl.searchParams.append('fields', 'spend,clicks,impressions,actions');
 
         let accInsightsRes = await fetch(accInsightsUrl.toString(), {
@@ -630,7 +675,7 @@ export async function fetchLivePlatformCampaigns(
           cache: 'no-store'
         });
 
-        if (!accInsightsRes.ok) {
+        if (!accInsightsRes.ok && datePreset === 'maximum') {
           accInsightsUrl.searchParams.set('date_preset', 'last_90d');
           accInsightsRes = await fetch(accInsightsUrl.toString(), {
             headers: { Accept: 'application/json' },
@@ -646,16 +691,13 @@ export async function fetchLivePlatformCampaigns(
             accountTotalClicks = Number(row.clicks || 0);
             accountTotalImpressions = Number(row.impressions || 0);
             accountTotalLeads = extractLeads(row.actions);
-            if (accountTotalLeads === 0 && accountTotalClicks > 0) {
-              accountTotalLeads = Math.max(1, Math.round(accountTotalClicks * 0.08));
-            }
           }
         }
       } catch {
         // Ignore account level insight error
       }
 
-      // 4. Map Campaign Rows with Real Meta Data
+      // 4. Map Campaign Rows with 100% Genuine Meta Data
       if (campaignsRes.ok && Array.isArray(campaignsData.data) && campaignsData.data.length > 0) {
         const liveCampaigns: LiveCampaignData[] = campaignsData.data.map((c: any) => {
           const matchedInsight = campaignInsightsMap[c.id] || { spend: 0, clicks: 0, impressions: 0, leads: 0 };
@@ -664,11 +706,17 @@ export async function fetchLivePlatformCampaigns(
           const impressions = matchedInsight.impressions;
           const leads = matchedInsight.leads;
 
-          const dailyBudgetVal = c.daily_budget
-            ? Number(c.daily_budget) / 100
-            : c.lifetime_budget
-            ? Number(c.lifetime_budget) / 100
-            : 30;
+          // Pure real daily budget calculation: Campaign level -> Ad Set level -> 0 (No hardcoded fallback!)
+          let dailyBudgetVal = 0;
+          if (c.daily_budget) {
+            dailyBudgetVal = Number(c.daily_budget) / 100;
+          } else if (c.lifetime_budget) {
+            dailyBudgetVal = Number(c.lifetime_budget) / 100;
+          } else if (campaignBudgetsMap[c.id]?.dailyBudget) {
+            dailyBudgetVal = campaignBudgetsMap[c.id].dailyBudget;
+          } else if (campaignBudgetsMap[c.id]?.lifetimeBudget) {
+            dailyBudgetVal = campaignBudgetsMap[c.id].lifetimeBudget;
+          }
 
           const isActive =
             c.status?.toUpperCase() === 'ACTIVE' ||
@@ -693,10 +741,10 @@ export async function fetchLivePlatformCampaigns(
         const calculatedClicks = liveCampaigns.reduce((sum, c) => sum + c.clicks, 0);
         const calculatedImpressions = liveCampaigns.reduce((sum, c) => sum + c.impressions, 0);
 
-        const finalSpent = Math.max(accountTotalSpent, calculatedSpent);
-        const finalClicks = Math.max(accountTotalClicks, calculatedClicks);
-        const finalImpressions = Math.max(accountTotalImpressions, calculatedImpressions);
-        const finalLeads = Math.max(accountTotalLeads, calculatedLeads);
+        const finalSpent = accountTotalSpent > 0 ? accountTotalSpent : calculatedSpent;
+        const finalClicks = accountTotalClicks > 0 ? accountTotalClicks : calculatedClicks;
+        const finalImpressions = accountTotalImpressions > 0 ? accountTotalImpressions : calculatedImpressions;
+        const finalLeads = accountTotalLeads > 0 ? accountTotalLeads : calculatedLeads;
         const finalCpl = finalLeads > 0 ? finalSpent / finalLeads : 0;
 
         return {
@@ -707,7 +755,8 @@ export async function fetchLivePlatformCampaigns(
           totalClicks: finalClicks,
           totalImpressions: finalImpressions,
           costPerLead: finalCpl,
-          message: `Berjaya memuatkan ${liveCampaigns.length} kempen & data analitik langsung dari Meta Ads Manager.`
+          datePreset,
+          message: `Berjaya memuatkan ${liveCampaigns.length} kempen & data analitik langsung 100% dari Meta Ads Manager.`
         };
       }
 
@@ -721,7 +770,8 @@ export async function fetchLivePlatformCampaigns(
           totalClicks: accountTotalClicks,
           totalImpressions: accountTotalImpressions,
           costPerLead: accountTotalLeads > 0 ? accountTotalSpent / accountTotalLeads : 0,
-          message: `Akaun Meta tersambung dengan jumlah belanja terkumpul RM${accountTotalSpent.toFixed(2)}.`
+          datePreset,
+          message: `Akaun Meta tersambung dengan jumlah belanja langsung RM${accountTotalSpent.toFixed(2)}.`
         };
       }
     } catch (err: unknown) {
@@ -734,6 +784,7 @@ export async function fetchLivePlatformCampaigns(
         totalClicks: 0,
         totalImpressions: 0,
         costPerLead: 0,
+        datePreset,
         message: `Ralat Meta API: ${msg}`
       };
     }
@@ -747,6 +798,7 @@ export async function fetchLivePlatformCampaigns(
     totalClicks: 0,
     totalImpressions: 0,
     costPerLead: 0,
+    datePreset,
     message: 'Tiada kempen aktif dikesan di akaun ini.'
   };
 }
