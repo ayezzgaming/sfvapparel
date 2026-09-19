@@ -20,7 +20,7 @@ export interface VerifyPlatformResult {
 
 /**
  * Server Action: Verifies real connection with Meta Graph API (Facebook / Instagram Ads)
- * Endpoint: https://graph.facebook.com/v20.0/act_<account_id>
+ * Endpoint: https://graph.facebook.com/v21.0/act_<account_id>
  */
 export async function verifyMetaConnection(
   accountId: string,
@@ -57,7 +57,7 @@ export async function verifyMetaConnection(
     let liveProfilePicUrl: string | undefined;
     let fallbackUserName: string | undefined;
     try {
-      const picUrl = new URL(`https://graph.facebook.com/v20.0/me`);
+      const picUrl = new URL(`https://graph.facebook.com/v21.0/me`);
       picUrl.searchParams.append('access_token', accessToken.trim());
       picUrl.searchParams.append('fields', 'id,name,picture.width(200).height(200)');
       const picRes = await fetch(picUrl.toString(), {
@@ -73,7 +73,7 @@ export async function verifyMetaConnection(
       }
 
       // If user has a Facebook Page, use the Page profile picture for authentic ads preview
-      const pagesUrl = new URL(`https://graph.facebook.com/v20.0/me/accounts`);
+      const pagesUrl = new URL(`https://graph.facebook.com/v21.0/me/accounts`);
       pagesUrl.searchParams.append('access_token', accessToken.trim());
       pagesUrl.searchParams.append('fields', 'id,name,picture.width(200).height(200)');
       const pagesRes = await fetch(pagesUrl.toString(), {
@@ -90,7 +90,7 @@ export async function verifyMetaConnection(
       // Ignore picture fetch error
     }
 
-    const url = new URL(`https://graph.facebook.com/v20.0/${formattedActId}`);
+    const url = new URL(`https://graph.facebook.com/v21.0/${formattedActId}`);
     url.searchParams.append('access_token', accessToken.trim());
     url.searchParams.append(
       'fields',
@@ -110,7 +110,7 @@ export async function verifyMetaConnection(
 
     // Fallback 1: If act_ prefix failed with object not exist, try direct ID in case it's a direct ad account ID / business ID
     if (!response.ok && data?.error?.code === 100 && cleanId !== formattedActId) {
-      const fallbackUrl = new URL(`https://graph.facebook.com/v20.0/${cleanId}`);
+      const fallbackUrl = new URL(`https://graph.facebook.com/v21.0/${cleanId}`);
       fallbackUrl.searchParams.append('access_token', accessToken.trim());
       fallbackUrl.searchParams.append(
         'fields',
@@ -131,7 +131,7 @@ export async function verifyMetaConnection(
     // Fallback 2: If ad account permissions error (#200) occurs or account not found, verify token directly via /me and /me/adaccounts
     if (!response.ok && data?.error) {
       try {
-        const meUrl = new URL(`https://graph.facebook.com/v20.0/me`);
+        const meUrl = new URL(`https://graph.facebook.com/v21.0/me`);
         meUrl.searchParams.append('access_token', accessToken.trim());
         meUrl.searchParams.append('fields', 'id,name,picture.width(200).height(200)');
 
@@ -149,7 +149,7 @@ export async function verifyMetaConnection(
           }
 
           // Check if user has ad accounts
-          const adAccountsUrl = new URL(`https://graph.facebook.com/v20.0/me/adaccounts`);
+          const adAccountsUrl = new URL(`https://graph.facebook.com/v21.0/me/adaccounts`);
           adAccountsUrl.searchParams.append('access_token', accessToken.trim());
           adAccountsUrl.searchParams.append('fields', 'id,name,account_status,currency,balance,amount_spent');
 
@@ -297,7 +297,7 @@ export async function verifyWhatsAppConnection(
     }
 
     const cleanId = wabaOrPhoneId.trim();
-    const url = new URL(`https://graph.facebook.com/v20.0/${cleanId}`);
+    const url = new URL(`https://graph.facebook.com/v21.0/${cleanId}`);
     url.searchParams.append('access_token', accessToken.trim());
     url.searchParams.append('fields', 'id,verified_name,display_phone_number,quality_rating,name');
 
@@ -602,7 +602,7 @@ export async function fetchLivePlatformCampaigns(
       };
 
       // 1. Fetch campaigns list from Meta Graph API
-      const campaignsUrl = new URL(`https://graph.facebook.com/v20.0/${formattedActId}/campaigns`);
+      const campaignsUrl = new URL(`https://graph.facebook.com/v21.0/${formattedActId}/campaigns`);
       campaignsUrl.searchParams.append('access_token', effectiveToken);
       campaignsUrl.searchParams.append(
         'fields',
@@ -641,7 +641,7 @@ export async function fetchLivePlatformCampaigns(
       // 1b. Fetch Ad Sets in parallel to get genuine budgets for campaigns that don't use CBO (Advantage Campaign Budget)
       const campaignBudgetsMap: Record<string, { dailyBudget: number; lifetimeBudget: number }> = {};
       try {
-        const adSetsUrl = new URL(`https://graph.facebook.com/v20.0/${formattedActId}/adsets`);
+        const adSetsUrl = new URL(`https://graph.facebook.com/v21.0/${formattedActId}/adsets`);
         adSetsUrl.searchParams.append('access_token', effectiveToken);
         adSetsUrl.searchParams.append('fields', 'campaign_id,daily_budget,lifetime_budget,status,effective_status');
         adSetsUrl.searchParams.append('limit', '200');
@@ -691,7 +691,7 @@ export async function fetchLivePlatformCampaigns(
       > = {};
 
       try {
-        const campInsightsUrl = new URL(`https://graph.facebook.com/v20.0/${formattedActId}/insights`);
+        const campInsightsUrl = new URL(`https://graph.facebook.com/v21.0/${formattedActId}/insights`);
         campInsightsUrl.searchParams.append('access_token', effectiveToken);
         campInsightsUrl.searchParams.append('level', 'campaign');
         campInsightsUrl.searchParams.append('date_preset', datePreset || 'maximum');
@@ -749,7 +749,7 @@ export async function fetchLivePlatformCampaigns(
       let accountRawActions: { type: string; value: number }[] = [];
 
       try {
-        const accInsightsUrl = new URL(`https://graph.facebook.com/v20.0/${formattedActId}/insights`);
+        const accInsightsUrl = new URL(`https://graph.facebook.com/v21.0/${formattedActId}/insights`);
         accInsightsUrl.searchParams.append('access_token', effectiveToken);
         accInsightsUrl.searchParams.append('date_preset', datePreset || 'maximum');
         accInsightsUrl.searchParams.append(
@@ -958,7 +958,7 @@ export async function toggleMetaLiveCampaignStatus(
       return { success: false, message: 'Kunci akses Meta tidak dijumpai.' };
     }
 
-    const url = new URL(`https://graph.facebook.com/v20.0/${campaignId}`);
+    const url = new URL(`https://graph.facebook.com/v21.0/${campaignId}`);
     url.searchParams.append('access_token', effectiveToken);
     url.searchParams.append('status', newStatus);
 
@@ -1235,6 +1235,7 @@ export async function publishAdToMetaGraphApi(
     instagramAccountId?: string;
     whatsappNumber?: string;
     pixelId?: string;
+    destination?: string;
     costCap?: number;
     enableUtmTracking?: boolean;
     excludedAudienceIds?: string[];
@@ -1312,9 +1313,11 @@ export async function publishAdToMetaGraphApi(
     const metaCampaignId = campData.id;
 
     // Step 2: Build Enhanced Anti-Waste Targeting Spec
+    const isWhatsApp = metaAssetConfig?.destination !== 'instagram' && metaAssetConfig?.destination !== 'website';
     const enrichedTargeting: any = {
       ...(targetingSpec || { geo_locations: { countries: ['MY'] } }),
-      // Remove low quality Audience Network clicks by restricting to Facebook & Instagram
+      // Direct mobile device focus for WhatsApp CTWA to ensure maximum chat conversion rate
+      device_platforms: isWhatsApp ? ['mobile'] : ['mobile', 'desktop'],
       publisher_platforms: ['facebook', 'instagram'],
       facebook_positions: ['feed', 'story'],
       instagram_positions: ['stream', 'story', 'reels', 'explore'],
@@ -1338,6 +1341,17 @@ export async function publishAdToMetaGraphApi(
     adSetUrl.searchParams.append('optimization_goal', 'LEAD_GENERATION');
     adSetUrl.searchParams.append('billing_event', 'IMPRESSIONS');
     adSetUrl.searchParams.append('daily_budget', String(Math.round(campaign.dailyBudget * 100)));
+
+    if (metaAssetConfig?.pageId) {
+      adSetUrl.searchParams.append('promoted_object', JSON.stringify({ page_id: metaAssetConfig.pageId }));
+    }
+    if (metaAssetConfig?.destination === 'whatsapp') {
+      adSetUrl.searchParams.append('destination_type', 'WHATSAPP');
+    } else if (metaAssetConfig?.destination === 'instagram') {
+      adSetUrl.searchParams.append('destination_type', 'MESSENGER');
+    } else if (metaAssetConfig?.destination === 'website') {
+      adSetUrl.searchParams.append('destination_type', 'WEBSITE');
+    }
 
     if (metaAssetConfig?.costCap && metaAssetConfig.costCap > 0) {
       adSetUrl.searchParams.append('bid_strategy', 'COST_CAP');
@@ -1379,23 +1393,29 @@ export async function publishAdToMetaGraphApi(
           creativeUrl.searchParams.append('url_tags', utmTag);
         }
 
+        const linkDataPayload: any = {
+          message: campaign.creative.primaryText,
+          name: campaign.creative.headline,
+          description: campaign.creative.secondaryHeadline || undefined,
+          link: campaign.creative.targetUrl || 'https://sfvapparel.my',
+          call_to_action: {
+            type: 'SEND_WHATSAPP_MESSAGE',
+            value: {
+              app_destination: 'WHATSAPP'
+            }
+          }
+        };
+
+        if (campaign.creative.imageUrl && campaign.creative.imageUrl.startsWith('http')) {
+          linkDataPayload.picture = campaign.creative.imageUrl;
+        }
+
         creativeUrl.searchParams.append(
           'object_story_spec',
           JSON.stringify({
             page_id: pageId,
             instagram_actor_id: metaAssetConfig?.instagramAccountId || undefined,
-            link_data: {
-              message: campaign.creative.primaryText,
-              name: campaign.creative.headline,
-              description: campaign.creative.secondaryHeadline || undefined,
-              link: campaign.creative.targetUrl || 'https://sfvapparel.my',
-              call_to_action: {
-                type: 'SEND_WHATSAPP_MESSAGE',
-                value: {
-                  app_destination: 'WHATSAPP'
-                }
-              }
-            }
+            link_data: linkDataPayload
           })
         );
 

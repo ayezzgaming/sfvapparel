@@ -78,7 +78,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
 
         if (token) {
           fetch(
-            `https://graph.facebook.com/v20.0/me?fields=id,name,picture.width(200).height(200)&access_token=${token}`
+            `https://graph.facebook.com/v21.0/me?fields=id,name,picture.width(200).height(200)&access_token=${token}`
           )
             .then((res) => res.json())
             .then((data) => {
@@ -90,7 +90,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
 
           // Also check for connected Facebook Page picture (best for ads)
           fetch(
-            `https://graph.facebook.com/v20.0/me/accounts?fields=id,name,picture.width(200).height(200)&access_token=${token}`
+            `https://graph.facebook.com/v21.0/me/accounts?fields=id,name,picture.width(200).height(200)&access_token=${token}`
           )
             .then((res) => res.json())
             .then((data) => {

@@ -63,7 +63,10 @@ import {
   HelpCircle,
   TrendingUp,
   Radio,
-  Filter
+  Filter,
+  MapPin,
+  Moon,
+  Shield
 } from 'lucide-react';
 
 interface AiVariation {
@@ -874,16 +877,16 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                 type="button"
                 onClick={handlePostAd}
                 disabled={isPublishing}
-                className="h-8 px-3.5 text-xs font-medium bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-lg transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="h-8 px-3.5 text-xs font-medium bg-slate-200/90 hover:bg-slate-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 border border-slate-300/80 dark:border-zinc-700 rounded-lg transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 {isPublishing ? (
                   <>
-                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    <RefreshCw className="w-3 h-3 animate-spin text-slate-600 dark:text-zinc-300" />
                     <span>Posting...</span>
                   </>
                 ) : publishSuccess ? (
                   <>
-                    <Check className="w-3 h-3 text-emerald-400" />
+                    <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                     <span>Posted!</span>
                   </>
                 ) : (
@@ -1270,7 +1273,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
           {/* SISI KANAN: PANEL INTEGRASI 3-TAB PRECISION META ADS STUDIO */}
           {isRightPanelOpen && studioStep === 'result' && (
-            <div className="w-80 xl:w-96 shrink-0 h-full flex flex-col justify-between p-3.5 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm transition-all duration-300 select-none">
+            <div className="w-80 xl:w-96 shrink-0 h-full flex flex-col p-3.5 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm transition-all duration-300 select-none overflow-hidden">
               {/* Header Panel Kanan: Tajuk & 3 Subtab Switcher */}
               <div className="shrink-0 space-y-2.5 pb-2.5 border-b border-slate-100 dark:border-zinc-800">
                 <div className="flex items-center justify-between">
@@ -1278,52 +1281,52 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     <span className="text-xs font-semibold tracking-wider text-slate-800 dark:text-zinc-100 uppercase">
                       Setelan Iklan Meta
                     </span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold border border-indigo-200 dark:border-indigo-800/60">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 font-mono font-medium border border-slate-200 dark:border-zinc-700">
                       v21.0
                     </span>
                   </div>
-                  <span className="inline-flex items-center gap-1 text-[9px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                     Live Graph API
                   </span>
                 </div>
 
                 {/* 3 Subtab Buttons */}
-                <div className="grid grid-cols-3 gap-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl text-[11px] font-medium">
+                <div className="grid grid-cols-3 gap-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl text-xs font-medium">
                   <button
                     type="button"
                     onClick={() => setStudioTab('targeting')}
-                    className={`py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                    className={`py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       studioTab === 'targeting'
                         ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 font-semibold shadow-xs'
                         : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
                     }`}
                   >
-                    <Target className="w-3 h-3" />
+                    <Target className="w-3.5 h-3.5" />
                     <span>Sasaran</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setStudioTab('assets')}
-                    className={`py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                    className={`py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       studioTab === 'assets'
                         ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 font-semibold shadow-xs'
                         : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
                     }`}
                   >
-                    <Smartphone className="w-3 h-3" />
+                    <Smartphone className="w-3.5 h-3.5" />
                     <span>Saluran</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setStudioTab('budget')}
-                    className={`py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                    className={`py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       studioTab === 'budget'
                         ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 font-semibold shadow-xs'
                         : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
                     }`}
                   >
-                    <DollarSign className="w-3 h-3" />
+                    <DollarSign className="w-3.5 h-3.5" />
                     <span>Bajet</span>
                   </button>
                 </div>
@@ -1336,13 +1339,13 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                   <div className="space-y-3.5 animate-in fade-in duration-150">
                     {/* 1. Gaya Copywriting (Hook) */}
                     <div className="space-y-1">
-                      <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 block">
-                        Gaya Copywriting (Hook AI)
+                      <label className="text-xs font-medium text-slate-600 dark:text-zinc-400 block">
+                        Gaya Penulisan (Hook AI)
                       </label>
                       <select
                         value={selectedHookStyle}
                         onChange={(e) => handleSelectHookStyle(e.target.value)}
-                        className="w-full h-8 px-2.5 text-xs text-slate-700 dark:text-zinc-200 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl outline-none cursor-pointer"
+                        className="w-full h-8.5 px-2.5 text-xs text-slate-800 dark:text-zinc-200 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl outline-none cursor-pointer"
                       >
                         <option value="diskon">Tawaran & Diskaun Langsung</option>
                         <option value="fomo">Urgensi & Kouta Terhad (FOMO)</option>
@@ -1352,17 +1355,14 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     </div>
 
                     {/* 2. Kustom Audiens & Retargeting */}
-                    <div className="space-y-1.5 p-2.5 bg-slate-50/70 dark:bg-zinc-800/40 rounded-2xl border border-slate-200/60 dark:border-zinc-700/60">
+                    <div className="space-y-1.5 p-2.5 bg-slate-50 dark:bg-zinc-800/50 rounded-2xl border border-slate-200/80 dark:border-zinc-700/80">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-slate-800 dark:text-zinc-200 text-[11px] flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5 text-indigo-500" />
+                        <span className="font-semibold text-slate-800 dark:text-zinc-200 text-xs flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400" />
                           Kustom Audiens (Retargeting)
                         </span>
                         {isLoadingCustomAudiences && <RefreshCw className="w-2.5 h-2.5 animate-spin text-slate-400" />}
                       </div>
-                      <p className="text-[10px] text-slate-400">
-                        Sasarkan pengguna yang pernah berinteraksi untuk ROI tertinggi.
-                      </p>
                       <div className="space-y-1 max-h-28 overflow-y-auto">
                         {customAudiences
                           .filter((aud) => aud.type !== 'exclusion')
@@ -1380,14 +1380,14 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                                       : [...prev.selectedCustomAudienceIds, aud.id],
                                   }));
                                 }}
-                                className={`w-full text-left p-1.5 rounded-lg border text-[11px] transition-all flex items-center justify-between cursor-pointer ${
+                                className={`w-full text-left p-1.5 rounded-lg border text-xs transition-all flex items-center justify-between cursor-pointer ${
                                   isSelected
-                                    ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-400 text-indigo-900 dark:text-indigo-200 font-medium'
+                                    ? 'bg-slate-200/80 dark:bg-zinc-700 border-slate-300 dark:border-zinc-600 text-slate-900 dark:text-zinc-100 font-semibold'
                                     : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 hover:border-slate-300'
                                 }`}
                               >
                                 <span className="truncate pr-1">{aud.name}</span>
-                                <span className="text-[9px] px-1 py-0.2 bg-slate-100 dark:bg-zinc-700 rounded text-slate-500 dark:text-zinc-400 shrink-0 font-mono">
+                                <span className="text-[10px] px-1 py-0.2 bg-slate-100 dark:bg-zinc-700 rounded text-slate-500 dark:text-zinc-400 shrink-0 font-mono">
                                   ~{(aud.approximate_count_upper_bound || 0).toLocaleString()}
                                 </span>
                               </button>
@@ -1397,19 +1397,16 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     </div>
 
                     {/* 3. Pengecualian Audiens (Anti-Pemborosan Bajet) */}
-                    <div className="space-y-1.5 p-2.5 bg-amber-50/50 dark:bg-amber-950/20 rounded-2xl border border-amber-200/60 dark:border-amber-800/40">
+                    <div className="space-y-1.5 p-2.5 bg-slate-50 dark:bg-zinc-800/50 rounded-2xl border border-slate-200/80 dark:border-zinc-700/80">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-amber-900 dark:text-amber-300 text-[11px] flex items-center gap-1">
-                          <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+                        <span className="font-semibold text-slate-800 dark:text-zinc-200 text-xs flex items-center gap-1.5">
+                          <ShieldAlert className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400" />
                           Kecualikan Pembeli Sedia Ada
                         </span>
-                        <span className="text-[9px] px-1.5 py-0.2 bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 rounded font-medium">
-                          Anti-Bazir
+                        <span className="text-[10px] px-1.5 py-0.2 bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded font-medium">
+                          Penjimatan Bajet
                         </span>
                       </div>
-                      <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80">
-                        Jimatkan bajet dengan tidak menayangkan iklan kepada pelanggan yang sudah membeli.
-                      </p>
                       <div className="space-y-1">
                         {customAudiences
                           .filter((aud) => aud.type === 'exclusion' || aud.name.toLowerCase().includes('pembeli') || aud.name.toLowerCase().includes('exclude'))
@@ -1427,14 +1424,14 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                                       : [...prev.selectedExcludedAudienceIds, aud.id],
                                   }));
                                 }}
-                                className={`w-full text-left p-1.5 rounded-lg border text-[11px] transition-all flex items-center justify-between cursor-pointer ${
+                                className={`w-full text-left p-1.5 rounded-lg border text-xs transition-all flex items-center justify-between cursor-pointer ${
                                   isExcluded
-                                    ? 'bg-amber-100 dark:bg-amber-900/40 border-amber-400 text-amber-900 dark:text-amber-200 font-medium'
-                                    : 'bg-white dark:bg-zinc-800 border-amber-200/70 dark:border-amber-800/50 text-slate-600 dark:text-zinc-400'
+                                    ? 'bg-slate-200/80 dark:bg-zinc-700 border-slate-300 dark:border-zinc-600 text-slate-900 dark:text-zinc-100 font-semibold'
+                                    : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
                                 }`}
                               >
-                                <span className="truncate pr-1">🚫 {aud.name}</span>
-                                <span className="text-[9px] text-amber-700 dark:text-amber-400">
+                                <span className="truncate pr-1">{aud.name}</span>
+                                <span className="text-[10px] text-slate-500 dark:text-zinc-400">
                                   {isExcluded ? 'Dikecualikan' : '+ Kecualikan'}
                                 </span>
                               </button>
@@ -1446,7 +1443,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     {/* 4. Demografi: Umur & Jantina */}
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 block">
+                        <label className="text-xs font-medium text-slate-600 dark:text-zinc-400 block">
                           Rentang Umur
                         </label>
                         <div className="flex items-center gap-1.5">
@@ -1456,7 +1453,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                             max="65"
                             value={metaConfig.ageMin}
                             onChange={(e) => setMetaConfig({ ...metaConfig, ageMin: Number(e.target.value) })}
-                            className="w-12 h-8 border border-slate-200 dark:border-zinc-700 rounded-lg text-center bg-slate-50 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 font-medium text-xs"
+                            className="w-12 h-8.5 border border-slate-200 dark:border-zinc-700 rounded-lg text-center bg-slate-50 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 font-medium text-xs"
                           />
                           <span className="text-slate-400 text-xs">-</span>
                           <input
@@ -1465,29 +1462,29 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                             max="65"
                             value={metaConfig.ageMax}
                             onChange={(e) => setMetaConfig({ ...metaConfig, ageMax: Number(e.target.value) })}
-                            className="w-12 h-8 border border-slate-200 dark:border-zinc-700 rounded-lg text-center bg-slate-50 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 font-medium text-xs"
+                            className="w-12 h-8.5 border border-slate-200 dark:border-zinc-700 rounded-lg text-center bg-slate-50 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 font-medium text-xs"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 block">
+                        <label className="text-xs font-medium text-slate-600 dark:text-zinc-400 block">
                           Jantina
                         </label>
                         <div className="grid grid-cols-3 gap-0.5 bg-slate-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-slate-200 dark:border-zinc-700">
                           {[
                             { id: 'all', label: 'Semua' },
-                            { id: 'male', label: 'L' },
-                            { id: 'female', label: 'W' },
+                            { id: 'male', label: 'Lelaki' },
+                            { id: 'female', label: 'Wanita' },
                           ].map((g) => (
                             <button
                               key={g.id}
                               type="button"
                               onClick={() => setMetaConfig({ ...metaConfig, gender: g.id })}
-                              className={`py-1 rounded text-center text-[10px] transition-colors cursor-pointer ${
+                              className={`py-1.5 rounded text-center text-[10px] transition-colors cursor-pointer ${
                                 metaConfig.gender === g.id
-                                  ? 'bg-white dark:bg-zinc-900 font-semibold text-slate-800 dark:text-zinc-100 shadow-xs'
-                                  : 'text-slate-500 dark:text-zinc-400 hover:text-slate-800'
+                                  ? 'bg-white dark:bg-zinc-900 font-semibold text-slate-900 dark:text-zinc-100 shadow-xs'
+                                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900'
                               }`}
                             >
                               {g.label}
@@ -1500,8 +1497,8 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     {/* 5. Wilayah Sasaran (Meta Geolocation) */}
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
-                          Wilayah Sasaran (Meta Geolocation)
+                        <label className="text-xs font-medium text-slate-600 dark:text-zinc-400">
+                          Wilayah Sasaran
                         </label>
                         {isSearchingGeo && <RefreshCw className="w-2.5 h-2.5 animate-spin text-slate-400" />}
                       </div>
@@ -1514,7 +1511,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                             setGeoSearchQuery(e.target.value);
                             handleSearchGeo(e.target.value);
                           }}
-                          className="w-full h-8 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs bg-slate-50 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 outline-none focus:border-slate-400"
+                          className="w-full h-8.5 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs bg-slate-50 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 outline-none focus:border-slate-400"
                         />
                         {geoSearchResults.length > 0 && (
                           <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-lg z-50 max-h-36 overflow-y-auto p-1">
@@ -1539,15 +1536,16 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                           </div>
                         )}
                       </div>
-                      <div className="p-1.5 bg-slate-100/80 dark:bg-zinc-800 rounded-lg border border-slate-200 dark:border-zinc-700 flex items-center justify-between">
-                        <span className="text-[11px] text-slate-700 dark:text-zinc-200 font-medium truncate">
-                          📍 {metaConfig.locationName}
+                      <div className="p-2 bg-slate-100/90 dark:bg-zinc-800 rounded-xl border border-slate-200 dark:border-zinc-700 flex items-center justify-between">
+                        <span className="text-xs text-slate-700 dark:text-zinc-200 font-medium truncate flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          {metaConfig.locationName}
                         </span>
                         {metaConfig.locationKey !== 'MY' && (
                           <button
                             type="button"
                             onClick={() => setMetaConfig({ ...metaConfig, locationKey: 'MY', locationName: 'Malaysia (Seluruh Negara)' })}
-                            className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline cursor-pointer shrink-0 ml-2"
+                            className="text-[10px] text-slate-600 dark:text-zinc-400 hover:underline cursor-pointer shrink-0 ml-2"
                           >
                             Reset MY
                           </button>
@@ -1558,8 +1556,8 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     {/* 6. Minat Sasaran (Meta Marketing API Interests) */}
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
-                          Minat Rasmi Meta API (Interests)
+                        <label className="text-xs font-medium text-slate-600 dark:text-zinc-400">
+                          Minat Sasaran (Meta Interests)
                         </label>
                         {isSearchingInterests && <RefreshCw className="w-2.5 h-2.5 animate-spin text-slate-400" />}
                       </div>
@@ -1572,7 +1570,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                             setInterestSearchQuery(e.target.value);
                             handleSearchMetaInterests(e.target.value);
                           }}
-                          className="w-full h-8 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs bg-slate-50 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 outline-none focus:border-slate-400"
+                          className="w-full h-8.5 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs bg-slate-50 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 outline-none focus:border-slate-400"
                         />
                         {searchResults.length > 0 && (
                           <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-lg z-50 max-h-36 overflow-y-auto p-1">
@@ -1592,7 +1590,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                                 className="px-2.5 py-1.5 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-lg cursor-pointer flex items-center justify-between text-xs"
                               >
                                 <span className="font-medium text-slate-800 dark:text-zinc-200">{item.name}</span>
-                                <span className="text-[9px] text-slate-400">
+                                <span className="text-[10px] text-slate-400">
                                   ~{(item.audience_size_lower_bound || 0).toLocaleString()}
                                 </span>
                               </div>
@@ -1609,7 +1607,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                           return (
                             <span
                               key={id}
-                              className="inline-flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 px-2 py-0.5 rounded-md text-[10px] text-slate-700 dark:text-zinc-200 font-medium"
+                              className="inline-flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 px-2 py-0.5 rounded-md text-[11px] text-slate-700 dark:text-zinc-200 font-medium"
                             >
                               {name}
                               <X
@@ -1628,18 +1626,18 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     </div>
 
                     {/* 7. Fitur Emas: Sasaran Pembeli Aktif (Engaged Shoppers) */}
-                    <div className="p-2.5 bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/40 rounded-xl flex items-center justify-between">
+                    <div className="p-2.5 bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-700/80 rounded-2xl flex items-center justify-between">
                       <div>
-                        <span className="font-semibold text-slate-800 dark:text-zinc-200 block text-[11px]">
+                        <span className="font-semibold text-slate-800 dark:text-zinc-200 block text-xs">
                           Pembeli Aktif (Engaged Shoppers)
                         </span>
-                        <span className="text-[9px] text-slate-400">Meta Behavior ID: 6071559926818</span>
+                        <span className="text-[10px] text-slate-400">Tingkah laku pembeli Meta</span>
                       </div>
                       <input
                         type="checkbox"
                         checked={metaConfig.engagedShoppers}
                         onChange={(e) => setMetaConfig({ ...metaConfig, engagedShoppers: e.target.checked })}
-                        className="w-4 h-4 accent-amber-600 cursor-pointer"
+                        className="w-4 h-4 accent-slate-700 cursor-pointer"
                       />
                     </div>
                   </div>
@@ -1651,15 +1649,15 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     {/* Halaman Facebook Rasmi */}
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
-                          Halaman Facebook Rasmi (Meta Page)
+                        <label className="text-xs font-medium text-slate-600 dark:text-zinc-400">
+                          Halaman Facebook Rasmi
                         </label>
                         {isLoadingMetaAssets && <RefreshCw className="w-2.5 h-2.5 animate-spin text-slate-400" />}
                       </div>
                       <select
                         value={metaConfig.selectedPageId}
                         onChange={(e) => setMetaConfig({ ...metaConfig, selectedPageId: e.target.value })}
-                        className="w-full h-8 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none"
+                        className="w-full h-8.5 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none"
                       >
                         {metaAssets.pages.length > 0 ? (
                           metaAssets.pages.map((p: any) => (
@@ -1675,30 +1673,30 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
                     {/* Saluran Destinasi Iklan */}
                     <div className="space-y-1">
-                      <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                      <label className="text-xs font-medium text-slate-600 dark:text-zinc-400">
                         Saluran Destinasi Iklan
                       </label>
                       <select
                         value={metaConfig.destination}
                         onChange={(e) => setMetaConfig({ ...metaConfig, destination: e.target.value })}
-                        className="w-full h-8 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none font-medium"
+                        className="w-full h-8.5 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none font-medium"
                       >
-                        <option value="whatsapp">💬 WhatsApp Business (CTWA - Direct Chat)</option>
-                        <option value="instagram">📸 Instagram Direct Message (DM)</option>
-                        <option value="website">🌐 Laman Web / Katalog Tempahan</option>
+                        <option value="whatsapp">WhatsApp Business (CTWA - Direct Chat)</option>
+                        <option value="instagram">Instagram Direct Message (DM)</option>
+                        <option value="website">Laman Web / Katalog Tempahan</option>
                       </select>
                     </div>
 
                     {/* Dynamic Asset Selector */}
                     {metaConfig.destination === 'whatsapp' && (
-                      <div className="space-y-1 p-2.5 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl">
-                        <label className="text-emerald-800 dark:text-emerald-300 font-semibold block text-[11px]">
+                      <div className="space-y-1 p-2.5 bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-700/80 rounded-2xl">
+                        <label className="text-slate-800 dark:text-zinc-200 font-medium block text-xs">
                           Nombor WhatsApp Business
                         </label>
                         <select
                           value={metaConfig.selectedWhatsappNumber}
                           onChange={(e) => setMetaConfig({ ...metaConfig, selectedWhatsappNumber: e.target.value })}
-                          className="w-full h-8 px-2 border border-emerald-300 dark:border-emerald-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none"
+                          className="w-full h-8 px-2 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none"
                         >
                           {metaAssets.whatsappNumbers.map((w: any) => (
                             <option key={w.id} value={w.number}>
@@ -1710,14 +1708,14 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     )}
 
                     {metaConfig.destination === 'instagram' && (
-                      <div className="space-y-1 p-2.5 bg-pink-50/70 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-800/60 rounded-2xl">
-                        <label className="text-pink-800 dark:text-pink-300 font-semibold block text-[11px]">
+                      <div className="space-y-1 p-2.5 bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-700/80 rounded-2xl">
+                        <label className="text-slate-800 dark:text-zinc-200 font-medium block text-xs">
                           Akaun Instagram Business
                         </label>
                         <select
                           value={metaConfig.selectedInstagramAccountId}
                           onChange={(e) => setMetaConfig({ ...metaConfig, selectedInstagramAccountId: e.target.value })}
-                          className="w-full h-8 px-2 border border-pink-300 dark:border-pink-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none"
+                          className="w-full h-8 px-2 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none"
                         >
                           {metaAssets.instagramAccounts.map((ig: any) => (
                             <option key={ig.id} value={ig.id}>
@@ -1729,14 +1727,14 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     )}
 
                     {metaConfig.destination === 'website' && (
-                      <div className="space-y-1 p-2.5 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-2xl">
-                        <label className="text-blue-800 dark:text-blue-300 font-semibold block text-[11px]">
-                          Meta Pixel Pelacak Laman Web
+                      <div className="space-y-1 p-2.5 bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-700/80 rounded-2xl">
+                        <label className="text-slate-800 dark:text-zinc-200 font-medium block text-xs">
+                          Meta Pixel Pelacak
                         </label>
                         <select
                           value={metaConfig.selectedPixelId}
                           onChange={(e) => setMetaConfig({ ...metaConfig, selectedPixelId: e.target.value })}
-                          className="w-full h-8 px-2 border border-blue-300 dark:border-blue-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none"
+                          className="w-full h-8 px-2 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer outline-none"
                         >
                           {metaAssets.pixels.map((pix: any) => (
                             <option key={pix.id} value={pix.id}>
@@ -1749,8 +1747,8 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
                     {/* Penempatan Iklan Bersih (Placements) */}
                     <div className="space-y-1.5 pt-1">
-                      <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400 block">
-                        Penempatan Iklan (Placement Control)
+                      <label className="text-xs font-medium text-slate-600 dark:text-zinc-400 block">
+                        Kawalan Penempatan Iklan
                       </label>
                       <div className="space-y-1.5">
                         <label className="flex items-start gap-2 p-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl cursor-pointer">
@@ -1763,11 +1761,11 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                             className="mt-0.5 accent-slate-700"
                           />
                           <div>
-                            <span className="font-semibold text-slate-800 dark:text-zinc-100 text-[11px] block">
-                              Penempatan Bersih (FB & IG Feed / Reels)
+                            <span className="font-medium text-slate-800 dark:text-zinc-100 text-xs block">
+                              FB & IG Feed / Reels Sahaja
                             </span>
-                            <span className="text-[9px] text-emerald-600 dark:text-emerald-400 block leading-tight font-medium">
-                              ✓ Anti-Fraud: Menyekat klik palsu Audience Network
+                            <span className="text-[10px] text-slate-400 block leading-tight">
+                              Menapis penempatan luar yang kurang berkualiti
                             </span>
                           </div>
                         </label>
@@ -1782,11 +1780,11 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                             className="mt-0.5 accent-slate-700"
                           />
                           <div>
-                            <span className="font-medium text-slate-700 dark:text-zinc-200 text-[11px] block">
+                            <span className="font-medium text-slate-700 dark:text-zinc-200 text-xs block">
                               Advantage+ Placements
                             </span>
-                            <span className="text-[9px] text-slate-400 block leading-tight">
-                              Meta AI mengedarkan iklan secara meluas ke semua saluran Meta
+                            <span className="text-[10px] text-slate-400 block leading-tight">
+                              Pengedaran automatik ke semua saluran Meta
                             </span>
                           </div>
                         </label>
@@ -1796,10 +1794,10 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     {/* Penjejakan UTM Kempen (Attribution Tagging) */}
                     <div className="p-2.5 bg-slate-50 dark:bg-zinc-800/70 border border-slate-200 dark:border-zinc-700 rounded-xl flex items-center justify-between">
                       <div>
-                        <span className="font-semibold text-slate-800 dark:text-zinc-200 block text-[11px]">
-                          Penjejakan UTM & Analitik
+                        <span className="font-medium text-slate-800 dark:text-zinc-200 block text-xs">
+                          Penjejakan UTM Kempen
                         </span>
-                        <span className="text-[9px] text-slate-400">utm_source=facebook&utm_medium=cpc</span>
+                        <span className="text-[10px] text-slate-400">utm_source=facebook&utm_medium=cpc</span>
                       </div>
                       <input
                         type="checkbox"
@@ -1811,14 +1809,14 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                   </div>
                 )}
 
-                {/* ================= TAB 3: BAJET & LAUNCH ================= */}
+                {/* ================= TAB 3: BAJET & UNJURAN ================= */}
                 {studioTab === 'budget' && (
                   <div className="space-y-3.5 animate-in fade-in duration-150">
                     {/* Belanjawan Harian */}
                     <div className="space-y-2 p-2.5 bg-slate-50 dark:bg-zinc-800/60 rounded-2xl border border-slate-200 dark:border-zinc-700">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-slate-700 dark:text-zinc-300 text-[11px]">Belanjawan Harian</span>
-                        <span className="font-bold text-slate-900 dark:text-zinc-100 font-mono text-sm">RM {dailyBudget}</span>
+                        <span className="font-medium text-slate-700 dark:text-zinc-300 text-xs">Belanjawan Harian</span>
+                        <span className="font-bold text-slate-900 dark:text-zinc-100 font-mono text-xs">RM {dailyBudget}</span>
                       </div>
                       <input
                         type="range"
@@ -1835,10 +1833,10 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                             key={b}
                             type="button"
                             onClick={() => setDailyBudget(b)}
-                            className={`py-1 rounded text-[10px] font-mono transition-colors cursor-pointer border ${
+                            className={`py-1 rounded text-xs font-mono transition-colors cursor-pointer border ${
                               dailyBudget === b
-                                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-transparent font-bold'
-                                : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300'
+                                ? 'bg-slate-200 text-slate-900 font-semibold border-slate-300 dark:bg-zinc-700 dark:text-zinc-100 dark:border-zinc-600'
+                                : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
                             }`}
                           >
                             RM{b}
@@ -1850,8 +1848,8 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     {/* Durasi Tempoh Siaran */}
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Durasi Siaran</label>
-                        <span className="text-[11px] font-semibold text-slate-800 dark:text-zinc-200">
+                        <label className="text-xs font-medium text-slate-600 dark:text-zinc-400">Durasi Siaran</label>
+                        <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200">
                           Jumlah: RM {(dailyBudget * metaConfig.durationDays).toLocaleString()}
                         </span>
                       </div>
@@ -1866,9 +1864,9 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                             key={d.days}
                             type="button"
                             onClick={() => setMetaConfig({ ...metaConfig, durationDays: d.days })}
-                            className={`py-1.5 rounded-lg border text-center text-[11px] transition-colors cursor-pointer ${
+                            className={`py-1.5 rounded-lg border text-center text-xs transition-colors cursor-pointer ${
                               metaConfig.durationDays === d.days
-                                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-semibold border-transparent'
+                                ? 'bg-slate-200 text-slate-900 font-semibold border-slate-300 dark:bg-zinc-700 dark:text-zinc-100 dark:border-zinc-600'
                                 : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
                             }`}
                           >
@@ -1880,8 +1878,8 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
                     {/* Mod Jam Siaran (Dayparting Meta) */}
                     <div className="space-y-1">
-                      <label className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
-                        Mod Jam Siaran (Dayparting)
+                      <label className="text-xs font-medium text-slate-600 dark:text-zinc-400">
+                        Jadual Siaran (Dayparting)
                       </label>
                       <div className="grid grid-cols-2 gap-1.5">
                         <button
@@ -1889,24 +1887,30 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                           onClick={() => setMetaConfig({ ...metaConfig, scheduleType: 'peak_hours' })}
                           className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
                             metaConfig.scheduleType === 'peak_hours'
-                              ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-400 text-indigo-950 dark:text-indigo-200'
+                              ? 'bg-slate-200/90 dark:bg-zinc-700 border-slate-300 dark:border-zinc-600 text-slate-900 dark:text-zinc-100 font-semibold'
                               : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
                           }`}
                         >
-                          <span className="font-semibold text-[10px] block">🌙 Waktu Emas</span>
-                          <span className="text-[9px] text-slate-400 block">7:30 PM - 11:00 PM</span>
+                          <span className="font-semibold text-xs flex items-center gap-1 block">
+                            <Moon className="w-3 h-3 text-slate-500" />
+                            Waktu Puncak
+                          </span>
+                          <span className="text-[10px] text-slate-500 dark:text-zinc-400 block">7:30 PM - 11:00 PM</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setMetaConfig({ ...metaConfig, scheduleType: 'all_day' })}
                           className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
                             metaConfig.scheduleType === 'all_day'
-                              ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-400 text-indigo-950 dark:text-indigo-200'
+                              ? 'bg-slate-200/90 dark:bg-zinc-700 border-slate-300 dark:border-zinc-600 text-slate-900 dark:text-zinc-100 font-semibold'
                               : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
                           }`}
                         >
-                          <span className="font-semibold text-[10px] block">⚡ 24 Jam Penuh</span>
-                          <span className="text-[9px] text-slate-400 block">Sepanjang Hari</span>
+                          <span className="font-semibold text-xs flex items-center gap-1 block">
+                            <Clock className="w-3 h-3 text-slate-500" />
+                            24 Jam Penuh
+                          </span>
+                          <span className="text-[10px] text-slate-500 dark:text-zinc-400 block">Sepanjang Hari</span>
                         </button>
                       </div>
                     </div>
@@ -1914,11 +1918,11 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     {/* Kawalan Had Kos (Cost Cap) */}
                     <div className="space-y-1 p-2.5 bg-slate-50 dark:bg-zinc-800/60 rounded-xl border border-slate-200 dark:border-zinc-700">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-slate-700 dark:text-zinc-300 text-[11px]">
-                          Kawalan Had Kos / Prospek (Cost Cap)
+                        <span className="font-medium text-slate-700 dark:text-zinc-300 text-xs">
+                          Had Kos Prospek (Cost Cap)
                         </span>
-                        <span className="text-[9px] text-slate-400 font-mono">
-                          {metaConfig.costCap > 0 ? `Maks RM ${metaConfig.costCap.toFixed(2)}` : 'Auto (Lowest Cost)'}
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          {metaConfig.costCap > 0 ? `Maks RM ${metaConfig.costCap.toFixed(2)}` : 'Auto'}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -1930,102 +1934,46 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                           placeholder="0 = Auto"
                           value={metaConfig.costCap || ''}
                           onChange={(e) => setMetaConfig({ ...metaConfig, costCap: Number(e.target.value) || 0 })}
-                          className="w-full h-7 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs bg-white dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 outline-none"
+                          className="w-full h-8 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs bg-white dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 outline-none"
                         />
                       </div>
                     </div>
 
-                    {/* Kad Live Telemetri Algoritma Meta AI */}
-                    <div className="p-3 bg-slate-900 dark:bg-zinc-950 text-white rounded-2xl border border-slate-800 shadow-sm space-y-2">
-                      <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
-                        <span className="font-semibold text-slate-200 text-[11px] flex items-center gap-1">
-                          <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                    {/* Kad Unjuran AI Meta Marketing (Soft Grey, No Pure Black) */}
+                    <div className="p-3 bg-slate-100/90 dark:bg-zinc-800/70 text-slate-800 dark:text-zinc-200 rounded-2xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs space-y-2">
+                      <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-700 pb-1.5">
+                        <span className="font-semibold text-slate-800 dark:text-zinc-200 text-xs flex items-center gap-1.5">
+                          <TrendingUp className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400" />
                           Unjuran AI Meta Marketing
                         </span>
-                        <span className="inline-flex items-center gap-1 text-[8px] font-medium text-emerald-400 bg-emerald-950/60 px-1.5 py-0.2 rounded-full border border-emerald-800/60">
-                          <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.2 rounded-full border border-emerald-200 dark:border-emerald-800/60">
+                          <span className="w-1 h-1 rounded-full bg-emerald-500"></span>
                           {reachEstimate.is_live ? 'Live Meta' : 'Calibrated MY'}
                         </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                      <div className="grid grid-cols-2 gap-2 text-xs">
                         <div>
-                          <span className="text-slate-400 text-[9px] block">Jangkauan Harian</span>
-                          <span className="font-bold text-white font-mono">
+                          <span className="text-slate-500 dark:text-zinc-400 text-[10px] block">Jangkauan Harian</span>
+                          <span className="font-bold text-slate-900 dark:text-zinc-100 font-mono">
                             {reachEstimate.daily_reach_lower.toLocaleString()}–{reachEstimate.daily_reach_upper.toLocaleString()}
                           </span>
                         </div>
                         <div>
-                          <span className="text-slate-400 text-[9px] block">Potensi Paparan</span>
-                          <span className="font-bold text-white font-mono">
+                          <span className="text-slate-500 dark:text-zinc-400 text-[10px] block">Potensi Paparan</span>
+                          <span className="font-bold text-slate-900 dark:text-zinc-100 font-mono">
                             {reachEstimate.daily_impressions_lower.toLocaleString()}–{reachEstimate.daily_impressions_upper.toLocaleString()}
                           </span>
                         </div>
                       </div>
-                      <div className="pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-                        <span className="text-slate-400">Hasil WhatsApp Harian:</span>
-                        <span className="font-bold text-emerald-400 font-mono text-xs">
+                      <div className="pt-1.5 border-t border-slate-200 dark:border-zinc-700 flex items-center justify-between text-xs">
+                        <span className="text-slate-500 dark:text-zinc-400">Hasil Prospek Harian:</span>
+                        <span className="font-bold text-emerald-700 dark:text-emerald-400 font-mono">
                           ~{reachEstimate.daily_leads_lower}–{reachEstimate.daily_leads_upper} Prospek/hari
                         </span>
                       </div>
                     </div>
                   </div>
                 )}
-              </div>
-
-              {/* Footer Panel Kanan: Launch & Action Buttons */}
-              <div className="pt-2.5 border-t border-slate-100 dark:border-zinc-800 shrink-0 space-y-1.5">
-                <button
-                  type="button"
-                  onClick={handlePostAd}
-                  disabled={isPublishing}
-                  className="w-full h-10 px-4 text-xs font-semibold bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 text-white rounded-2xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {isPublishing ? (
-                    <>
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      <span>Melancarkan ke Meta Ads API...</span>
-                    </>
-                  ) : publishSuccess ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Iklan Berjaya Dilancarkan!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Rocket className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>Lancarkan Iklan Meta Sekarang</span>
-                    </>
-                  )}
-                </button>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={handleSaveDraft}
-                    disabled={isPublishing}
-                    className="flex-1 h-7 text-[11px] font-medium bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 rounded-xl transition-colors flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
-                  >
-                    <Bookmark className="w-3 h-3 text-slate-400" />
-                    <span>Simpan Draf</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCopyContent}
-                    className="flex-1 h-7 text-[11px] font-medium bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 rounded-xl transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="w-3 h-3 text-emerald-500" />
-                        <span>Disalin!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3 h-3 text-slate-400" />
-                        <span>Salin Teks</span>
-                      </>
-                    )}
-                  </button>
-                </div>
               </div>
             </div>
           )}
@@ -2249,7 +2197,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                   }}
                   className={`p-3 rounded-2xl border cursor-pointer transition-all flex flex-col space-y-2 text-left hover:border-slate-300 ${
                     selectedDesignId === d.id && !customImage
-                      ? 'bg-slate-100 border-slate-900 ring-1 ring-slate-900'
+                      ? 'bg-slate-100 border-slate-400 ring-1 ring-slate-400'
                       : 'bg-white border-slate-200'
                   }`}
                 >
@@ -2352,7 +2300,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
               <button
                 type="button"
                 onClick={() => handleSaveApiKey(apiKey, aiSource)}
-                className="px-5 py-2 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium shadow-xs transition-colors"
+                className="px-5 py-2 rounded-full bg-slate-200/90 hover:bg-slate-300 text-slate-800 border border-slate-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-100 dark:border-zinc-700 text-xs font-medium shadow-2xs transition-colors"
               >
                 Simpan
               </button>
