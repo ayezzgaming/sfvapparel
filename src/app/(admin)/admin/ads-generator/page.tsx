@@ -410,8 +410,8 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
       />
 
       <div className="space-y-4">
-        {/* Sleek Top Navigation Bar - Ultra Clean & Minimal */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
+        {/* Sleek Top Navigation Bar - Ultra Clean, Static & Minimal */}
+        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md flex flex-wrap items-center justify-between gap-3 py-2.5 border-b border-slate-100">
           {/* Tab Switcher */}
           <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl">
             <button
@@ -678,15 +678,15 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
               </div>
             )}
 
-            {/* STEP 2: RESULT STUDIO - ULTRA-CLEAN SPACIOUS 2-COLUMN STUDIO */}
+            {/* STEP 2: RESULT STUDIO - ULTRA-CLEAN CONTAINED 2-COLUMN STUDIO */}
             {studioStep === 'result' && (
               <div className="animate-in fade-in">
-                {/* 2-Column Split: Left Platform Nav & Settings, Right Full Live Preview Studio */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                  {/* LEFT COLUMN (lg:col-span-4): Clean Platform Navigation & Quick Settings */}
-                  <div className="lg:col-span-4 lg:sticky lg:top-4 space-y-3">
+                {/* 2-Column Split: Left Platform Nav & Settings, Right Contained Live Preview Canvas */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                  {/* LEFT COLUMN (lg:col-span-4): Clean Static Controls & Actions */}
+                  <div className="lg:col-span-4 space-y-3">
                     {/* Platform Selector */}
-                    <div className="bg-slate-50/80 rounded-3xl p-2 space-y-1">
+                    <div className="bg-slate-50/90 rounded-3xl p-2 space-y-1 border border-slate-200/60 shadow-2xs">
                       {[
                         { id: 'facebook' as AdPlatform, name: 'Facebook Ads', logo: FacebookLogo },
                         { id: 'instagram' as AdPlatform, name: 'Instagram Ads', logo: InstagramLogo },
@@ -706,8 +706,8 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                             onClick={() => setSelectedPlatform(plat.id)}
                             className={`w-full px-3.5 py-2.5 rounded-2xl flex items-center justify-between transition-all text-left ${
                               isSelected
-                                ? 'bg-slate-100 text-slate-900 font-semibold'
-                                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                                ? 'bg-white text-slate-900 font-semibold shadow-xs'
+                                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
                             }`}
                           >
                             <div className="flex items-center space-x-2.5 min-w-0">
@@ -732,8 +732,27 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                       })}
                     </div>
 
-                    {/* Quick Settings: Product & Budget */}
-                    <div className="bg-slate-50/80 rounded-3xl p-4 space-y-3">
+                    {/* Controls: Angle Combobox, Product & Budget */}
+                    <div className="bg-slate-50/90 rounded-3xl p-4 space-y-3 border border-slate-200/60 shadow-2xs">
+                      {/* Combobox for Angle / Variation Selection */}
+                      <div>
+                        <label className="text-[11px] font-medium text-slate-600 block mb-1">
+                          Pilihan Sudut Iklan ({aiVariations.length} Variasi)
+                        </label>
+                        <select
+                          value={selectedVariationIndex}
+                          onChange={(e) => setSelectedVariationIndex(Number(e.target.value))}
+                          className="w-full px-3 py-2 rounded-xl bg-white text-xs text-slate-800 border border-slate-200/80 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate"
+                        >
+                          {aiVariations.map((v, idx) => (
+                            <option key={v.id || idx} value={idx}>
+                              {v.angleName || `Variasi ${idx + 1}`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Product Catalog */}
                       <div>
                         <label className="text-[11px] font-medium text-slate-600 block mb-1">
                           Produk Katalog
@@ -745,7 +764,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                             setCustomImage(null);
                             setCustomTitle(null);
                           }}
-                          className="w-full px-3 py-2 rounded-xl bg-white text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-300 font-medium truncate"
+                          className="w-full px-3 py-2 rounded-xl bg-white text-xs text-slate-800 border border-slate-200/80 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate"
                         >
                           {designs.map((d) => (
                             <option key={d.id} value={d.id}>
@@ -755,6 +774,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                         </select>
                       </div>
 
+                      {/* Daily Budget */}
                       <div>
                         <label className="text-[11px] font-medium text-slate-600 block mb-1">
                           Belanjawan Harian (RM)
@@ -765,110 +785,82 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                           step="5"
                           value={dailyBudget}
                           onChange={(e) => setDailyBudget(Number(e.target.value))}
-                          className="w-full px-3 py-2 rounded-xl bg-white text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-300 font-mono"
+                          className="w-full px-3 py-2 rounded-xl bg-white text-xs text-slate-800 border border-slate-200/80 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
                         />
                       </div>
-                    </div>
 
-                    {/* Prompt Actions (Ubah / Jana Semula) */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setStudioStep('prompt')}
-                        className="flex-1 py-2 rounded-2xl text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-50/80 hover:bg-slate-100 transition-colors text-center"
-                      >
-                        Ubah Arahan
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleGenerateAi}
-                        disabled={isGeneratingAi}
-                        className="px-4 py-2 rounded-2xl text-xs font-medium bg-slate-900 hover:bg-black text-white transition-colors flex items-center justify-center space-x-1.5"
-                      >
-                        <RefreshCw className={`w-3 h-3 ${isGeneratingAi ? 'animate-spin' : ''}`} />
-                        <span>Jana Semula</span>
-                      </button>
-                    </div>
-                  </div>
-
-
-                  {/* RIGHT COLUMN (lg:col-span-8): Spacious Live Ad Preview with Angle Switcher */}
-                  <div className="lg:col-span-8 space-y-4">
-                    {/* Horizontal Variation Angle Switcher Pills */}
-                    <div className="bg-slate-50/80 rounded-3xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
-                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2">
-                        Pilihan Sudut Iklan ({aiVariations.length})
-                      </span>
-                      <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto p-0.5">
-                        {aiVariations.map((v, idx) => {
-                          const isSelected = selectedVariationIndex === idx;
-                          return (
-                            <button
-                              key={v.id || idx}
-                              type="button"
-                              onClick={() => setSelectedVariationIndex(idx)}
-                              className={`px-3.5 py-1.5 rounded-full text-xs transition-all whitespace-nowrap ${
-                                isSelected
-                                  ? 'bg-white text-slate-900 font-semibold shadow-2xs'
-                                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                              }`}
-                            >
-                              <span>{v.angleName || `Variasi ${idx + 1}`}</span>
-                            </button>
-                          );
-                        })}
+                      {/* Prompt Actions (Ubah / Jana Semula) */}
+                      <div className="flex items-center gap-2 pt-1 border-t border-slate-200/50">
+                        <button
+                          type="button"
+                          onClick={() => setStudioStep('prompt')}
+                          className="flex-1 py-2 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200/80 transition-colors text-center"
+                        >
+                          Ubah Arahan
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleGenerateAi}
+                          disabled={isGeneratingAi}
+                          className="px-3.5 py-2 rounded-xl text-xs font-medium bg-slate-900 hover:bg-black text-white transition-colors flex items-center justify-center space-x-1.5"
+                        >
+                          <RefreshCw className={`w-3 h-3 ${isGeneratingAi ? 'animate-spin' : ''}`} />
+                          <span>Jana Semula</span>
+                        </button>
                       </div>
-                    </div>
 
-                    {/* Spacious Preview & Actions Container */}
-                    <div className="bg-slate-50/80 rounded-3xl p-6 sm:p-8 space-y-6 text-center">
-                      {/* Live Ad Simulator Card */}
-                      <AdPreviewCard platform={selectedPlatform} creative={currentCreative} />
-
-                      {/* Action Buttons Bar */}
-                      <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+                      {/* Launch & Copy Action Buttons Integrated into Left Panel */}
+                      <div className="pt-2 border-t border-slate-200/60 space-y-2">
                         <button
                           type="button"
                           onClick={handlePublishCampaign}
                           disabled={isPublishing}
-                          className="w-full sm:flex-1 py-3 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                          className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold transition-all flex items-center justify-center space-x-2 disabled:opacity-50 shadow-xs cursor-pointer"
                         >
                           {isPublishing ? (
                             <>
-                              <RefreshCw className="w-4 h-4 animate-spin" />
-                              <span>Memproses...</span>
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                              <span>Melancarkan...</span>
                             </>
                           ) : publishSuccess ? (
                             <>
-                              <Check className="w-4 h-4 text-emerald-400" />
-                              <span>Kempen Berjaya Dilancarkan!</span>
+                              <Check className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>Kempen Berjaya!</span>
                             </>
                           ) : (
-                            <>
-                              <Rocket className="w-4 h-4" />
-                              <span>Lancar Kempen Iklan</span>
-                            </>
+                            <span>Lancar Kempen Iklan</span>
                           )}
                         </button>
 
                         <button
                           type="button"
                           onClick={handleCopyContent}
-                          className="w-full sm:w-auto px-6 py-3 rounded-full text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 transition-all flex items-center justify-center space-x-1.5"
+                          className="w-full py-2 rounded-xl text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 border border-slate-200/80 transition-all flex items-center justify-center space-x-1.5"
                         >
                           {copied ? (
                             <>
                               <Check className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>Tersalin</span>
+                              <span>Teks Disalin</span>
                             </>
                           ) : (
                             <>
-                              <Copy className="w-3.5 h-3.5" />
-                              <span>Salin Teks</span>
+                              <Copy className="w-3.5 h-3.5 text-slate-400" />
+                              <span>Salin Teks Iklan</span>
                             </>
                           )}
                         </button>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* RIGHT COLUMN (lg:col-span-8): Contained, Dedicated Scrollable Live Preview Studio */}
+                  <div className="lg:col-span-8">
+                    <div className="bg-slate-50/70 rounded-3xl p-5 sm:p-6 border border-slate-200/60 max-h-[calc(100vh-140px)] overflow-y-auto">
+                      <AdPreviewCard
+                        platform={selectedPlatform}
+                        creative={currentCreative}
+                        connectedAccount={platforms.find((p) => p.id === selectedPlatform)}
+                      />
                     </div>
                   </div>
                 </div>
