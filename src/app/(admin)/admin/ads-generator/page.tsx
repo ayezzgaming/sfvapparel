@@ -367,8 +367,14 @@ export default function AdminAdsGeneratorPage() {
       }
       return next;
     });
+    let token = '';
+    try {
+      token = localStorage.getItem(`svf_platform_token_${updated.id}`) || '';
+    } catch {
+      // Ignore
+    }
     // Persist to central Supabase DB
-    savePlatformConnectionDb(updated).catch(() => {});
+    savePlatformConnectionDb(updated, token || undefined).catch(() => {});
   };
 
   const handleToggleConnect = (platformId: string) => {

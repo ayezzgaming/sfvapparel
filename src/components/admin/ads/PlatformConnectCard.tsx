@@ -531,20 +531,23 @@ export default function PlatformConnectCard({
 
     setIsSaving(true);
 
+    const rawToken = field2Input.trim();
     try {
-      localStorage.setItem(`svf_platform_token_${platform.id}`, field2Input.trim());
+      localStorage.setItem(`svf_platform_token_${platform.id}`, rawToken);
     } catch {
       // Ignore
     }
 
-    const effectiveAccountId = config.field1Prefix === 'act_' 
-      ? `act_${field1Input.trim()}`
-      : config.field1Prefix === 'waba_'
-        ? `waba_${field1Input.trim()}`
-        : field1Input.trim();
+    let cleanAccId = (testResult?.accountId || field1Input.trim());
+    if (config.field1Prefix === 'act_') {
+      cleanAccId = `act_${cleanAccId.replace(/^act_/i, '')}`;
+    } else if (config.field1Prefix === 'waba_') {
+      cleanAccId = `waba_${cleanAccId.replace(/^waba_/i, '')}`;
+    }
+    const effectiveAccountId = cleanAccId;
 
     const effectivePixelId = field3Input.trim() 
-      ? (config.field3Prefix === 'pix_' ? `pix_${field3Input.trim()}` : field3Input.trim())
+      ? (config.field3Prefix === 'pix_' ? `pix_${field3Input.trim().replace(/^pix_/i, '')}` : field3Input.trim())
       : undefined;
 
     // If not already verified via test button, do a live verification first
@@ -558,7 +561,7 @@ export default function PlatformConnectCard({
         const res = await verifyPlatformConnection(
           platform.id,
           effectiveAccountId,
-          field2Input.trim(),
+          rawToken,
           effectivePixelId || ''
         );
         if (res.success) {
@@ -571,9 +574,6 @@ export default function PlatformConnectCard({
         // Fallback to defaults if offline/bypass
       }
     }
-
-    setIsSaving(false);
-    setSaveSuccess(true);
 
     const updatedAccount: AdPlatformConnection = {
       ...platform,
@@ -595,26 +595,30 @@ export default function PlatformConnectCard({
       }
     };
 
+    // 1. Persist to central Supabase DB
+    try {
+      await savePlatformConnectionDb(updatedAccount, rawToken);
+    } catch {
+      // Ignore
+    }
+
+    // 2. Update local state
     if (onUpdateConnection) {
       onUpdateConnection(updatedAccount);
     } else {
       onToggleConnect(platform.id);
     }
 
-    // Persist to central Supabase DB for all admin laptops
-    try {
-      await savePlatformConnectionDb(updatedAccount, field2Input.trim());
-    } catch {
-      // Ignore
-    }
+    setIsSaving(false);
+    setSaveSuccess(true);
 
-    // Trigger immediate live campaign fetch for newly connected account
+    // 3. Trigger immediate live campaign fetch for newly connected account
     setTimeout(() => {
       setSaveSuccess(false);
       setShowConnectModal(false);
       setShowDetailModal(true);
       handleSyncLiveMetrics();
-    }, 700);
+    }, 600);
   };
 
   const handleDisconnect = async () => {
