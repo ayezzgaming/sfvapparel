@@ -48,7 +48,8 @@ import {
   Layers,
   Bookmark,
   Clock,
-  RotateCw
+  RotateCw,
+  Pencil
 } from 'lucide-react';
 
 interface AiVariation {
@@ -222,6 +223,20 @@ export default function AdminAdsGeneratorPage() {
   // 5 Clean AI Generated Variations Grounded on Database
   const [selectedVariationIndex, setSelectedVariationIndex] = useState(0);
   const [selectedHookStyle, setSelectedHookStyle] = useState<string>('diskon');
+  const [isAudienceModalOpen, setIsAudienceModalOpen] = useState(false);
+  const [bestTimeIndex, setBestTimeIndex] = useState(0);
+
+  const bestTimesList = [
+    'Khamis – Ahad (8:00 PM – 10:30 PM)',
+    'Jumaat – Sabtu (12:30 PM – 2:30 PM)',
+    'Setiap Hari (7:30 PM – 11:00 PM)',
+    'Isnin – Rabu (8:30 PM – 10:00 PM)',
+  ];
+  const bestPostTime = bestTimesList[bestTimeIndex];
+
+  const handleRegenerateBestTime = () => {
+    setBestTimeIndex((prev) => (prev + 1) % bestTimesList.length);
+  };
 
   const handleSelectHookStyle = (hookId: string) => {
     setSelectedHookStyle(hookId);
@@ -875,31 +890,31 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     ))}
                   </div>
 
-                  {/* Sisi Kanan: Quick Platform Circle Switcher & Salin Teks */}
+                  {/* Sisi Kanan: Quick Platform Switcher & Salin Teks */}
                   <div className="flex items-center gap-3">
-                    {/* 5 Ikon Lingkaran Platform Tanpa Teks */}
-                    <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-zinc-800 rounded-full border border-slate-200/60 dark:border-zinc-700">
+                    {/* Quick Platform Switcher: Ikon Bersih Tanpa Wadah Lingkaran Tebal */}
+                    <div className="flex items-center gap-2">
                       {[
-                        { id: 'facebook' as AdPlatform, name: 'Facebook', Icon: FacebookLogo },
-                        { id: 'instagram' as AdPlatform, name: 'Instagram', Icon: InstagramLogo },
-                        { id: 'google' as AdPlatform, name: 'Google Ads', Icon: GoogleAdsLogo },
-                        { id: 'tiktok' as AdPlatform, name: 'TikTok Ads', Icon: TikTokLogo },
-                        { id: 'whatsapp' as AdPlatform, name: 'WhatsApp', Icon: WhatsAppLogo }
+                        { id: 'facebook', name: 'Facebook', Icon: FacebookLogo },
+                        { id: 'instagram', name: 'Instagram', Icon: InstagramLogo },
+                        { id: 'google', name: 'Google Ads', Icon: GoogleAdsLogo },
+                        { id: 'tiktok', name: 'TikTok Ads', Icon: TikTokLogo },
+                        { id: 'whatsapp', name: 'WhatsApp', Icon: WhatsAppLogo },
                       ].map(({ id, name, Icon }) => {
                         const isActive = selectedPlatform === id;
                         return (
                           <button
                             key={id}
                             type="button"
-                            onClick={() => setSelectedPlatform(id)}
-                            title={`Alihkan Pratinjau ke ${name}`}
-                            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                              isActive 
-                                ? 'bg-white dark:bg-zinc-900 shadow-xs ring-2 ring-blue-500/30 scale-105' 
-                                : 'opacity-50 hover:opacity-100 hover:bg-white/60 dark:hover:bg-zinc-700/60'
+                            onClick={() => setSelectedPlatform(id as AdPlatform)}
+                            title={`Alihkan ke ${name}`}
+                            className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                              isActive
+                                ? 'bg-slate-200/80 dark:bg-zinc-700 opacity-100'
+                                : 'opacity-40 hover:opacity-100 hover:bg-slate-100 dark:hover:bg-zinc-800'
                             }`}
                           >
-                            <Icon className="w-3.5 h-3.5" />
+                            <Icon className="w-4 h-4" />
                           </button>
                         );
                       })}
@@ -954,127 +969,126 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     platform={selectedPlatform}
                     creative={currentCreative}
                     connectedAccount={platforms.find((p) => p.id === selectedPlatform)}
+                    format={adFormat}
                   />
                 </div>
               )}
             </div>
           </div>
 
-          {/* SISI KANAN: AI TARGETING & LAUNCH ADVISOR (Khusus Pemula SMM) */}
+          {/* SISI KANAN: PANEL SETELAN IKLAN & SASARAN */}
           {isRightPanelOpen && studioStep === 'result' && (
-            <div className="w-72 xl:w-80 shrink-0 h-full flex flex-col gap-3 transition-all duration-300 animate-in fade-in">
-              <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1 text-slate-800 dark:text-zinc-100">
-
-                {/* Header Panel Kanan dengan Tombol Tutup Silang (X) */}
-                <div className="flex items-center justify-between pb-1">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-                    Rekomendasi Pelancaran AI
+            <div className="w-72 xl:w-80 shrink-0 h-full flex flex-col justify-between p-4 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm transition-all duration-300">
+              <div className="space-y-5 overflow-y-auto pr-1">
+                {/* Header Panel Kanan */}
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-800">
+                  <span className="text-xs font-semibold tracking-wider text-slate-500 dark:text-zinc-400 uppercase">
+                    Setelan Iklan
                   </span>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setIsRightPanelOpen(false)}
-                    className="w-5 h-5 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-800 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer transition-colors"
+                    className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 transition-colors cursor-pointer"
                     title="Tutup Panel"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
 
-                {/* 1. OPSI GAYA HOOK & COPYWRITING */}
-                <div className="bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2.5">
+                {/* 1. Gaya Hook: MENGGUNAKAN COMBOBOX / DROPDOWN */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-slate-600 dark:text-zinc-400 block">
+                    Gaya Copywriting (Hook)
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={selectedHookStyle}
+                      onChange={(e) => handleSelectHookStyle(e.target.value)}
+                      className="w-full h-10 px-3 py-2 text-xs text-slate-700 dark:text-zinc-200 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 rounded-xl outline-none focus:border-slate-400 focus:bg-white dark:focus:bg-zinc-800 transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="diskon">Tawaran & Diskaun Langsung</option>
+                      <option value="fomo">Urgensi & Kouta Terhad (FOMO)</option>
+                      <option value="story">Komuniti & Semangat Pasukan</option>
+                      <option value="solusi">Kualiti Material & Ketahanan</option>
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Sasaran Audiens (Dengan Ikon Pensil Edit) */}
+                <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-zinc-800">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200">Gaya Hook Copywriting</span>
+                    <span className="text-xs font-medium text-slate-600 dark:text-zinc-400">Sasaran Audiens</span>
                     <button
                       type="button"
-                      onClick={() => handleRegenerateHookOnly()}
-                      className="text-[11px] text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200 flex items-center gap-1 transition-colors p-1"
-                      title="Generate variasi hook lain"
+                      onClick={() => setIsAudienceModalOpen(true)}
+                      className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-md transition-colors cursor-pointer"
+                      title="Ubah Target Audiens"
                     >
-                      <RotateCw className="w-3 h-3" />
-                      <span>Tukar</span>
+                      <Pencil className="w-3.5 h-3.5" />
                     </button>
                   </div>
-
-                  {/* 4 Pilihan Gaya Hook (Pill Chips Minimalis) */}
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {[
-                      { id: 'diskon', label: 'Tawaran / Diskaun' },
-                      { id: 'fomo', label: 'Urgensi / FOMO' },
-                      { id: 'story', label: 'Komuniti / Sukan' },
-                      { id: 'solusi', label: 'Kualiti / Material' }
-                    ].map((hook) => (
-                      <button
-                        key={hook.id}
-                        type="button"
-                        onClick={() => handleSelectHookStyle(hook.id)}
-                        className={`px-2 py-1.5 text-[11px] font-medium rounded-lg border text-center transition-all ${
-                          selectedHookStyle === hook.id
-                            ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 shadow-xs'
-                            : 'bg-slate-50 border-slate-200/70 text-slate-600 hover:bg-slate-100 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300'
-                        }`}
-                      >
-                        {hook.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 2. WAKTU SIARAN TERBAIK (MONOKROM BERSIH) */}
-                <div className="bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-1.5">
-                  <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200 block">Waktu Siaran Rekomendasi</span>
-                  <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-zinc-300 font-medium">
-                    <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span>Khamis – Ahad (8:00 PM – 10:30 PM)</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400 leading-tight">Interaksi prospek sukan paling aktif & kos per klik paling rendah.</p>
-                </div>
-
-                {/* 3. SASARAN AUDIENS */}
-                <div className="bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2">
-                  <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200 block">Sasaran Audiens</span>
-                  <div className="space-y-1 text-xs text-slate-600 dark:text-zinc-400">
-                    <div className="flex justify-between py-1 border-b border-slate-100 dark:border-zinc-800">
+                  <div className="p-3 bg-slate-50/70 dark:bg-zinc-800/40 rounded-xl border border-slate-200/60 dark:border-zinc-700/60 space-y-1.5 text-xs text-slate-600 dark:text-zinc-300">
+                    <div className="flex justify-between">
                       <span className="text-slate-400">Demografi:</span>
-                      <span className="font-medium text-slate-700 dark:text-zinc-200">Lelaki & Wanita (18 - 35 thn)</span>
+                      <span className="font-medium text-slate-700 dark:text-zinc-200">18 - 35 thn</span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-slate-100 dark:border-zinc-800">
+                    <div className="flex justify-between">
                       <span className="text-slate-400">Minat:</span>
-                      <span className="font-medium text-slate-700 dark:text-zinc-200 truncate max-w-[130px]">Futsal, Sukan, Jersey</span>
+                      <span className="font-medium text-slate-700 dark:text-zinc-200 truncate max-w-[140px]">
+                        Futsal, Jersey, Sukan
+                      </span>
                     </div>
-                    <div className="flex justify-between py-1">
-                      <span className="text-slate-400">Lokasi:</span>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Wilayah:</span>
                       <span className="font-medium text-slate-700 dark:text-zinc-200">Malaysia (Semenanjung)</span>
                     </div>
                   </div>
                 </div>
 
-                {/* 4. BAJET HARIAN & ESTIMASI HASIL (NETRAL) */}
-                <div className="bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2.5">
+                {/* 3. Waktu Siaran Rekomendasi (Dengan Ikon Regenerate Putar) */}
+                <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-zinc-800">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200">Bajet Harian</span>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">RM {dailyBudget}</span>
+                    <span className="text-xs font-medium text-slate-600 dark:text-zinc-400">Waktu Siaran Optimal</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRegenerateBestTime()}
+                      className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-md transition-colors cursor-pointer"
+                      title="Cari rekomendasi waktu lain"
+                    >
+                      <RotateCw className="w-3.5 h-3.5" />
+                    </button>
                   </div>
-                  <input 
-                    type="range" 
-                    min="10" 
-                    max="200" 
-                    step="5" 
-                    value={dailyBudget} 
-                    onChange={(e) => setDailyBudget(Number(e.target.value))} 
-                    className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-slate-900 dark:accent-white"
-                  />
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <div className="p-2 bg-slate-50 dark:bg-zinc-800 rounded-xl text-center">
-                      <div className="text-[10px] text-slate-400">Anggaran Paparan</div>
-                      <div className="text-xs font-bold text-slate-700 dark:text-zinc-200">{(dailyBudget * 140).toLocaleString()} – {(dailyBudget * 260).toLocaleString()}</div>
-                    </div>
-                    <div className="p-2 bg-slate-50 dark:bg-zinc-800 rounded-xl text-center">
-                      <div className="text-[10px] text-slate-400">Prospek WhatsApp</div>
-                      <div className="text-xs font-bold text-slate-700 dark:text-zinc-200">~{Math.round(dailyBudget / 6.5)} orang</div>
+                  <div className="p-3 bg-slate-50/70 dark:bg-zinc-800/40 rounded-xl border border-slate-200/60 dark:border-zinc-700/60">
+                    <div className="text-xs font-medium text-slate-700 dark:text-zinc-200 flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span>{bestPostTime}</span>
                     </div>
                   </div>
                 </div>
 
+                {/* 4. Anggaran Harian & Unjuran Ringkas */}
+                <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-zinc-800">
+                  <div className="flex items-center justify-between text-xs font-medium text-slate-600 dark:text-zinc-400">
+                    <span>Bajet Harian</span>
+                    <span className="font-semibold text-slate-800 dark:text-zinc-100">RM {dailyBudget}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="10"
+                    max="200"
+                    step="5"
+                    value={dailyBudget}
+                    onChange={(e) => setDailyBudget(Number(e.target.value))}
+                    className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-slate-600"
+                  />
+                  <div className="flex justify-between text-[11px] text-slate-500 pt-0.5">
+                    <span>Paparan: ~{(dailyBudget * 180).toLocaleString()}</span>
+                    <span>WhatsApp: ~{Math.round(dailyBudget / 6.5)} prospek</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -1404,6 +1418,63 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                 className="px-5 py-2 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium shadow-xs transition-colors"
               >
                 Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: AUDIENCE TARGET MODAL */}
+      {isAudienceModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 p-6 sm:p-7 max-w-md w-full shadow-2xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 flex items-center justify-center border border-slate-200 dark:border-zinc-700">
+                  <Pencil className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-slate-900 dark:text-zinc-100">Sasaran Audiens</h3>
+                  <p className="text-xs text-slate-500">Konfigurasi segmen demografi dan minat.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAudienceModalOpen(false)}
+                className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3.5 text-xs">
+              <div>
+                <label className="text-slate-600 dark:text-zinc-400 font-medium block mb-1">Umur & Jantina</label>
+                <div className="p-2.5 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 rounded-xl text-slate-700 dark:text-zinc-200">
+                  Lelaki & Wanita (18 - 35 tahun)
+                </div>
+              </div>
+              <div>
+                <label className="text-slate-600 dark:text-zinc-400 font-medium block mb-1">Minat Utama</label>
+                <div className="p-2.5 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 rounded-xl text-slate-700 dark:text-zinc-200">
+                  Futsal, Bola Sepak, Jersey Sublimation, Sukan Komuniti
+                </div>
+              </div>
+              <div>
+                <label className="text-slate-600 dark:text-zinc-400 font-medium block mb-1">Wilayah / Geografi</label>
+                <div className="p-2.5 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 rounded-xl text-slate-700 dark:text-zinc-200">
+                  Malaysia (Semenanjung, Sabah & Sarawak)
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => setIsAudienceModalOpen(false)}
+                className="px-5 py-2 rounded-full bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-slate-900 text-xs font-medium shadow-xs transition-colors cursor-pointer"
+              >
+                Tutup & Simpan
               </button>
             </div>
           </div>

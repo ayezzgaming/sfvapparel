@@ -32,9 +32,10 @@ interface AdPreviewCardProps {
   platform: AdPlatform;
   creative: AdCreative;
   connectedAccount?: AdPlatformConnection;
+  format?: 'feed' | 'story' | 'reels' | string;
 }
 
-export default function AdPreviewCard({ platform, creative, connectedAccount }: AdPreviewCardProps) {
+export default function AdPreviewCard({ platform, creative, connectedAccount, format }: AdPreviewCardProps) {
   const { companySettings } = useAppStore();
 
   const brandName = companySettings?.brand_name || 'SFV APPAREL';
@@ -106,11 +107,27 @@ export default function AdPreviewCard({ platform, creative, connectedAccount }: 
   }, [connectedAccount, isConnected, platform]);
 
   // Format / Placement State
-  const [activeFormat, setActiveFormat] = useState<string>('default');
+  const [activeFormat, setActiveFormat] = useState<string>(format || 'feed');
   const [isFbExpanded, setIsFbExpanded] = useState<boolean>(false);
   const [isIgExpanded, setIsIgExpanded] = useState<boolean>(false);
 
   useEffect(() => {
+    if (format) {
+      if (platform === 'google') {
+        if (format === 'story') setActiveFormat('display');
+        else if (format === 'reels') setActiveFormat('shopping');
+        else setActiveFormat('search');
+      } else if (platform === 'tiktok') {
+        if (format === 'story' || format === 'reels') setActiveFormat('topview');
+        else setActiveFormat('infeed');
+      } else if (platform === 'whatsapp') {
+        if (format === 'story' || format === 'reels') setActiveFormat('chat_screen');
+        else setActiveFormat('click_to_chat');
+      } else {
+        setActiveFormat(format);
+      }
+      return;
+    }
     switch (platform) {
       case 'facebook':
       case 'meta':
@@ -131,67 +148,10 @@ export default function AdPreviewCard({ platform, creative, connectedAccount }: 
       default:
         setActiveFormat('feed');
     }
-  }, [platform]);
-
-  // Format Switcher Bar
-  const renderFormatSwitcher = () => {
-    let formats: { id: string; label: string }[] = [];
-
-    if (platform === 'facebook' || platform === 'meta') {
-      formats = [
-        { id: 'feed', label: 'Feed Post' },
-        { id: 'story', label: 'Story & Reels' },
-        { id: 'right_column', label: 'Lajur Kanan' }
-      ];
-    } else if (platform === 'instagram') {
-      formats = [
-        { id: 'feed', label: 'Feed Post' },
-        { id: 'story', label: 'Stories' },
-        { id: 'reels', label: 'Reels' }
-      ];
-    } else if (platform === 'google') {
-      formats = [
-        { id: 'search', label: 'Carian Google' },
-        { id: 'display', label: 'Display Banner' },
-        { id: 'shopping', label: 'Shopping' }
-      ];
-    } else if (platform === 'tiktok') {
-      formats = [
-        { id: 'infeed', label: 'In-Feed Video' },
-        { id: 'topview', label: 'TopView Fullscreen' }
-      ];
-    } else if (platform === 'whatsapp') {
-      formats = [
-        { id: 'click_to_chat', label: 'Iklan Click-to-Chat' },
-        { id: 'chat_screen', label: 'Skrin WhatsApp' }
-      ];
-    }
-
-    if (formats.length <= 1) return null;
-
-    return (
-      <div className="flex items-center justify-center gap-1 p-1 bg-slate-200/70 rounded-full max-w-fit mx-auto mb-4 shrink-0">
-        {formats.map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            onClick={() => setActiveFormat(f.id)}
-            className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all ${
-              activeFormat === f.id
-                ? 'bg-white text-slate-900 font-semibold shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-    );
-  };
+  }, [platform, format]);
 
   return (
     <div className="w-full flex flex-col items-center justify-center">
-      {renderFormatSwitcher()}
 
       {/* ================= 1. GOOGLE ADS ================= */}
       {platform === 'google' && (
