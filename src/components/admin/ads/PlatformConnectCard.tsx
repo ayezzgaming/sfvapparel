@@ -647,71 +647,57 @@ export default function PlatformConnectCard({
         </div>
       </div>
 
-      {/* ================= MODAL 1: SAMBUNG API DENGAN FITUR TES KONEKSI (SPLIT DUAL PANE) ================= */}
+      {/* ================= MODAL 1: SAMBUNG API (ULTRA CLEAN & MINIMALIST) ================= */}
       {showConnectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
           <div
             className={`bg-white rounded-3xl p-6 sm:p-7 shadow-2xl space-y-4 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto transition-all duration-300 w-full ${
-              showHelpGuide ? 'max-w-4xl' : 'max-w-lg'
+              showHelpGuide ? 'max-w-3xl' : 'max-w-md'
             }`}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <div className="flex items-center space-x-3">
                 {renderIcon()}
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">{config.title}</h3>
-                  <p className="text-xs text-slate-400">{config.subtitle}</p>
+                  <h3 className="text-sm font-semibold text-slate-900">Sambung API {platform.name}</h3>
+                  <p className="text-[11px] text-slate-400">Masukkan kredensial rasmi akaun pengiklanan</p>
                 </div>
               </div>
               <div className="flex items-center space-x-1.5">
                 <button
                   type="button"
                   onClick={() => setShowHelpGuide(!showHelpGuide)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors flex items-center space-x-1.5 ${
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors flex items-center space-x-1 ${
                     showHelpGuide
                       ? 'bg-slate-900 text-white'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
-                  title="Buka / Tutup Panel Panduan di Sebelah"
+                  title="Buka panduan ringkas"
                 >
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span>{showHelpGuide ? 'Tutup Panel Panduan' : 'Buka Panduan Kunci API'}</span>
+                  <BookOpen className="w-3 h-3" />
+                  <span>{showHelpGuide ? 'Tutup Panduan' : 'Panduan'}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowConnectModal(false)}
-                  className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+                  className="p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Split Content Grid (Form on Left, Interactive Guide on Right) */}
-            <div className={showHelpGuide ? 'grid grid-cols-1 md:grid-cols-12 gap-6 items-start' : 'space-y-4'}>
-              {/* LEFT COLUMN: API Form & Test Connection */}
-              <div className={showHelpGuide ? 'md:col-span-6 space-y-3.5' : 'space-y-3.5'}>
-                <form onSubmit={handleSaveConnection} className="space-y-3.5">
+            {/* Split Content Grid */}
+            <div className={showHelpGuide ? 'grid grid-cols-1 md:grid-cols-12 gap-5 items-start' : 'space-y-3.5'}>
+              {/* LEFT COLUMN: Clean Form */}
+              <div className={showHelpGuide ? 'md:col-span-6 space-y-3' : 'space-y-3'}>
+                <form onSubmit={handleSaveConnection} className="space-y-3">
                   {/* FIELD 1 */}
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-slate-800">
-                        {config.field1Label} <span className="text-rose-500">*</span>
-                      </label>
-                      {config.field1LinkText && config.field1LinkUrl && (
-                        <a
-                          href={config.field1LinkUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[11px] text-slate-500 hover:text-slate-900 font-medium inline-flex items-center space-x-1"
-                        >
-                          <span>{config.field1LinkText}</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                    </div>
-
+                    <label className="text-xs font-semibold text-slate-700">
+                      {config.field1Label} <span className="text-rose-500">*</span>
+                    </label>
                     <input
                       type="text"
                       required
@@ -721,26 +707,15 @@ export default function PlatformConnectCard({
                         setTestResult(null);
                       }}
                       placeholder={config.field1Placeholder}
-                      className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
                     />
                   </div>
 
                   {/* FIELD 2 */}
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-slate-800">
-                        {config.field2Label} <span className="text-rose-500">*</span>
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => setShowHelpGuide(true)}
-                        className="text-[11px] text-blue-600 hover:text-blue-800 font-medium inline-flex items-center space-x-1"
-                      >
-                        <span>{config.field2LinkText || 'Panduan Kunci API'}</span>
-                        <BookOpen className="w-3 h-3" />
-                      </button>
-                    </div>
-
+                    <label className="text-xs font-semibold text-slate-700">
+                      {config.field2Label} <span className="text-rose-500">*</span>
+                    </label>
                     <div className="relative">
                       <input
                         type={showToken ? 'text' : 'password'}
@@ -750,8 +725,8 @@ export default function PlatformConnectCard({
                           setField2Input(e.target.value);
                           setTestResult(null);
                         }}
-                        placeholder={config.field2Placeholder}
-                        className="w-full px-3.5 py-2.5 pr-10 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                        placeholder="Tampal Kunci Akses / Token di sini"
+                        className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
                       />
                       <button
                         type="button"
@@ -766,28 +741,9 @@ export default function PlatformConnectCard({
 
                   {/* FIELD 3 */}
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-slate-800">
-                        {config.field3Label}{' '}
-                        {config.field3Required ? (
-                          <span className="text-rose-500">*</span>
-                        ) : (
-                          <span className="text-slate-400 font-normal">(Pilihan)</span>
-                        )}
-                      </label>
-                      {config.field3LinkText && config.field3LinkUrl && (
-                        <a
-                          href={config.field3LinkUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[11px] text-slate-500 hover:text-slate-900 font-medium inline-flex items-center space-x-1"
-                        >
-                          <span>{config.field3LinkText}</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                    </div>
-
+                    <label className="text-xs font-medium text-slate-600">
+                      {config.field3Label} <span className="text-slate-400 text-[10px] font-normal">(Pilihan)</span>
+                    </label>
                     <input
                       type="text"
                       required={config.field3Required}
@@ -797,84 +753,70 @@ export default function PlatformConnectCard({
                         setTestResult(null);
                       }}
                       placeholder={config.field3Placeholder}
-                      className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
                     />
-                    <p className="text-[10px] text-slate-400">{config.field3Subtext}</p>
                   </div>
 
-                  {/* TEST CONNECTION RESULT CARD (BUKTI STATUS SAMBUNGAN & DETAIL PROFIL) */}
+                  {/* TEST CONNECTION RESULT CARD */}
                   {testResult && (
                     <div
-                      className={`rounded-2xl p-4 text-xs space-y-2.5 animate-in zoom-in-95 border ${
+                      className={`rounded-xl p-3 text-xs space-y-2 animate-in zoom-in-95 border ${
                         testResult.status === 'success'
                           ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
                           : 'bg-rose-50/70 border-rose-200 text-rose-900'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-1.5 font-semibold text-xs">
                           {testResult.status === 'success' ? (
                             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                           ) : (
                             <X className="w-4 h-4 text-rose-600 shrink-0" />
                           )}
-                          <span className="font-semibold">
-                            {testResult.status === 'success' ? 'Sambungan API Berjaya Disahkan' : 'Ujian Sambungan Gagal'}
-                          </span>
+                          <span>{testResult.status === 'success' ? 'Sambungan Berjaya' : 'Ujian Gagal'}</span>
                         </div>
                         {testResult.status === 'success' && (
-                          <span className="text-[10px] font-mono text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md">
+                          <span className="text-[10px] font-mono text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded">
                             {testResult.latencyMs}ms • 200 OK
                           </span>
                         )}
                       </div>
 
                       {testResult.status === 'success' ? (
-                        <div className="space-y-1.5 text-[11px] bg-white/80 rounded-xl p-3 border border-emerald-100">
+                        <div className="space-y-1 text-[11px] bg-white/80 rounded-lg p-2.5 border border-emerald-100">
                           <div className="flex items-center justify-between text-slate-600">
-                            <span>Nama Profil Akaun:</span>
+                            <span>Akaun Disahkan:</span>
                             <span className="font-semibold text-slate-900">{testResult.accountName}</span>
                           </div>
                           <div className="flex items-center justify-between text-slate-600">
-                            <span>ID Akaun Disahkan:</span>
+                            <span>ID:</span>
                             <span className="font-mono text-slate-800">{testResult.accountId}</span>
                           </div>
                           <div className="flex items-center justify-between text-slate-600">
-                            <span>Baki Kredit Iklan:</span>
+                            <span>Baki:</span>
                             <span className="font-semibold text-slate-900">
                               {testResult.currency} {testResult.balance.toFixed(2)}
                             </span>
                           </div>
-                          <div className="flex items-center justify-between text-slate-600 pt-1 border-t border-slate-100">
-                            <span>Izin Capaian API:</span>
-                            <span className="text-emerald-700 font-medium truncate max-w-[220px]">
-                              {testResult.verifiedPermissions.join(', ')}
-                            </span>
-                          </div>
                         </div>
                       ) : (
-                        <p className="text-xs text-rose-700">{testResult.message}</p>
+                        <p className="text-[11px] text-rose-700 leading-snug">{testResult.message}</p>
                       )}
                     </div>
                   )}
 
-                  <div className="flex items-center space-x-2 text-[11px] text-slate-400 pt-1">
-                    <ShieldCheck className="w-4 h-4 text-slate-500 shrink-0" />
-                    <span>Kredensial disulitkan dan disimpan secara selamat pada pelayan.</span>
-                  </div>
-
-                  {/* Submit & Test Action Buttons */}
-                  <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                  {/* Actions */}
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
                     <button
                       type="button"
                       onClick={handleTestConnection}
                       disabled={isTesting || !field1Input.trim() || !field2Input.trim()}
-                      className="px-4 py-2 rounded-full text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center space-x-1.5 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                      className="px-3.5 py-2 rounded-full text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center space-x-1.5 disabled:opacity-40"
                     >
                       {isTesting ? (
                         <>
                           <RefreshCw className="w-3.5 h-3.5 animate-spin text-slate-600" />
-                          <span>Menguji Sambungan...</span>
+                          <span>Menguji...</span>
                         </>
                       ) : (
                         <>
@@ -888,7 +830,7 @@ export default function PlatformConnectCard({
                       <button
                         type="button"
                         onClick={() => setShowConnectModal(false)}
-                        className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+                        className="px-3.5 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
                       >
                         Batal
                       </button>
@@ -901,12 +843,12 @@ export default function PlatformConnectCard({
                           !field2Input.trim() ||
                           (config.field3Required && !field3Input.trim())
                         }
-                        className="px-5 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium transition-all shadow-xs flex items-center space-x-2 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                        className="px-4 py-2 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium transition-all shadow-xs flex items-center space-x-1.5 disabled:opacity-40"
                       >
                         {isSaving ? (
                           <>
                             <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            <span>Menyambungkan...</span>
+                            <span>Menyimpan...</span>
                           </>
                         ) : saveSuccess ? (
                           <>
@@ -914,7 +856,7 @@ export default function PlatformConnectCard({
                             <span>Tersambung!</span>
                           </>
                         ) : (
-                          <span>Simpan &amp; Sambung Akaun</span>
+                          <span>Simpan &amp; Sambung</span>
                         )}
                       </button>
                     </div>
@@ -922,72 +864,43 @@ export default function PlatformConnectCard({
                 </form>
               </div>
 
-              {/* RIGHT COLUMN: Interactive Side Panel Guide */}
+              {/* RIGHT COLUMN: Clean Side Panel Guide (Only shows when Panduan button is clicked) */}
               {showHelpGuide && (
-                <div className="md:col-span-6 bg-slate-50/90 rounded-2xl p-4 sm:p-5 border border-slate-200/70 space-y-4 animate-in fade-in slide-in-from-right-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
-                    <div className="flex items-center space-x-2">
-                      <BookOpen className="w-4 h-4 text-slate-700" />
-                      <h4 className="text-xs font-semibold text-slate-900">
-                        Panel Panduan Rasmi &amp; Pautan API
-                      </h4>
-                    </div>
+                <div className="md:col-span-6 bg-slate-50/90 rounded-2xl p-4 border border-slate-200/70 space-y-3 animate-in fade-in">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-slate-200/60">
+                    <span className="text-xs font-semibold text-slate-800">Panduan Ringkas</span>
                     <button
                       type="button"
                       onClick={() => setShowHelpGuide(false)}
-                      className="text-slate-400 hover:text-slate-700 p-1"
-                      title="Tutup Panel Panduan"
+                      className="text-slate-400 hover:text-slate-700"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  <div className="space-y-3 text-xs">
+                  <div className="space-y-2 text-xs">
                     {config.guideSteps.map((s) => (
                       <div
                         key={s.step}
-                        className="bg-white rounded-xl p-3 border border-slate-200/70 shadow-2xs space-y-2"
+                        className="bg-white rounded-xl p-2.5 border border-slate-200/70 shadow-2xs space-y-1.5"
                       >
-                        <div className="flex items-start space-x-2">
-                          <span className="w-5 h-5 rounded-full bg-slate-900 text-white font-semibold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                            {s.step}
-                          </span>
-                          <div className="space-y-1">
-                            <p className="font-semibold text-slate-900 text-xs">{s.title}</p>
-                            <p className="text-slate-600 text-[11px] leading-relaxed">{s.description}</p>
-                            {s.codeSnippet && (
-                              <div className="pt-0.5">
-                                <span className="text-[10px] text-slate-400 block">Format Contoh:</span>
-                                <code className="text-slate-800 font-mono text-[11px] bg-slate-100 px-2 py-0.5 rounded inline-block">
-                                  {s.codeSnippet}
-                                </code>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
+                        <p className="font-semibold text-slate-900 text-[11px]">{s.title}</p>
+                        <p className="text-slate-600 text-[10px] leading-relaxed">{s.description}</p>
                         {s.actionText && s.actionUrl && (
                           <div className="pt-1 border-t border-slate-100 flex justify-end">
                             <a
                               href={s.actionUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center space-x-1.5 text-[11px] font-medium text-slate-800 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                              className="inline-flex items-center space-x-1 text-[10px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded transition-colors"
                             >
                               <span>{s.actionText}</span>
-                              <ExternalLink className="w-3 h-3 text-slate-500" />
+                              <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
                             </a>
                           </div>
                         )}
                       </div>
                     ))}
-                  </div>
-
-                  <div className="bg-blue-50/70 rounded-xl p-3 border border-blue-100 text-[11px] text-blue-900 space-y-1">
-                    <p className="font-semibold">💡 Tips Kebenaran Meta API:</p>
-                    <p className="text-blue-800 leading-relaxed text-[10px]">
-                      Pastikan token anda mengandungi izin <span className="font-mono font-medium">ads_management</span>, <span className="font-mono font-medium">ads_read</span>, atau <span className="font-mono font-medium">business_management</span> untuk mengurus kempen iklan secara automatik.
-                    </p>
                   </div>
                 </div>
               )}
