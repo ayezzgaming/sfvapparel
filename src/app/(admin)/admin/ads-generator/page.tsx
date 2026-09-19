@@ -46,7 +46,9 @@ import {
   ChevronDown,
   SendHorizontal,
   Eye,
-  EyeOff
+  EyeOff,
+  ArrowUp,
+  Layers
 } from 'lucide-react';
 
 interface AiVariation {
@@ -435,7 +437,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
   };
 
   return (
-    <div className="bg-[#f0f4f9] dark:bg-zinc-950 p-3 sm:p-4 min-h-[calc(100vh-4rem)] flex flex-col gap-3 w-full text-slate-900 dark:text-zinc-100 font-sans">
+    <div className="h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-hidden p-4 flex flex-col gap-3 bg-[#f8fafd] dark:bg-zinc-950 w-full text-slate-900 dark:text-zinc-100 font-sans">
       {/* Hidden File Input for Image Upload */}
       <input
         ref={fileInputRef}
@@ -488,7 +490,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
         <button
           type="button"
           onClick={() => setShowKeyModal(true)}
-          className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-700 dark:text-zinc-300 transition-colors shrink-0"
+          className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-700 dark:text-zinc-300 transition-colors shrink-0 cursor-pointer"
           title="Tetapan Model AI & Kunci API"
         >
           <Bot className="w-3.5 h-3.5 text-slate-500" />
@@ -499,13 +501,13 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
       {/* ======================= TAB 1: STUDIO IKLAN AI ======================= */}
       {activeTab === 'create' && (
-        <div className="flex-1 flex gap-4 relative items-stretch h-[calc(100vh-130px)] min-h-0 animate-in fade-in">
-          {/* SISI KIRI: PANEL KONTROL (TANPA KARTU PUTIH, LANGSUNG DI ATAS LATAR KANVAS) */}
+        <div className="flex-1 min-h-0 overflow-hidden flex gap-3 relative items-stretch animate-in fade-in">
+          {/* SISI KIRI: PANEL KONTROL (TANPA KARTU, LANGSUNG DI ATAS LATAR BELAKANG) */}
           <div
-            className={`flex flex-col relative transition-all duration-300 ease-in-out shrink-0 ${
+            className={`flex flex-col relative h-full shrink-0 transition-all duration-300 ease-in-out select-none ${
               isLeftPanelCollapsed
                 ? 'w-0 opacity-0 overflow-hidden pointer-events-none'
-                : 'w-full lg:w-[360px] xl:w-[400px] opacity-100'
+                : 'w-[360px] xl:w-[400px] opacity-100'
             }`}
           >
             {/* Area Konten Kontrol (Scrollable) */}
@@ -700,16 +702,16 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
               )}
             </div>
 
-            {/* Floating Pill Input Bar di Bawah Sisi Kiri */}
-            <div className="absolute bottom-2 left-0 right-2 z-20">
-              <div className="bg-white dark:bg-zinc-900 rounded-full border border-slate-200/90 dark:border-zinc-700 shadow-md px-3 py-2 flex items-center gap-2 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-400 transition-all">
-                {/* Tombol Lampiran (+) & Dropdown */}
+            {/* Kotak Input Melayang di Bawah (Pill Bersih Gaya Gemini Spark) */}
+            <div className="absolute bottom-2 left-0 right-2 z-30">
+              <div className="bg-white dark:bg-zinc-900 rounded-full border border-slate-200/80 dark:border-zinc-700 shadow-sm px-4 py-2.5 flex items-center gap-3 transition-all focus-within:border-slate-300 focus-within:shadow">
+                {/* Tombol Lampiran (+) */}
                 <div className="relative shrink-0 flex items-center gap-1.5 min-w-0" ref={attachMenuRef}>
                   <button
                     type="button"
                     onClick={() => setShowAttachMenu(!showAttachMenu)}
-                    className="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 flex items-center justify-center text-slate-500 shrink-0 transition-colors cursor-pointer"
-                    title="Lampirkan Produk Katalog / Foto"
+                    className="text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors p-0.5 cursor-pointer shrink-0"
+                    title="Lampirkan Produk"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -771,7 +773,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                   )}
                 </div>
 
-                {/* Input Teks Prompt Satu Baris */}
+                {/* Input Teks Bersih */}
                 <input
                   type="text"
                   value={userPrompt}
@@ -793,64 +795,67 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                       ? 'TikTok Video Ads'
                       : 'WhatsApp Direct Leads'
                   }...`}
-                  className="flex-1 bg-transparent border-0 outline-none text-xs sm:text-sm text-slate-700 dark:text-zinc-200 placeholder:text-slate-400 focus:ring-0 p-0 min-w-0"
+                  className="flex-1 bg-transparent border-0 outline-none text-xs sm:text-sm text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 focus:ring-0 p-0 min-w-0"
                 />
 
-                {/* Tombol Generate (Sparkles) */}
+                {/* Tombol Kirim Bersih / Minimalis */}
                 <button
                   type="button"
                   onClick={handleGenerateAi}
                   disabled={isGeneratingAi || !userPrompt.trim()}
-                  className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white flex items-center justify-center shrink-0 shadow-sm transition-all cursor-pointer"
-                  title="Jana Iklan AI"
+                  className="text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 disabled:opacity-30 transition-colors p-0.5 cursor-pointer shrink-0"
+                  title="Kirim Arahan"
                 >
                   {isGeneratingAi ? (
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
                   ) : (
-                    <Sparkles className="w-3.5 h-3.5" />
+                    <ArrowUp className="w-4 h-4" />
                   )}
                 </button>
               </div>
             </div>
           </div>
 
-          {/* SISI KANAN: SATU-SATUNYA KARTU UTAMA (MAIN STAGE WORKSPACE) */}
-          <div className="flex-1 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col relative overflow-hidden">
-            {/* GAGANG TOGGLE KAPSUL NOTCH (MENEMPEL DI TEPI KIRI KARTU UTAMA) */}
+          {/* SISI PEMBATAS / GAGANG TOGGLE NOTCH (Bebas dari Clipping & Animasi Halus) */}
+          <div
+            onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
+            className="relative flex items-center justify-center cursor-pointer select-none group z-50 shrink-0"
+            style={{ width: isLeftPanelCollapsed ? '0px' : '6px' }}
+            title={isLeftPanelCollapsed ? 'Buka Panel Konfigurasi' : 'Sembunyikan Panel Konfigurasi'}
+          >
+            {/* Garis rambut vertikal */}
+            <div className="w-[1px] h-full bg-slate-300/60 dark:bg-zinc-700 group-hover:bg-slate-400 transition-colors" />
+
+            {/* Notch abu-abu lembut: diam berupa garis kapsul tipis (w-1.5), melebar (w-5) saat di-hover */}
             <div
-              onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
-              className="absolute -left-2.5 top-1/2 -translate-y-1/2 z-40 group cursor-pointer py-3 px-1 select-none"
-              title={isLeftPanelCollapsed ? 'Buka Panel Konfigurasi' : 'Sembunyikan Panel Konfigurasi'}
+              className={`absolute top-1/2 -translate-y-1/2 h-12 rounded-full bg-slate-300 dark:bg-zinc-600 flex items-center justify-center transition-all duration-200 ease-out shadow-sm ${
+                isLeftPanelCollapsed
+                  ? 'left-1 w-5 bg-slate-300 text-slate-600'
+                  : 'w-1.5 group-hover:w-5 group-hover:bg-slate-300 text-slate-600'
+              }`}
             >
-              {/* Kapsul Notch: Default garis abu-abu tipis (4px), Melebar (18px) saat di-hover */}
-              <div
-                className={`h-12 rounded-full bg-slate-300 dark:bg-zinc-600 flex items-center justify-center transition-all duration-200 ease-out ${
-                  isLeftPanelCollapsed
-                    ? 'w-5 bg-slate-300'
-                    : 'w-1 group-hover:w-5 group-hover:bg-slate-300'
+              <span
+                className={`transition-opacity duration-200 flex items-center justify-center ${
+                  isLeftPanelCollapsed ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                 }`}
               >
-                {/* Ikon Chevron: Tersembunyi saat diam, muncul saat di-hover */}
-                <span
-                  className={`text-slate-600 dark:text-zinc-300 transition-opacity duration-200 flex items-center justify-center ${
-                    isLeftPanelCollapsed
-                      ? 'opacity-100'
-                      : 'opacity-0 group-hover:opacity-100'
-                  }`}
-                >
-                  {isLeftPanelCollapsed ? (
-                    <ChevronRight className="w-3 h-3" />
-                  ) : (
-                    <ChevronLeft className="w-3 h-3" />
-                  )}
-                </span>
-              </div>
+                {isLeftPanelCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+              </span>
             </div>
+          </div>
 
-            {/* Header di Dalam Kartu Utama */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-zinc-800 overflow-x-auto shrink-0">
-              {/* Sisi Kiri: Tab Format */}
-              <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl shrink-0">
+          {/* SISI KANAN: KARTU UTAMA (Dengan Ruang Kosong Cadangan di Kanan) */}
+          <div
+            className={`bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out ${
+              isLeftPanelCollapsed
+                ? 'flex-1 max-w-[calc(100%-240px)] mr-auto'
+                : 'flex-1 mr-4'
+            }`}
+          >
+            {/* Header Kanvas */}
+            <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 dark:border-zinc-800 shrink-0">
+              {/* Sisi Kiri: Tab format */}
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl">
                 {[
                   { id: 'feed', label: 'Feed Post' },
                   { id: 'story', label: 'Stories' },
@@ -871,18 +876,18 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                 ))}
               </div>
 
-              {/* Sisi Kanan: Aksi (Salin Teks, Lancar Kempen, Penasihat AI) */}
-              <div className="flex items-center gap-2 shrink-0">
+              {/* Sisi Kanan: Tombol Aksi */}
+              <div className="flex items-center gap-2">
                 {studioStep === 'result' && (
                   <>
                     <button
                       type="button"
                       onClick={handleCopyContent}
-                      className="h-8 px-3 text-xs font-medium border border-slate-200 dark:border-zinc-700 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 transition-colors flex items-center space-x-1.5 cursor-pointer"
+                      className="h-8 px-3 text-xs font-medium border border-slate-200 dark:border-zinc-700 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors flex items-center space-x-1.5 cursor-pointer"
                     >
                       {copied ? (
                         <>
-                          <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
                           <span>Disalin</span>
                         </>
                       ) : (
@@ -929,12 +934,12 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
               </div>
             </div>
 
-            {/* Body Kanvas Pratinjau (Area Kerja Bersih) */}
+            {/* Area Kanvas Bersih */}
             <div className="flex-1 overflow-y-auto p-6 flex items-center justify-center">
               {studioStep === 'prompt' ? (
                 <div className="text-center space-y-2 max-w-sm">
                   <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center mx-auto text-slate-400">
-                    <Sparkles className="w-5 h-5" />
+                    <Layers className="w-5 h-5" />
                   </div>
                   <h3 className="text-sm font-semibold text-slate-700 dark:text-zinc-200">
                     Kanvas Pratinjau Siap
