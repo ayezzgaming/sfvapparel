@@ -47,7 +47,8 @@ import {
   ArrowUp,
   Layers,
   Bookmark,
-  Clock
+  Clock,
+  RotateCw
 } from 'lucide-react';
 
 interface AiVariation {
@@ -220,6 +221,30 @@ export default function AdminAdsGeneratorPage() {
 
   // 5 Clean AI Generated Variations Grounded on Database
   const [selectedVariationIndex, setSelectedVariationIndex] = useState(0);
+  const [selectedHookStyle, setSelectedHookStyle] = useState<string>('diskon');
+
+  const handleSelectHookStyle = (hookId: string) => {
+    setSelectedHookStyle(hookId);
+    const mapping: Record<string, number> = {
+      diskon: 0,
+      solusi: 1,
+      fomo: 2,
+      story: 3,
+    };
+    if (mapping[hookId] !== undefined && mapping[hookId] < aiVariations.length) {
+      setSelectedVariationIndex(mapping[hookId]);
+    }
+  };
+
+  const handleRegenerateHookOnly = () => {
+    const nextIdx = (selectedVariationIndex + 1) % Math.max(1, aiVariations.length);
+    setSelectedVariationIndex(nextIdx);
+    const hookKeys = ['diskon', 'solusi', 'fomo', 'story', 'diskon'];
+    if (hookKeys[nextIdx]) {
+      setSelectedHookStyle(hookKeys[nextIdx]);
+    }
+  };
+
   const [aiVariations, setAiVariations] = useState<AiVariation[]>([
     {
       id: 'var-1',
@@ -955,46 +980,79 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                   </button>
                 </div>
 
-                {/* 1. Target Sasaran Audiens AI */}
-                <div className="bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2">
-                  <span className="text-xs font-semibold text-slate-700 dark:text-zinc-200 block">
-                    Sasaran Audiens Optimal
-                  </span>
-                  <div className="space-y-1 text-xs text-slate-600 dark:text-zinc-300">
-                    <div className="flex justify-between py-0.5 border-b border-slate-100 dark:border-zinc-800">
-                      <span className="text-slate-400 dark:text-zinc-500">Demografi:</span>
-                      <span className="font-medium">Lelaki & Wanita (18 - 35 thn)</span>
-                    </div>
-                    <div className="flex justify-between py-0.5 border-b border-slate-100 dark:border-zinc-800">
-                      <span className="text-slate-400 dark:text-zinc-500">Minat Sasaran:</span>
-                      <span className="font-medium text-right truncate max-w-[140px]">Futsal, Sukan, Jersey Sublimation</span>
-                    </div>
-                    <div className="flex justify-between py-0.5">
-                      <span className="text-slate-400 dark:text-zinc-500">Lokasi Ideal:</span>
-                      <span className="font-medium">Malaysia (Semenanjung)</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. Waktu Peluncuran Terbaik */}
-                <div className="bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-1.5">
-                  <span className="text-xs font-semibold text-slate-700 dark:text-zinc-200 block">
-                    Waktu Siaran Terbaik
-                  </span>
-                  <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 font-medium">
-                    <Clock className="w-3.5 h-3.5 shrink-0" />
-                    <span>Khamis – Ahad (8:00 PM – 10:30 PM)</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400 dark:text-zinc-500 leading-tight">
-                    Waktu interaksi prospek sukan paling aktif & kos per klik paling rendah.
-                  </p>
-                </div>
-
-                {/* 3. Penalaan Bajet Harian & Unjuran Hasil Dinamik */}
+                {/* 1. OPSI GAYA HOOK & COPYWRITING */}
                 <div className="bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-700 dark:text-zinc-200">Bajet Harian</span>
-                    <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 font-mono">RM {dailyBudget}</span>
+                    <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200">Gaya Hook Copywriting</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRegenerateHookOnly()}
+                      className="text-[11px] text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200 flex items-center gap-1 transition-colors p-1"
+                      title="Generate variasi hook lain"
+                    >
+                      <RotateCw className="w-3 h-3" />
+                      <span>Tukar</span>
+                    </button>
+                  </div>
+
+                  {/* 4 Pilihan Gaya Hook (Pill Chips Minimalis) */}
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { id: 'diskon', label: 'Tawaran / Diskaun' },
+                      { id: 'fomo', label: 'Urgensi / FOMO' },
+                      { id: 'story', label: 'Komuniti / Sukan' },
+                      { id: 'solusi', label: 'Kualiti / Material' }
+                    ].map((hook) => (
+                      <button
+                        key={hook.id}
+                        type="button"
+                        onClick={() => handleSelectHookStyle(hook.id)}
+                        className={`px-2 py-1.5 text-[11px] font-medium rounded-lg border text-center transition-all ${
+                          selectedHookStyle === hook.id
+                            ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 shadow-xs'
+                            : 'bg-slate-50 border-slate-200/70 text-slate-600 hover:bg-slate-100 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300'
+                        }`}
+                      >
+                        {hook.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. WAKTU SIARAN TERBAIK (MONOKROM BERSIH) */}
+                <div className="bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-1.5">
+                  <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200 block">Waktu Siaran Rekomendasi</span>
+                  <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-zinc-300 font-medium">
+                    <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>Khamis – Ahad (8:00 PM – 10:30 PM)</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 leading-tight">Interaksi prospek sukan paling aktif & kos per klik paling rendah.</p>
+                </div>
+
+                {/* 3. SASARAN AUDIENS */}
+                <div className="bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2">
+                  <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200 block">Sasaran Audiens</span>
+                  <div className="space-y-1 text-xs text-slate-600 dark:text-zinc-400">
+                    <div className="flex justify-between py-1 border-b border-slate-100 dark:border-zinc-800">
+                      <span className="text-slate-400">Demografi:</span>
+                      <span className="font-medium text-slate-700 dark:text-zinc-200">Lelaki & Wanita (18 - 35 thn)</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-slate-100 dark:border-zinc-800">
+                      <span className="text-slate-400">Minat:</span>
+                      <span className="font-medium text-slate-700 dark:text-zinc-200 truncate max-w-[130px]">Futsal, Sukan, Jersey</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-400">Lokasi:</span>
+                      <span className="font-medium text-slate-700 dark:text-zinc-200">Malaysia (Semenanjung)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. BAJET HARIAN & ESTIMASI HASIL (NETRAL) */}
+                <div className="bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200">Bajet Harian</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">RM {dailyBudget}</span>
                   </div>
                   <input 
                     type="range" 
@@ -1003,51 +1061,21 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     step="5" 
                     value={dailyBudget} 
                     onChange={(e) => setDailyBudget(Number(e.target.value))} 
-                    className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                    className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-slate-900 dark:accent-white"
                   />
-                  {/* Proyeksi Hasil Dinamis Berdasarkan Bajet */}
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <div className="p-2 bg-slate-50 dark:bg-zinc-800 rounded-xl text-center">
-                      <div className="text-[10px] text-slate-400 dark:text-zinc-500">Anggaran Paparan</div>
-                      <div className="text-xs font-bold text-slate-800 dark:text-zinc-100 font-mono">
-                        {(dailyBudget * 140).toLocaleString()} – {(dailyBudget * 260).toLocaleString()}
-                      </div>
+                      <div className="text-[10px] text-slate-400">Anggaran Paparan</div>
+                      <div className="text-xs font-bold text-slate-700 dark:text-zinc-200">{(dailyBudget * 140).toLocaleString()} – {(dailyBudget * 260).toLocaleString()}</div>
                     </div>
                     <div className="p-2 bg-slate-50 dark:bg-zinc-800 rounded-xl text-center">
-                      <div className="text-[10px] text-slate-400 dark:text-zinc-500">Prospek WhatsApp</div>
-                      <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono">
-                        ~{Math.round(dailyBudget / 6.5)} orang
-                      </div>
+                      <div className="text-[10px] text-slate-400">Prospek WhatsApp</div>
+                      <div className="text-xs font-bold text-slate-700 dark:text-zinc-200">~{Math.round(dailyBudget / 6.5)} orang</div>
                     </div>
                   </div>
                 </div>
 
               </div>
-
-              {/* Tombol Aksi di Dasar Panel Kanan */}
-              <div className="shrink-0 pt-1">
-                <button
-                  type="button"
-                  onClick={handlePostAd}
-                  disabled={isPublishing}
-                  className="w-full h-10 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-slate-900 text-xs font-medium rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {isPublishing ? (
-                    <>
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      <span>Melancarkan...</span>
-                    </>
-                  ) : publishSuccess ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Iklan Berjaya Disiarkan!</span>
-                    </>
-                  ) : (
-                    <span>Siarkan Iklan Sekarang</span>
-                  )}
-                </button>
-              </div>
-
             </div>
           )}
         </div>
