@@ -445,9 +445,32 @@ export interface FetchLiveCampaignsResult {
 export async function fetchLivePlatformCampaigns(
   platformId: AdPlatform,
   accountId: string,
-  accessToken: string
+  accessToken?: string
 ): Promise<FetchLiveCampaignsResult> {
-  if (!accountId?.trim() || !accessToken?.trim()) {
+  let effectiveToken = accessToken?.trim() || '';
+  let effectiveAccountId = accountId?.trim() || '';
+
+  // Cross-device sync: If token or accountId is not provided by the client, fetch it directly from Supabase DB
+  if (!effectiveToken || !effectiveAccountId) {
+    try {
+      const supabase = getServiceSupabase();
+      if (supabase) {
+        const { data } = await supabase
+          .from('ad_platform_connections')
+          .select('account_id, access_token')
+          .eq('id', platformId)
+          .single();
+        if (data) {
+          if (!effectiveToken && data.access_token) effectiveToken = data.access_token;
+          if (!effectiveAccountId && data.account_id) effectiveAccountId = data.account_id;
+        }
+      }
+    } catch {
+      // Ignore database lookup error
+    }
+  }
+
+  if (!effectiveAccountId || !effectiveToken) {
     return {
       success: false,
       campaigns: [],
@@ -456,13 +479,13 @@ export async function fetchLivePlatformCampaigns(
       totalClicks: 0,
       totalImpressions: 0,
       costPerLead: 0,
-      message: 'ID Akaun dan Token diperlukan untuk menyegerak data kempen.'
+      message: 'ID Akaun dan Token diperlukan untuk menyegerak data kempen. Sila sambung akaun terlebih dahulu.'
     };
   }
 
   if (platformId === 'facebook' || platformId === 'instagram' || platformId === 'meta') {
     try {
-      let rawId = accountId.trim();
+      let rawId = effectiveAccountId.trim();
       if (rawId.includes('act=')) {
         const match = rawId.match(/act=([0-9]+)/i);
         rawId = match && match[1] ? match[1] : rawId.replace(/^.*act[=_:]/i, '');
@@ -497,7 +520,7 @@ export async function fetchLivePlatformCampaigns(
 
       // 1. Fetch campaigns list
       let campaignsUrl = new URL(`https://graph.facebook.com/v20.0/${formattedActId}/campaigns`);
-      campaignsUrl.searchParams.append('access_token', accessToken.trim());
+      campaignsUrl.searchParams.append('access_token', effectiveToken);
       campaignsUrl.searchParams.append(
         'fields',
         'id,name,status,effective_status,daily_budget,lifetime_budget,updated_time,insights{spend,clicks,impressions,actions}'
@@ -516,7 +539,7 @@ export async function fetchLivePlatformCampaigns(
       if (!campaignsRes.ok && campaignsData?.error) {
         try {
           const adAccountsUrl = new URL(`https://graph.facebook.com/v20.0/me/adaccounts`);
-          adAccountsUrl.searchParams.append('access_token', accessToken.trim());
+          adAccountsUrl.searchParams.append('access_token', effectiveToken);
           adAccountsUrl.searchParams.append('fields', 'id,name,account_status');
           const adAccRes = await fetch(adAccountsUrl.toString(), {
             method: 'GET',
@@ -529,7 +552,7 @@ export async function fetchLivePlatformCampaigns(
               formattedActId = adAccData.data[0].id;
               // Retry with the resolved Ad Account ID
               campaignsUrl = new URL(`https://graph.facebook.com/v20.0/${formattedActId}/campaigns`);
-              campaignsUrl.searchParams.append('access_token', accessToken.trim());
+              campaignsUrl.searchParams.append('access_token', effectiveToken);
               campaignsUrl.searchParams.append(
                 'fields',
                 'id,name,status,effective_status,daily_budget,lifetime_budget,updated_time,insights{spend,clicks,impressions,actions}'
@@ -555,7 +578,7 @@ export async function fetchLivePlatformCampaigns(
 
       try {
         const accInsightsUrl = new URL(`https://graph.facebook.com/v20.0/${formattedActId}/insights`);
-        accInsightsUrl.searchParams.append('access_token', accessToken.trim());
+        accInsightsUrl.searchParams.append('access_token', effectiveToken);
         accInsightsUrl.searchParams.append('date_preset', 'maximum');
         accInsightsUrl.searchParams.append('fields', 'spend,clicks,impressions,actions');
 
@@ -685,11 +708,30 @@ export async function fetchLivePlatformCampaigns(
 export async function toggleMetaLiveCampaignStatus(
   campaignId: string,
   newStatus: 'ACTIVE' | 'PAUSED',
-  accessToken: string
+  accessToken?: string
 ): Promise<{ success: boolean; message: string }> {
   try {
+    let effectiveToken = accessToken?.trim() || '';
+    if (!effectiveToken) {
+      const supabase = getServiceSupabase();
+      if (supabase) {
+        const { data } = await supabase
+          .from('ad_platform_connections')
+          .select('access_token')
+          .eq('id', 'facebook')
+          .single();
+        if (data?.access_token) {
+          effectiveToken = data.access_token;
+        }
+      }
+    }
+
+    if (!effectiveToken) {
+      return { success: false, message: 'Kunci akses Meta tidak dijumpai.' };
+    }
+
     const url = new URL(`https://graph.facebook.com/v20.0/${campaignId}`);
-    url.searchParams.append('access_token', accessToken.trim());
+    url.searchParams.append('access_token', effectiveToken);
     url.searchParams.append('status', newStatus);
 
     const res = await fetch(url.toString(), {

@@ -18,7 +18,8 @@ import {
   getSavedPlatformConnectionsDb,
   getSavedCampaignsDb,
   saveCampaignDb,
-  savePlatformConnectionDb
+  savePlatformConnectionDb,
+  disconnectPlatformDb
 } from '@/app/actions/adsPlatformActions';
 import { formatCurrency } from '@/lib/pricing-calculator';
 import {
@@ -102,7 +103,50 @@ export default function AdminAdsGeneratorPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Load API Key, Provider, Platforms, and Campaigns from Supabase DB & localStorage
+  const [isSyncingDb, setIsSyncingDb] = useState(false);
+  const [lastDbSyncTime, setLastDbSyncTime] = useState<string | null>(null);
+
+  // Fetch single source of truth directly from Supabase Database
+  const fetchDatabaseState = async () => {
+    setIsSyncingDb(true);
+    try {
+      // 1. Fetch live platform connections from central Supabase DB
+      const connRes = await getSavedPlatformConnectionsDb();
+      if (connRes.success && Array.isArray(connRes.connections)) {
+        setPlatforms((prev) =>
+          prev.map((initialP) => {
+            const found = connRes.connections.find((p) => p.id === initialP.id);
+            return found ? { ...initialP, ...found } : initialP;
+          })
+        );
+        // Sync tokens into local storage for this machine
+        if (connRes.tokens) {
+          Object.entries(connRes.tokens).forEach(([platId, tok]) => {
+            try {
+              if (tok) {
+                localStorage.setItem(`svf_platform_token_${platId}`, tok);
+              }
+            } catch {
+              // Ignore
+            }
+          });
+        }
+      }
+
+      // 2. Fetch shared campaigns from central Supabase DB
+      const campRes = await getSavedCampaignsDb();
+      if (campRes.success && Array.isArray(campRes.campaigns) && campRes.campaigns.length > 0) {
+        setCampaigns(campRes.campaigns);
+      }
+      setLastDbSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    } catch (err) {
+      console.error('Error syncing with Supabase DB:', err);
+    } finally {
+      setIsSyncingDb(false);
+    }
+  };
+
+  // Initial Load: AI API Keys & Supabase Database fetch
   useEffect(() => {
     try {
       const savedKey = localStorage.getItem('svf_ai_api_key');
@@ -117,87 +161,27 @@ export default function AdminAdsGeneratorPage() {
         else if (savedKey.startsWith('sk-or-')) setAiSource('openrouter');
         else setAiSource('gemini');
       }
-
-      // 1. First attempt to restore from shared Supabase Database
-      getSavedPlatformConnectionsDb()
-        .then((res) => {
-          if (res.success && res.connections && res.connections.length > 0) {
-            setPlatforms((prev) =>
-              prev.map((initialP) => {
-                const found = res.connections.find((p) => p.id === initialP.id);
-                return found ? { ...initialP, ...found } : initialP;
-              })
-            );
-            // Sync tokens locally so background fetches work seamlessly
-            if (res.tokens) {
-              Object.entries(res.tokens).forEach(([platId, tok]) => {
-                try {
-                  localStorage.setItem(`svf_platform_token_${platId}`, tok);
-                } catch {
-                  // Ignore
-                }
-              });
-            }
-          } else {
-            // Fallback to localStorage
-            const savedPlatforms = localStorage.getItem('svf_ads_platforms');
-            if (savedPlatforms) {
-              const parsed = JSON.parse(savedPlatforms);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                setPlatforms((prev) =>
-                  prev.map((initialP) => {
-                    const found = parsed.find((p: any) => p.id === initialP.id);
-                    return found ? { ...initialP, ...found } : initialP;
-                  })
-                );
-              }
-            }
-          }
-        })
-        .catch(() => {
-          // Fallback to localStorage
-          const savedPlatforms = localStorage.getItem('svf_ads_platforms');
-          if (savedPlatforms) {
-            const parsed = JSON.parse(savedPlatforms);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              setPlatforms((prev) =>
-                prev.map((initialP) => {
-                  const found = parsed.find((p: any) => p.id === initialP.id);
-                  return found ? { ...initialP, ...found } : initialP;
-                })
-              );
-            }
-          }
-        });
-
-      // 2. Restore shared campaigns from Supabase Database
-      getSavedCampaignsDb()
-        .then((res) => {
-          if (res.success && res.campaigns && res.campaigns.length > 0) {
-            setCampaigns(res.campaigns);
-          } else {
-            const savedCampaigns = localStorage.getItem('svf_ads_campaigns');
-            if (savedCampaigns) {
-              const parsed = JSON.parse(savedCampaigns);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                setCampaigns(parsed);
-              }
-            }
-          }
-        })
-        .catch(() => {
-          const savedCampaigns = localStorage.getItem('svf_ads_campaigns');
-          if (savedCampaigns) {
-            const parsed = JSON.parse(savedCampaigns);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              setCampaigns(parsed);
-            }
-          }
-        });
     } catch {
       // Ignore
     }
+
+    // Immediate DB fetch on mount
+    fetchDatabaseState();
+
+    // Re-sync on window focus (when admin switches back to this browser tab)
+    const handleFocus = () => {
+      fetchDatabaseState();
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
+
+  // Auto re-sync when switching tabs to ensure real-time cross-device updates
+  useEffect(() => {
+    if (activeTab === 'connections' || activeTab === 'campaigns') {
+      fetchDatabaseState();
+    }
+  }, [activeTab]);
 
   const handleSaveApiKey = (key: string, provider?: 'gemini' | 'groq' | 'openrouter') => {
     setApiKey(key);
@@ -357,16 +341,8 @@ export default function AdminAdsGeneratorPage() {
     }
   };
 
-  const handleUpdateConnection = (updated: AdPlatformConnection) => {
-    setPlatforms((prev) => {
-      const next = prev.map((p) => (p.id === updated.id ? updated : p));
-      try {
-        localStorage.setItem('svf_ads_platforms', JSON.stringify(next));
-      } catch {
-        // Ignore
-      }
-      return next;
-    });
+  const handleUpdateConnection = async (updated: AdPlatformConnection) => {
+    setPlatforms((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
     let token = '';
     try {
       token = localStorage.getItem(`svf_platform_token_${updated.id}`) || '';
@@ -374,88 +350,69 @@ export default function AdminAdsGeneratorPage() {
       // Ignore
     }
     // Persist to central Supabase DB
-    savePlatformConnectionDb(updated, token || undefined).catch(() => {});
+    await savePlatformConnectionDb(updated, token || undefined);
+    await fetchDatabaseState();
   };
 
-  const handleToggleConnect = (platformId: string) => {
-    setPlatforms((prev) => {
-      const next = prev.map((p) => {
-        if (p.id === platformId) {
-          const updated = {
-            ...p,
-            isConnected: !p.isConnected,
-            lastSynced: !p.isConnected ? 'Baru sahaja' : p.lastSynced,
-          };
-          savePlatformConnectionDb(updated).catch(() => {});
-          return updated;
-        }
-        return p;
-      });
+  const handleToggleConnect = async (platformId: string) => {
+    const target = platforms.find((p) => p.id === platformId);
+    if (!target) return;
+    const newConnected = !target.isConnected;
+    const updated: AdPlatformConnection = {
+      ...target,
+      isConnected: newConnected,
+      lastSynced: newConnected ? 'Baru sahaja' : target.lastSynced,
+    };
+    setPlatforms((prev) => prev.map((p) => (p.id === platformId ? updated : p)));
+    if (!newConnected) {
+      await disconnectPlatformDb(platformId);
+    } else {
+      let token = '';
       try {
-        localStorage.setItem('svf_ads_platforms', JSON.stringify(next));
-      } catch {
-        // Ignore
-      }
-      return next;
-    });
+        token = localStorage.getItem(`svf_platform_token_${platformId}`) || '';
+      } catch {}
+      await savePlatformConnectionDb(updated, token || undefined);
+    }
+    await fetchDatabaseState();
   };
 
-  const handleToggleCampaignStatus = (campaignId: string) => {
-    setCampaigns((prev) => {
-      const next: AdCampaign[] = prev.map((c) => {
-        if (c.id === campaignId) {
-          const newStatus: 'active' | 'paused' = c.status === 'active' ? 'paused' : 'active';
-          const updated = {
-            ...c,
-            status: newStatus,
-          };
-          saveCampaignDb(updated).catch(() => {});
-          return updated;
-        }
-        return c;
-      });
-      try {
-        localStorage.setItem('svf_ads_campaigns', JSON.stringify(next));
-      } catch {
-        // Ignore
-      }
-      return next;
-    });
+  const handleToggleCampaignStatus = async (campaignId: string) => {
+    const target = campaigns.find((c) => c.id === campaignId);
+    if (!target) return;
+    const newStatus: 'active' | 'paused' = target.status === 'active' ? 'paused' : 'active';
+    const updated = {
+      ...target,
+      status: newStatus,
+    };
+    setCampaigns((prev) => prev.map((c) => (c.id === campaignId ? updated : c)));
+    await saveCampaignDb(updated);
+    await fetchDatabaseState();
   };
 
-  const handlePublishCampaign = () => {
+  const handlePublishCampaign = async () => {
     setIsPublishing(true);
-    setTimeout(() => {
-      setIsPublishing(false);
-      setPublishSuccess(true);
-      const newCampaign: AdCampaign = {
-        id: `camp-${Date.now()}`,
-        name: `${selectedPlatform.toUpperCase()} - ${currentCreative.headline.substring(0, 30)}`,
-        platform: selectedPlatform,
-        objective: selectedObjective,
-        status: 'active',
-        dailyBudget,
-        spent: 0,
-        clicks: 0,
-        impressions: 0,
-        leadsOrConversions: 0,
-        cpc: 0,
-        createdAt: new Date().toISOString().split('T')[0],
-        creative: currentCreative,
-      };
-      setCampaigns((prev) => {
-        const next = [newCampaign, ...prev];
-        try {
-          localStorage.setItem('svf_ads_campaigns', JSON.stringify(next));
-        } catch {
-          // Ignore
-        }
-        return next;
-      });
-      // Save newly launched campaign to shared Supabase DB
-      saveCampaignDb(newCampaign).catch(() => {});
-      setTimeout(() => setPublishSuccess(false), 3500);
-    }, 1200);
+    const newCampaign: AdCampaign = {
+      id: `camp-${Date.now()}`,
+      name: `${selectedPlatform.toUpperCase()} - ${currentCreative.headline.substring(0, 30)}`,
+      platform: selectedPlatform,
+      objective: selectedObjective,
+      status: 'active',
+      dailyBudget,
+      spent: 0,
+      clicks: 0,
+      impressions: 0,
+      leadsOrConversions: 0,
+      cpc: 0,
+      createdAt: new Date().toISOString().split('T')[0],
+      creative: currentCreative,
+    };
+    setCampaigns((prev) => [newCampaign, ...prev]);
+    // Save newly launched campaign to shared Supabase DB
+    await saveCampaignDb(newCampaign);
+    setIsPublishing(false);
+    setPublishSuccess(true);
+    await fetchDatabaseState();
+    setTimeout(() => setPublishSuccess(false), 3500);
   };
 
   const handleCopyContent = () => {
@@ -997,18 +954,36 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
         {/* ======================= TAB 2: SAMBUNGAN AKAUN API ======================= */}
         {activeTab === 'connections' && (
           <div className="space-y-4">
-            <div className="bg-slate-50/80 p-4 sm:p-5 rounded-3xl border border-slate-100 text-xs text-slate-600 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div>
-                <p className="font-semibold text-slate-900 text-sm">Status Gerbang & Kawalan Pemasaran</p>
-                <p className="text-slate-500 mt-0.5">
-                  Sambungkan platform untuk membolehkan AI melancarkan kempen dan membaca analitik prestasi secara automatik.
+            <div className="bg-slate-50/90 p-4 sm:p-5 rounded-3xl border border-slate-200/80 text-xs text-slate-600 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+              <div className="space-y-1">
+                <div className="flex items-center space-x-2">
+                  <p className="font-semibold text-slate-900 text-sm">Status Gerbang & Kawalan Pemasaran</p>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Pangkalan Data Terpusat (Supabase)
+                  </span>
+                </div>
+                <p className="text-slate-500">
+                  Data sambungan disimpan ke pelayan berpusat supaya semua komputer/admin boleh melihat status akaun dan metrik yang sama serta-merta.
                 </p>
               </div>
-              <div className="text-right shrink-0">
-                <span className="font-semibold text-slate-900">
-                  {platforms.filter((p) => p.isConnected).length} daripada {platforms.length}
-                </span>{' '}
-                saluran aktif
+              <div className="flex items-center space-x-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={fetchDatabaseState}
+                  disabled={isSyncingDb}
+                  className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-xs font-medium text-slate-700 transition-colors flex items-center space-x-1.5 shadow-2xs disabled:opacity-50"
+                  title="Segerak status terkini dari Pangkalan Data"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${isSyncingDb ? 'animate-spin' : ''}`} />
+                  <span>{isSyncingDb ? 'Menyegerak...' : 'Segerak Pangkalan Data'}</span>
+                </button>
+                <div className="text-right">
+                  <span className="font-semibold text-slate-900">
+                    {platforms.filter((p) => p.isConnected).length} / {platforms.length}
+                  </span>{' '}
+                  aktif
+                </div>
               </div>
             </div>
 
