@@ -21,6 +21,7 @@ import {
   CmsThemeSettings,
   CmsThemePresetKey,
 } from '@/types/database';
+import { getDesignsDb, saveDesignDb, deleteDesignDb } from '@/app/actions/designActions';
 import {
   INITIAL_APPAREL_CUTS,
   INITIAL_CUSTOMERS,
@@ -151,6 +152,18 @@ function initStoreIfNeeded() {
     isInitialized: true,
   };
   notify();
+
+  // Async load shared designs from Supabase DB
+  getDesignsDb().then((res) => {
+    if (res.success && res.designs && res.designs.length > 0) {
+      storeState = {
+        ...storeState,
+        designs: res.designs,
+      };
+      setLocalData(STORAGE_KEYS.DESIGNS, res.designs);
+      notify();
+    }
+  }).catch(() => {});
 }
 
 if (typeof window !== 'undefined') {
@@ -292,15 +305,26 @@ export function useAppStore() {
     storeState = { ...storeState, designs: nextDesigns };
     setLocalData(STORAGE_KEYS.DESIGNS, nextDesigns);
     notify();
+    saveDesignDb(newDesign).catch(() => {});
     return newDesign;
   }, []);
 
   const updateDesign = useCallback((id: string, updates: Partial<Design>) => {
     initStoreIfNeeded();
-    const nextDesigns = storeState.designs.map((d) => (d.id === id ? { ...d, ...updates } : d));
+    let updatedDesign: Design | null = null;
+    const nextDesigns = storeState.designs.map((d) => {
+      if (d.id === id) {
+        updatedDesign = { ...d, ...updates };
+        return updatedDesign;
+      }
+      return d;
+    });
     storeState = { ...storeState, designs: nextDesigns };
     setLocalData(STORAGE_KEYS.DESIGNS, nextDesigns);
     notify();
+    if (updatedDesign) {
+      saveDesignDb(updatedDesign).catch(() => {});
+    }
   }, []);
 
   const deleteDesign = useCallback((id: string) => {
@@ -309,6 +333,7 @@ export function useAppStore() {
     storeState = { ...storeState, designs: nextDesigns };
     setLocalData(STORAGE_KEYS.DESIGNS, nextDesigns);
     notify();
+    deleteDesignDb(id).catch(() => {});
   }, []);
 
   // Pricing Rules
