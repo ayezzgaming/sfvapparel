@@ -86,16 +86,16 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
         subtitle: 'Hubungkan Google Ads Customer ID & Developer Token untuk kempen carian Search & Display',
         field1Label: 'Google Ads Customer ID',
         field1Prefix: 'ID:',
-        field1Placeholder: '849-201-9482',
+        field1Placeholder: '',
         field1LinkText: 'Lihat ID di Google Ads',
         field1LinkUrl: 'https://ads.google.com',
         field2Label: 'Google Developer Token / API Key',
-        field2Placeholder: 'AIzaSy... / Developer Token',
+        field2Placeholder: '',
         field2LinkText: 'Dapatkan di Google Cloud',
         field2LinkUrl: 'https://console.cloud.google.com/apis/credentials',
         field3Label: 'Google Conversion Action ID / Tag',
         field3Prefix: 'Tag:',
-        field3Placeholder: 'AW-920194820/abc123XYZ',
+        field3Placeholder: '',
         field3Subtext: 'Untuk mengesan klik WhatsApp dan jualan di laman web',
         field3Required: false,
         field3LinkText: 'Buka Conversion Center',
@@ -130,16 +130,16 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
         subtitle: 'Hubungkan TikTok for Business Marketing API untuk pelancaran kempen video automatik',
         field1Label: 'TikTok Advertiser ID',
         field1Prefix: 'ID:',
-        field1Placeholder: '6982019482019482019',
+        field1Placeholder: '',
         field1LinkText: 'Cari ID di TikTok Ads',
         field1LinkUrl: 'https://ads.tiktok.com',
         field2Label: 'TikTok Access Token (Marketing API)',
-        field2Placeholder: 'act.tiktok.92a8b3c...',
+        field2Placeholder: '',
         field2LinkText: 'Jana Token di Developer Portal',
         field2LinkUrl: 'https://business-api.tiktok.com/portal/',
         field3Label: 'TikTok Pixel Code',
         field3Prefix: 'Pixel:',
-        field3Placeholder: 'C8ABCDE12345FG678',
+        field3Placeholder: '',
         field3Subtext: 'Untuk optimasi sasaran audiens sukan dan belia',
         field3Required: false,
         field3LinkText: 'Buka Events Manager',
@@ -174,16 +174,16 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
         subtitle: 'Hubungkan Meta WhatsApp Business API untuk pengiklanan Click-to-WhatsApp & mesej rasmi',
         field1Label: 'WhatsApp Business Account (WABA) ID',
         field1Prefix: 'waba_',
-        field1Placeholder: '948201948201',
+        field1Placeholder: '',
         field1LinkText: 'Buka WhatsApp Manager',
         field1LinkUrl: 'https://business.facebook.com/wa/manage/',
         field2Label: 'System User Permanent Access Token',
-        field2Placeholder: 'EAAG... (Token Kekal Meta WhatsApp)',
+        field2Placeholder: '',
         field2LinkText: 'Jana di Meta Developers',
         field2LinkUrl: 'https://developers.facebook.com/apps/',
         field3Label: 'Phone Number ID',
         field3Prefix: 'ID:',
-        field3Placeholder: '104829104829104',
+        field3Placeholder: '',
         field3Subtext: 'ID Nombor telefon yang didaftarkan di WhatsApp Cloud API',
         field3Required: true,
         field3LinkText: 'Cari di Cloud API Setup',
@@ -221,16 +221,16 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
         subtitle: 'Hubungkan Meta Ads Manager & Graph API untuk kawalan kempen dan penjejakan leads secara langsung',
         field1Label: 'Ad Account ID (Meta)',
         field1Prefix: 'act_',
-        field1Placeholder: '78803208',
+        field1Placeholder: '',
         field1LinkText: 'Cari ID di Ads Manager',
         field1LinkUrl: 'https://business.facebook.com/adsmanager',
         field2Label: 'Meta Access Token (Kunci API Graph / System User)',
-        field2Placeholder: 'EAAG... (Tampal Token Meta anda di sini)',
+        field2Placeholder: '',
         field2LinkText: 'Panduan & Pautan Jana Token',
         field2LinkUrl: 'https://business.facebook.com/settings/system-users',
         field3Label: 'Meta Pixel / Dataset ID',
         field3Prefix: 'pix_',
-        field3Placeholder: '1562213807685569',
+        field3Placeholder: '',
         field3Subtext: 'Untuk menjejak penukaran (conversion) dan borang laman web',
         field3Required: false,
         field3LinkText: 'Buka Events Manager',
@@ -298,10 +298,16 @@ export default function PlatformConnectCard({
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showHelpGuide, setShowHelpGuide] = useState(false); // Clean: hidden by default
 
-  // Form State for API Credentials
-  const [field1Input, setField1Input] = useState(platform.accountId || '');
+  const config = getPlatformConfig(platform.id);
+
+  // Form State for API Credentials (Empty by default if not connected)
+  const [field1Input, setField1Input] = useState(
+    platform.isConnected && platform.accountId ? extractCleanValue(platform.accountId, config.field1Prefix) : ''
+  );
   const [field2Input, setField2Input] = useState('');
-  const [field3Input, setField3Input] = useState(platform.pixelId || '');
+  const [field3Input, setField3Input] = useState(
+    platform.isConnected && platform.pixelId ? extractCleanValue(platform.pixelId, config.field3Prefix) : ''
+  );
   const [showToken, setShowToken] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -326,8 +332,6 @@ export default function PlatformConnectCard({
   const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
   const [isTogglingStatus, setIsTogglingStatus] = useState<string | null>(null);
 
-  const config = getPlatformConfig(platform.id);
-
   // Auto-sync real Meta campaigns when detail modal opens
   useEffect(() => {
     if (showDetailModal && platform.isConnected && liveCampaigns === null) {
@@ -344,15 +348,21 @@ export default function PlatformConnectCard({
   const realCostPerLead = realTotalLeads > 0 ? realTotalSpent / realTotalLeads : 0;
   const activeCampaignsCount = displayCampaigns.filter((c) => c.status === 'active').length;
 
-  // Open modal and populate initial values (including from localStorage)
+  // Open modal and populate initial values (strictly blank if not connected)
   const handleOpenConnectModal = () => {
-    setField1Input(extractCleanValue(platform.accountId || '', config.field1Prefix));
-    setField3Input(extractCleanValue(platform.pixelId || '', config.field3Prefix));
-    try {
-      const storedToken = localStorage.getItem(`svf_platform_token_${platform.id}`) || '';
-      setField2Input(storedToken);
-    } catch {
+    if (!platform.isConnected) {
+      setField1Input('');
       setField2Input('');
+      setField3Input('');
+    } else {
+      setField1Input(platform.accountId ? extractCleanValue(platform.accountId, config.field1Prefix) : '');
+      setField3Input(platform.pixelId ? extractCleanValue(platform.pixelId, config.field3Prefix) : '');
+      try {
+        const storedToken = localStorage.getItem(`svf_platform_token_${platform.id}`) || '';
+        setField2Input(storedToken);
+      } catch {
+        setField2Input('');
+      }
     }
     setTestResult(null);
     setShowHelpGuide(false);

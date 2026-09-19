@@ -5,60 +5,42 @@ export const INITIAL_PLATFORMS: AdPlatformConnection[] = [
     id: 'facebook',
     name: 'Facebook Ads',
     description: 'Pengiklanan di Facebook Feed, Reels, dan Video Berita.',
-    isConnected: true,
-    accountId: 'act_839201948201',
-    accountName: 'SFV APPAREL - Meta Ads Manager',
-    lastSynced: 'Baru sahaja',
-    currency: 'MYR',
-    balance: 450.00,
-    pixelId: 'pix_920194820192',
+    isConnected: false,
     insight: {
-      totalSpent: 310.00,
-      totalLeads: 62,
-      costPerLead: 5.00,
-      healthScore: 'cemerlang',
-      humanAdvice: 'Iklan Facebook anda menerima sambutan sangat tinggi daripada pengurus kelab futsal & bola sepak.',
-      nextStepRecommendation: 'Cadangan: Naikkan bajet harian sebanyak RM10 untuk menggandakan tempahan masuk minggu ini.'
+      totalSpent: 0,
+      totalLeads: 0,
+      costPerLead: 0,
+      healthScore: 'perlu_perhatian',
+      humanAdvice: 'Akaun Meta Ads belum disambungkan. Sambungkan kunci API rasmi untuk kawalan kempen secara langsung.',
+      nextStepRecommendation: 'Klik butang Sambung untuk menyambungkan Meta Ads Manager.'
     }
   },
   {
     id: 'instagram',
     name: 'Instagram Ads',
     description: 'Pengiklanan visual estetik di Instagram Feed, Stories, dan Reels.',
-    isConnected: true,
-    accountId: 'act_839201948201',
-    accountName: '@sfvapparel (Instagram Business)',
-    lastSynced: 'Baru sahaja',
-    currency: 'MYR',
-    balance: 650.00,
-    pixelId: 'pix_920194820192',
+    isConnected: false,
     insight: {
-      totalSpent: 240.00,
-      totalLeads: 41,
-      costPerLead: 5.85,
-      healthScore: 'cemerlang',
-      humanAdvice: 'Kandungan visual gambar jersi kustom menarik perhatian komuniti belia dan sukan aktif.',
-      nextStepRecommendation: 'Kekalkan penggunaan foto mockup resolusi tinggi untuk mengekalkan kadar klik tinggi.'
+      totalSpent: 0,
+      totalLeads: 0,
+      costPerLead: 0,
+      healthScore: 'perlu_perhatian',
+      humanAdvice: 'Akaun Instagram Ads belum disambungkan.',
+      nextStepRecommendation: 'Klik butang Sambung untuk menyambungkan profil Instagram Business anda.'
     }
   },
   {
     id: 'google',
     name: 'Google Ads',
     description: 'Kempen Carian Niat Tinggi (Search Intent) & Pameran.',
-    isConnected: true,
-    accountId: '849-201-9482',
-    accountName: 'SFV Ventures Marketing (Google Ads)',
-    lastSynced: '15 minit lalu',
-    currency: 'MYR',
-    balance: 320.50,
-    pixelId: 'AW-920194820',
+    isConnected: false,
     insight: {
-      totalSpent: 420.00,
-      totalLeads: 48,
-      costPerLead: 8.75,
-      healthScore: 'baik',
-      humanAdvice: 'Carian kata kunci "kilang jersi sublimasi" dan "cetak baju dtf pukal" menghasilkan leads bernilai tinggi.',
-      nextStepRecommendation: 'Fokuskan tajuk iklan pada jaminan siap 7 hari untuk memenangi pelanggan yang memerlukan jersi segera.'
+      totalSpent: 0,
+      totalLeads: 0,
+      costPerLead: 0,
+      healthScore: 'perlu_perhatian',
+      humanAdvice: 'Akaun Google Ads belum disambungkan.',
+      nextStepRecommendation: 'Klik butang Sambung untuk menghubungkan Google Customer ID & Developer Token.'
     }
   },
   {
@@ -79,20 +61,14 @@ export const INITIAL_PLATFORMS: AdPlatformConnection[] = [
     id: 'whatsapp',
     name: 'WhatsApp Cloud API',
     description: 'Pengiklanan terus ke perbualan WhatsApp perniagaan Click-to-Chat.',
-    isConnected: true,
-    accountId: 'waba_948201948201',
-    accountName: 'SFV APPAREL Official WABA (+6011-2897 4556)',
-    lastSynced: '1 jam lalu',
-    currency: 'MYR',
-    balance: 150.00,
-    pixelId: 'wa_webhook_active',
+    isConnected: false,
     insight: {
-      totalSpent: 180.00,
-      totalLeads: 54,
-      costPerLead: 3.33,
-      healthScore: 'cemerlang',
-      humanAdvice: 'Saluran paling menjimatkan kos setiap pelanggan (hanya RM3.33 setiap perbualan sebut harga dibuka).',
-      nextStepRecommendation: 'Gunakan mesej pembuka autofill yang spesifik dengan saiz kuantiti pasukan untuk mempercepat rundingan jualan.'
+      totalSpent: 0,
+      totalLeads: 0,
+      costPerLead: 0,
+      healthScore: 'perlu_perhatian',
+      humanAdvice: 'WhatsApp Business API belum disambungkan.',
+      nextStepRecommendation: 'Klik butang Sambung untuk menghubungkan nombor rasmi WhatsApp Cloud API.'
     }
   },
 ];
