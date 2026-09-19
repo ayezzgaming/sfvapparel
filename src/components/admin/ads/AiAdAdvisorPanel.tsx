@@ -26,6 +26,7 @@ interface AiAdAdvisorPanelProps {
   productTitle?: string;
   onApplyBudgetRecommendation?: (newBudget: number) => void;
   onOptimizeCopy?: () => void;
+  onClose?: () => void;
   isOptimizing?: boolean;
 }
 
@@ -36,6 +37,7 @@ export default function AiAdAdvisorPanel({
   productTitle,
   onApplyBudgetRecommendation,
   onOptimizeCopy,
+  onClose,
   isOptimizing = false
 }: AiAdAdvisorPanelProps) {
   // Active Tab inside Advisor Panel
@@ -139,14 +141,43 @@ export default function AiAdAdvisorPanel({
   qualityScore = Math.min(qualityScore, 96);
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs font-sans text-left overflow-hidden">
+    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xl font-sans text-left overflow-hidden flex flex-col h-full w-full max-h-[92vh]">
+      {/* Drawer Top Title Bar with Close Button */}
+      <div className="px-4 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/90 shrink-0">
+        <div className="flex items-center space-x-2">
+          <div className="w-7 h-7 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-2xs">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-900 leading-tight">Penasihat Strategi AI (SMM)</h4>
+            <span className="text-[10px] text-slate-400 block">Algoritma &amp; Sasaran Pasaran {platform}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+            Aktif
+          </span>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-7 h-7 rounded-full bg-slate-200/70 hover:bg-slate-300/80 text-slate-600 hover:text-slate-900 flex items-center justify-center transition-colors cursor-pointer"
+              title="Tutup Panel"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Sleek Sub-Header with Tabs */}
-      <div className="px-3.5 py-2.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
-        <div className="flex items-center space-x-1 bg-slate-200/60 p-0.5 rounded-xl">
+      <div className="px-3.5 py-2.5 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+        <div className="flex items-center space-x-1 bg-slate-100 p-0.5 rounded-xl w-full">
           <button
             type="button"
             onClick={() => setActiveTab('audience')}
-            className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+            className={`flex-1 py-1 rounded-lg text-[11px] font-medium transition-all text-center ${
               activeTab === 'audience'
                 ? 'bg-white text-slate-900 shadow-2xs font-semibold'
                 : 'text-slate-600 hover:text-slate-900'
@@ -157,18 +188,18 @@ export default function AiAdAdvisorPanel({
           <button
             type="button"
             onClick={() => setActiveTab('budget')}
-            className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+            className={`flex-1 py-1 rounded-lg text-[11px] font-medium transition-all text-center ${
               activeTab === 'budget'
                 ? 'bg-white text-slate-900 shadow-2xs font-semibold'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Anggaran Belanjawan
+            Belanjawan
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('score')}
-            className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+            className={`flex-1 py-1 rounded-lg text-[11px] font-medium transition-all text-center ${
               activeTab === 'score'
                 ? 'bg-white text-slate-900 shadow-2xs font-semibold'
                 : 'text-slate-600 hover:text-slate-900'
@@ -177,13 +208,9 @@ export default function AiAdAdvisorPanel({
             Skor Kualiti
           </button>
         </div>
-
-        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider hidden sm:inline">
-          SMM AI
-        </span>
       </div>
 
-      <div className="p-4 space-y-3.5">
+      <div className="p-4 space-y-3.5 overflow-y-auto flex-1">
         {/* ================= TAB 1: SASARAN MINAT (INTERACTIVE TARGETING) ================= */}
         {activeTab === 'audience' && (
           <div className="space-y-3">
@@ -377,25 +404,25 @@ export default function AiAdAdvisorPanel({
             </div>
           </div>
         )}
-
-        {/* Quick Action Button at the Bottom */}
-        {onOptimizeCopy && (
-          <div className="pt-2 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={onOptimizeCopy}
-              disabled={isOptimizing}
-              className="w-full py-2 px-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-800 text-xs font-medium transition-all flex items-center justify-between disabled:opacity-50 cursor-pointer"
-            >
-              <div className="flex items-center space-x-2">
-                <Wand2 className="w-3.5 h-3.5 text-slate-500" />
-                <span>Optimumkan Salinan Iklan (AI)</span>
-              </div>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            </button>
-          </div>
-        )}
       </div>
+
+      {/* Quick Action Button pinned at bottom */}
+      {onOptimizeCopy && (
+        <div className="p-3 border-t border-slate-100 bg-slate-50/60 shrink-0">
+          <button
+            type="button"
+            onClick={onOptimizeCopy}
+            disabled={isOptimizing}
+            className="w-full py-2 px-3 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-800 text-xs font-medium transition-all flex items-center justify-between disabled:opacity-50 cursor-pointer shadow-2xs"
+          >
+            <div className="flex items-center space-x-2">
+              <Wand2 className="w-3.5 h-3.5 text-slate-500" />
+              <span>Optimumkan Salinan Iklan (AI)</span>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

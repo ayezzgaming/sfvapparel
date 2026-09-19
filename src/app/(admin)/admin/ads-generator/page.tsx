@@ -75,7 +75,7 @@ export default function AdminAdsGeneratorPage() {
   const [apiKey, setApiKey] = useState('');
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
-  const [showAdvisor, setShowAdvisor] = useState(true);
+  const [showAdvisor, setShowAdvisor] = useState(false);
 
   // Attachments State (+ button)
   const [showAttachMenu, setShowAttachMenu] = useState(false);
@@ -857,58 +857,64 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
                   {/* RIGHT COLUMN (lg:col-span-8 xl:col-span-9): Spacious Contained Live Preview Studio */}
                   <div className="lg:col-span-8 xl:col-span-9">
-                    <div className="bg-slate-50/70 rounded-3xl p-4 sm:p-5 border border-slate-200/60 max-h-[calc(100vh-140px)] overflow-y-auto space-y-4">
+                    <div className="bg-slate-50/70 rounded-3xl p-4 sm:p-6 border border-slate-200/60 min-h-[500px] max-h-[calc(100vh-140px)] overflow-y-auto space-y-4">
                       {/* Top Action Bar inside Preview Canvas */}
-                      <div className="flex items-center justify-between gap-2 pb-1 border-b border-slate-200/40">
-                        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                          Kanvas Pratonton Interaktif
-                        </span>
+                      <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-200/60">
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                            Kanvas Pratonton Iklan Sebenar
+                          </span>
+                        </div>
                         <button
                           type="button"
-                          onClick={() => setShowAdvisor(!showAdvisor)}
-                          className="px-3 py-1 rounded-full text-[11px] font-medium text-slate-700 hover:text-slate-900 bg-white border border-slate-200/80 shadow-2xs hover:bg-slate-50 transition-colors flex items-center space-x-1.5 cursor-pointer"
+                          onClick={() => setShowAdvisor(true)}
+                          className="px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-800 hover:text-slate-950 bg-white border border-slate-200/90 shadow-2xs hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center space-x-2 cursor-pointer group"
                         >
-                          <SlidersHorizontal className="w-3 h-3 text-slate-500" />
-                          <span>{showAdvisor ? 'Sembunyi Penasihat SMM' : 'Buka Penasihat SMM (AI)'}</span>
+                          <Sparkles className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
+                          <span>Penasihat Strategi AI (SMM)</span>
+                          <span className="px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-mono font-medium border border-emerald-100">
+                            Buka Panel
+                          </span>
                         </button>
                       </div>
 
-                      {showAdvisor ? (
-                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
-                          {/* Live Ad Preview Frame (xl:col-span-7) */}
-                          <div className="xl:col-span-7 flex flex-col items-center justify-center">
-                            <AdPreviewCard
-                              platform={selectedPlatform}
-                              creative={currentCreative}
-                              connectedAccount={platforms.find((p) => p.id === selectedPlatform)}
-                            />
-                          </div>
-
-                          {/* SMM AI Marketing Advisor Panel (xl:col-span-5) */}
-                          <div className="xl:col-span-5">
-                            <AiAdAdvisorPanel
-                              platform={selectedPlatform}
-                              creative={currentCreative}
-                              dailyBudget={dailyBudget}
-                              productTitle={activeDesign?.title || customTitle || 'Jersi Sukan Sublimasi'}
-                              onApplyBudgetRecommendation={(b) => setDailyBudget(b)}
-                              onOptimizeCopy={handleGenerateAi}
-                              isOptimizing={isGeneratingAi}
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="w-full max-w-xl mx-auto flex flex-col items-center justify-center py-2">
-                          <AdPreviewCard
-                            platform={selectedPlatform}
-                            creative={currentCreative}
-                            connectedAccount={platforms.find((p) => p.id === selectedPlatform)}
-                          />
-                        </div>
-                      )}
+                      {/* Spacious Centered Ad Preview Card */}
+                      <div className="w-full max-w-xl mx-auto flex flex-col items-center justify-center py-4">
+                        <AdPreviewCard
+                          platform={selectedPlatform}
+                          creative={currentCreative}
+                          connectedAccount={platforms.find((p) => p.id === selectedPlatform)}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Collapsible Slide-over / Flyout Drawer for AI Strategy Advisor */}
+                {showAdvisor && (
+                  <div className="fixed inset-0 z-50 overflow-hidden">
+                    {/* Dark/Blur Backdrop */}
+                    <div
+                      className="fixed inset-0 bg-slate-950/40 backdrop-blur-[2px] transition-opacity animate-in fade-in duration-200"
+                      onClick={() => setShowAdvisor(false)}
+                    />
+                    <div className="fixed inset-y-0 right-0 max-w-full flex pl-10 z-10 animate-in slide-in-from-right duration-300">
+                      <div className="w-screen max-w-md sm:max-w-lg p-3 sm:p-5 flex flex-col justify-center h-full">
+                        <AiAdAdvisorPanel
+                          platform={selectedPlatform}
+                          creative={currentCreative}
+                          dailyBudget={dailyBudget}
+                          productTitle={activeDesign?.title || customTitle || 'Jersi Sukan Sublimasi'}
+                          onApplyBudgetRecommendation={(b) => setDailyBudget(b)}
+                          onOptimizeCopy={handleGenerateAi}
+                          onClose={() => setShowAdvisor(false)}
+                          isOptimizing={isGeneratingAi}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
