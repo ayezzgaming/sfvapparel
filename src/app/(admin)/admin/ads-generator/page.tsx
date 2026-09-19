@@ -6,7 +6,6 @@ import { AdPlatform, AdObjective, AdCreative, AdCampaign, AdPlatformConnection }
 import { INITIAL_PLATFORMS, INITIAL_CAMPAIGNS } from '@/lib/ads/ad-templates';
 import PlatformConnectCard from '@/components/admin/ads/PlatformConnectCard';
 import AdPreviewCard from '@/components/admin/ads/AdPreviewCard';
-import AiAdAdvisorPanel from '@/components/admin/ads/AiAdAdvisorPanel';
 import {
   GoogleAdsLogo,
   FacebookLogo,
@@ -23,10 +22,8 @@ import {
 } from '@/app/actions/adsPlatformActions';
 import { formatCurrency } from '@/lib/pricing-calculator';
 import {
-  Sparkles,
   Copy,
   Check,
-  Rocket,
   RefreshCw,
   Info,
   Wand2,
@@ -48,7 +45,8 @@ import {
   Eye,
   EyeOff,
   ArrowUp,
-  Layers
+  Layers,
+  Bookmark
 } from 'lucide-react';
 
 interface AiVariation {
@@ -87,7 +85,6 @@ export default function AdminAdsGeneratorPage() {
   const [apiKey, setApiKey] = useState('');
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
-  const [showAdvisor, setShowAdvisor] = useState(false);
 
   // Attachments State (+ button)
   const [showAttachMenu, setShowAttachMenu] = useState(false);
@@ -335,6 +332,7 @@ export default function AdminAdsGeneratorPage() {
         else if (data.source?.includes('gemini')) setAiSource('gemini');
         else if (data.source?.includes('openrouter')) setAiSource('openrouter');
         setStudioStep('result');
+        setIsLeftPanelCollapsed(true);
       } else {
         throw new Error('Respons model AI tidak mengandungi variasi yang sah.');
       }
@@ -392,6 +390,35 @@ export default function AdminAdsGeneratorPage() {
     setCampaigns((prev) => prev.map((c) => (c.id === campaignId ? updated : c)));
     await saveCampaignDb(updated);
     await fetchDatabaseState();
+  };
+
+  const handleSaveDraft = async () => {
+    setIsPublishing(true);
+    const draftCampaign: AdCampaign = {
+      id: `draft-${Date.now()}`,
+      name: `[Draft] ${selectedPlatform.toUpperCase()} - ${currentCreative.headline.substring(0, 30)}`,
+      platform: selectedPlatform,
+      objective: selectedObjective,
+      status: 'paused',
+      dailyBudget,
+      spent: 0,
+      clicks: 0,
+      impressions: 0,
+      leadsOrConversions: 0,
+      cpc: 0,
+      createdAt: new Date().toISOString().split('T')[0],
+      creative: currentCreative,
+    };
+    setCampaigns((prev) => [draftCampaign, ...prev]);
+    await saveCampaignDb(draftCampaign);
+    setIsPublishing(false);
+    setPublishSuccess(true);
+    await fetchDatabaseState();
+    setTimeout(() => setPublishSuccess(false), 3000);
+  };
+
+  const handlePostAd = async () => {
+    await handlePublishCampaign();
   };
 
   const handlePublishCampaign = async () => {
@@ -486,17 +513,56 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
           </button>
         </div>
 
-        {/* AI Model / Key Selector Quick Pill */}
-        <button
-          type="button"
-          onClick={() => setShowKeyModal(true)}
-          className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-zinc-800/90 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-700 dark:text-zinc-300 transition-colors shrink-0 cursor-pointer border border-slate-200/80 dark:border-zinc-700/80"
-          title="Tetapan Model AI & Kunci API"
-        >
-          <Bot className="w-3.5 h-3.5 text-slate-500" />
-          <span>{aiSource === 'groq' ? 'Groq Llama 3.3' : aiSource === 'gemini' ? 'Gemini 1.5' : 'OpenRouter'}</span>
-          <ChevronDown className="w-3 h-3 text-slate-400" />
-        </button>
+        {/* Toolbar Kanan: AI Model & Action Buttons [Draft] [Post] */}
+        <div className="flex items-center gap-2">
+          {/* AI Model / Key Selector Quick Pill */}
+          <button
+            type="button"
+            onClick={() => setShowKeyModal(true)}
+            className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-zinc-800/90 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-700 dark:text-zinc-300 transition-colors shrink-0 cursor-pointer border border-slate-200/80 dark:border-zinc-700/80"
+            title="Tetapan Model AI & Kunci API"
+          >
+            <Bot className="w-3.5 h-3.5 text-slate-500" />
+            <span>{aiSource === 'groq' ? 'Groq Llama 3.3' : aiSource === 'gemini' ? 'Gemini 1.5' : 'OpenRouter'}</span>
+            <ChevronDown className="w-3 h-3 text-slate-400" />
+          </button>
+
+          {/* Tombol Draft & Post (Muncul saat ada hasil generate) */}
+          {studioStep === 'result' && (
+            <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-zinc-800 animate-in fade-in duration-200">
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                disabled={isPublishing}
+                className="h-8 px-3 text-xs font-medium bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
+              >
+                <Bookmark className="w-3.5 h-3.5 text-slate-500" />
+                <span>Draft</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handlePostAd}
+                disabled={isPublishing}
+                className="h-8 px-3.5 text-xs font-medium bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-lg transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                {isPublishing ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    <span>Posting...</span>
+                  </>
+                ) : publishSuccess ? (
+                  <>
+                    <Check className="w-3 h-3 text-emerald-400" />
+                    <span>Posted!</span>
+                  </>
+                ) : (
+                  <span>Post</span>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ======================= TAB 1: STUDIO IKLAN AI ======================= */}
@@ -582,124 +648,6 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                   })}
                 </div>
               </div>
-
-              {/* 2. POST-GENERATION TUNING CONTROLS (Active when results are available) */}
-              {studioStep === 'result' && (
-                <div className="space-y-3 pt-2 border-t border-slate-200/80 dark:border-zinc-800 animate-in fade-in">
-                  <div className="text-xs font-semibold tracking-wider text-slate-500 dark:text-zinc-400 uppercase">
-                    2. Penalaan &amp; Pelancaran Kempen
-                  </div>
-
-                  {/* Combobox for Angle / Variation Selection */}
-                  <div>
-                    <label className="text-[11px] font-medium text-slate-600 dark:text-zinc-400 block mb-1">
-                      Pilihan Sudut Iklan ({aiVariations.length} Variasi)
-                    </label>
-                    <select
-                      value={selectedVariationIndex}
-                      onChange={(e) => setSelectedVariationIndex(Number(e.target.value))}
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate"
-                    >
-                      {aiVariations.map((v, idx) => (
-                        <option key={v.id || idx} value={idx}>
-                          {v.angleName || `Variasi ${idx + 1}`}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Product Catalog Selector */}
-                  <div>
-                    <label className="text-[11px] font-medium text-slate-600 dark:text-zinc-400 block mb-1">
-                      Produk Katalog
-                    </label>
-                    <select
-                      value={selectedDesignId || (designs[0]?.id ?? '')}
-                      onChange={(e) => {
-                        setSelectedDesignId(e.target.value);
-                        setCustomImage(null);
-                        setCustomTitle(null);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate"
-                    >
-                      {designs.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.title}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Daily Budget */}
-                  <div>
-                    <label className="text-[11px] font-medium text-slate-600 dark:text-zinc-400 block mb-1">
-                      Belanjawan Harian (RM)
-                    </label>
-                    <input
-                      type="number"
-                      min="10"
-                      step="5"
-                      value={dailyBudget}
-                      onChange={(e) => setDailyBudget(Number(e.target.value))}
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
-                    />
-                  </div>
-
-                  {/* Launch & Copy Buttons */}
-                  <div className="pt-2 space-y-2">
-                    <button
-                      type="button"
-                      onClick={handlePublishCampaign}
-                      disabled={isPublishing}
-                      className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-semibold transition-all flex items-center justify-center space-x-2 disabled:opacity-50 shadow-xs cursor-pointer"
-                    >
-                      {isPublishing ? (
-                        <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          <span>Melancarkan...</span>
-                        </>
-                      ) : publishSuccess ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>Kempen Berjaya Dilancarkan!</span>
-                        </>
-                      ) : (
-                        <span>Lancar Kempen Iklan</span>
-                      )}
-                    </button>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={handleCopyContent}
-                        className="flex-1 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 border border-slate-200/60 dark:border-zinc-700 transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
-                      >
-                        {copied ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Teks Disalin</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5 text-slate-400" />
-                            <span>Salin Teks</span>
-                          </>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleGenerateAi}
-                        disabled={isGeneratingAi}
-                        className="px-3 py-2 rounded-xl text-xs font-medium bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 border border-slate-200/60 dark:border-zinc-700 transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
-                        title="Jana semula variasi iklan"
-                      >
-                        <RefreshCw className={`w-3 h-3 ${isGeneratingAi ? 'animate-spin' : ''}`} />
-                        <span>Jana Semula</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Kotak Input Melayang di Bawah (Struktur 2 Baris Anti-Himpit) */}
@@ -838,7 +786,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
           {/* SISI KANAN: KARTU PANGGUNG UTAMA (The Floating Stage Card) */}
           <div
             className={`bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out ${
-              isLeftPanelCollapsed
+              isLeftPanelCollapsed && studioStep !== 'result'
                 ? 'flex-1 mr-64 xl:mr-72'
                 : 'flex-1 mr-0'
             }`}
@@ -890,60 +838,26 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                 ))}
               </div>
 
-              {/* Sisi Kanan: Tombol Aksi */}
+              {/* Sisi Kanan: Tombol Aksi Salin Teks */}
               <div className="flex items-center gap-2">
                 {studioStep === 'result' && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleCopyContent}
-                      className="h-8 px-3 text-xs font-medium border border-slate-200 dark:border-zinc-700 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors flex items-center space-x-1.5 cursor-pointer"
-                    >
-                      {copied ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Disalin</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Salin Teks</span>
-                        </>
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handlePublishCampaign}
-                      disabled={isPublishing}
-                      className="h-8 px-3 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
-                    >
-                      {isPublishing ? (
-                        <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          <span>Melancar...</span>
-                        </>
-                      ) : publishSuccess ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>Berjaya!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Rocket className="w-3.5 h-3.5 text-indigo-200" />
-                          <span>Lancar Kempen</span>
-                        </>
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowAdvisor(true)}
-                      className="h-8 px-3 text-xs font-semibold text-slate-800 dark:text-zinc-200 hover:text-slate-950 bg-slate-50 dark:bg-zinc-800 border border-slate-200/90 dark:border-zinc-700 rounded-lg shadow-2xs hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all flex items-center space-x-1.5 cursor-pointer group"
-                      title="Penasihat Strategi AI (SMM)"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
-                      <span className="hidden sm:inline">Penasihat AI</span>
-                    </button>
-                  </>
+                  <button
+                    type="button"
+                    onClick={handleCopyContent}
+                    className="h-8 px-3 text-xs font-medium border border-slate-200 dark:border-zinc-700 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors flex items-center space-x-1.5 cursor-pointer text-slate-700 dark:text-zinc-300"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Disalin</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Salin Teks</span>
+                      </>
+                    )}
+                  </button>
                 )}
               </div>
             </div>
@@ -974,26 +888,73 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
             </div>
           </div>
 
-          {/* Collapsible Slide-over / Flyout Drawer for AI Strategy Advisor */}
-          {showAdvisor && (
-            <div className="fixed inset-0 z-50 overflow-hidden">
-              {/* Dark/Blur Backdrop */}
-              <div
-                className="fixed inset-0 bg-slate-950/40 backdrop-blur-[2px] transition-opacity animate-in fade-in duration-200"
-                onClick={() => setShowAdvisor(false)}
-              />
-              <div className="fixed inset-y-0 right-0 max-w-full flex pl-10 z-10 animate-in slide-in-from-right duration-300">
-                <div className="w-screen max-w-md sm:max-w-lg p-3 sm:p-5 flex flex-col justify-center h-full">
-                  <AiAdAdvisorPanel
-                    platform={selectedPlatform}
-                    creative={currentCreative}
-                    dailyBudget={dailyBudget}
-                    productTitle={activeDesign?.title || customTitle || 'Jersi Sukan Sublimasi'}
-                    onApplyBudgetRecommendation={(b) => setDailyBudget(b)}
-                    onOptimizeCopy={handleGenerateAi}
-                    onClose={() => setShowAdvisor(false)}
-                    isOptimizing={isGeneratingAi}
+          {/* SISI KANAN: PANEL PENALAAN BERSIH (Hanya Muncul Pasca-Generate) */}
+          {studioStep === 'result' && (
+            <div className="w-72 xl:w-80 shrink-0 h-full flex flex-col gap-3 transition-all duration-300 animate-in fade-in">
+              <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
+                {/* Sudut Penawaran (Angle) */}
+                <div className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2.5">
+                  <span className="text-xs font-medium text-slate-700 dark:text-zinc-300 block">
+                    Sudut Penawaran
+                  </span>
+                  <select
+                    value={selectedVariationIndex}
+                    onChange={(e) => setSelectedVariationIndex(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate cursor-pointer"
+                  >
+                    {aiVariations.map((v, idx) => (
+                      <option key={v.id || idx} value={idx}>
+                        {v.angleName || `Variasi ${idx + 1}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Anggaran Harian */}
+                <div className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-700 dark:text-zinc-300">
+                      Anggaran Harian
+                    </span>
+                    <span className="text-xs font-semibold text-slate-900 dark:text-zinc-100 font-mono">
+                      RM {dailyBudget}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="10"
+                    max="500"
+                    step="5"
+                    value={dailyBudget}
+                    onChange={(e) => setDailyBudget(Number(e.target.value))}
+                    className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-slate-900 dark:accent-white"
                   />
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                    <span>RM 10</span>
+                    <span>RM 500</span>
+                  </div>
+                </div>
+
+                {/* Produk Katalog */}
+                <div className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2.5">
+                  <span className="text-xs font-medium text-slate-700 dark:text-zinc-300 block">
+                    Produk Katalog
+                  </span>
+                  <select
+                    value={selectedDesignId || (designs[0]?.id ?? '')}
+                    onChange={(e) => {
+                      setSelectedDesignId(e.target.value);
+                      setCustomImage(null);
+                      setCustomTitle(null);
+                    }}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate cursor-pointer"
+                  >
+                    {designs.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.title}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
