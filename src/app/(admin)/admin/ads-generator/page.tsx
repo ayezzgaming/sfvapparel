@@ -6,6 +6,7 @@ import { AdPlatform, AdObjective, AdCreative, AdCampaign, AdPlatformConnection }
 import { INITIAL_PLATFORMS, INITIAL_CAMPAIGNS } from '@/lib/ads/ad-templates';
 import PlatformConnectCard from '@/components/admin/ads/PlatformConnectCard';
 import AdPreviewCard from '@/components/admin/ads/AdPreviewCard';
+import AiAdAdvisorPanel from '@/components/admin/ads/AiAdAdvisorPanel';
 import {
   GoogleAdsLogo,
   FacebookLogo,
@@ -853,14 +854,32 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     </div>
                   </div>
 
-                  {/* RIGHT COLUMN (lg:col-span-8): Contained, Dedicated Scrollable Live Preview Studio */}
+                  {/* RIGHT COLUMN (lg:col-span-8): Contained Live Preview & SMM Marketing Intelligence Studio */}
                   <div className="lg:col-span-8">
-                    <div className="bg-slate-50/70 rounded-3xl p-5 sm:p-6 border border-slate-200/60 max-h-[calc(100vh-140px)] overflow-y-auto">
-                      <AdPreviewCard
-                        platform={selectedPlatform}
-                        creative={currentCreative}
-                        connectedAccount={platforms.find((p) => p.id === selectedPlatform)}
-                      />
+                    <div className="bg-slate-50/70 rounded-3xl p-4 sm:p-5 border border-slate-200/60 max-h-[calc(100vh-140px)] overflow-y-auto space-y-4">
+                      <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+                        {/* Live Ad Preview Frame (xl:col-span-7) */}
+                        <div className="xl:col-span-7 flex flex-col items-center justify-center">
+                          <AdPreviewCard
+                            platform={selectedPlatform}
+                            creative={currentCreative}
+                            connectedAccount={platforms.find((p) => p.id === selectedPlatform)}
+                          />
+                        </div>
+
+                        {/* SMM AI Marketing Advisor Panel (xl:col-span-5) */}
+                        <div className="xl:col-span-5">
+                          <AiAdAdvisorPanel
+                            platform={selectedPlatform}
+                            creative={currentCreative}
+                            dailyBudget={dailyBudget}
+                            productTitle={activeDesign?.title || customTitle || 'Jersi Sukan Sublimasi'}
+                            onApplyBudgetRecommendation={(b) => setDailyBudget(b)}
+                            onOptimizeCopy={handleGenerateAi}
+                            isOptimizing={isGeneratingAi}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
