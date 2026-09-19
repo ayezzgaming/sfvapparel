@@ -469,7 +469,7 @@ export async function fetchLivePlatformCampaigns(
   platformId: AdPlatform,
   accountId: string,
   accessToken?: string,
-  datePreset: string = 'maximum'
+  datePreset: string = 'last_30d'
 ): Promise<FetchLiveCampaignsResult> {
   let effectiveToken = accessToken?.trim() || '';
   let effectiveAccountId = accountId?.trim() || '';

@@ -339,7 +339,7 @@ export default function PlatformConnectCard({
   const [livePrimaryResultLabel, setLivePrimaryResultLabel] = useState<string>('Hasil / Prospek');
   const [liveTotalLinkClicks, setLiveTotalLinkClicks] = useState<number | null>(null);
   const [liveTotalReach, setLiveTotalReach] = useState<number | null>(null);
-  const [selectedDatePreset, setSelectedDatePreset] = useState<string>('maximum');
+  const [selectedDatePreset, setSelectedDatePreset] = useState<string>('last_30d');
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
   const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
