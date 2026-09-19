@@ -246,7 +246,7 @@ export default function PlatformConnectCard({
 }: PlatformConnectCardProps) {
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showHelpGuide, setShowHelpGuide] = useState(true);
+  const [showHelpGuide, setShowHelpGuide] = useState(false); // Clean: hidden by default
 
   // Form State for API Credentials
   const [field1Input, setField1Input] = useState(platform.accountId || '');
@@ -258,12 +258,32 @@ export default function PlatformConnectCard({
 
   const config = getPlatformConfig(platform.id);
 
+  // Open modal and populate initial values (including from localStorage)
+  const handleOpenConnectModal = () => {
+    setField1Input(platform.accountId || '');
+    setField3Input(platform.pixelId || '');
+    try {
+      const storedToken = localStorage.getItem(`svf_platform_token_${platform.id}`) || '';
+      setField2Input(storedToken);
+    } catch {
+      setField2Input('');
+    }
+    setShowHelpGuide(false);
+    setShowConnectModal(true);
+  };
+
   const handleSaveConnection = (e: React.FormEvent) => {
     e.preventDefault();
     if (!field1Input.trim() || !field2Input.trim()) return;
     if (config.field3Required && !field3Input.trim()) return;
 
     setIsSaving(true);
+
+    try {
+      localStorage.setItem(`svf_platform_token_${platform.id}`, field2Input.trim());
+    } catch {
+      // Ignore
+    }
 
     setTimeout(() => {
       setIsSaving(false);
@@ -297,11 +317,16 @@ export default function PlatformConnectCard({
       setTimeout(() => {
         setSaveSuccess(false);
         setShowConnectModal(false);
-      }, 1000);
-    }, 800);
+      }, 800);
+    }, 600);
   };
 
   const handleDisconnect = () => {
+    try {
+      localStorage.removeItem(`svf_platform_token_${platform.id}`);
+    } catch {
+      // Ignore
+    }
     onToggleConnect(platform.id);
     setShowDetailModal(false);
   };
@@ -402,12 +427,7 @@ export default function PlatformConnectCard({
           ) : (
             <button
               type="button"
-              onClick={() => {
-                setField1Input(platform.accountId || '');
-                setField2Input('');
-                setField3Input(platform.pixelId || '');
-                setShowConnectModal(true);
-              }}
+              onClick={handleOpenConnectModal}
               className="px-4 py-2 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium transition-all shadow-xs flex items-center space-x-1.5 cursor-pointer"
             >
               <Link2 className="w-3.5 h-3.5" />
@@ -417,11 +437,11 @@ export default function PlatformConnectCard({
         </div>
       </div>
 
-      {/* ================= MODAL 1: SAMBUNG API KHUSUS PLATFORM DENGAN PANDUAN JELAS ================= */}
+      {/* ================= MODAL 1: SAMBUNG API CLEAN & MINIMALIST (TANPA POLUSI WARNA) ================= */}
       {showConnectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-xl w-full shadow-2xl space-y-5 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
-            {/* Header */}
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl space-y-4 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center space-x-3">
                 {renderIcon()}
@@ -439,25 +459,23 @@ export default function PlatformConnectCard({
               </button>
             </div>
 
-            {/* EXPANDABLE INLINE STEP-BY-STEP GUIDE (JELAS & BOLEH KLIK) */}
-            <div className="bg-slate-50 rounded-2xl border border-slate-200/80 overflow-hidden">
+            {/* TOGGLEABLE CLEAN GUIDE ACCORDION (TERSEMBUNYI SECARA DEFAULT) */}
+            <div className="space-y-2">
               <button
                 type="button"
                 onClick={() => setShowHelpGuide(!showHelpGuide)}
-                className="w-full px-4 py-3 flex items-center justify-between text-left text-xs font-semibold text-slate-800 hover:bg-slate-100/80 transition-colors"
+                className="inline-flex items-center space-x-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors py-0.5"
               >
-                <div className="flex items-center space-x-2">
-                  <BookOpen className="w-4 h-4 text-indigo-600" />
-                  <span>Panduan Langkah Sambungan {platform.name}</span>
-                </div>
-                {showHelpGuide ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>{showHelpGuide ? 'Sembunyikan Petunjuk Sambungan' : 'Lihat Petunjuk & Cara Dapatkan Kunci API'}</span>
+                {showHelpGuide ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
               </button>
 
               {showHelpGuide && (
-                <div className="px-4 pb-4 pt-1 space-y-3 text-xs text-slate-600 border-t border-slate-200/60 font-sans">
+                <div className="bg-slate-50 rounded-2xl p-4 space-y-3 text-xs text-slate-600 border border-slate-200/60 animate-in fade-in">
                   {config.guideSteps.map((s) => (
                     <div key={s.step} className="flex items-start space-x-2.5">
-                      <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-semibold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-semibold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
                         {s.step}
                       </span>
                       <div className="space-y-1">
@@ -465,7 +483,7 @@ export default function PlatformConnectCard({
                         <p className="text-slate-500 text-[11px] leading-relaxed">
                           {s.description}
                           {s.codeSnippet && (
-                            <> (format: <code className="text-indigo-600 font-mono font-semibold">{s.codeSnippet}</code>)</>
+                            <> (format: <code className="text-slate-800 font-mono font-semibold">{s.codeSnippet}</code>)</>
                           )}
                         </p>
                         {s.actionText && s.actionUrl && (
@@ -473,10 +491,10 @@ export default function PlatformConnectCard({
                             href={s.actionUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center space-x-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs mt-1"
+                            className="inline-flex items-center space-x-1 text-[11px] font-medium text-slate-700 hover:text-slate-900 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs hover:bg-slate-50 transition-colors mt-0.5"
                           >
                             <span>{s.actionText}</span>
-                            <ExternalLink className="w-3 h-3" />
+                            <ExternalLink className="w-3 h-3 text-slate-400" />
                           </a>
                         )}
                       </div>
@@ -486,10 +504,10 @@ export default function PlatformConnectCard({
               )}
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSaveConnection} className="space-y-4">
+            {/* Minimal Form */}
+            <form onSubmit={handleSaveConnection} className="space-y-3.5 pt-1">
               {/* FIELD 1 */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-slate-800">
                     {config.field1Label} <span className="text-rose-500">*</span>
@@ -499,7 +517,7 @@ export default function PlatformConnectCard({
                       href={config.field1LinkUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center space-x-1"
+                      className="text-[11px] text-slate-500 hover:text-slate-900 font-medium inline-flex items-center space-x-1"
                     >
                       <span>{config.field1LinkText}</span>
                       <ExternalLink className="w-3 h-3" />
@@ -518,7 +536,7 @@ export default function PlatformConnectCard({
               </div>
 
               {/* FIELD 2 */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-slate-800">
                     {config.field2Label} <span className="text-rose-500">*</span>
@@ -528,7 +546,7 @@ export default function PlatformConnectCard({
                       href={config.field2LinkUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center space-x-1"
+                      className="text-[11px] text-slate-500 hover:text-slate-900 font-medium inline-flex items-center space-x-1"
                     >
                       <span>{config.field2LinkText}</span>
                       <ExternalLink className="w-3 h-3" />
@@ -557,7 +575,7 @@ export default function PlatformConnectCard({
               </div>
 
               {/* FIELD 3 */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-slate-800">
                     {config.field3Label}{' '}
@@ -572,7 +590,7 @@ export default function PlatformConnectCard({
                       href={config.field3LinkUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center space-x-1"
+                      className="text-[11px] text-slate-500 hover:text-slate-900 font-medium inline-flex items-center space-x-1"
                     >
                       <span>{config.field3LinkText}</span>
                       <ExternalLink className="w-3 h-3" />
@@ -592,12 +610,12 @@ export default function PlatformConnectCard({
               </div>
 
               <div className="flex items-center space-x-2 text-[11px] text-slate-400 pt-1">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Kredensial disimpan dengan selamat dan digunakan khusus untuk melancarkan kempen anda.</span>
+                <ShieldCheck className="w-4 h-4 text-slate-500 shrink-0" />
+                <span>Kredensial disimpan secara setempat untuk melancarkan kempen anda.</span>
               </div>
 
               {/* Submit Buttons */}
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end space-x-3">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end space-x-2.5">
                 <button
                   type="button"
                   onClick={() => setShowConnectModal(false)}
@@ -619,15 +637,15 @@ export default function PlatformConnectCard({
                   {isSaving ? (
                     <>
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      <span>Mengesahkan Sambungan...</span>
+                      <span>Menyimpan...</span>
                     </>
                   ) : saveSuccess ? (
                     <>
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Berjaya Disambungkan!</span>
+                      <span>Tersimpan!</span>
                     </>
                   ) : (
-                    <span>Sahkan &amp; Sambung Akaun</span>
+                    <span>Simpan &amp; Sambung Akaun</span>
                   )}
                 </button>
               </div>
@@ -709,7 +727,7 @@ export default function PlatformConnectCard({
                 {/* AI Advice */}
                 <div className="bg-slate-50 rounded-2xl p-4 text-xs text-slate-700 space-y-1.5">
                   <div className="flex items-center space-x-1.5 text-slate-900 font-medium">
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                    <Sparkles className="w-3.5 h-3.5 text-slate-600 shrink-0" />
                     <span>Nasihat & Penilaian AI:</span>
                   </div>
                   <p className="text-slate-600 leading-relaxed text-xs">{insight.humanAdvice}</p>
@@ -745,4 +763,5 @@ export default function PlatformConnectCard({
     </>
   );
 }
+
 

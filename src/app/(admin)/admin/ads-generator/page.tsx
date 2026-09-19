@@ -94,7 +94,7 @@ export default function AdminAdsGeneratorPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Load API Key and Provider from localStorage
+  // Load API Key, Provider, Platforms, and Campaigns from localStorage
   useEffect(() => {
     try {
       const savedKey = localStorage.getItem('svf_ai_api_key');
@@ -108,6 +108,29 @@ export default function AdminAdsGeneratorPage() {
         if (savedKey.startsWith('gsk_')) setAiSource('groq');
         else if (savedKey.startsWith('sk-or-')) setAiSource('openrouter');
         else setAiSource('gemini');
+      }
+
+      // Restore saved platform connections
+      const savedPlatforms = localStorage.getItem('svf_ads_platforms');
+      if (savedPlatforms) {
+        const parsed = JSON.parse(savedPlatforms);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setPlatforms((prev) =>
+            prev.map((initialP) => {
+              const found = parsed.find((p: any) => p.id === initialP.id);
+              return found ? { ...initialP, ...found } : initialP;
+            })
+          );
+        }
+      }
+
+      // Restore saved campaigns
+      const savedCampaigns = localStorage.getItem('svf_ads_campaigns');
+      if (savedCampaigns) {
+        const parsed = JSON.parse(savedCampaigns);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCampaigns(parsed);
+        }
       }
     } catch {
       // Ignore
@@ -273,14 +296,20 @@ export default function AdminAdsGeneratorPage() {
   };
 
   const handleUpdateConnection = (updated: AdPlatformConnection) => {
-    setPlatforms((prev) =>
-      prev.map((p) => (p.id === updated.id ? updated : p))
-    );
+    setPlatforms((prev) => {
+      const next = prev.map((p) => (p.id === updated.id ? updated : p));
+      try {
+        localStorage.setItem('svf_ads_platforms', JSON.stringify(next));
+      } catch {
+        // Ignore
+      }
+      return next;
+    });
   };
 
   const handleToggleConnect = (platformId: string) => {
-    setPlatforms((prev) =>
-      prev.map((p) => {
+    setPlatforms((prev) => {
+      const next = prev.map((p) => {
         if (p.id === platformId) {
           return {
             ...p,
@@ -289,22 +318,35 @@ export default function AdminAdsGeneratorPage() {
           };
         }
         return p;
-      })
-    );
+      });
+      try {
+        localStorage.setItem('svf_ads_platforms', JSON.stringify(next));
+      } catch {
+        // Ignore
+      }
+      return next;
+    });
   };
 
   const handleToggleCampaignStatus = (campaignId: string) => {
-    setCampaigns((prev) =>
-      prev.map((c) => {
+    setCampaigns((prev) => {
+      const next: AdCampaign[] = prev.map((c) => {
         if (c.id === campaignId) {
+          const newStatus: 'active' | 'paused' = c.status === 'active' ? 'paused' : 'active';
           return {
             ...c,
-            status: c.status === 'active' ? 'paused' : 'active',
+            status: newStatus,
           };
         }
         return c;
-      })
-    );
+      });
+      try {
+        localStorage.setItem('svf_ads_campaigns', JSON.stringify(next));
+      } catch {
+        // Ignore
+      }
+      return next;
+    });
   };
 
   const handlePublishCampaign = () => {
@@ -327,7 +369,15 @@ export default function AdminAdsGeneratorPage() {
         createdAt: new Date().toISOString().split('T')[0],
         creative: currentCreative,
       };
-      setCampaigns((prev) => [newCampaign, ...prev]);
+      setCampaigns((prev) => {
+        const next = [newCampaign, ...prev];
+        try {
+          localStorage.setItem('svf_ads_campaigns', JSON.stringify(next));
+        } catch {
+          // Ignore
+        }
+        return next;
+      });
       setTimeout(() => setPublishSuccess(false), 3500);
     }, 1200);
   };
