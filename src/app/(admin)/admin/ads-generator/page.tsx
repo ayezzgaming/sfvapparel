@@ -437,7 +437,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-hidden p-4 flex flex-col gap-3 bg-[#f8fafd] dark:bg-zinc-950 w-full text-slate-900 dark:text-zinc-100 font-sans">
+    <div className="h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-hidden p-3 flex flex-col gap-2 bg-[#e8eaed] dark:bg-zinc-950 w-full text-slate-900 dark:text-zinc-100 font-sans">
       {/* Hidden File Input for Image Upload */}
       <input
         ref={fileInputRef}
@@ -502,16 +502,16 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
       {/* ======================= TAB 1: STUDIO IKLAN AI ======================= */}
       {activeTab === 'create' && (
         <div className="flex-1 min-h-0 overflow-hidden flex gap-3 relative items-stretch animate-in fade-in">
-          {/* SISI KIRI: PANEL KONTROL (TANPA KARTU, LANGSUNG DI ATAS LATAR BELAKANG) */}
+          {/* SISI KIRI: PANEL KONTROL (STRUKTUR FLEX ANTI-TENGGELAM) */}
           <div
-            className={`flex flex-col relative h-full shrink-0 transition-all duration-300 ease-in-out select-none ${
+            className={`flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out select-none ${
               isLeftPanelCollapsed
                 ? 'w-0 opacity-0 overflow-hidden pointer-events-none'
                 : 'w-[360px] xl:w-[400px] opacity-100'
             }`}
           >
-            {/* Area Konten Kontrol (Scrollable) */}
-            <div className="flex-1 overflow-y-auto pr-2 pb-24 space-y-4">
+            {/* Area Konten Kontrol (Scroll Mandiri) */}
+            <div className="flex-1 min-h-0 overflow-y-auto pr-2 pb-2 space-y-3">
               {/* Error Notification Banner if API error occurs */}
               {generationError && (
                 <div className="bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 text-xs rounded-xl p-3.5 flex items-start justify-between gap-3 border border-red-200 dark:border-red-900/50">
@@ -702,9 +702,9 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
               )}
             </div>
 
-            {/* Kotak Input Melayang di Bawah (Pill Bersih Gaya Gemini Spark) */}
-            <div className="absolute bottom-2 left-0 right-2 z-30">
-              <div className="bg-white dark:bg-zinc-900 rounded-full border border-slate-200/80 dark:border-zinc-700 shadow-sm px-4 py-2.5 flex items-center gap-3 transition-all focus-within:border-slate-300 focus-within:shadow">
+            {/* Kotak Input Kapsul di Bagian Bawah (Statis Footer, Anti-Tenggelam) */}
+            <div className="shrink-0 pt-2 pb-1 w-full">
+              <div className="bg-white dark:bg-zinc-900 rounded-full border border-slate-300/80 dark:border-zinc-700 shadow-sm px-4 py-2.5 flex items-center gap-3 transition-all focus-within:border-slate-400">
                 {/* Tombol Lampiran (+) */}
                 <div className="relative shrink-0 flex items-center gap-1.5 min-w-0" ref={attachMenuRef}>
                   <button
@@ -773,7 +773,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                   )}
                 </div>
 
-                {/* Input Teks Bersih */}
+                {/* Input Teks */}
                 <input
                   type="text"
                   value={userPrompt}
@@ -798,7 +798,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                   className="flex-1 bg-transparent border-0 outline-none text-xs sm:text-sm text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 focus:ring-0 p-0 min-w-0"
                 />
 
-                {/* Tombol Kirim Bersih / Minimalis */}
+                {/* Tombol Kirim */}
                 <button
                   type="button"
                   onClick={handleGenerateAi}
@@ -824,28 +824,29 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                 : 'flex-1 mr-4'
             }`}
           >
-            {/* GAGANG TOGGLE NOTCH (Di Dalam Kartu Kanan, Jarak 3px & Animasi Melebar ke Kanan Saja) */}
-            <div
+            {/* Gagang Toggle di Dalam Kartu Kanan (left-[5px], Warna #e8eaed) */}
+            <button
+              type="button"
               onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
-              className="absolute left-[3px] top-1/2 -translate-y-1/2 z-50 group cursor-pointer py-3 select-none flex items-center"
               title={isLeftPanelCollapsed ? 'Buka Panel Konfigurasi' : 'Sembunyikan Panel Konfigurasi'}
+              className={`absolute left-[5px] top-1/2 -translate-y-1/2 h-12 rounded-full flex items-center justify-center cursor-pointer select-none z-40 transition-all duration-200 ease-out group p-0 border-0 outline-none origin-left ${
+                isLeftPanelCollapsed
+                  ? 'w-5 bg-[#e8eaed] hover:bg-[#dadce0] dark:bg-zinc-700'
+                  : 'w-1.5 hover:w-5 bg-[#e8eaed] hover:bg-[#dadce0] dark:bg-zinc-700'
+              }`}
             >
-              <div
-                className={`h-12 rounded-full bg-slate-300 dark:bg-zinc-600 flex items-center justify-center transition-all duration-200 ease-out origin-left shadow-2xs ${
-                  isLeftPanelCollapsed
-                    ? 'w-5 bg-slate-300 dark:bg-zinc-600 text-slate-700 dark:text-zinc-200'
-                    : 'w-1.5 group-hover:w-5 group-hover:bg-slate-300 dark:group-hover:bg-zinc-600 text-slate-700 dark:text-zinc-200'
+              <span
+                className={`transition-opacity duration-150 flex items-center justify-center text-slate-500 dark:text-zinc-300 ${
+                  isLeftPanelCollapsed ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                 }`}
               >
-                <span
-                  className={`transition-opacity duration-200 flex items-center justify-center ${
-                    isLeftPanelCollapsed ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                  }`}
-                >
-                  {isLeftPanelCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
-                </span>
-              </div>
-            </div>
+                {isLeftPanelCollapsed ? (
+                  <ChevronRight className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                )}
+              </span>
+            </button>
             {/* Header Kanvas */}
             <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 dark:border-zinc-800 shrink-0">
               {/* Sisi Kiri: Tab format */}
