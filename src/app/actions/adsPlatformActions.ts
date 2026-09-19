@@ -1474,3 +1474,120 @@ export async function publishAdToMetaGraphApi(
   }
 }
 
+/**
+ * Server Action: Fetches AI Configuration & API Key from Supabase Database
+ * Enables cross-device synchronization without needing to re-enter API key on every PC.
+ */
+export async function getAiConfigDb(): Promise<{
+  success: boolean;
+  apiKey: string;
+  provider: 'groq' | 'gemini' | 'openrouter';
+  isConfigured: boolean;
+}> {
+  const envGroqKey = process.env.GROQ_API_KEY || '';
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) {
+      return {
+        success: Boolean(envGroqKey),
+        apiKey: envGroqKey,
+        provider: 'groq',
+        isConfigured: Boolean(envGroqKey)
+      };
+    }
+
+    const { data } = await supabase
+      .from('ad_platform_connections')
+      .select('account_id, access_token, is_connected')
+      .eq('id', 'ai_groq')
+      .maybeSingle();
+
+    if (data && data.access_token && data.access_token.trim()) {
+      return {
+        success: true,
+        apiKey: data.access_token.trim(),
+        provider: (data.account_id as any) || 'groq',
+        isConfigured: true
+      };
+    }
+
+    // Auto-seed default Groq API Key from server environment to Supabase database if present
+    if (envGroqKey) {
+      await supabase.from('ad_platform_connections').upsert({
+        id: 'ai_groq',
+        name: 'Groq Cloud AI Engine',
+        account_id: 'groq',
+        account_name: 'Llama 3.3 70B Versatile',
+        access_token: envGroqKey,
+        is_connected: true,
+        last_synced: 'Auto-seeded pusat',
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+    }
+
+    return {
+      success: Boolean(envGroqKey),
+      apiKey: envGroqKey,
+      provider: 'groq',
+      isConfigured: Boolean(envGroqKey)
+    };
+  } catch {
+    return {
+      success: Boolean(envGroqKey),
+      apiKey: envGroqKey,
+      provider: 'groq',
+      isConfigured: Boolean(envGroqKey)
+    };
+  }
+}
+
+/**
+ * Server Action: Saves AI Configuration & API Key to Supabase Database
+ */
+export async function saveAiConfigDb(
+  provider: 'groq' | 'gemini' | 'openrouter',
+  apiKey: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) {
+      return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
+    }
+
+    const trimmedKey = apiKey.trim();
+    if (!trimmedKey) {
+      // User explicitly deleted / cleared key
+      await supabase
+        .from('ad_platform_connections')
+        .update({
+          access_token: null,
+          is_connected: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', 'ai_groq');
+
+      return { success: true, message: 'Kunci API AI telah dipadam daripada pangkalan data pusat.' };
+    }
+
+    const { error } = await supabase.from('ad_platform_connections').upsert({
+      id: 'ai_groq',
+      name: provider === 'groq' ? 'Groq Cloud AI Engine' : provider === 'gemini' ? 'Google Gemini AI' : 'OpenRouter AI',
+      account_id: provider,
+      account_name: provider === 'groq' ? 'Llama 3.3 70B' : provider === 'gemini' ? 'Gemini 1.5' : 'OpenRouter Unified',
+      access_token: trimmedKey,
+      is_connected: true,
+      last_synced: 'Disimpan secara pusat',
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'id' });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, message: 'Kunci API AI berjaya disimpan ke pangkalan data pusat dan sedia digunakan di semua peranti.' };
+  } catch (err: any) {
+    return { success: false, message: err.message || 'Ralat menyimpan ke pangkalan data.' };
+  }
+}
+
+

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/client';
+import { getServiceSupabase } from '@/lib/supabase/serverClient';
 import {
   INITIAL_FABRIC_MATERIALS,
   INITIAL_APPAREL_CUTS,
@@ -117,9 +118,33 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanPrompt = prompt.trim();
-    const rawKey = userApiKey?.trim() || process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY || process.env.GEMINI_API_KEY;
+    let rawKey = userApiKey?.trim();
 
-    // Strict validation: Credentials are REQUIRED
+    // 1. If no key sent in request, fetch central AI key from Supabase DB
+    if (!rawKey) {
+      try {
+        const supabase = getServiceSupabase();
+        if (supabase) {
+          const { data } = await supabase
+            .from('ad_platform_connections')
+            .select('access_token')
+            .eq('id', 'ai_groq')
+            .maybeSingle();
+          if (data?.access_token && data.access_token.trim()) {
+            rawKey = data.access_token.trim();
+          }
+        }
+      } catch {
+        // Fallback to env or default
+      }
+    }
+
+    // 2. Fallback to process.env variables
+    if (!rawKey) {
+      rawKey = process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY || process.env.GEMINI_API_KEY || '';
+    }
+
+    // Validation: Credentials check
     if (!rawKey) {
       return NextResponse.json(
         {

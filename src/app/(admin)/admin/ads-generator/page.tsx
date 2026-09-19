@@ -19,7 +19,9 @@ import {
   saveCampaignDb,
   savePlatformConnectionDb,
   disconnectPlatformDb,
-  publishAdToMetaGraphApi
+  publishAdToMetaGraphApi,
+  getAiConfigDb,
+  saveAiConfigDb
 } from '@/app/actions/adsPlatformActions';
 import { formatCurrency } from '@/lib/pricing-calculator';
 import {
@@ -169,8 +171,9 @@ export default function AdminAdsGeneratorPage() {
     }
   };
 
-  // Initial Load: AI API Keys & Supabase Database fetch
+  // Initial Load: AI API Keys (Central Supabase DB & LocalStorage) & Database fetch
   useEffect(() => {
+    // 1. Check local storage first for instant feedback
     try {
       const savedKey = localStorage.getItem('svf_ai_api_key');
       const savedProvider = localStorage.getItem('svf_ai_model_provider') as 'gemini' | 'groq' | 'openrouter';
@@ -188,12 +191,33 @@ export default function AdminAdsGeneratorPage() {
       // Ignore
     }
 
+    // 2. Fetch central AI configuration from Supabase DB (cross-device persistent)
+    const fetchCentralAiConfig = async () => {
+      try {
+        const aiRes = await getAiConfigDb();
+        if (aiRes.success && aiRes.apiKey) {
+          setApiKey(aiRes.apiKey);
+          if (aiRes.provider) setAiSource(aiRes.provider);
+          try {
+            localStorage.setItem('svf_ai_api_key', aiRes.apiKey);
+            if (aiRes.provider) localStorage.setItem('svf_ai_model_provider', aiRes.provider);
+          } catch {
+            // Ignore
+          }
+        }
+      } catch (err) {
+        console.error('Failed to sync central AI config:', err);
+      }
+    };
+    fetchCentralAiConfig();
+
     // Immediate DB fetch on mount
     fetchDatabaseState();
 
     // Re-sync on window focus (when admin switches back to this browser tab)
     const handleFocus = () => {
       fetchDatabaseState();
+      fetchCentralAiConfig();
     };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
@@ -206,13 +230,14 @@ export default function AdminAdsGeneratorPage() {
     }
   }, [activeTab]);
 
-  const handleSaveApiKey = (key: string, provider?: 'gemini' | 'groq' | 'openrouter') => {
-    setApiKey(key);
+  const handleSaveApiKey = async (key: string, provider?: 'gemini' | 'groq' | 'openrouter') => {
+    const cleanKey = key.trim();
     const targetProvider = provider || aiSource;
+    setApiKey(cleanKey);
     setAiSource(targetProvider);
     try {
-      if (key.trim()) {
-        localStorage.setItem('svf_ai_api_key', key.trim());
+      if (cleanKey) {
+        localStorage.setItem('svf_ai_api_key', cleanKey);
       } else {
         localStorage.removeItem('svf_ai_api_key');
       }
@@ -220,6 +245,14 @@ export default function AdminAdsGeneratorPage() {
     } catch {
       // Ignore
     }
+
+    // Persist to central Supabase database for all devices
+    try {
+      await saveAiConfigDb(targetProvider, cleanKey);
+    } catch (err) {
+      console.error('Failed to persist AI key to DB:', err);
+    }
+
     setShowKeyModal(false);
   };
 
