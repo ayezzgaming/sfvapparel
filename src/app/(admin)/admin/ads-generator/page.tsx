@@ -836,7 +836,13 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
           </div>
 
           {/* SISI KANAN: KARTU PANGGUNG UTAMA (The Floating Stage Card) */}
-          <div className="flex-1 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col h-full relative overflow-hidden transition-all duration-300">
+          <div
+            className={`bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out ${
+              isLeftPanelCollapsed
+                ? 'flex-1 mr-64 xl:mr-72'
+                : 'flex-1 mr-0'
+            }`}
+          >
             {/* Gagang Toggle Kapsul (Ghost Notch) */}
             <button
               type="button"
