@@ -501,21 +501,34 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                       ].map((plat) => {
                         const Logo = plat.logo;
                         const isSelected = selectedPlatform === plat.id;
+                        const conn = platforms.find((p) => p.id === plat.id);
+                        const isConnected = conn?.isConnected;
+
                         return (
                           <button
                             key={plat.id}
                             type="button"
                             onClick={() => setSelectedPlatform(plat.id)}
-                            className={`px-3 py-2.5 rounded-2xl flex items-center justify-center space-x-2 transition-all ${
+                            className={`px-3 py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all ${
                               isSelected
                                 ? 'bg-white text-slate-900 font-semibold shadow-xs'
                                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                             }`}
                           >
-                            <div className="w-4 h-4 flex items-center justify-center shrink-0">
-                              <Logo className="w-4 h-4" />
+                            <div className="flex items-center space-x-1.5">
+                              <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                                <Logo className="w-4 h-4" />
+                              </div>
+                              <span className="text-xs">{plat.name}</span>
                             </div>
-                            <span className="text-xs">{plat.name}</span>
+                            {isConnected ? (
+                              <span className="inline-flex items-center gap-1 text-[9px] font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded-full border border-emerald-100">
+                                <span className="w-1 h-1 rounded-full bg-emerald-500"></span>
+                                Tersambung
+                              </span>
+                            ) : (
+                              <span className="text-[9px] text-slate-400">Belum sambung</span>
+                            )}
                           </button>
                         );
                       })}
@@ -525,7 +538,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                   {/* 2. UNIFIED PROMPT & ATTACHMENTS CARD */}
                   <div className="space-y-2">
                     <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block px-1">
-                      2. Masukkan Arahan & Konteks Iklan
+                      2. Masukkan Arahan &amp; Konteks Iklan
                     </span>
                     <div className="bg-slate-50/90 rounded-3xl p-4 space-y-3">
                       {/* Attachment Preview INSIDE Prompt Box at the top */}
@@ -598,40 +611,37 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                               type="button"
                               onClick={() => setShowAttachMenu(!showAttachMenu)}
                               className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0 ${
-                                showAttachMenu
-                                  ? 'bg-slate-200 text-slate-900'
-                                  : 'hover:bg-slate-200 text-slate-600 hover:text-slate-900'
+                                showAttachMenu ? 'bg-slate-200 text-slate-900' : 'hover:bg-slate-200/80 text-slate-600'
                               }`}
-                              title="Tambah gambar atau pilih produk katalog"
+                              title="Tambah lampiran (Foto atau Produk)"
                             >
                               <Plus className="w-4 h-4" />
                             </button>
 
-                            {/* Attachment Popover (+ Menu) */}
+                            {/* Dropdown Menu for Attachment Choices */}
                             {showAttachMenu && (
-                              <div className="absolute left-0 bottom-11 z-40 bg-white rounded-2xl p-1.5 w-60 space-y-1 text-left animate-in fade-in zoom-in-95 shadow-lg">
+                              <div className="absolute left-0 bottom-10 z-30 w-52 bg-white rounded-2xl p-1.5 shadow-xl border border-slate-100 text-xs space-y-0.5 animate-in fade-in zoom-in-95">
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setShowCatalogModal(true);
                                     setShowAttachMenu(false);
+                                    setShowCatalogModal(true);
                                   }}
-                                  className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
+                                  className="w-full px-3 py-2 rounded-xl flex items-center space-x-2.5 hover:bg-slate-50 text-slate-700 transition-colors text-left"
                                 >
-                                  <FolderArchive className="w-4 h-4 text-slate-600" />
+                                  <FolderArchive className="w-4 h-4 text-slate-500" />
                                   <span>Pilih dari Katalog</span>
                                 </button>
-
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    fileInputRef.current?.click();
                                     setShowAttachMenu(false);
+                                    fileInputRef.current?.click();
                                   }}
-                                  className="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 flex items-center space-x-2.5 transition-colors"
+                                  className="w-full px-3 py-2 rounded-xl flex items-center space-x-2.5 hover:bg-slate-50 text-slate-700 transition-colors text-left"
                                 >
-                                  <Upload className="w-4 h-4 text-slate-600" />
-                                  <span>Muat Naik Imej</span>
+                                  <Upload className="w-4 h-4 text-slate-500" />
+                                  <span>Muat Naik Foto / Mockup</span>
                                 </button>
                               </div>
                             )}
@@ -686,21 +696,37 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                       ].map((plat) => {
                         const Logo = plat.logo;
                         const isSelected = selectedPlatform === plat.id;
+                        const conn = platforms.find((p) => p.id === plat.id);
+                        const isConnected = conn?.isConnected;
+
                         return (
                           <button
                             key={plat.id}
                             type="button"
                             onClick={() => setSelectedPlatform(plat.id)}
-                            className={`w-full px-3.5 py-2.5 rounded-2xl flex items-center space-x-3 transition-all text-left ${
+                            className={`w-full px-3.5 py-2.5 rounded-2xl flex items-center justify-between transition-all text-left ${
                               isSelected
                                 ? 'bg-slate-100 text-slate-900 font-semibold'
                                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                             }`}
                           >
-                            <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                              <Logo className="w-4 h-4" />
+                            <div className="flex items-center space-x-2.5 min-w-0">
+                              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                                <Logo className="w-4 h-4" />
+                              </div>
+                              <span className="text-xs tracking-tight truncate">{plat.name}</span>
                             </div>
-                            <span className="text-xs tracking-tight">{plat.name}</span>
+
+                            {isConnected ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 shrink-0">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                Tersambung
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
+                                Belum
+                              </span>
+                            )}
                           </button>
                         );
                       })}
