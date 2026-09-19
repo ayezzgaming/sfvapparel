@@ -14,6 +14,12 @@ import {
   TikTokLogo,
   WhatsAppLogo
 } from '@/components/admin/ads/PlatformLogos';
+import {
+  getSavedPlatformConnectionsDb,
+  getSavedCampaignsDb,
+  saveCampaignDb,
+  savePlatformConnectionDb
+} from '@/app/actions/adsPlatformActions';
 import { formatCurrency } from '@/lib/pricing-calculator';
 import {
   Sparkles,
@@ -96,7 +102,7 @@ export default function AdminAdsGeneratorPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Load API Key, Provider, Platforms, and Campaigns from localStorage
+  // Load API Key, Provider, Platforms, and Campaigns from Supabase DB & localStorage
   useEffect(() => {
     try {
       const savedKey = localStorage.getItem('svf_ai_api_key');
@@ -112,28 +118,82 @@ export default function AdminAdsGeneratorPage() {
         else setAiSource('gemini');
       }
 
-      // Restore saved platform connections
-      const savedPlatforms = localStorage.getItem('svf_ads_platforms');
-      if (savedPlatforms) {
-        const parsed = JSON.parse(savedPlatforms);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setPlatforms((prev) =>
-            prev.map((initialP) => {
-              const found = parsed.find((p: any) => p.id === initialP.id);
-              return found ? { ...initialP, ...found } : initialP;
-            })
-          );
-        }
-      }
+      // 1. First attempt to restore from shared Supabase Database
+      getSavedPlatformConnectionsDb()
+        .then((res) => {
+          if (res.success && res.connections && res.connections.length > 0) {
+            setPlatforms((prev) =>
+              prev.map((initialP) => {
+                const found = res.connections.find((p) => p.id === initialP.id);
+                return found ? { ...initialP, ...found } : initialP;
+              })
+            );
+            // Sync tokens locally so background fetches work seamlessly
+            if (res.tokens) {
+              Object.entries(res.tokens).forEach(([platId, tok]) => {
+                try {
+                  localStorage.setItem(`svf_platform_token_${platId}`, tok);
+                } catch {
+                  // Ignore
+                }
+              });
+            }
+          } else {
+            // Fallback to localStorage
+            const savedPlatforms = localStorage.getItem('svf_ads_platforms');
+            if (savedPlatforms) {
+              const parsed = JSON.parse(savedPlatforms);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setPlatforms((prev) =>
+                  prev.map((initialP) => {
+                    const found = parsed.find((p: any) => p.id === initialP.id);
+                    return found ? { ...initialP, ...found } : initialP;
+                  })
+                );
+              }
+            }
+          }
+        })
+        .catch(() => {
+          // Fallback to localStorage
+          const savedPlatforms = localStorage.getItem('svf_ads_platforms');
+          if (savedPlatforms) {
+            const parsed = JSON.parse(savedPlatforms);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setPlatforms((prev) =>
+                prev.map((initialP) => {
+                  const found = parsed.find((p: any) => p.id === initialP.id);
+                  return found ? { ...initialP, ...found } : initialP;
+                })
+              );
+            }
+          }
+        });
 
-      // Restore saved campaigns
-      const savedCampaigns = localStorage.getItem('svf_ads_campaigns');
-      if (savedCampaigns) {
-        const parsed = JSON.parse(savedCampaigns);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCampaigns(parsed);
-        }
-      }
+      // 2. Restore shared campaigns from Supabase Database
+      getSavedCampaignsDb()
+        .then((res) => {
+          if (res.success && res.campaigns && res.campaigns.length > 0) {
+            setCampaigns(res.campaigns);
+          } else {
+            const savedCampaigns = localStorage.getItem('svf_ads_campaigns');
+            if (savedCampaigns) {
+              const parsed = JSON.parse(savedCampaigns);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setCampaigns(parsed);
+              }
+            }
+          }
+        })
+        .catch(() => {
+          const savedCampaigns = localStorage.getItem('svf_ads_campaigns');
+          if (savedCampaigns) {
+            const parsed = JSON.parse(savedCampaigns);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setCampaigns(parsed);
+            }
+          }
+        });
     } catch {
       // Ignore
     }
@@ -307,17 +367,21 @@ export default function AdminAdsGeneratorPage() {
       }
       return next;
     });
+    // Persist to central Supabase DB
+    savePlatformConnectionDb(updated).catch(() => {});
   };
 
   const handleToggleConnect = (platformId: string) => {
     setPlatforms((prev) => {
       const next = prev.map((p) => {
         if (p.id === platformId) {
-          return {
+          const updated = {
             ...p,
             isConnected: !p.isConnected,
             lastSynced: !p.isConnected ? 'Baru sahaja' : p.lastSynced,
           };
+          savePlatformConnectionDb(updated).catch(() => {});
+          return updated;
         }
         return p;
       });
@@ -335,10 +399,12 @@ export default function AdminAdsGeneratorPage() {
       const next: AdCampaign[] = prev.map((c) => {
         if (c.id === campaignId) {
           const newStatus: 'active' | 'paused' = c.status === 'active' ? 'paused' : 'active';
-          return {
+          const updated = {
             ...c,
             status: newStatus,
           };
+          saveCampaignDb(updated).catch(() => {});
+          return updated;
         }
         return c;
       });
@@ -380,6 +446,8 @@ export default function AdminAdsGeneratorPage() {
         }
         return next;
       });
+      // Save newly launched campaign to shared Supabase DB
+      saveCampaignDb(newCampaign).catch(() => {});
       setTimeout(() => setPublishSuccess(false), 3500);
     }, 1200);
   };

@@ -6,6 +6,8 @@ import {
   verifyPlatformConnection,
   fetchLivePlatformCampaigns,
   toggleMetaLiveCampaignStatus,
+  savePlatformConnectionDb,
+  disconnectPlatformDb,
   LiveCampaignData
 } from '@/app/actions/adsPlatformActions';
 import {
@@ -344,11 +346,11 @@ export default function PlatformConnectCard({
 
   // LIVE METRICS CALCULATION (Prioritizes 100% Real Live Meta Graph Data)
   const displayCampaigns = liveCampaigns !== null ? liveCampaigns : campaigns.filter((c) => c.platform === platform.id);
-  const realTotalSpent = displayCampaigns.reduce((acc, c) => acc + (c.spent || 0), 0);
-  const realTotalLeads = displayCampaigns.reduce((acc, c) => acc + (c.leadsOrConversions || 0), 0);
+  const realTotalSpent = Math.max(platform.insight?.totalSpent || 0, displayCampaigns.reduce((acc, c) => acc + (c.spent || 0), 0));
+  const realTotalLeads = Math.max(platform.insight?.totalLeads || 0, displayCampaigns.reduce((acc, c) => acc + (c.leadsOrConversions || 0), 0));
   const realTotalClicks = displayCampaigns.reduce((acc, c) => acc + (c.clicks || 0), 0);
   const realTotalImpressions = displayCampaigns.reduce((acc, c) => acc + (c.impressions || 0), 0);
-  const realCostPerLead = realTotalLeads > 0 ? realTotalSpent / realTotalLeads : 0;
+  const realCostPerLead = realTotalLeads > 0 ? realTotalSpent / realTotalLeads : (platform.insight?.costPerLead || 0);
   const activeCampaignsCount = displayCampaigns.filter((c) => c.status === 'active').length;
 
   // Open modal and populate initial values (strictly blank if not connected)
@@ -599,6 +601,13 @@ export default function PlatformConnectCard({
       onToggleConnect(platform.id);
     }
 
+    // Persist to central Supabase DB for all admin laptops
+    try {
+      await savePlatformConnectionDb(updatedAccount, field2Input.trim());
+    } catch {
+      // Ignore
+    }
+
     // Trigger immediate live campaign fetch for newly connected account
     setTimeout(() => {
       setSaveSuccess(false);
@@ -608,9 +617,14 @@ export default function PlatformConnectCard({
     }, 700);
   };
 
-  const handleDisconnect = () => {
+  const handleDisconnect = async () => {
     try {
       localStorage.removeItem(`svf_platform_token_${platform.id}`);
+    } catch {
+      // Ignore
+    }
+    try {
+      await disconnectPlatformDb(platform.id);
     } catch {
       // Ignore
     }

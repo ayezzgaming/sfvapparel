@@ -316,3 +316,38 @@ CREATE TABLE IF NOT EXISTS cms_policies (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 15. Ads Generator: Connected Platform Accounts & API Tokens
+CREATE TABLE IF NOT EXISTS ad_platform_connections (
+    id TEXT PRIMARY KEY, -- 'facebook', 'instagram', 'whatsapp', 'google', 'tiktok'
+    name TEXT NOT NULL,
+    account_id TEXT,
+    account_name TEXT,
+    profile_picture_url TEXT,
+    access_token TEXT,
+    pixel_id TEXT,
+    currency TEXT DEFAULT 'MYR',
+    balance NUMERIC(12,2) DEFAULT 0.00,
+    is_connected BOOLEAN DEFAULT false,
+    last_synced TEXT,
+    insight JSONB DEFAULT '{}'::jsonb,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 16. Ads Generator: Campaigns & Performance Analytics
+CREATE TABLE IF NOT EXISTS ad_campaigns (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    objective TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active', -- 'active' | 'paused' | 'draft' | 'completed'
+    daily_budget NUMERIC(10,2) DEFAULT 30.00,
+    spent NUMERIC(12,2) DEFAULT 0.00,
+    clicks INTEGER DEFAULT 0,
+    impressions INTEGER DEFAULT 0,
+    leads_or_conversions INTEGER DEFAULT 0,
+    cpc NUMERIC(10,2) DEFAULT 0.00,
+    creative JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
