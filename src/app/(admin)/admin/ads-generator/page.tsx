@@ -816,42 +816,36 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
             </div>
           </div>
 
-          {/* SISI PEMBATAS / GAGANG TOGGLE NOTCH (Bebas dari Clipping & Animasi Halus) */}
-          <div
-            onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
-            className="relative flex items-center justify-center cursor-pointer select-none group z-50 shrink-0"
-            style={{ width: isLeftPanelCollapsed ? '0px' : '6px' }}
-            title={isLeftPanelCollapsed ? 'Buka Panel Konfigurasi' : 'Sembunyikan Panel Konfigurasi'}
-          >
-            {/* Garis rambut vertikal */}
-            <div className="w-[1px] h-full bg-slate-300/60 dark:bg-zinc-700 group-hover:bg-slate-400 transition-colors" />
-
-            {/* Notch abu-abu lembut: diam berupa garis kapsul tipis (w-1.5), melebar (w-5) saat di-hover */}
-            <div
-              className={`absolute top-1/2 -translate-y-1/2 h-12 rounded-full bg-slate-300 dark:bg-zinc-600 flex items-center justify-center transition-all duration-200 ease-out shadow-sm ${
-                isLeftPanelCollapsed
-                  ? 'left-1 w-5 bg-slate-300 text-slate-600'
-                  : 'w-1.5 group-hover:w-5 group-hover:bg-slate-300 text-slate-600'
-              }`}
-            >
-              <span
-                className={`transition-opacity duration-200 flex items-center justify-center ${
-                  isLeftPanelCollapsed ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                }`}
-              >
-                {isLeftPanelCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
-              </span>
-            </div>
-          </div>
-
           {/* SISI KANAN: KARTU UTAMA (Dengan Ruang Kosong Cadangan di Kanan) */}
           <div
-            className={`bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out ${
+            className={`bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out ${
               isLeftPanelCollapsed
                 ? 'flex-1 max-w-[calc(100%-240px)] mr-auto'
                 : 'flex-1 mr-4'
             }`}
           >
+            {/* GAGANG TOGGLE NOTCH (Di Dalam Kartu Kanan, Jarak 3px & Animasi Melebar ke Kanan Saja) */}
+            <div
+              onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
+              className="absolute left-[3px] top-1/2 -translate-y-1/2 z-50 group cursor-pointer py-3 select-none flex items-center"
+              title={isLeftPanelCollapsed ? 'Buka Panel Konfigurasi' : 'Sembunyikan Panel Konfigurasi'}
+            >
+              <div
+                className={`h-12 rounded-full bg-slate-300 dark:bg-zinc-600 flex items-center justify-center transition-all duration-200 ease-out origin-left shadow-2xs ${
+                  isLeftPanelCollapsed
+                    ? 'w-5 bg-slate-300 dark:bg-zinc-600 text-slate-700 dark:text-zinc-200'
+                    : 'w-1.5 group-hover:w-5 group-hover:bg-slate-300 dark:group-hover:bg-zinc-600 text-slate-700 dark:text-zinc-200'
+                }`}
+              >
+                <span
+                  className={`transition-opacity duration-200 flex items-center justify-center ${
+                    isLeftPanelCollapsed ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  }`}
+                >
+                  {isLeftPanelCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+                </span>
+              </div>
+            </div>
             {/* Header Kanvas */}
             <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 dark:border-zinc-800 shrink-0">
               {/* Sisi Kiri: Tab format */}
