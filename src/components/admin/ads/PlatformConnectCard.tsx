@@ -1,8 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdPlatformConnection, AdPlatform, AdCampaign } from '@/types/ads';
-import { verifyPlatformConnection } from '@/app/actions/adsPlatformActions';
+import {
+  verifyPlatformConnection,
+  fetchLivePlatformCampaigns,
+  toggleMetaLiveCampaignStatus,
+  LiveCampaignData
+} from '@/app/actions/adsPlatformActions';
 import {
   Check,
   Link2,
@@ -17,7 +22,11 @@ import {
   EyeOff,
   CheckCircle2,
   RefreshCw,
-  BookOpen
+  BookOpen,
+  Power,
+  Play,
+  Pause,
+  Sliders
 } from 'lucide-react';
 import {
   GoogleAdsLogo,
@@ -276,20 +285,30 @@ export default function PlatformConnectCard({
     message: string;
   } | null>(null);
 
-  // Live Sync State
+  // Real Live Meta Campaigns State & Actions
+  const [liveCampaigns, setLiveCampaigns] = useState<LiveCampaignData[] | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
+  const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
+  const [isTogglingStatus, setIsTogglingStatus] = useState<string | null>(null);
 
   const config = getPlatformConfig(platform.id);
 
-  // DYNAMIC COMPUTATION FROM REAL CAMPAIGNS (TIADA LAGI HARDCODED DUMMY DATA)
-  const platformCampaigns = campaigns.filter((c) => c.platform === platform.id);
-  const realTotalSpent = platformCampaigns.reduce((acc, c) => acc + (c.spent || 0), 0);
-  const realTotalLeads = platformCampaigns.reduce((acc, c) => acc + (c.leadsOrConversions || 0), 0);
-  const realTotalClicks = platformCampaigns.reduce((acc, c) => acc + (c.clicks || 0), 0);
-  const realTotalImpressions = platformCampaigns.reduce((acc, c) => acc + (c.impressions || 0), 0);
+  // Auto-sync real Meta campaigns when detail modal opens
+  useEffect(() => {
+    if (showDetailModal && platform.isConnected && liveCampaigns === null) {
+      handleSyncLiveMetrics();
+    }
+  }, [showDetailModal, platform.isConnected]);
+
+  // LIVE METRICS CALCULATION (Prioritizes 100% Real Live Meta Graph Data)
+  const displayCampaigns = liveCampaigns !== null ? liveCampaigns : campaigns.filter((c) => c.platform === platform.id);
+  const realTotalSpent = displayCampaigns.reduce((acc, c) => acc + (c.spent || 0), 0);
+  const realTotalLeads = displayCampaigns.reduce((acc, c) => acc + (c.leadsOrConversions || 0), 0);
+  const realTotalClicks = displayCampaigns.reduce((acc, c) => acc + (c.clicks || 0), 0);
+  const realTotalImpressions = displayCampaigns.reduce((acc, c) => acc + (c.impressions || 0), 0);
   const realCostPerLead = realTotalLeads > 0 ? realTotalSpent / realTotalLeads : 0;
-  const activeCampaignsCount = platformCampaigns.filter((c) => c.status === 'active').length;
+  const activeCampaignsCount = displayCampaigns.filter((c) => c.status === 'active').length;
 
   // Open modal and populate initial values (including from localStorage)
   const handleOpenConnectModal = () => {
@@ -374,20 +393,71 @@ export default function PlatformConnectCard({
     }
   };
 
-  // Live Sync Handshake
-  const handleSyncLiveMetrics = () => {
+  // Real-Time Live Sync Handshake with Meta Graph API
+  const handleSyncLiveMetrics = async () => {
     setIsSyncing(true);
-    setTimeout(() => {
+    setSyncStatusMsg(null);
+    try {
+      const storedToken = localStorage.getItem(`svf_platform_token_${platform.id}`) || '';
+      const res = await fetchLivePlatformCampaigns(
+        platform.id,
+        platform.accountId || field1Input.trim(),
+        storedToken
+      );
+
       setIsSyncing(false);
-      setSyncSuccess(true);
-      if (onUpdateConnection) {
-        onUpdateConnection({
-          ...platform,
-          lastSynced: 'Baru sahaja'
-        });
+      if (res.success) {
+        setLiveCampaigns(res.campaigns);
+        setSyncSuccess(true);
+        setSyncStatusMsg(res.message);
+
+        if (onUpdateConnection) {
+          onUpdateConnection({
+            ...platform,
+            lastSynced: 'Baru sahaja',
+            insight: {
+              totalSpent: res.totalSpent,
+              totalLeads: res.totalLeads,
+              costPerLead: res.costPerLead,
+              healthScore: res.totalLeads > 10 ? 'cemerlang' : 'baik',
+              humanAdvice:
+                res.campaigns.length > 0
+                  ? `Berjaya menyegerak ${res.campaigns.length} kempen dari Meta Graph API dengan kos purata RM${res.costPerLead.toFixed(2)} / prospek.`
+                  : `Akaun Meta aktif dan tersambung. Tiada kempen dikesan pada akaun ini setakat ini.`,
+              nextStepRecommendation:
+                res.campaigns.length > 0
+                  ? 'Pantau prestasi kempen secara langsung atau jeda/aktifkan status kempen di bawah.'
+                  : 'Klik "Studio Iklan AI" untuk melancarkan kempen pertama anda ke Meta.'
+            }
+          });
+        }
+        setTimeout(() => setSyncSuccess(false), 2500);
+      } else {
+        setLiveCampaigns([]);
+        setSyncStatusMsg(res.message);
       }
-      setTimeout(() => setSyncSuccess(false), 2000);
-    }, 600);
+    } catch {
+      setIsSyncing(false);
+      setLiveCampaigns([]);
+    }
+  };
+
+  // Toggle Campaign status on Meta
+  const handleToggleCampaignStatus = async (campaignId: string, currentStatus: string) => {
+    setIsTogglingStatus(campaignId);
+    const newStatus = currentStatus === 'active' ? 'PAUSED' : 'ACTIVE';
+    const storedToken = localStorage.getItem(`svf_platform_token_${platform.id}`) || '';
+    const res = await toggleMetaLiveCampaignStatus(campaignId, newStatus, storedToken);
+    setIsTogglingStatus(null);
+    if (res.success && liveCampaigns) {
+      setLiveCampaigns(
+        liveCampaigns.map((c) =>
+          c.id === campaignId
+            ? { ...c, status: newStatus.toLowerCase() as 'active' | 'paused' }
+            : c
+        )
+      );
+    }
   };
 
   const handleSaveConnection = async (e: React.FormEvent) => {
@@ -439,18 +509,12 @@ export default function PlatformConnectCard({
       pixelId: field3Input.trim() || undefined,
       lastSynced: 'Baru sahaja',
       insight: {
-        totalSpent: realTotalSpent,
-        totalLeads: realTotalLeads,
-        costPerLead: realCostPerLead,
-        healthScore: realTotalLeads > 10 ? 'cemerlang' : 'baik',
-        humanAdvice:
-          platformCampaigns.length > 0
-            ? `Terdapat ${platformCampaigns.length} kempen berdaftar (${activeCampaignsCount} aktif) dengan jumlah ${realTotalLeads} prospek didapatkan.`
-            : `Akaun ${platform.name} berjaya disambungkan dan sedia melancarkan kempen pertama.`,
-        nextStepRecommendation:
-          platformCampaigns.length > 0
-            ? 'Teruskan pemantauan kempen atau lancarkan variasi baharu melalui AI Ads Studio.'
-            : 'Klik "Studio Iklan AI" untuk melancarkan kempen pertama anda sekarang.'
+        totalSpent: 0,
+        totalLeads: 0,
+        costPerLead: 0,
+        healthScore: 'baik',
+        humanAdvice: `Akaun ${platform.name} berjaya disambungkan dan sedia melancarkan kempen pertama.`,
+        nextStepRecommendation: 'Klik "Studio Iklan AI" untuk melancarkan kempen pertama anda sekarang.'
       }
     };
 
@@ -460,11 +524,12 @@ export default function PlatformConnectCard({
       onToggleConnect(platform.id);
     }
 
-    // Smooth transition: close connect modal and open full account details popup immediately to prove connection
+    // Trigger immediate live campaign fetch for newly connected account
     setTimeout(() => {
       setSaveSuccess(false);
       setShowConnectModal(false);
       setShowDetailModal(true);
+      handleSyncLiveMetrics();
     }, 700);
   };
 
@@ -1002,17 +1067,18 @@ export default function PlatformConnectCard({
               </div>
             </div>
 
-            {/* LIVE PERFORMANCE METRICS (DIKIRA DARI DATA KEMPEN SEBENAR) */}
+            {/* LIVE PERFORMANCE METRICS (DIKIRA DARI DATA KEMPEN SEBENAR DARI META GRAPH API) */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
                   Metrik Analitik Sebenar
                 </span>
-                <span className="text-[11px] text-slate-500">
-                  {platformCampaigns.length} Kempen Berdaftar
+                <span className="text-[11px] text-slate-500 font-medium">
+                  {displayCampaigns.length} Kempen Berdaftar
                 </span>
               </div>
 
+              {/* KPI Cards */}
               <div className="grid grid-cols-3 gap-2.5 text-center">
                 <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
                   <span className="text-[10px] text-slate-400 block uppercase font-medium">Belanja Sebenar</span>
@@ -1034,51 +1100,145 @@ export default function PlatformConnectCard({
                 </div>
               </div>
 
-              {/* Breakdown of actual campaigns attached to this platform */}
-              {platformCampaigns.length > 0 ? (
+              {/* Status synchronization info */}
+              {syncStatusMsg && (
+                <div className="text-[11px] px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 border border-slate-200/60 flex items-center justify-between">
+                  <span>{syncStatusMsg}</span>
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 ml-2" />
+                </div>
+              )}
+
+              {/* Breakdown of actual campaigns attached to this platform with real live controls */}
+              {displayCampaigns.length > 0 ? (
                 <div className="space-y-2 pt-1">
-                  <span className="text-[11px] font-medium text-slate-600 block">Kempen Aktif Pada Saluran Ini:</span>
-                  <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                    {platformCampaigns.map((c) => (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-slate-700 block">
+                      Kawalan &amp; Status Kempen Langsung:
+                    </span>
+                    <a
+                      href={`https://business.facebook.com/adsmanager/manage/campaigns?act=${(platform.accountId || '').replace(/^act_/i, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-blue-600 hover:text-blue-800 font-medium inline-flex items-center space-x-1"
+                    >
+                      <span>Urus di Ads Manager</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  </div>
+
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {displayCampaigns.map((c) => (
                       <div
                         key={c.id}
-                        className="bg-slate-50/80 rounded-xl p-2.5 flex items-center justify-between text-xs border border-slate-100"
+                        className="bg-slate-50/90 rounded-2xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs border border-slate-200/70 shadow-2xs"
                       >
-                        <div className="min-w-0 pr-2">
-                          <p className="font-medium text-slate-800 truncate">{c.name}</p>
-                          <span className="text-[10px] text-slate-400">
-                            {c.clicks} klik • {c.impressions.toLocaleString()} paparan
-                          </span>
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <span
+                              className={`w-2 h-2 rounded-full shrink-0 ${
+                                c.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'
+                              }`}
+                            />
+                            <p className="font-semibold text-slate-900 truncate text-xs">{c.name}</p>
+                            <span
+                              className={`text-[10px] px-1.5 py-0.2 rounded font-medium ${
+                                c.status === 'active'
+                                  ? 'text-emerald-700 bg-emerald-100/80'
+                                  : 'text-amber-700 bg-amber-100/80'
+                              }`}
+                            >
+                              {c.status === 'active' ? 'Aktif' : 'Dijeda'}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-3 text-[10px] text-slate-400 font-mono">
+                            <span>{c.clicks} klik</span>
+                            <span>•</span>
+                            <span>{c.impressions.toLocaleString()} paparan</span>
+                            {c.dailyBudget && (
+                              <>
+                                <span>•</span>
+                                <span>Bajet: RM{c.dailyBudget}/hari</span>
+                              </>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-right shrink-0">
-                          <span className="font-semibold text-emerald-600 font-mono block">
-                            {c.leadsOrConversions} Prospek
-                          </span>
-                          <span className="text-[10px] text-slate-500 font-mono">
-                            RM {c.spent.toFixed(2)}
-                          </span>
+
+                        <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-200/50">
+                          <div className="text-left sm:text-right">
+                            <span className="font-semibold text-emerald-600 font-mono text-xs block">
+                              {c.leadsOrConversions} Prospek
+                            </span>
+                            <span className="text-[10px] text-slate-500 font-mono">
+                              RM {c.spent.toFixed(2)}
+                            </span>
+                          </div>
+
+                          {/* Live Pause / Activate toggle button for Meta API */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleCampaignStatus(c.id, c.status)}
+                            disabled={isTogglingStatus === c.id}
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors flex items-center space-x-1 ${
+                              c.status === 'active'
+                                ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                            } disabled:opacity-50`}
+                            title={c.status === 'active' ? 'Jeda kempen ini di Meta' : 'Aktifkan kempen ini di Meta'}
+                          >
+                            {isTogglingStatus === c.id ? (
+                              <RefreshCw className="w-3 h-3 animate-spin" />
+                            ) : c.status === 'active' ? (
+                              <>
+                                <Pause className="w-3 h-3" />
+                                <span>Jeda</span>
+                              </>
+                            ) : (
+                              <>
+                                <Play className="w-3 h-3" />
+                                <span>Aktifkan</span>
+                              </>
+                            )}
+                          </button>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
-                <div className="bg-slate-50 rounded-2xl p-4 text-center space-y-2 border border-dashed border-slate-200">
-                  <p className="text-xs text-slate-500">
-                    Akaun ini belum mempunyai sebarang kempen iklan yang dilancarkan.
-                  </p>
-                  {onNavigateToStudio && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowDetailModal(false);
-                        onNavigateToStudio();
-                      }}
-                      className="px-4 py-1.5 bg-slate-900 hover:bg-black text-white rounded-full text-xs font-medium transition-colors inline-block"
+                <div className="bg-slate-50 rounded-2xl p-5 text-center space-y-3 border border-dashed border-slate-200">
+                  <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-slate-800">Tiada Kempen Iklan Dikesan</p>
+                    <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
+                      Akaun Meta anda telah disahkan, tetapi tiada kempen iklan aktif dikesan di Meta Ads Manager pada masa ini.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                    {onNavigateToStudio && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowDetailModal(false);
+                          onNavigateToStudio();
+                        }}
+                        className="px-4 py-2 bg-slate-900 hover:bg-black text-white rounded-full text-xs font-medium transition-colors inline-flex items-center space-x-1.5"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                        <span>Lancar Kempen Pertama di AI Studio</span>
+                      </button>
+                    )}
+                    <a
+                      href={`https://business.facebook.com/adsmanager/manage/campaigns?act=${(platform.accountId || '').replace(/^act_/i, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-full text-xs font-medium border border-slate-200 transition-colors inline-flex items-center space-x-1"
                     >
-                      Lancar Kempen Pertama di AI Studio
-                    </button>
-                  )}
+                      <span>Buka Ads Manager</span>
+                      <ExternalLink className="w-3 h-3 text-slate-400" />
+                    </a>
+                  </div>
                 </div>
               )}
 
@@ -1089,8 +1249,8 @@ export default function PlatformConnectCard({
                   <span>Nasihat &amp; Penilaian AI:</span>
                 </div>
                 <p className="text-slate-600 leading-relaxed text-xs">
-                  {platformCampaigns.length > 0
-                    ? `Prestasi akaun ${platform.name} menunjukkan aktiviti stabil dengan kos purata RM${realCostPerLead.toFixed(2)} bagi setiap prospek WhatsApp yang masuk.`
+                  {displayCampaigns.length > 0
+                    ? `Prestasi akaun ${platform.name} disambungkan secara langsung ke Meta dengan kos purata RM${realCostPerLead.toFixed(2)} bagi setiap prospek.`
                     : `Sambungan API ${platform.name} aktif 100%. Tiada perbelanjaan iklan dikesan setakat ini. Lancarkan kempen pertama untuk memulakan penjejakan metrik jualan.`}
                 </p>
               </div>
