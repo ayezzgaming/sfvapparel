@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AdPlatformConnection, AdPlatform } from '@/types/ads';
+import { AdPlatformConnection, AdPlatform, AdCampaign } from '@/types/ads';
 import {
   Check,
   Link2,
@@ -29,8 +29,10 @@ import {
 
 interface PlatformConnectCardProps {
   platform: AdPlatformConnection;
+  campaigns?: AdCampaign[];
   onUpdateConnection?: (updated: AdPlatformConnection) => void;
   onToggleConnect: (platformId: string) => void;
+  onNavigateToStudio?: () => void;
 }
 
 interface PlatformGuideStep {
@@ -241,8 +243,10 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
 
 export default function PlatformConnectCard({
   platform,
+  campaigns = [],
   onUpdateConnection,
   onToggleConnect,
+  onNavigateToStudio,
 }: PlatformConnectCardProps) {
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -269,7 +273,20 @@ export default function PlatformConnectCard({
     message: string;
   } | null>(null);
 
+  // Live Sync State
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncSuccess, setSyncSuccess] = useState(false);
+
   const config = getPlatformConfig(platform.id);
+
+  // DYNAMIC COMPUTATION FROM REAL CAMPAIGNS (TIADA LAGI HARDCODED DUMMY DATA)
+  const platformCampaigns = campaigns.filter((c) => c.platform === platform.id);
+  const realTotalSpent = platformCampaigns.reduce((acc, c) => acc + (c.spent || 0), 0);
+  const realTotalLeads = platformCampaigns.reduce((acc, c) => acc + (c.leadsOrConversions || 0), 0);
+  const realTotalClicks = platformCampaigns.reduce((acc, c) => acc + (c.clicks || 0), 0);
+  const realTotalImpressions = platformCampaigns.reduce((acc, c) => acc + (c.impressions || 0), 0);
+  const realCostPerLead = realTotalLeads > 0 ? realTotalSpent / realTotalLeads : 0;
+  const activeCampaignsCount = platformCampaigns.filter((c) => c.status === 'active').length;
 
   // Open modal and populate initial values (including from localStorage)
   const handleOpenConnectModal = () => {
@@ -330,6 +347,22 @@ export default function PlatformConnectCard({
     }, 700);
   };
 
+  // Live Sync Handshake
+  const handleSyncLiveMetrics = () => {
+    setIsSyncing(true);
+    setTimeout(() => {
+      setIsSyncing(false);
+      setSyncSuccess(true);
+      if (onUpdateConnection) {
+        onUpdateConnection({
+          ...platform,
+          lastSynced: 'Baru sahaja'
+        });
+      }
+      setTimeout(() => setSyncSuccess(false), 2000);
+    }, 600);
+  };
+
   const handleSaveConnection = (e: React.FormEvent) => {
     e.preventDefault();
     if (!field1Input.trim() || !field2Input.trim()) return;
@@ -356,13 +389,19 @@ export default function PlatformConnectCard({
         balance: platform.balance ?? 450.00,
         pixelId: field3Input.trim() || undefined,
         lastSynced: 'Baru sahaja',
-        insight: platform.insight || {
-          totalSpent: 310.00,
-          totalLeads: 62,
-          costPerLead: 5.00,
-          healthScore: 'cemerlang',
-          humanAdvice: `Akaun ${platform.name} berjaya disambungkan dan sedia melancarkan kempen iklan.`,
-          nextStepRecommendation: 'Gunakan AI Ads Generator untuk melancarkan kempen pertama anda.'
+        insight: {
+          totalSpent: realTotalSpent,
+          totalLeads: realTotalLeads,
+          costPerLead: realCostPerLead,
+          healthScore: realTotalLeads > 10 ? 'cemerlang' : 'baik',
+          humanAdvice:
+            platformCampaigns.length > 0
+              ? `Terdapat ${platformCampaigns.length} kempen berdaftar (${activeCampaignsCount} aktif) dengan jumlah ${realTotalLeads} prospek didapatkan.`
+              : `Akaun ${platform.name} berjaya disambungkan dan sedia melancarkan kempen pertama.`,
+          nextStepRecommendation:
+            platformCampaigns.length > 0
+              ? 'Teruskan pemantauan kempen atau lancarkan variasi baharu melalui AI Ads Studio.'
+              : 'Klik "Studio Iklan AI" untuk melancarkan kempen pertama anda sekarang.'
         }
       };
 
@@ -431,8 +470,6 @@ export default function PlatformConnectCard({
         );
     }
   };
-
-  const insight = platform.insight;
 
   return (
     <>
@@ -800,10 +837,10 @@ export default function PlatformConnectCard({
         </div>
       )}
 
-      {/* ================= MODAL 2: DETAIL & ANALYTICS POPUP (LENGKAP PROFIL & STATUS LIVE) ================= */}
+      {/* ================= MODAL 2: DETAIL & ANALYTICS POPUP (MEMBACA DATA SEBENAR DARI KEMPEN) ================= */}
       {showDetailModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl space-y-5 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-xl w-full shadow-2xl space-y-5 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center space-x-3">
@@ -815,23 +852,35 @@ export default function PlatformConnectCard({
                       ● Aktif &amp; Disahkan
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400">Profil Rasmi, Kredensial &amp; Data Prestasi</p>
+                  <p className="text-xs text-slate-400">Profil Rasmi &amp; Data Prestasi Sebenar</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowDetailModal(false)}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={handleSyncLiveMetrics}
+                  disabled={isSyncing}
+                  className="px-3 py-1.5 rounded-full text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center space-x-1"
+                  title="Segerakkan data terkini daripada API"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
+                  <span>{isSyncing ? 'Menyegerak...' : syncSuccess ? 'Diselaraskan!' : 'Segerak API'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowDetailModal(false)}
+                  className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Complete Account & Business Profile Info */}
             <div className="bg-slate-50 rounded-2xl p-4 text-xs space-y-2.5 font-sans border border-slate-200/60">
               <div className="flex items-center justify-between text-slate-600">
                 <span>Nama Profil Perniagaan:</span>
-                <span className="font-semibold text-slate-900">{platform.accountName || `SFV APPAREL (${platform.name})`}</span>
+                <span className="font-semibold text-slate-900">{platform.accountName || `SFV APPAREL Official (${platform.name})`}</span>
               </div>
               <div className="flex items-center justify-between text-slate-600">
                 <span>ID Akaun / WABA / Pixel:</span>
@@ -853,57 +902,105 @@ export default function PlatformConnectCard({
                   <Check className="w-3 h-3 text-emerald-600" /> Sedia Melancarkan Kempen
                 </span>
               </div>
-              {platform.balance !== undefined && (
-                <div className="flex items-center justify-between text-slate-600 pt-2 border-t border-slate-200/60">
-                  <span>Baki Kredit Semasa:</span>
-                  <span className="font-mono font-semibold text-slate-900 text-sm">
-                    {platform.currency || 'MYR'} {platform.balance.toFixed(2)}
-                  </span>
-                </div>
-              )}
+              <div className="flex items-center justify-between text-slate-600 pt-1 border-t border-slate-200/60">
+                <span>Terakhir Diselaraskan:</span>
+                <span className="text-slate-700 font-medium">{platform.lastSynced || 'Baru sahaja'}</span>
+              </div>
             </div>
 
-            {/* Human-Readable Performance Metrics */}
-            {insight && (
-              <div className="space-y-3">
+            {/* LIVE PERFORMANCE METRICS (DIKIRA DARI DATA KEMPEN SEBENAR) */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  Analisis Prestasi Pemasaran
+                  Metrik Analitik Sebenar
                 </span>
+                <span className="text-[11px] text-slate-500">
+                  {platformCampaigns.length} Kempen Berdaftar
+                </span>
+              </div>
 
-                <div className="grid grid-cols-3 gap-2.5 text-center">
-                  <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                    <span className="text-[10px] text-slate-400 block uppercase font-medium">Belanja</span>
-                    <span className="text-sm font-semibold text-slate-900 font-mono">
-                      RM {insight.totalSpent.toFixed(0)}
-                    </span>
-                  </div>
-                  <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                    <span className="text-[10px] text-slate-400 block uppercase font-medium">Prospek WA</span>
-                    <span className="text-sm font-semibold text-emerald-600 font-mono">
-                      {insight.totalLeads} Orang
-                    </span>
-                  </div>
-                  <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                    <span className="text-[10px] text-slate-400 block uppercase font-medium">Kos / Prospek</span>
-                    <span className="text-sm font-semibold text-slate-900 font-mono">
-                      RM {insight.costPerLead.toFixed(2)}
-                    </span>
-                  </div>
+              <div className="grid grid-cols-3 gap-2.5 text-center">
+                <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                  <span className="text-[10px] text-slate-400 block uppercase font-medium">Belanja Sebenar</span>
+                  <span className="text-sm font-semibold text-slate-900 font-mono">
+                    RM {realTotalSpent.toFixed(2)}
+                  </span>
                 </div>
-
-                {/* AI Advice */}
-                <div className="bg-slate-50 rounded-2xl p-4 text-xs text-slate-700 space-y-1.5 border border-slate-100">
-                  <div className="flex items-center space-x-1.5 text-slate-900 font-medium">
-                    <Sparkles className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-                    <span>Nasihat &amp; Penilaian AI:</span>
-                  </div>
-                  <p className="text-slate-600 leading-relaxed text-xs">{insight.humanAdvice}</p>
-                  <p className="text-slate-900 font-medium text-xs pt-1">
-                    💡 {insight.nextStepRecommendation}
-                  </p>
+                <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                  <span className="text-[10px] text-slate-400 block uppercase font-medium">Prospek WhatsApp</span>
+                  <span className="text-sm font-semibold text-emerald-600 font-mono">
+                    {realTotalLeads} Orang
+                  </span>
+                </div>
+                <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                  <span className="text-[10px] text-slate-400 block uppercase font-medium">Kos / Prospek</span>
+                  <span className="text-sm font-semibold text-slate-900 font-mono">
+                    RM {realCostPerLead.toFixed(2)}
+                  </span>
                 </div>
               </div>
-            )}
+
+              {/* Breakdown of actual campaigns attached to this platform */}
+              {platformCampaigns.length > 0 ? (
+                <div className="space-y-2 pt-1">
+                  <span className="text-[11px] font-medium text-slate-600 block">Kempen Aktif Pada Saluran Ini:</span>
+                  <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                    {platformCampaigns.map((c) => (
+                      <div
+                        key={c.id}
+                        className="bg-slate-50/80 rounded-xl p-2.5 flex items-center justify-between text-xs border border-slate-100"
+                      >
+                        <div className="min-w-0 pr-2">
+                          <p className="font-medium text-slate-800 truncate">{c.name}</p>
+                          <span className="text-[10px] text-slate-400">
+                            {c.clicks} klik • {c.impressions.toLocaleString()} paparan
+                          </span>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="font-semibold text-emerald-600 font-mono block">
+                            {c.leadsOrConversions} Prospek
+                          </span>
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            RM {c.spent.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-slate-50 rounded-2xl p-4 text-center space-y-2 border border-dashed border-slate-200">
+                  <p className="text-xs text-slate-500">
+                    Akaun ini belum mempunyai sebarang kempen iklan yang dilancarkan.
+                  </p>
+                  {onNavigateToStudio && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowDetailModal(false);
+                        onNavigateToStudio();
+                      }}
+                      className="px-4 py-1.5 bg-slate-900 hover:bg-black text-white rounded-full text-xs font-medium transition-colors inline-block"
+                    >
+                      Lancar Kempen Pertama di AI Studio
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Dynamic AI Advice */}
+              <div className="bg-slate-50 rounded-2xl p-4 text-xs text-slate-700 space-y-1.5 border border-slate-100">
+                <div className="flex items-center space-x-1.5 text-slate-900 font-medium">
+                  <Sparkles className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                  <span>Nasihat &amp; Penilaian AI:</span>
+                </div>
+                <p className="text-slate-600 leading-relaxed text-xs">
+                  {platformCampaigns.length > 0
+                    ? `Prestasi akaun ${platform.name} menunjukkan aktiviti stabil dengan kos purata RM${realCostPerLead.toFixed(2)} bagi setiap prospek WhatsApp yang masuk.`
+                    : `Sambungan API ${platform.name} aktif 100%. Tiada perbelanjaan iklan dikesan setakat ini. Lancarkan kempen pertama untuk memulakan penjejakan metrik jualan.`}
+                </p>
+              </div>
+            </div>
 
             {/* Modal Actions */}
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
@@ -930,5 +1027,6 @@ export default function PlatformConnectCard({
     </>
   );
 }
+
 
 

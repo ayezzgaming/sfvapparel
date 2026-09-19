@@ -874,8 +874,10 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                 <PlatformConnectCard
                   key={platform.id}
                   platform={platform}
+                  campaigns={campaigns}
                   onUpdateConnection={handleUpdateConnection}
                   onToggleConnect={handleToggleConnect}
+                  onNavigateToStudio={() => setActiveTab('create')}
                 />
               ))}
             </div>
