@@ -351,3 +351,9 @@ CREATE TABLE IF NOT EXISTS ad_campaigns (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- Open Access / Disable RLS for Ads Generator Tables (Ensures cross-device sync works seamlessly)
+ALTER TABLE IF EXISTS ad_platform_connections DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS ad_campaigns DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS designs DISABLE ROW LEVEL SECURITY;
+
+

@@ -315,6 +315,7 @@ export default function PlatformConnectCard({
   const [showToken, setShowToken] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [dbSaveError, setDbSaveError] = useState<string | null>(null);
 
   // Live Test Connection States
   const [isTesting, setIsTesting] = useState(false);
@@ -596,10 +597,19 @@ export default function PlatformConnectCard({
     };
 
     // 1. Persist to central Supabase DB
+    setDbSaveError(null);
     try {
-      await savePlatformConnectionDb(updatedAccount, rawToken);
-    } catch {
-      // Ignore
+      const dbRes = await savePlatformConnectionDb(updatedAccount, rawToken);
+      if (!dbRes.success) {
+        setDbSaveError(dbRes.message || 'Pangkalan data menolak sambungan (Semak RLS / Kunci Supabase).');
+        setIsSaving(false);
+        return;
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ralat pangkalan data.';
+      setDbSaveError(`Ralat pelayan: ${msg}`);
+      setIsSaving(false);
+      return;
     }
 
     // 2. Update local state
@@ -918,6 +928,17 @@ export default function PlatformConnectCard({
                       ) : (
                         <p className="text-[11px] text-rose-700 leading-snug">{testResult.message}</p>
                       )}
+                    </div>
+                  )}
+
+                  {/* Database Save Error Banner */}
+                  {dbSaveError && (
+                    <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start space-x-2 animate-in fade-in">
+                      <X className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold">Gagal Menyimpan ke Pangkalan Data</p>
+                        <p className="text-[11px] text-rose-700 mt-0.5">{dbSaveError}</p>
+                      </div>
                     </div>
                   )}
 
