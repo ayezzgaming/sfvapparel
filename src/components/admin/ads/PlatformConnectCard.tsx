@@ -208,8 +208,8 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
         field1LinkUrl: 'https://business.facebook.com/adsmanager',
         field2Label: 'Meta Access Token (Kunci API Graph / System User)',
         field2Placeholder: 'EAAG... (Tampal Token Meta anda di sini)',
-        field2LinkText: 'Jana Token di Graph Explorer',
-        field2LinkUrl: 'https://developers.facebook.com/tools/explorer/',
+        field2LinkText: 'Panduan & Pautan Jana Token',
+        field2LinkUrl: 'https://business.facebook.com/settings/system-users',
         field3Label: 'Meta Pixel / Dataset ID',
         field3Placeholder: 'Contoh: 920194820192',
         field3Subtext: 'Untuk menjejak penukaran (conversion) dan borang laman web',
@@ -219,23 +219,25 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
         guideSteps: [
           {
             step: 1,
-            title: 'Dapatkan Meta Ad Account ID',
-            description: 'Buka Meta Ads Manager. ID akaun anda berada di menu dropdown atas sebelah profil.',
-            codeSnippet: 'act_839201948201',
-            actionText: 'Buka Meta Ads Manager',
-            actionUrl: 'https://business.facebook.com/adsmanager'
+            title: 'Kaedah 1: Meta Business Suite System User (Disyorkan / Token Kekal)',
+            description: 'Buka Pengguna Sistem di Meta Business Suite. Cipta pengguna Admin, tetapkan akaun iklan (Full Control), dan jana token kekal dengan izin ads_management & business_management.',
+            actionText: 'Buka Meta System Users',
+            actionUrl: 'https://business.facebook.com/settings/system-users'
           },
           {
             step: 2,
-            title: 'Jana Meta Access Token',
-            description: 'Buka Graph API Explorer rasmi Meta. Tanda kebenaran ads_management & ads_read, lalu klik Generate Token.',
+            title: 'Kaedah 2: Meta Graph API Explorer (Ujian Pantas)',
+            description: 'Buka Graph API Explorer rasmi Meta. Pilih aplikasi anda, dapatkan token akses pengguna dengan izin ads_management & ads_read.',
             actionText: 'Buka Graph API Explorer',
             actionUrl: 'https://developers.facebook.com/tools/explorer/'
           },
           {
             step: 3,
-            title: 'Tampal & Sahkan Sambungan',
-            description: 'Tampal ID Akaun dan Token ke dalam borang di bawah, kemudian klik Sahkan & Sambung.'
+            title: 'Dapatkan Meta Ad Account ID',
+            description: 'Buka Meta Ads Manager. ID akaun anda berada di menu dropdown atas sebelah profil (format nombor 10-16 digit).',
+            codeSnippet: 'act_839201948201',
+            actionText: 'Buka Meta Ads Manager',
+            actionUrl: 'https://business.facebook.com/adsmanager'
           }
         ]
       };
@@ -580,10 +582,14 @@ export default function PlatformConnectCard({
         </div>
       </div>
 
-      {/* ================= MODAL 1: SAMBUNG API DENGAN FITUR TES KONEKSI ================= */}
+      {/* ================= MODAL 1: SAMBUNG API DENGAN FITUR TES KONEKSI (SPLIT DUAL PANE) ================= */}
       {showConnectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl space-y-4 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+          <div
+            className={`bg-white rounded-3xl p-6 sm:p-7 shadow-2xl space-y-4 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto transition-all duration-300 w-full ${
+              showHelpGuide ? 'max-w-4xl' : 'max-w-lg'
+            }`}
+          >
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center space-x-3">
@@ -593,292 +599,334 @@ export default function PlatformConnectCard({
                   <p className="text-xs text-slate-400">{config.subtitle}</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowConnectModal(false)}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* TOGGLEABLE CLEAN GUIDE ACCORDION (TERSEMBUNYI SECARA DEFAULT) */}
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => setShowHelpGuide(!showHelpGuide)}
-                className="inline-flex items-center space-x-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors py-0.5"
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>{showHelpGuide ? 'Sembunyikan Petunjuk Sambungan' : 'Lihat Petunjuk & Cara Dapatkan Kunci API'}</span>
-                {showHelpGuide ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-              </button>
-
-              {showHelpGuide && (
-                <div className="bg-slate-50 rounded-2xl p-4 space-y-3 text-xs text-slate-600 border border-slate-200/60 animate-in fade-in">
-                  {config.guideSteps.map((s) => (
-                    <div key={s.step} className="flex items-start space-x-2.5">
-                      <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-semibold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
-                        {s.step}
-                      </span>
-                      <div className="space-y-1">
-                        <p className="text-slate-800 font-medium">{s.title}</p>
-                        <p className="text-slate-500 text-[11px] leading-relaxed">
-                          {s.description}
-                          {s.codeSnippet && (
-                            <> (format: <code className="text-slate-800 font-mono font-semibold">{s.codeSnippet}</code>)</>
-                          )}
-                        </p>
-                        {s.actionText && s.actionUrl && (
-                          <a
-                            href={s.actionUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center space-x-1 text-[11px] font-medium text-slate-700 hover:text-slate-900 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs hover:bg-slate-50 transition-colors mt-0.5"
-                          >
-                            <span>{s.actionText}</span>
-                            <ExternalLink className="w-3 h-3 text-slate-400" />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Minimal Form */}
-            <form onSubmit={handleSaveConnection} className="space-y-3.5 pt-1">
-              {/* FIELD 1 */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-slate-800">
-                    {config.field1Label} <span className="text-rose-500">*</span>
-                  </label>
-                  {config.field1LinkText && config.field1LinkUrl && (
-                    <a
-                      href={config.field1LinkUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[11px] text-slate-500 hover:text-slate-900 font-medium inline-flex items-center space-x-1"
-                    >
-                      <span>{config.field1LinkText}</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
-                </div>
-
-                <input
-                  type="text"
-                  required
-                  value={field1Input}
-                  onChange={(e) => {
-                    setField1Input(e.target.value);
-                    setTestResult(null);
-                  }}
-                  placeholder={config.field1Placeholder}
-                  className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
-                />
-              </div>
-
-              {/* FIELD 2 */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-slate-800">
-                    {config.field2Label} <span className="text-rose-500">*</span>
-                  </label>
-                  {config.field2LinkText && config.field2LinkUrl && (
-                    <a
-                      href={config.field2LinkUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[11px] text-slate-500 hover:text-slate-900 font-medium inline-flex items-center space-x-1"
-                    >
-                      <span>{config.field2LinkText}</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
-                </div>
-
-                <div className="relative">
-                  <input
-                    type={showToken ? 'text' : 'password'}
-                    required
-                    value={field2Input}
-                    onChange={(e) => {
-                      setField2Input(e.target.value);
-                      setTestResult(null);
-                    }}
-                    placeholder={config.field2Placeholder}
-                    className="w-full px-3.5 py-2.5 pr-10 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowToken(!showToken)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
-                    title={showToken ? 'Sembunyi token' : 'Papar token'}
-                  >
-                    {showToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-              </div>
-
-              {/* FIELD 3 */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-slate-800">
-                    {config.field3Label}{' '}
-                    {config.field3Required ? (
-                      <span className="text-rose-500">*</span>
-                    ) : (
-                      <span className="text-slate-400 font-normal">(Pilihan)</span>
-                    )}
-                  </label>
-                  {config.field3LinkText && config.field3LinkUrl && (
-                    <a
-                      href={config.field3LinkUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[11px] text-slate-500 hover:text-slate-900 font-medium inline-flex items-center space-x-1"
-                    >
-                      <span>{config.field3LinkText}</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
-                </div>
-
-                <input
-                  type="text"
-                  required={config.field3Required}
-                  value={field3Input}
-                  onChange={(e) => {
-                    setField3Input(e.target.value);
-                    setTestResult(null);
-                  }}
-                  placeholder={config.field3Placeholder}
-                  className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
-                />
-                <p className="text-[10px] text-slate-400">{config.field3Subtext}</p>
-              </div>
-
-              {/* TEST CONNECTION RESULT CARD (BUKTI STATUS SAMBUNGAN & DETAIL PROFIL) */}
-              {testResult && (
-                <div
-                  className={`rounded-2xl p-4 text-xs space-y-2.5 animate-in zoom-in-95 border ${
-                    testResult.status === 'success'
-                      ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
-                      : 'bg-rose-50/70 border-rose-200 text-rose-900'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      {testResult.status === 'success' ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      ) : (
-                        <X className="w-4 h-4 text-rose-600 shrink-0" />
-                      )}
-                      <span className="font-semibold">
-                        {testResult.status === 'success' ? 'Sambungan API Berjaya Disahkan' : 'Ujian Sambungan Gagal'}
-                      </span>
-                    </div>
-                    {testResult.status === 'success' && (
-                      <span className="text-[10px] font-mono text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md">
-                        {testResult.latencyMs}ms • 200 OK
-                      </span>
-                    )}
-                  </div>
-
-                  {testResult.status === 'success' ? (
-                    <div className="space-y-1.5 text-[11px] bg-white/80 rounded-xl p-3 border border-emerald-100">
-                      <div className="flex items-center justify-between text-slate-600">
-                        <span>Nama Profil Akaun:</span>
-                        <span className="font-semibold text-slate-900">{testResult.accountName}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-slate-600">
-                        <span>ID Akaun Disahkan:</span>
-                        <span className="font-mono text-slate-800">{testResult.accountId}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-slate-600">
-                        <span>Baki Kredit Iklan:</span>
-                        <span className="font-semibold text-slate-900">
-                          {testResult.currency} {testResult.balance.toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-slate-600 pt-1 border-t border-slate-100">
-                        <span>Izin Capaian API:</span>
-                        <span className="text-emerald-700 font-medium truncate max-w-[220px]">
-                          {testResult.verifiedPermissions.join(', ')}
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-rose-700">{testResult.message}</p>
-                  )}
-                </div>
-              )}
-
-              <div className="flex items-center space-x-2 text-[11px] text-slate-400 pt-1">
-                <ShieldCheck className="w-4 h-4 text-slate-500 shrink-0" />
-                <span>Kredensial disulitkan dan disimpan secara setempat dalam peranti anda.</span>
-              </div>
-
-              {/* Submit & Test Action Buttons */}
-              <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center space-x-1.5">
                 <button
                   type="button"
-                  onClick={handleTestConnection}
-                  disabled={isTesting || !field1Input.trim() || !field2Input.trim()}
-                  className="px-4 py-2 rounded-full text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center space-x-1.5 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                  onClick={() => setShowHelpGuide(!showHelpGuide)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors flex items-center space-x-1.5 ${
+                    showHelpGuide
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                  title="Buka / Tutup Panel Panduan di Sebelah"
                 >
-                  {isTesting ? (
-                    <>
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-slate-600" />
-                      <span>Menguji Sambungan...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Tes Sambungan (Ping)</span>
-                    </>
-                  )}
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>{showHelpGuide ? 'Tutup Panel Panduan' : 'Buka Panduan Kunci API'}</span>
                 </button>
-
-                <div className="flex items-center space-x-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowConnectModal(false)}
-                    className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
-                  >
-                    Batal
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={
-                      isSaving ||
-                      !field1Input.trim() ||
-                      !field2Input.trim() ||
-                      (config.field3Required && !field3Input.trim())
-                    }
-                    className="px-5 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium transition-all shadow-xs flex items-center space-x-2 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
-                  >
-                    {isSaving ? (
-                      <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        <span>Menyambungkan...</span>
-                      </>
-                    ) : saveSuccess ? (
-                      <>
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Tersambung!</span>
-                      </>
-                    ) : (
-                      <span>Simpan &amp; Sambung Akaun</span>
-                    )}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowConnectModal(false)}
+                  className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-            </form>
+            </div>
+
+            {/* Split Content Grid (Form on Left, Interactive Guide on Right) */}
+            <div className={showHelpGuide ? 'grid grid-cols-1 md:grid-cols-12 gap-6 items-start' : 'space-y-4'}>
+              {/* LEFT COLUMN: API Form & Test Connection */}
+              <div className={showHelpGuide ? 'md:col-span-6 space-y-3.5' : 'space-y-3.5'}>
+                <form onSubmit={handleSaveConnection} className="space-y-3.5">
+                  {/* FIELD 1 */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-slate-800">
+                        {config.field1Label} <span className="text-rose-500">*</span>
+                      </label>
+                      {config.field1LinkText && config.field1LinkUrl && (
+                        <a
+                          href={config.field1LinkUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-slate-500 hover:text-slate-900 font-medium inline-flex items-center space-x-1"
+                        >
+                          <span>{config.field1LinkText}</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+
+                    <input
+                      type="text"
+                      required
+                      value={field1Input}
+                      onChange={(e) => {
+                        setField1Input(e.target.value);
+                        setTestResult(null);
+                      }}
+                      placeholder={config.field1Placeholder}
+                      className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                    />
+                  </div>
+
+                  {/* FIELD 2 */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-slate-800">
+                        {config.field2Label} <span className="text-rose-500">*</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowHelpGuide(true)}
+                        className="text-[11px] text-blue-600 hover:text-blue-800 font-medium inline-flex items-center space-x-1"
+                      >
+                        <span>{config.field2LinkText || 'Panduan Kunci API'}</span>
+                        <BookOpen className="w-3 h-3" />
+                      </button>
+                    </div>
+
+                    <div className="relative">
+                      <input
+                        type={showToken ? 'text' : 'password'}
+                        required
+                        value={field2Input}
+                        onChange={(e) => {
+                          setField2Input(e.target.value);
+                          setTestResult(null);
+                        }}
+                        placeholder={config.field2Placeholder}
+                        className="w-full px-3.5 py-2.5 pr-10 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowToken(!showToken)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
+                        title={showToken ? 'Sembunyi token' : 'Papar token'}
+                      >
+                        {showToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* FIELD 3 */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-slate-800">
+                        {config.field3Label}{' '}
+                        {config.field3Required ? (
+                          <span className="text-rose-500">*</span>
+                        ) : (
+                          <span className="text-slate-400 font-normal">(Pilihan)</span>
+                        )}
+                      </label>
+                      {config.field3LinkText && config.field3LinkUrl && (
+                        <a
+                          href={config.field3LinkUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-slate-500 hover:text-slate-900 font-medium inline-flex items-center space-x-1"
+                        >
+                          <span>{config.field3LinkText}</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+
+                    <input
+                      type="text"
+                      required={config.field3Required}
+                      value={field3Input}
+                      onChange={(e) => {
+                        setField3Input(e.target.value);
+                        setTestResult(null);
+                      }}
+                      placeholder={config.field3Placeholder}
+                      className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                    />
+                    <p className="text-[10px] text-slate-400">{config.field3Subtext}</p>
+                  </div>
+
+                  {/* TEST CONNECTION RESULT CARD (BUKTI STATUS SAMBUNGAN & DETAIL PROFIL) */}
+                  {testResult && (
+                    <div
+                      className={`rounded-2xl p-4 text-xs space-y-2.5 animate-in zoom-in-95 border ${
+                        testResult.status === 'success'
+                          ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
+                          : 'bg-rose-50/70 border-rose-200 text-rose-900'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          {testResult.status === 'success' ? (
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                          ) : (
+                            <X className="w-4 h-4 text-rose-600 shrink-0" />
+                          )}
+                          <span className="font-semibold">
+                            {testResult.status === 'success' ? 'Sambungan API Berjaya Disahkan' : 'Ujian Sambungan Gagal'}
+                          </span>
+                        </div>
+                        {testResult.status === 'success' && (
+                          <span className="text-[10px] font-mono text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md">
+                            {testResult.latencyMs}ms • 200 OK
+                          </span>
+                        )}
+                      </div>
+
+                      {testResult.status === 'success' ? (
+                        <div className="space-y-1.5 text-[11px] bg-white/80 rounded-xl p-3 border border-emerald-100">
+                          <div className="flex items-center justify-between text-slate-600">
+                            <span>Nama Profil Akaun:</span>
+                            <span className="font-semibold text-slate-900">{testResult.accountName}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-slate-600">
+                            <span>ID Akaun Disahkan:</span>
+                            <span className="font-mono text-slate-800">{testResult.accountId}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-slate-600">
+                            <span>Baki Kredit Iklan:</span>
+                            <span className="font-semibold text-slate-900">
+                              {testResult.currency} {testResult.balance.toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-slate-600 pt-1 border-t border-slate-100">
+                            <span>Izin Capaian API:</span>
+                            <span className="text-emerald-700 font-medium truncate max-w-[220px]">
+                              {testResult.verifiedPermissions.join(', ')}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-rose-700">{testResult.message}</p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex items-center space-x-2 text-[11px] text-slate-400 pt-1">
+                    <ShieldCheck className="w-4 h-4 text-slate-500 shrink-0" />
+                    <span>Kredensial disulitkan dan disimpan secara selamat pada pelayan.</span>
+                  </div>
+
+                  {/* Submit & Test Action Buttons */}
+                  <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={handleTestConnection}
+                      disabled={isTesting || !field1Input.trim() || !field2Input.trim()}
+                      className="px-4 py-2 rounded-full text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center space-x-1.5 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      {isTesting ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin text-slate-600" />
+                          <span>Menguji Sambungan...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-slate-500" />
+                          <span>Tes Sambungan (Ping)</span>
+                        </>
+                      )}
+                    </button>
+
+                    <div className="flex items-center space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowConnectModal(false)}
+                        className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+                      >
+                        Batal
+                      </button>
+
+                      <button
+                        type="submit"
+                        disabled={
+                          isSaving ||
+                          !field1Input.trim() ||
+                          !field2Input.trim() ||
+                          (config.field3Required && !field3Input.trim())
+                        }
+                        className="px-5 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium transition-all shadow-xs flex items-center space-x-2 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                      >
+                        {isSaving ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Menyambungkan...</span>
+                          </>
+                        ) : saveSuccess ? (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Tersambung!</span>
+                          </>
+                        ) : (
+                          <span>Simpan &amp; Sambung Akaun</span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              {/* RIGHT COLUMN: Interactive Side Panel Guide */}
+              {showHelpGuide && (
+                <div className="md:col-span-6 bg-slate-50/90 rounded-2xl p-4 sm:p-5 border border-slate-200/70 space-y-4 animate-in fade-in slide-in-from-right-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
+                    <div className="flex items-center space-x-2">
+                      <BookOpen className="w-4 h-4 text-slate-700" />
+                      <h4 className="text-xs font-semibold text-slate-900">
+                        Panel Panduan Rasmi &amp; Pautan API
+                      </h4>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowHelpGuide(false)}
+                      className="text-slate-400 hover:text-slate-700 p-1"
+                      title="Tutup Panel Panduan"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-3 text-xs">
+                    {config.guideSteps.map((s) => (
+                      <div
+                        key={s.step}
+                        className="bg-white rounded-xl p-3 border border-slate-200/70 shadow-2xs space-y-2"
+                      >
+                        <div className="flex items-start space-x-2">
+                          <span className="w-5 h-5 rounded-full bg-slate-900 text-white font-semibold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                            {s.step}
+                          </span>
+                          <div className="space-y-1">
+                            <p className="font-semibold text-slate-900 text-xs">{s.title}</p>
+                            <p className="text-slate-600 text-[11px] leading-relaxed">{s.description}</p>
+                            {s.codeSnippet && (
+                              <div className="pt-0.5">
+                                <span className="text-[10px] text-slate-400 block">Format Contoh:</span>
+                                <code className="text-slate-800 font-mono text-[11px] bg-slate-100 px-2 py-0.5 rounded inline-block">
+                                  {s.codeSnippet}
+                                </code>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {s.actionText && s.actionUrl && (
+                          <div className="pt-1 border-t border-slate-100 flex justify-end">
+                            <a
+                              href={s.actionUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center space-x-1.5 text-[11px] font-medium text-slate-800 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                            >
+                              <span>{s.actionText}</span>
+                              <ExternalLink className="w-3 h-3 text-slate-500" />
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="bg-blue-50/70 rounded-xl p-3 border border-blue-100 text-[11px] text-blue-900 space-y-1">
+                    <p className="font-semibold">💡 Tips Kebenaran Meta API:</p>
+                    <p className="text-blue-800 leading-relaxed text-[10px]">
+                      Pastikan token anda mengandungi izin <span className="font-mono font-medium">ads_management</span>, <span className="font-mono font-medium">ads_read</span>, atau <span className="font-mono font-medium">business_management</span> untuk mengurus kempen iklan secara automatik.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
