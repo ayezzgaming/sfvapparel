@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { AdPlatformConnection, AdPlatform, AdCampaign } from '@/types/ads';
 import {
   verifyPlatformConnection,
@@ -15,6 +16,7 @@ import {
   Link2,
   Unlink,
   ExternalLink,
+  ChevronRight,
   ChevronDown,
   ChevronUp,
   X,
@@ -267,44 +269,35 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
   }
 }
 
-// Clean and sanitize input value by stripping prefixes and ensuring neat formatting
-function extractCleanValue(val: string, prefix?: string): string {
-  if (!val) return '';
-  let cleaned = val.trim();
+function extractCleanValue(raw: string, prefix?: string): string {
+  if (!raw) return '';
+  let cleaned = raw.trim();
   if (prefix === 'act_') {
     if (cleaned.includes('act=')) {
       const match = cleaned.match(/act=([0-9]+)/i);
-      cleaned = match && match[1] ? match[1] : cleaned.replace(/^.*act[=_:]/i, '');
-    } else {
-      cleaned = cleaned.replace(/^act[=_:\s-]*/i, '');
+      if (match && match[1]) return match[1];
     }
-    return cleaned.replace(/[^0-9]/g, '');
+    cleaned = cleaned.replace(/^act[=_:\s-]*/i, '');
+    const digits = cleaned.replace(/[^0-9]/g, '');
+    return digits.length > 0 ? digits : cleaned;
   }
-  if (prefix === 'pix_') {
-    cleaned = cleaned.replace(/^pix[=_:\s-]*/i, '');
-    return cleaned.replace(/[^0-9]/g, '');
-  }
-  if (prefix === 'waba_') {
-    cleaned = cleaned.replace(/^waba[=_:\s-]*/i, '');
-    return cleaned.replace(/[^0-9]/g, '');
+  if (prefix && cleaned.startsWith(prefix)) {
+    return cleaned.slice(prefix.length);
   }
   return cleaned;
 }
 
 export default function PlatformConnectCard({
   platform,
-  campaigns = [],
   onUpdateConnection,
-  onToggleConnect,
-  onNavigateToStudio,
+  onToggleConnect
 }: PlatformConnectCardProps) {
   const [showConnectModal, setShowConnectModal] = useState(false);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showHelpGuide, setShowHelpGuide] = useState(false); // Clean: hidden by default
+  const [showHelpGuide, setShowHelpGuide] = useState(false);
 
   const config = getPlatformConfig(platform.id);
 
-  // Form State for API Credentials (Empty by default if not connected)
+  // Form State for API Credentials
   const [field1Input, setField1Input] = useState(
     platform.isConnected && platform.accountId ? extractCleanValue(platform.accountId, config.field1Prefix) : ''
   );
@@ -327,47 +320,9 @@ export default function PlatformConnectCard({
     latencyMs: number;
     balance: number;
     currency: string;
-    verifiedPermissions: string[];
     message: string;
   } | null>(null);
 
-  // Real Live Meta Campaigns State & Actions
-  const [liveCampaigns, setLiveCampaigns] = useState<LiveCampaignData[] | null>(null);
-  const [liveTotalSpent, setLiveTotalSpent] = useState<number | null>(null);
-  const [liveTotalLeads, setLiveTotalLeads] = useState<number | null>(null);
-  const [liveCostPerLead, setLiveCostPerLead] = useState<number | null>(null);
-  const [livePrimaryResultLabel, setLivePrimaryResultLabel] = useState<string>('Hasil / Prospek');
-  const [liveTotalLinkClicks, setLiveTotalLinkClicks] = useState<number | null>(null);
-  const [liveTotalReach, setLiveTotalReach] = useState<number | null>(null);
-  const [selectedDatePreset, setSelectedDatePreset] = useState<string>('last_30d');
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [syncSuccess, setSyncSuccess] = useState(false);
-  const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
-  const [isTogglingStatus, setIsTogglingStatus] = useState<string | null>(null);
-
-  // Auto-sync real Meta campaigns when detail modal opens
-  useEffect(() => {
-    if (showDetailModal && platform.isConnected && liveCampaigns === null) {
-      handleSyncLiveMetrics(selectedDatePreset);
-    }
-  }, [showDetailModal, platform.isConnected]);
-
-  // LIVE METRICS CALCULATION (Strictly 100% Genuine Meta Graph API Data)
-  const displayCampaigns = liveCampaigns !== null ? liveCampaigns : campaigns.filter((c) => c.platform === platform.id);
-  const realTotalSpent = liveTotalSpent !== null
-    ? liveTotalSpent
-    : displayCampaigns.reduce((acc, c) => acc + (c.spent || 0), 0);
-  const realTotalLeads = liveTotalLeads !== null
-    ? liveTotalLeads
-    : displayCampaigns.reduce((acc, c) => acc + (c.leadsOrConversions || 0), 0);
-  const realTotalClicks = displayCampaigns.reduce((acc, c) => acc + (c.clicks || 0), 0);
-  const realTotalImpressions = displayCampaigns.reduce((acc, c) => acc + (c.impressions || 0), 0);
-  const realCostPerLead = liveCostPerLead !== null
-    ? liveCostPerLead
-    : (realTotalLeads > 0 ? realTotalSpent / realTotalLeads : 0);
-  const activeCampaignsCount = displayCampaigns.filter((c) => c.status === 'active').length;
-
-  // Open modal and populate initial values (strictly blank if not connected)
   const handleOpenConnectModal = () => {
     if (!platform.isConnected) {
       setField1Input('');
@@ -388,7 +343,6 @@ export default function PlatformConnectCard({
     setShowConnectModal(true);
   };
 
-  // Perform Live API Test Handshake (Server Action call to Meta Graph API)
   const handleTestConnection = async () => {
     if (!field1Input.trim() || !field2Input.trim()) {
       setTestResult({
@@ -398,7 +352,6 @@ export default function PlatformConnectCard({
         latencyMs: 0,
         balance: 0,
         currency: 'MYR',
-        verifiedPermissions: [],
         message: 'Sila lengkapkan ID Akaun dan Kunci API (Access Token) sebelum menguji sambungan.'
       });
       return;
@@ -436,7 +389,6 @@ export default function PlatformConnectCard({
           latencyMs: res.latencyMs || 120,
           balance: res.balance ?? 0,
           currency: res.currency || 'MYR',
-          verifiedPermissions: res.verifiedPermissions || ['ads_management', 'ads_read'],
           message: res.message
         });
       } else {
@@ -447,7 +399,6 @@ export default function PlatformConnectCard({
           latencyMs: res.latencyMs || 0,
           balance: 0,
           currency: 'MYR',
-          verifiedPermissions: [],
           message: res.message
         });
       }
@@ -461,94 +412,16 @@ export default function PlatformConnectCard({
         latencyMs: 0,
         balance: 0,
         currency: 'MYR',
-        verifiedPermissions: [],
         message: `Ralat semasa menyemak API: ${errMsg}`
       });
-    }
-  };
-
-  // Real-Time Live Sync Handshake with Meta Graph API
-  const handleSyncLiveMetrics = async (targetPreset: string = selectedDatePreset) => {
-    setIsSyncing(true);
-    setSyncStatusMsg(null);
-    try {
-      const storedToken = localStorage.getItem(`svf_platform_token_${platform.id}`) || '';
-      const effectiveAccountId = config.field1Prefix === 'act_' && platform.accountId && !platform.accountId.startsWith('act_')
-        ? `act_${platform.accountId}`
-        : (platform.accountId || (config.field1Prefix === 'act_' ? `act_${field1Input.trim()}` : field1Input.trim()));
-
-      const res = await fetchLivePlatformCampaigns(
-        platform.id,
-        effectiveAccountId,
-        storedToken,
-        targetPreset
-      );
-
-      setIsSyncing(false);
-      if (res.success) {
-        setLiveCampaigns(res.campaigns);
-        setLiveTotalSpent(res.totalSpent);
-        setLiveTotalLeads(res.totalLeads);
-        setLiveCostPerLead(res.costPerLead);
-        setSyncSuccess(true);
-        setSyncStatusMsg(res.message);
-
-        if (onUpdateConnection) {
-          onUpdateConnection({
-            ...platform,
-            lastSynced: 'Baru sahaja',
-            insight: {
-              totalSpent: res.totalSpent,
-              totalLeads: res.totalLeads,
-              costPerLead: res.costPerLead,
-              healthScore: res.totalLeads > 10 ? 'cemerlang' : 'baik',
-              humanAdvice:
-                res.campaigns.length > 0
-                  ? `Berjaya menyegerak ${res.campaigns.length} kempen dari Meta Graph API dengan kos purata RM${res.costPerLead.toFixed(2)} / prospek.`
-                  : `Akaun Meta aktif dan tersambung. Tiada kempen dikesan pada akaun ini setakat ini.`,
-              nextStepRecommendation:
-                res.campaigns.length > 0
-                  ? 'Pantau prestasi kempen secara langsung atau jeda/aktifkan status kempen di bawah.'
-                  : 'Klik "Studio Iklan AI" untuk melancarkan kempen pertama anda ke Meta.'
-            }
-          });
-        }
-        setTimeout(() => setSyncSuccess(false), 2500);
-      } else {
-        setSyncSuccess(false);
-        setSyncStatusMsg(res.message);
-      }
-    } catch {
-      setIsSyncing(false);
-      setLiveCampaigns([]);
-    }
-  };
-
-  // Toggle Campaign status on Meta
-  const handleToggleCampaignStatus = async (campaignId: string, currentStatus: string) => {
-    setIsTogglingStatus(campaignId);
-    const newStatus = currentStatus === 'active' ? 'PAUSED' : 'ACTIVE';
-    const storedToken = localStorage.getItem(`svf_platform_token_${platform.id}`) || '';
-    const res = await toggleMetaLiveCampaignStatus(campaignId, newStatus, storedToken);
-    setIsTogglingStatus(null);
-    if (res.success && liveCampaigns) {
-      setLiveCampaigns(
-        liveCampaigns.map((c) =>
-          c.id === campaignId
-            ? { ...c, status: newStatus.toLowerCase() as 'active' | 'paused' }
-            : c
-        )
-      );
     }
   };
 
   const handleSaveConnection = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!field1Input.trim() || !field2Input.trim()) return;
-    if (config.field3Required && !field3Input.trim()) return;
 
     setIsSaving(true);
-
     const rawToken = field2Input.trim();
     try {
       localStorage.setItem(`svf_platform_token_${platform.id}`, rawToken);
@@ -568,7 +441,6 @@ export default function PlatformConnectCard({
       ? (config.field3Prefix === 'pix_' ? `pix_${field3Input.trim().replace(/^pix_/i, '')}` : field3Input.trim())
       : undefined;
 
-    // If not already verified via test button, do a live verification first
     let verifiedName = testResult?.accountName;
     let verifiedBalance = testResult?.balance;
     let verifiedCurrency = testResult?.currency;
@@ -589,7 +461,7 @@ export default function PlatformConnectCard({
           verifiedPicture = res.profilePictureUrl;
         }
       } catch {
-        // Fallback to defaults if offline/bypass
+        // Ignore
       }
     }
 
@@ -602,23 +474,14 @@ export default function PlatformConnectCard({
       currency: verifiedCurrency || 'MYR',
       balance: verifiedBalance !== undefined ? verifiedBalance : (platform.balance ?? 0),
       pixelId: effectivePixelId,
-      lastSynced: 'Baru sahaja',
-      insight: {
-        totalSpent: 0,
-        totalLeads: 0,
-        costPerLead: 0,
-        healthScore: 'baik',
-        humanAdvice: `Akaun ${platform.name} berjaya disambungkan dan sedia melancarkan kempen pertama.`,
-        nextStepRecommendation: 'Klik "Studio Iklan AI" untuk melancarkan kempen pertama anda sekarang.'
-      }
+      lastSynced: 'Baru sahaja'
     };
 
-    // 1. Persist to central Supabase DB
     setDbSaveError(null);
     try {
       const dbRes = await savePlatformConnectionDb(updatedAccount, rawToken);
       if (!dbRes.success) {
-        setDbSaveError(dbRes.message || 'Pangkalan data menolak sambungan (Semak RLS / Kunci Supabase).');
+        setDbSaveError(dbRes.message || 'Pangkalan data menolak sambungan.');
         setIsSaving(false);
         return;
       }
@@ -629,7 +492,6 @@ export default function PlatformConnectCard({
       return;
     }
 
-    // 2. Update local state
     if (onUpdateConnection) {
       onUpdateConnection(updatedAccount);
     } else {
@@ -639,13 +501,10 @@ export default function PlatformConnectCard({
     setIsSaving(false);
     setSaveSuccess(true);
 
-    // 3. Trigger immediate live campaign fetch for newly connected account
     setTimeout(() => {
       setSaveSuccess(false);
       setShowConnectModal(false);
-      setShowDetailModal(true);
-      handleSyncLiveMetrics();
-    }, 600);
+    }, 500);
   };
 
   const handleDisconnect = async () => {
@@ -660,7 +519,6 @@ export default function PlatformConnectCard({
       // Ignore
     }
     onToggleConnect(platform.id);
-    setShowDetailModal(false);
   };
 
   const renderIcon = () => {
@@ -708,47 +566,60 @@ export default function PlatformConnectCard({
     <>
       {/* ================= ULTRA-CLEAN MINIMAL CARD ================= */}
       <div className="bg-white rounded-3xl p-5 shadow-xs border border-slate-100 hover:border-slate-200 transition-all flex items-center justify-between gap-4">
-        {/* Left: Logo & Name */}
-        <div
-          onClick={() => platform.isConnected && setShowDetailModal(true)}
-          className={`flex items-center space-x-3.5 min-w-0 ${platform.isConnected ? 'cursor-pointer' : ''}`}
-        >
-          {renderIcon()}
-          <div className="min-w-0">
-            <div className="flex items-center space-x-2">
-              <h3 className="text-sm font-semibold text-slate-900 truncate">{platform.name}</h3>
-              {platform.isConnected ? (
+        {/* Left: Logo & Name (Links directly to Dedicated Analytics page if connected) */}
+        {platform.isConnected ? (
+          <Link
+            href={`/admin/ads-analytics/${platform.id}`}
+            className="flex items-center space-x-3.5 min-w-0 group cursor-pointer"
+          >
+            {renderIcon()}
+            <div className="min-w-0">
+              <div className="flex items-center space-x-2">
+                <h3 className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                  {platform.name}
+                </h3>
                 <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">
                   <Check className="w-2.5 h-2.5" />
                   Tersambung
                 </span>
-              ) : (
+              </div>
+              <p className="text-xs text-slate-400 truncate mt-0.5 font-mono">
+                {platform.accountName || platform.accountId}
+              </p>
+            </div>
+          </Link>
+        ) : (
+          <div className="flex items-center space-x-3.5 min-w-0">
+            {renderIcon()}
+            <div className="min-w-0">
+              <div className="flex items-center space-x-2">
+                <h3 className="text-sm font-semibold text-slate-900 truncate">{platform.name}</h3>
                 <span className="text-[10px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full shrink-0">
                   Belum Disambung
                 </span>
-              )}
+              </div>
+              <p className="text-xs text-slate-400 truncate mt-0.5">
+                Klik sambung untuk hubungkan akaun rasmi
+              </p>
             </div>
-            <p className="text-xs text-slate-400 truncate mt-0.5">
-              {platform.isConnected ? platform.accountName || platform.accountId : 'Klik sambung untuk hubungkan akaun rasmi'}
-            </p>
           </div>
-        </div>
+        )}
 
         {/* Right: Actions */}
         <div className="flex items-center space-x-2 shrink-0">
           {platform.isConnected ? (
             <>
-              <button
-                type="button"
-                onClick={() => setShowDetailModal(true)}
-                className="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors"
+              <Link
+                href={`/admin/ads-analytics/${platform.id}`}
+                className="px-4 py-2 rounded-full text-xs font-medium text-slate-800 hover:text-slate-950 bg-slate-100 hover:bg-slate-200 transition-all flex items-center space-x-1 shadow-2xs"
               >
-                Lihat Analitik
-              </button>
+                <span>Buka Analitik</span>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              </Link>
               <button
                 type="button"
                 onClick={handleDisconnect}
-                className="p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                className="p-2 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                 title="Putuskan sambungan"
               >
                 <Unlink className="w-4 h-4" />
@@ -767,7 +638,7 @@ export default function PlatformConnectCard({
         </div>
       </div>
 
-      {/* ================= MODAL 1: SAMBUNG API (ULTRA CLEAN & MINIMALIST) ================= */}
+      {/* ================= MODAL: SAMBUNG API (CREDENTIAL ENTRY ONLY) ================= */}
       {showConnectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
           <div
@@ -813,7 +684,7 @@ export default function PlatformConnectCard({
               {/* LEFT COLUMN: Clean Form */}
               <div className={showHelpGuide ? 'md:col-span-6 space-y-3' : 'space-y-3'}>
                 <form onSubmit={handleSaveConnection} className="space-y-3">
-                  {/* FIELD 1: Account ID with Input Group */}
+                  {/* FIELD 1: Account ID */}
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-slate-700">
                       {config.field1Label} <span className="text-rose-500">*</span>
@@ -869,7 +740,7 @@ export default function PlatformConnectCard({
                     </div>
                   </div>
 
-                  {/* FIELD 3: Pixel / Dataset ID with Input Group */}
+                  {/* FIELD 3: Pixel / Dataset ID */}
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-slate-600">
                       {config.field3Label} <span className="text-slate-400 text-[10px] font-normal">(Pilihan)</span>
@@ -883,7 +754,6 @@ export default function PlatformConnectCard({
                       <input
                         type="text"
                         inputMode={config.field3Prefix === 'pix_' ? 'numeric' : 'text'}
-                        required={config.field3Required}
                         value={field3Input}
                         onChange={(e) => {
                           const raw = e.target.value;
@@ -895,12 +765,9 @@ export default function PlatformConnectCard({
                         className="w-full px-3.5 py-2.5 bg-transparent text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none font-mono tracking-wide"
                       />
                     </div>
-                    {config.field3Subtext && (
-                      <p className="text-[10px] text-slate-400">{config.field3Subtext}</p>
-                    )}
                   </div>
 
-                  {/* TEST CONNECTION RESULT CARD */}
+                  {/* Test Ping Result */}
                   {testResult && (
                     <div
                       className={`rounded-xl p-3 text-xs space-y-2 animate-in zoom-in-95 border ${
@@ -924,27 +791,7 @@ export default function PlatformConnectCard({
                           </span>
                         )}
                       </div>
-
-                      {testResult.status === 'success' ? (
-                        <div className="space-y-1 text-[11px] bg-white/80 rounded-lg p-2.5 border border-emerald-100">
-                          <div className="flex items-center justify-between text-slate-600">
-                            <span>Akaun Disahkan:</span>
-                            <span className="font-semibold text-slate-900">{testResult.accountName}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-slate-600">
-                            <span>ID:</span>
-                            <span className="font-mono text-slate-800">{testResult.accountId}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-slate-600">
-                            <span>Baki:</span>
-                            <span className="font-semibold text-slate-900">
-                              {testResult.currency} {testResult.balance.toFixed(2)}
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-[11px] text-rose-700 leading-snug">{testResult.message}</p>
-                      )}
+                      <p className="text-[11px] leading-snug">{testResult.message}</p>
                     </div>
                   )}
 
@@ -991,12 +838,7 @@ export default function PlatformConnectCard({
 
                       <button
                         type="submit"
-                        disabled={
-                          isSaving ||
-                          !field1Input.trim() ||
-                          !field2Input.trim() ||
-                          (config.field3Required && !field3Input.trim())
-                        }
+                        disabled={isSaving || !field1Input.trim() || !field2Input.trim()}
                         className="px-4 py-2 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium transition-all shadow-xs flex items-center space-x-1.5 disabled:opacity-40"
                       >
                         {isSaving ? (
@@ -1018,7 +860,7 @@ export default function PlatformConnectCard({
                 </form>
               </div>
 
-              {/* RIGHT COLUMN: Clean Side Panel Guide (Only shows when Panduan button is clicked) */}
+              {/* RIGHT COLUMN: Guide */}
               {showHelpGuide && (
                 <div className="md:col-span-6 bg-slate-50/90 rounded-2xl p-4 border border-slate-200/70 space-y-3 animate-in fade-in">
                   <div className="flex items-center justify-between pb-1.5 border-b border-slate-200/60">
@@ -1058,356 +900,6 @@ export default function PlatformConnectCard({
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ================= MODAL 2: DETAIL & ANALYTICS POPUP (MEMBACA DATA SEBENAR DARI KEMPEN) ================= */}
-      {showDetailModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-xl w-full shadow-2xl space-y-5 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center space-x-3">
-                {renderIcon()}
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <h3 className="text-sm font-semibold text-slate-900">{platform.name}</h3>
-                    <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      Aktif &amp; Disahkan
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-400">Profil Rasmi &amp; Data Prestasi Sebenar</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  type="button"
-                  onClick={() => handleSyncLiveMetrics()}
-                  disabled={isSyncing}
-                  className="px-3 py-1.5 rounded-full text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center space-x-1"
-                  title="Segerakkan data terkini daripada API"
-                >
-                  <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
-                  <span>{isSyncing ? 'Menyegerak...' : syncSuccess ? 'Diselaraskan' : 'Segerak API'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowDetailModal(false)}
-                  className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Complete Account & Business Profile Info */}
-            <div className="bg-slate-50 rounded-2xl p-4 text-xs space-y-2.5 font-sans border border-slate-200/60">
-              <div className="flex items-center justify-between text-slate-600">
-                <span>Nama Profil Perniagaan:</span>
-                <span className="font-semibold text-slate-900">{platform.accountName || `SFV APPAREL Official (${platform.name})`}</span>
-              </div>
-              <div className="flex items-center justify-between text-slate-600">
-                <span>ID Akaun / WABA / Pixel:</span>
-                <span className="font-mono text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200/80">
-                  {platform.accountId || 'Tersambung'}
-                </span>
-              </div>
-              {platform.pixelId && (
-                <div className="flex items-center justify-between text-slate-600">
-                  <span>Pixel / Dataset ID:</span>
-                  <span className="font-mono text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200/80">
-                    {platform.pixelId}
-                  </span>
-                </div>
-              )}
-              <div className="flex items-center justify-between text-slate-600">
-                <span>Status Sambungan API:</span>
-                <span className="text-emerald-700 font-semibold inline-flex items-center gap-1">
-                  <Check className="w-3 h-3 text-emerald-600" /> Sedia Melancarkan Kempen
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-slate-600 pt-1 border-t border-slate-200/60">
-                <span>Terakhir Diselaraskan:</span>
-                <span className="text-slate-700 font-medium">{platform.lastSynced || 'Baru sahaja'}</span>
-              </div>
-            </div>
-
-            {/* LIVE PERFORMANCE METRICS (100% REAL-TIME DARI META GRAPH API) */}
-            <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                    Metrik Analitik Sebenar
-                  </span>
-                  <span className="text-[11px] text-slate-500 font-medium">
-                    {displayCampaigns.length} Kempen Berdaftar
-                  </span>
-                </div>
-
-                {/* DATE PRESET FILTER PILLS */}
-                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto text-[10px]">
-                  {[
-                    { id: 'today', label: 'Hari Ini' },
-                    { id: 'yesterday', label: 'Semalam' },
-                    { id: 'last_7d', label: '7 Hari' },
-                    { id: 'last_30d', label: '30 Hari' },
-                    { id: 'this_month', label: 'Bulan Ini' },
-                    { id: 'maximum', label: 'Sepanjang Masa' },
-                  ].map((preset) => (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedDatePreset(preset.id);
-                        handleSyncLiveMetrics(preset.id);
-                      }}
-                      disabled={isSyncing}
-                      className={`px-2 py-1 rounded-lg font-medium whitespace-nowrap transition-all ${
-                        selectedDatePreset === preset.id
-                          ? 'bg-white text-slate-900 shadow-xs font-semibold'
-                          : 'text-slate-500 hover:text-slate-800'
-                      }`}
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* KPI Cards */}
-              <div className="grid grid-cols-3 gap-2.5 text-center">
-                <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                  <span className="text-[10px] text-slate-400 block uppercase font-medium">Belanja Sebenar</span>
-                  <span className="text-sm font-semibold text-slate-900 font-mono">
-                    RM {realTotalSpent.toFixed(2)}
-                  </span>
-                </div>
-                <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                  <span className="text-[10px] text-slate-400 block uppercase font-medium truncate" title={livePrimaryResultLabel}>
-                    {livePrimaryResultLabel}
-                  </span>
-                  <span className="text-sm font-semibold text-emerald-600 font-mono">
-                    {realTotalLeads} {realTotalLeads > 0 ? (livePrimaryResultLabel.toLowerCase().includes('klik') ? 'Klik' : 'Orang') : ''}
-                  </span>
-                </div>
-                <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                  <span className="text-[10px] text-slate-400 block uppercase font-medium">Kos / Hasil</span>
-                  <span className="text-sm font-semibold text-slate-900 font-mono">
-                    {realTotalLeads > 0 ? `RM ${realCostPerLead.toFixed(2)}` : 'Tiada Data'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Secondary Live Breakdown: Jangkauan, Paparan, Klik Pautan */}
-              {(realTotalImpressions > 0 || (liveTotalReach !== null && liveTotalReach > 0)) && (
-                <div className="flex items-center justify-between px-3.5 py-2 bg-slate-50/90 rounded-2xl text-[10px] text-slate-600 font-mono border border-slate-200/60 shadow-2xs">
-                  <span>
-                    Jangkauan: <strong className="text-slate-900">{(liveTotalReach || 0).toLocaleString()}</strong>
-                  </span>
-                  <span>•</span>
-                  <span>
-                    Paparan: <strong className="text-slate-900">{realTotalImpressions.toLocaleString()}</strong>
-                  </span>
-                  <span>•</span>
-                  <span>
-                    Klik Pautan: <strong className="text-slate-900">{(liveTotalLinkClicks || 0).toLocaleString()}</strong>
-                  </span>
-                </div>
-              )}
-
-              {/* Status synchronization info */}
-              {syncStatusMsg && (
-                <div
-                  className={`text-[11px] px-3 py-2 rounded-xl border flex items-start justify-between gap-2 ${
-                    syncSuccess
-                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200/80'
-                      : 'bg-rose-50 text-rose-800 border-rose-200/80'
-                  }`}
-                >
-                  <span className="flex-1 leading-snug">{syncStatusMsg}</span>
-                  {syncSuccess ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                  ) : (
-                    <X className="w-3.5 h-3.5 text-rose-600 shrink-0 mt-0.5" />
-                  )}
-                </div>
-              )}
-
-              {/* Breakdown of actual campaigns attached to this platform with real live controls */}
-              {displayCampaigns.length > 0 ? (
-                <div className="space-y-2 pt-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-slate-700 block">
-                      Kawalan &amp; Status Kempen Langsung:
-                    </span>
-                    <a
-                      href={`https://business.facebook.com/adsmanager/manage/campaigns?act=${(platform.accountId || '').replace(/^act_/i, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[10px] text-blue-600 hover:text-blue-800 font-medium inline-flex items-center space-x-1"
-                    >
-                      <span>Urus di Ads Manager</span>
-                      <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  </div>
-
-                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    {displayCampaigns.map((c) => (
-                      <div
-                        key={c.id}
-                        className="bg-slate-50/90 rounded-2xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs border border-slate-200/70 shadow-2xs"
-                      >
-                        <div className="min-w-0 flex-1 space-y-1">
-                          <div className="flex items-center space-x-2">
-                            <span
-                              className={`w-2 h-2 rounded-full shrink-0 ${
-                                c.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'
-                              }`}
-                            />
-                            <p className="font-semibold text-slate-900 truncate text-xs">{c.name}</p>
-                            <span
-                              className={`text-[10px] px-1.5 py-0.2 rounded font-medium ${
-                                c.status === 'active'
-                                  ? 'text-emerald-700 bg-emerald-100/80'
-                                  : 'text-amber-700 bg-amber-100/80'
-                              }`}
-                            >
-                              {c.status === 'active' ? 'Aktif' : 'Dijeda'}
-                            </span>
-                          </div>
-                          <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-mono flex-wrap">
-                            <span>{c.linkClicks && c.linkClicks > 0 ? `${c.linkClicks} klik pautan` : `${c.clicks} klik`}</span>
-                            <span>•</span>
-                            <span>{c.impressions.toLocaleString()} paparan</span>
-                            {c.reach && c.reach > 0 ? (
-                              <>
-                                <span>•</span>
-                                <span>{c.reach.toLocaleString()} jangkauan</span>
-                              </>
-                            ) : null}
-                            <span>•</span>
-                            <span>
-                              {c.dailyBudget && c.dailyBudget > 0
-                                ? `Bajet: RM${c.dailyBudget.toFixed(2)}/hari`
-                                : 'Bajet di Ad Set'}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-200/50">
-                          <div className="text-left sm:text-right">
-                            <span className="font-semibold text-emerald-600 font-mono text-xs block">
-                              {c.leadsOrConversions} {c.resultLabel || 'Hasil'}
-                            </span>
-                            <span className="text-[10px] text-slate-500 font-mono">
-                              RM {c.spent.toFixed(2)}
-                            </span>
-                          </div>
-
-                          {/* Live Pause / Activate toggle button for Meta API */}
-                          <button
-                            type="button"
-                            onClick={() => handleToggleCampaignStatus(c.id, c.status)}
-                            disabled={isTogglingStatus === c.id}
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors flex items-center space-x-1 ${
-                              c.status === 'active'
-                                ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                                : 'bg-emerald-600 text-white hover:bg-emerald-700'
-                            } disabled:opacity-50`}
-                            title={c.status === 'active' ? 'Jeda kempen ini di Meta' : 'Aktifkan kempen ini di Meta'}
-                          >
-                            {isTogglingStatus === c.id ? (
-                              <RefreshCw className="w-3 h-3 animate-spin" />
-                            ) : c.status === 'active' ? (
-                              <>
-                                <Pause className="w-3 h-3" />
-                                <span>Jeda</span>
-                              </>
-                            ) : (
-                              <>
-                                <Play className="w-3 h-3" />
-                                <span>Aktifkan</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-slate-50 rounded-2xl p-5 text-center space-y-3 border border-slate-200/80">
-                  <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-500">
-                    <Layers className="w-4 h-4" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-800">Tiada Kempen Iklan Dikesan</p>
-                    <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
-                      Akaun Meta anda telah disahkan, tetapi tiada kempen iklan aktif dikesan di Meta Ads Manager pada masa ini.
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-                    {onNavigateToStudio && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowDetailModal(false);
-                          onNavigateToStudio();
-                        }}
-                        className="px-4 py-2 bg-slate-900 hover:bg-black text-white rounded-full text-xs font-medium transition-colors inline-flex items-center space-x-1.5"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Cipta Kempen Iklan</span>
-                      </button>
-                    )}
-                    <a
-                      href={`https://business.facebook.com/adsmanager/manage/campaigns?act=${(platform.accountId || '').replace(/^act_/i, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 rounded-full text-xs font-medium border border-slate-200 transition-colors inline-flex items-center space-x-1"
-                    >
-                      <span>Buka Ads Manager</span>
-                      <ExternalLink className="w-3 h-3 text-slate-400" />
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              {/* Status Note */}
-              <div className="bg-slate-50/80 rounded-2xl p-3.5 text-xs text-slate-600 space-y-1 border border-slate-200/60">
-                <div className="flex items-center space-x-1.5 text-slate-800 font-medium text-[11px]">
-                  <Info className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                  <span>Status Akaun:</span>
-                </div>
-                <p className="text-slate-500 leading-relaxed text-[11px]">
-                  {displayCampaigns.length > 0
-                    ? `Akaun ${platform.name} aktif dan beroperasi dengan kos purata RM${realCostPerLead.toFixed(2)} setiap prospek.`
-                    : `Sambungan API ${platform.name} aktif dan disahkan. Sedia untuk pelancaran kempen.`}
-                </p>
-              </div>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-              <button
-                type="button"
-                onClick={handleDisconnect}
-                className="px-3.5 py-1.5 rounded-full text-xs font-medium text-rose-600 hover:bg-rose-50 border border-rose-200 transition-colors flex items-center space-x-1"
-              >
-                <Unlink className="w-3.5 h-3.5" />
-                <span>Putuskan Sambungan</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowDetailModal(false)}
-                className="px-5 py-2 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium transition-colors cursor-pointer"
-              >
-                Tutup
-              </button>
             </div>
           </div>
         </div>
