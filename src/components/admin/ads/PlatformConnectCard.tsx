@@ -58,6 +58,7 @@ interface PlatformConfig {
   title: string;
   subtitle: string;
   field1Label: string;
+  field1Prefix?: string;
   field1Placeholder: string;
   field1HelpText?: string;
   field1LinkText?: string;
@@ -68,6 +69,7 @@ interface PlatformConfig {
   field2LinkText?: string;
   field2LinkUrl?: string;
   field3Label: string;
+  field3Prefix?: string;
   field3Placeholder: string;
   field3Subtext: string;
   field3Required?: boolean;
@@ -83,15 +85,17 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
         title: 'Sambung API Google Ads',
         subtitle: 'Hubungkan Google Ads Customer ID & Developer Token untuk kempen carian Search & Display',
         field1Label: 'Google Ads Customer ID',
-        field1Placeholder: 'Contoh: 849-201-9482',
+        field1Prefix: 'ID:',
+        field1Placeholder: '849-201-9482',
         field1LinkText: 'Lihat ID di Google Ads',
         field1LinkUrl: 'https://ads.google.com',
         field2Label: 'Google Developer Token / API Key',
-        field2Placeholder: 'Contoh: AIzaSy... / Developer Token',
+        field2Placeholder: 'AIzaSy... / Developer Token',
         field2LinkText: 'Dapatkan di Google Cloud',
         field2LinkUrl: 'https://console.cloud.google.com/apis/credentials',
         field3Label: 'Google Conversion Action ID / Tag',
-        field3Placeholder: 'Contoh: AW-920194820/abc123XYZ',
+        field3Prefix: 'Tag:',
+        field3Placeholder: 'AW-920194820/abc123XYZ',
         field3Subtext: 'Untuk mengesan klik WhatsApp dan jualan di laman web',
         field3Required: false,
         field3LinkText: 'Buka Conversion Center',
@@ -125,15 +129,17 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
         title: 'Sambung API TikTok Ads',
         subtitle: 'Hubungkan TikTok for Business Marketing API untuk pelancaran kempen video automatik',
         field1Label: 'TikTok Advertiser ID',
-        field1Placeholder: 'Contoh: 6982019482019482019',
+        field1Prefix: 'ID:',
+        field1Placeholder: '6982019482019482019',
         field1LinkText: 'Cari ID di TikTok Ads',
         field1LinkUrl: 'https://ads.tiktok.com',
         field2Label: 'TikTok Access Token (Marketing API)',
-        field2Placeholder: 'Contoh: act.tiktok.92a8b3c...',
+        field2Placeholder: 'act.tiktok.92a8b3c...',
         field2LinkText: 'Jana Token di Developer Portal',
         field2LinkUrl: 'https://business-api.tiktok.com/portal/',
         field3Label: 'TikTok Pixel Code',
-        field3Placeholder: 'Contoh: C8ABCDE12345FG678',
+        field3Prefix: 'Pixel:',
+        field3Placeholder: 'C8ABCDE12345FG678',
         field3Subtext: 'Untuk optimasi sasaran audiens sukan dan belia',
         field3Required: false,
         field3LinkText: 'Buka Events Manager',
@@ -167,7 +173,8 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
         title: 'Sambung WhatsApp Cloud API',
         subtitle: 'Hubungkan Meta WhatsApp Business API untuk pengiklanan Click-to-WhatsApp & mesej rasmi',
         field1Label: 'WhatsApp Business Account (WABA) ID',
-        field1Placeholder: 'Contoh: 948201948201 atau waba_948201948201',
+        field1Prefix: 'waba_',
+        field1Placeholder: '948201948201',
         field1LinkText: 'Buka WhatsApp Manager',
         field1LinkUrl: 'https://business.facebook.com/wa/manage/',
         field2Label: 'System User Permanent Access Token',
@@ -175,7 +182,8 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
         field2LinkText: 'Jana di Meta Developers',
         field2LinkUrl: 'https://developers.facebook.com/apps/',
         field3Label: 'Phone Number ID',
-        field3Placeholder: 'Contoh: 104829104829104',
+        field3Prefix: 'ID:',
+        field3Placeholder: '104829104829104',
         field3Subtext: 'ID Nombor telefon yang didaftarkan di WhatsApp Cloud API',
         field3Required: true,
         field3LinkText: 'Cari di Cloud API Setup',
@@ -212,7 +220,8 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
         title: `Sambung API ${platformId === 'instagram' ? 'Instagram Ads' : 'Meta & Facebook Ads'}`,
         subtitle: 'Hubungkan Meta Ads Manager & Graph API untuk kawalan kempen dan penjejakan leads secara langsung',
         field1Label: 'Ad Account ID (Meta)',
-        field1Placeholder: 'Contoh: act_839201948201 atau 839201948201',
+        field1Prefix: 'act_',
+        field1Placeholder: '78803208',
         field1LinkText: 'Cari ID di Ads Manager',
         field1LinkUrl: 'https://business.facebook.com/adsmanager',
         field2Label: 'Meta Access Token (Kunci API Graph / System User)',
@@ -220,7 +229,8 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
         field2LinkText: 'Panduan & Pautan Jana Token',
         field2LinkUrl: 'https://business.facebook.com/settings/system-users',
         field3Label: 'Meta Pixel / Dataset ID',
-        field3Placeholder: 'Contoh: 920194820192',
+        field3Prefix: 'pix_',
+        field3Placeholder: '1562213807685569',
         field3Subtext: 'Untuk menjejak penukaran (conversion) dan borang laman web',
         field3Required: false,
         field3LinkText: 'Buka Events Manager',
@@ -251,6 +261,30 @@ function getPlatformConfig(platformId: AdPlatform): PlatformConfig {
         ]
       };
   }
+}
+
+// Clean and sanitize input value by stripping prefixes and ensuring neat formatting
+function extractCleanValue(val: string, prefix?: string): string {
+  if (!val) return '';
+  let cleaned = val.trim();
+  if (prefix === 'act_') {
+    if (cleaned.includes('act=')) {
+      const match = cleaned.match(/act=([0-9]+)/i);
+      cleaned = match && match[1] ? match[1] : cleaned.replace(/^.*act[=_:]/i, '');
+    } else {
+      cleaned = cleaned.replace(/^act[=_:\s-]*/i, '');
+    }
+    return cleaned.replace(/[^0-9]/g, '');
+  }
+  if (prefix === 'pix_') {
+    cleaned = cleaned.replace(/^pix[=_:\s-]*/i, '');
+    return cleaned.replace(/[^0-9]/g, '');
+  }
+  if (prefix === 'waba_') {
+    cleaned = cleaned.replace(/^waba[=_:\s-]*/i, '');
+    return cleaned.replace(/[^0-9]/g, '');
+  }
+  return cleaned;
 }
 
 export default function PlatformConnectCard({
@@ -312,8 +346,8 @@ export default function PlatformConnectCard({
 
   // Open modal and populate initial values (including from localStorage)
   const handleOpenConnectModal = () => {
-    setField1Input(platform.accountId || '');
-    setField3Input(platform.pixelId || '');
+    setField1Input(extractCleanValue(platform.accountId || '', config.field1Prefix));
+    setField3Input(extractCleanValue(platform.pixelId || '', config.field3Prefix));
     try {
       const storedToken = localStorage.getItem(`svf_platform_token_${platform.id}`) || '';
       setField2Input(storedToken);
@@ -344,12 +378,22 @@ export default function PlatformConnectCard({
     setIsTesting(true);
     setTestResult(null);
 
+    const effectiveAccountId = config.field1Prefix === 'act_' 
+      ? `act_${field1Input.trim()}`
+      : config.field1Prefix === 'waba_'
+        ? `waba_${field1Input.trim()}`
+        : field1Input.trim();
+
+    const effectivePixelId = field3Input.trim() 
+      ? (config.field3Prefix === 'pix_' ? `pix_${field3Input.trim()}` : field3Input.trim())
+      : '';
+
     try {
       const res = await verifyPlatformConnection(
         platform.id,
-        field1Input.trim(),
+        effectiveAccountId,
         field2Input.trim(),
-        field3Input.trim()
+        effectivePixelId
       );
 
       setIsTesting(false);
@@ -358,7 +402,7 @@ export default function PlatformConnectCard({
         setTestResult({
           status: 'success',
           accountName: res.accountName || `SFV APPAREL Official (${platform.name})`,
-          accountId: res.accountId || field1Input.trim(),
+          accountId: res.accountId || effectiveAccountId,
           latencyMs: res.latencyMs || 120,
           balance: res.balance ?? 0,
           currency: res.currency || 'MYR',
@@ -369,7 +413,7 @@ export default function PlatformConnectCard({
         setTestResult({
           status: 'error',
           accountName: '',
-          accountId: field1Input.trim(),
+          accountId: effectiveAccountId,
           latencyMs: res.latencyMs || 0,
           balance: 0,
           currency: 'MYR',
@@ -383,7 +427,7 @@ export default function PlatformConnectCard({
       setTestResult({
         status: 'error',
         accountName: '',
-        accountId: field1Input.trim(),
+        accountId: effectiveAccountId,
         latencyMs: 0,
         balance: 0,
         currency: 'MYR',
@@ -399,9 +443,13 @@ export default function PlatformConnectCard({
     setSyncStatusMsg(null);
     try {
       const storedToken = localStorage.getItem(`svf_platform_token_${platform.id}`) || '';
+      const effectiveAccountId = config.field1Prefix === 'act_' && platform.accountId && !platform.accountId.startsWith('act_')
+        ? `act_${platform.accountId}`
+        : (platform.accountId || (config.field1Prefix === 'act_' ? `act_${field1Input.trim()}` : field1Input.trim()));
+
       const res = await fetchLivePlatformCampaigns(
         platform.id,
-        platform.accountId || field1Input.trim(),
+        effectiveAccountId,
         storedToken
       );
 
@@ -473,6 +521,16 @@ export default function PlatformConnectCard({
       // Ignore
     }
 
+    const effectiveAccountId = config.field1Prefix === 'act_' 
+      ? `act_${field1Input.trim()}`
+      : config.field1Prefix === 'waba_'
+        ? `waba_${field1Input.trim()}`
+        : field1Input.trim();
+
+    const effectivePixelId = field3Input.trim() 
+      ? (config.field3Prefix === 'pix_' ? `pix_${field3Input.trim()}` : field3Input.trim())
+      : undefined;
+
     // If not already verified via test button, do a live verification first
     let verifiedName = testResult?.accountName;
     let verifiedBalance = testResult?.balance;
@@ -482,9 +540,9 @@ export default function PlatformConnectCard({
       try {
         const res = await verifyPlatformConnection(
           platform.id,
-          field1Input.trim(),
+          effectiveAccountId,
           field2Input.trim(),
-          field3Input.trim()
+          effectivePixelId || ''
         );
         if (res.success) {
           verifiedName = res.accountName;
@@ -502,11 +560,11 @@ export default function PlatformConnectCard({
     const updatedAccount: AdPlatformConnection = {
       ...platform,
       isConnected: true,
-      accountId: field1Input.trim(),
+      accountId: effectiveAccountId,
       accountName: verifiedName || `SFV APPAREL Official (${platform.name})`,
       currency: verifiedCurrency || 'MYR',
       balance: verifiedBalance !== undefined ? verifiedBalance : (platform.balance ?? 0),
-      pixelId: field3Input.trim() || undefined,
+      pixelId: effectivePixelId,
       lastSynced: 'Baru sahaja',
       insight: {
         totalSpent: 0,
@@ -693,30 +751,40 @@ export default function PlatformConnectCard({
               {/* LEFT COLUMN: Clean Form */}
               <div className={showHelpGuide ? 'md:col-span-6 space-y-3' : 'space-y-3'}>
                 <form onSubmit={handleSaveConnection} className="space-y-3">
-                  {/* FIELD 1 */}
+                  {/* FIELD 1: Account ID with Input Group */}
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-slate-700">
                       {config.field1Label} <span className="text-rose-500">*</span>
                     </label>
-                    <input
-                      type="text"
-                      required
-                      value={field1Input}
-                      onChange={(e) => {
-                        setField1Input(e.target.value);
-                        setTestResult(null);
-                      }}
-                      placeholder={config.field1Placeholder}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
-                    />
+                    <div className="flex items-stretch rounded-xl overflow-hidden border border-slate-200 bg-slate-50 focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-400 focus-within:bg-white transition-all shadow-2xs">
+                      {config.field1Prefix && (
+                        <span className="inline-flex items-center px-3 bg-slate-100/90 text-slate-500 font-mono text-xs font-semibold select-none border-r border-slate-200 shrink-0">
+                          {config.field1Prefix}
+                        </span>
+                      )}
+                      <input
+                        type="text"
+                        inputMode={config.field1Prefix === 'act_' ? 'numeric' : 'text'}
+                        required
+                        value={field1Input}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          const cleaned = config.field1Prefix ? extractCleanValue(raw, config.field1Prefix) : raw;
+                          setField1Input(cleaned);
+                          setTestResult(null);
+                        }}
+                        placeholder={config.field1Placeholder}
+                        className="w-full px-3.5 py-2.5 bg-transparent text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none font-mono tracking-wide"
+                      />
+                    </div>
                   </div>
 
-                  {/* FIELD 2 */}
+                  {/* FIELD 2: Access Token */}
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-slate-700">
                       {config.field2Label} <span className="text-rose-500">*</span>
                     </label>
-                    <div className="relative">
+                    <div className="relative flex items-stretch rounded-xl overflow-hidden border border-slate-200 bg-slate-50 focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-400 focus-within:bg-white transition-all shadow-2xs">
                       <input
                         type={showToken ? 'text' : 'password'}
                         required
@@ -726,7 +794,7 @@ export default function PlatformConnectCard({
                           setTestResult(null);
                         }}
                         placeholder="Tampal Kunci Akses / Token di sini"
-                        className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                        className="w-full px-3.5 py-2.5 pr-10 bg-transparent text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none font-mono"
                       />
                       <button
                         type="button"
@@ -739,22 +807,35 @@ export default function PlatformConnectCard({
                     </div>
                   </div>
 
-                  {/* FIELD 3 */}
+                  {/* FIELD 3: Pixel / Dataset ID with Input Group */}
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-slate-600">
                       {config.field3Label} <span className="text-slate-400 text-[10px] font-normal">(Pilihan)</span>
                     </label>
-                    <input
-                      type="text"
-                      required={config.field3Required}
-                      value={field3Input}
-                      onChange={(e) => {
-                        setField3Input(e.target.value);
-                        setTestResult(null);
-                      }}
-                      placeholder={config.field3Placeholder}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 text-xs text-slate-800 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
-                    />
+                    <div className="flex items-stretch rounded-xl overflow-hidden border border-slate-200 bg-slate-50 focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-400 focus-within:bg-white transition-all shadow-2xs">
+                      {config.field3Prefix && (
+                        <span className="inline-flex items-center px-3 bg-slate-100/90 text-slate-500 font-mono text-xs font-semibold select-none border-r border-slate-200 shrink-0">
+                          {config.field3Prefix}
+                        </span>
+                      )}
+                      <input
+                        type="text"
+                        inputMode={config.field3Prefix === 'pix_' ? 'numeric' : 'text'}
+                        required={config.field3Required}
+                        value={field3Input}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          const cleaned = config.field3Prefix ? extractCleanValue(raw, config.field3Prefix) : raw;
+                          setField3Input(cleaned);
+                          setTestResult(null);
+                        }}
+                        placeholder={config.field3Placeholder}
+                        className="w-full px-3.5 py-2.5 bg-transparent text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none font-mono tracking-wide"
+                      />
+                    </div>
+                    {config.field3Subtext && (
+                      <p className="text-[10px] text-slate-400">{config.field3Subtext}</p>
+                    )}
                   </div>
 
                   {/* TEST CONNECTION RESULT CARD */}
