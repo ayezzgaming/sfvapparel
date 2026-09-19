@@ -1153,9 +1153,19 @@ export default function PlatformConnectCard({
 
               {/* Status synchronization info */}
               {syncStatusMsg && (
-                <div className="text-[11px] px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 border border-slate-200/60 flex items-center justify-between">
-                  <span>{syncStatusMsg}</span>
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 ml-2" />
+                <div
+                  className={`text-[11px] px-3 py-2 rounded-xl border flex items-start justify-between gap-2 ${
+                    syncSuccess
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200/80'
+                      : 'bg-rose-50 text-rose-800 border-rose-200/80'
+                  }`}
+                >
+                  <span className="flex-1 leading-snug">{syncStatusMsg}</span>
+                  {syncSuccess ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  ) : (
+                    <X className="w-3.5 h-3.5 text-rose-600 shrink-0 mt-0.5" />
+                  )}
                 </div>
               )}
 

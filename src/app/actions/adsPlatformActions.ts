@@ -549,38 +549,20 @@ export async function fetchLivePlatformCampaigns(
 
       let campaignsData = await campaignsRes.json();
 
-      // If initial act_ ID failed, attempt to find user's active ad accounts via /me/adaccounts
-      if (!campaignsRes.ok && campaignsData?.error) {
-        try {
-          const adAccountsUrl = new URL(`https://graph.facebook.com/v20.0/me/adaccounts`);
-          adAccountsUrl.searchParams.append('access_token', effectiveToken);
-          adAccountsUrl.searchParams.append('fields', 'id,name,account_status');
-          const adAccRes = await fetch(adAccountsUrl.toString(), {
-            method: 'GET',
-            headers: { Accept: 'application/json' },
-            cache: 'no-store'
-          });
-          if (adAccRes.ok) {
-            const adAccData = await adAccRes.json();
-            if (adAccData.data && adAccData.data.length > 0) {
-              formattedActId = adAccData.data[0].id;
-              campaignsUrl = new URL(`https://graph.facebook.com/v20.0/${formattedActId}/campaigns`);
-              campaignsUrl.searchParams.append('access_token', effectiveToken);
-              campaignsUrl.searchParams.append(
-                'fields',
-                'id,name,status,effective_status,daily_budget,lifetime_budget,updated_time,objective'
-              );
-              campaignsUrl.searchParams.append('limit', '100');
-              campaignsRes = await fetch(campaignsUrl.toString(), {
-                headers: { Accept: 'application/json' },
-                cache: 'no-store'
-              });
-              campaignsData = await campaignsRes.json();
-            }
-          }
-        } catch {
-          // Ignore
-        }
+      // If initial act_ ID failed, report exact error from Meta Graph API
+      if (!campaignsRes.ok) {
+        const errMsg = campaignsData?.error?.message || `HTTP ${campaignsRes.status}: Gagal memuatkan kempen dari akaun ${formattedActId}`;
+        const errCode = campaignsData?.error?.code ? ` (Kod ${campaignsData.error.code})` : '';
+        return {
+          success: false,
+          campaigns: [],
+          totalSpent: 0,
+          totalLeads: 0,
+          totalClicks: 0,
+          totalImpressions: 0,
+          costPerLead: 0,
+          message: `Ralat Meta Graph API: ${errMsg}${errCode}`
+        };
       }
 
       // 2. Fetch Campaign-Level Insights from Meta Graph API
