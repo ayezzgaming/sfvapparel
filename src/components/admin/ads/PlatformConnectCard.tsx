@@ -902,7 +902,7 @@ export default function PlatformConnectCard({
                       ) : (
                         <>
                           <CheckCircle2 className="w-3.5 h-3.5 text-slate-500" />
-                          <span>Tes Sambungan (Ping)</span>
+                          <span>Tes Ping</span>
                         </>
                       )}
                     </button>
@@ -937,7 +937,7 @@ export default function PlatformConnectCard({
                             <span>Tersambung!</span>
                           </>
                         ) : (
-                          <span>Simpan &amp; Sambung</span>
+                          <span>Sambung</span>
                         )}
                       </button>
                     </div>
