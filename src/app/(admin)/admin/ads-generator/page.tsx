@@ -500,281 +500,255 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
       {/* ======================= TAB 1: STUDIO IKLAN AI ======================= */}
       {activeTab === 'create' && (
         <div className="flex-1 flex flex-col lg:flex-row gap-3 relative items-stretch min-h-0 h-auto lg:h-[calc(100vh-135px)] animate-in fade-in">
-          {/* PANEL KIRI (Full Height Card dengan Scroll Internal & Floating Bottom Prompt) */}
+          {/* PANEL KIRI (Outer wrapper with overflow-visible for unclipped capsule toggle) */}
           <div
-            className={`bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col relative overflow-hidden transition-all duration-300 ${
+            className={`relative z-20 overflow-visible transition-all duration-300 ${
               isLeftPanelCollapsed
-                ? 'w-0 !p-0 !border-0 opacity-0 pointer-events-none'
+                ? 'w-0 pointer-events-none'
                 : 'w-full lg:w-[440px] xl:w-[480px] shrink-0'
             }`}
           >
-            {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto p-5 pb-44 space-y-4">
-              {/* Error Notification Banner if API error occurs */}
-              {generationError && (
-                <div className="bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 text-xs rounded-xl p-3.5 flex items-start justify-between gap-3 border border-red-200 dark:border-red-900/50">
-                  <div className="flex-1">
-                    <p className="font-semibold mb-0.5">Ralat Kredensial AI Model</p>
-                    <p className="text-red-600 dark:text-red-300">{generationError}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowKeyModal(true)}
-                    className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-medium transition-colors shrink-0"
-                  >
-                    Tetapkan Key
-                  </button>
-                </div>
-              )}
-
-              {/* 1. SELECT PLATFORM */}
-              <div className="space-y-2">
-                <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block px-1">
-                  1. Saluran Pengiklanan
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-5 gap-2">
-                  {[
-                    { id: 'facebook' as AdPlatform, name: 'Facebook', logo: FacebookLogo },
-                    { id: 'instagram' as AdPlatform, name: 'Instagram', logo: InstagramLogo },
-                    { id: 'google' as AdPlatform, name: 'Google', logo: GoogleAdsLogo },
-                    { id: 'tiktok' as AdPlatform, name: 'TikTok', logo: TikTokLogo },
-                    { id: 'whatsapp' as AdPlatform, name: 'WhatsApp', logo: WhatsAppLogo },
-                  ].map((plat) => {
-                    const Logo = plat.logo;
-                    const isSelected = selectedPlatform === plat.id;
-                    const conn = platforms.find((p) => p.id === plat.id);
-                    const isConnected = conn?.isConnected;
-
-                    return (
-                      <button
-                        key={plat.id}
-                        type="button"
-                        onClick={() => setSelectedPlatform(plat.id)}
-                        className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all text-center ${
-                          isSelected
-                            ? 'bg-slate-50 dark:bg-zinc-800 border-indigo-500 dark:border-indigo-500 shadow-xs ring-1 ring-indigo-500/20'
-                            : 'bg-white dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 hover:bg-slate-50/50 dark:hover:bg-zinc-800/40'
-                        }`}
-                      >
-                        <div className="w-4 h-4 flex items-center justify-center shrink-0">
-                          <Logo className="w-4 h-4" />
-                        </div>
-                        <span className={`text-[11px] truncate w-full ${isSelected ? 'font-semibold text-slate-900 dark:text-zinc-100' : 'font-medium text-slate-700 dark:text-zinc-300'}`}>
-                          {plat.name}
-                        </span>
-                        {isConnected ? (
-                          <span className="inline-flex items-center gap-0.5 text-[8px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.2 rounded-full border border-emerald-200 dark:border-emerald-800/60">
-                            <span className="w-1 h-1 rounded-full bg-emerald-500"></span>
-                            Aktif
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-0.5 text-[8px] font-medium text-slate-400 dark:text-zinc-500">
-                            <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-zinc-600"></span>
-                            Belum
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* 3. POST-GENERATION TUNING CONTROLS (Active when results are available) */}
-              {studioStep === 'result' && (
-                <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-zinc-800 animate-in fade-in">
-                  <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block px-1">
-                    2. Penalaan &amp; Pelancaran Kempen
-                  </span>
-
-                  {/* Combobox for Angle / Variation Selection */}
-                  <div>
-                    <label className="text-[11px] font-medium text-slate-600 dark:text-zinc-400 block mb-1">
-                      Pilihan Sudut Iklan ({aiVariations.length} Variasi)
-                    </label>
-                    <select
-                      value={selectedVariationIndex}
-                      onChange={(e) => setSelectedVariationIndex(Number(e.target.value))}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate"
-                    >
-                      {aiVariations.map((v, idx) => (
-                        <option key={v.id || idx} value={idx}>
-                          {v.angleName || `Variasi ${idx + 1}`}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Product Catalog Selector */}
-                  <div>
-                    <label className="text-[11px] font-medium text-slate-600 dark:text-zinc-400 block mb-1">
-                      Produk Katalog
-                    </label>
-                    <select
-                      value={selectedDesignId || (designs[0]?.id ?? '')}
-                      onChange={(e) => {
-                        setSelectedDesignId(e.target.value);
-                        setCustomImage(null);
-                        setCustomTitle(null);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate"
-                    >
-                      {designs.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.title}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Daily Budget */}
-                  <div>
-                    <label className="text-[11px] font-medium text-slate-600 dark:text-zinc-400 block mb-1">
-                      Belanjawan Harian (RM)
-                    </label>
-                    <input
-                      type="number"
-                      min="10"
-                      step="5"
-                      value={dailyBudget}
-                      onChange={(e) => setDailyBudget(Number(e.target.value))}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
-                    />
-                  </div>
-
-                  {/* Launch & Copy Buttons */}
-                  <div className="pt-2 space-y-2">
-                    <button
-                      type="button"
-                      onClick={handlePublishCampaign}
-                      disabled={isPublishing}
-                      className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-semibold transition-all flex items-center justify-center space-x-2 disabled:opacity-50 shadow-xs cursor-pointer"
-                    >
-                      {isPublishing ? (
-                        <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          <span>Melancarkan...</span>
-                        </>
-                      ) : publishSuccess ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>Kempen Berjaya Dilancarkan!</span>
-                        </>
-                      ) : (
-                        <span>Lancar Kempen Iklan</span>
-                      )}
-                    </button>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={handleCopyContent}
-                        className="flex-1 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-300 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 border border-slate-200/60 dark:border-zinc-700 transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
-                      >
-                        {copied ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Teks Disalin</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5 text-slate-400" />
-                            <span>Salin Teks</span>
-                          </>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleGenerateAi}
-                        disabled={isGeneratingAi}
-                        className="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 border border-slate-200/60 dark:border-zinc-700 transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
-                        title="Jana semula variasi iklan"
-                      >
-                        <RefreshCw className={`w-3 h-3 ${isGeneratingAi ? 'animate-spin' : ''}`} />
-                        <span>Jana Semula</span>
-                      </button>
+            {/* Inner Card Container */}
+            <div
+              className={`w-full h-full bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col relative overflow-hidden transition-all duration-300 ${
+                isLeftPanelCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+              }`}
+            >
+              {/* Scrollable Content Area */}
+              <div className="flex-1 overflow-y-auto p-5 pb-28 space-y-4">
+                {/* Error Notification Banner if API error occurs */}
+                {generationError && (
+                  <div className="bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 text-xs rounded-xl p-3.5 flex items-start justify-between gap-3 border border-red-200 dark:border-red-900/50">
+                    <div className="flex-1">
+                      <p className="font-semibold mb-0.5">Ralat Kredensial AI Model</p>
+                      <p className="text-red-600 dark:text-red-300">{generationError}</p>
                     </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Floating Prompt Input Box at the Bottom of Left Panel */}
-            <div className="absolute bottom-4 left-4 right-4 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-zinc-700 shadow-md p-3 z-10 flex flex-col gap-2 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all">
-              {/* Text Input / Textarea */}
-              <textarea
-                rows={2}
-                value={userPrompt}
-                onChange={(e) => setUserPrompt(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey && userPrompt.trim() && !isGeneratingAi) {
-                    e.preventDefault();
-                    handleGenerateAi();
-                  }
-                }}
-                placeholder={`Tulis arahan kempen untuk ${
-                  selectedPlatform === 'facebook'
-                    ? 'Facebook Ads'
-                    : selectedPlatform === 'instagram'
-                    ? 'Instagram Ads'
-                    : selectedPlatform === 'google'
-                    ? 'Google Search Ads'
-                    : selectedPlatform === 'tiktok'
-                    ? 'TikTok Video Ads'
-                    : 'WhatsApp Direct Leads'
-                }...`}
-                className="w-full bg-transparent resize-none border-0 focus:ring-0 focus:outline-none text-sm text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 font-sans p-1"
-              />
-
-              {/* Bottom Action Bar inside the floating box */}
-              <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/50 dark:border-zinc-700/50">
-                {/* Left Side: + Button & Selected Product Chip */}
-                <div className="flex items-center space-x-2 min-w-0" ref={attachMenuRef}>
-                  {/* + (Plus) Attachment Button with Popover */}
-                  <div className="relative shrink-0">
                     <button
                       type="button"
-                      onClick={() => setShowAttachMenu(!showAttachMenu)}
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
-                        showAttachMenu ? 'bg-slate-200 dark:bg-zinc-700 text-slate-900 dark:text-zinc-100' : 'hover:bg-slate-200/80 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-400'
-                      }`}
-                      title="Tambah lampiran (Foto atau Produk)"
+                      onClick={() => setShowKeyModal(true)}
+                      className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-medium transition-colors shrink-0 cursor-pointer"
                     >
-                      <Plus className="w-3.5 h-3.5" />
+                      Tetapkan Key
                     </button>
+                  </div>
+                )}
 
-                    {/* Dropdown Menu for Attachment Choices */}
-                    {showAttachMenu && (
-                      <div className="absolute left-0 bottom-9 z-30 w-52 bg-white dark:bg-zinc-800 rounded-xl p-1.5 shadow-xl border border-slate-100 dark:border-zinc-700 text-xs space-y-0.5 animate-in fade-in zoom-in-95">
+                {/* 1. SELECT PLATFORM */}
+                <div className="space-y-2">
+                  <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block px-1">
+                    1. Saluran Pengiklanan
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-5 gap-2">
+                    {[
+                      { id: 'facebook' as AdPlatform, name: 'Facebook', logo: FacebookLogo },
+                      { id: 'instagram' as AdPlatform, name: 'Instagram', logo: InstagramLogo },
+                      { id: 'google' as AdPlatform, name: 'Google', logo: GoogleAdsLogo },
+                      { id: 'tiktok' as AdPlatform, name: 'TikTok', logo: TikTokLogo },
+                      { id: 'whatsapp' as AdPlatform, name: 'WhatsApp', logo: WhatsAppLogo },
+                    ].map((plat) => {
+                      const Logo = plat.logo;
+                      const isSelected = selectedPlatform === plat.id;
+                      const conn = platforms.find((p) => p.id === plat.id);
+                      const isConnected = conn?.isConnected;
+
+                      return (
+                        <button
+                          key={plat.id}
+                          type="button"
+                          onClick={() => setSelectedPlatform(plat.id)}
+                          className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all text-center ${
+                            isSelected
+                              ? 'bg-slate-50 dark:bg-zinc-800 border-indigo-500 dark:border-indigo-500 shadow-xs ring-1 ring-indigo-500/20'
+                              : 'bg-white dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 hover:bg-slate-50/50 dark:hover:bg-zinc-800/40'
+                          }`}
+                        >
+                          <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                            <Logo className="w-4 h-4" />
+                          </div>
+                          <span className={`text-[11px] truncate w-full ${isSelected ? 'font-semibold text-slate-900 dark:text-zinc-100' : 'font-medium text-slate-700 dark:text-zinc-300'}`}>
+                            {plat.name}
+                          </span>
+                          {isConnected ? (
+                            <span className="inline-flex items-center gap-0.5 text-[8px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.2 rounded-full border border-emerald-200 dark:border-emerald-800/60">
+                              <span className="w-1 h-1 rounded-full bg-emerald-500"></span>
+                              Aktif
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-0.5 text-[8px] font-medium text-slate-400 dark:text-zinc-500">
+                              <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-zinc-600"></span>
+                              Belum
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. POST-GENERATION TUNING CONTROLS (Active when results are available) */}
+                {studioStep === 'result' && (
+                  <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-zinc-800 animate-in fade-in">
+                    <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block px-1">
+                      2. Penalaan &amp; Pelancaran Kempen
+                    </span>
+
+                    {/* Combobox for Angle / Variation Selection */}
+                    <div>
+                      <label className="text-[11px] font-medium text-slate-600 dark:text-zinc-400 block mb-1">
+                        Pilihan Sudut Iklan ({aiVariations.length} Variasi)
+                      </label>
+                      <select
+                        value={selectedVariationIndex}
+                        onChange={(e) => setSelectedVariationIndex(Number(e.target.value))}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate"
+                      >
+                        {aiVariations.map((v, idx) => (
+                          <option key={v.id || idx} value={idx}>
+                            {v.angleName || `Variasi ${idx + 1}`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Product Catalog Selector */}
+                    <div>
+                      <label className="text-[11px] font-medium text-slate-600 dark:text-zinc-400 block mb-1">
+                        Produk Katalog
+                      </label>
+                      <select
+                        value={selectedDesignId || (designs[0]?.id ?? '')}
+                        onChange={(e) => {
+                          setSelectedDesignId(e.target.value);
+                          setCustomImage(null);
+                          setCustomTitle(null);
+                        }}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium truncate"
+                      >
+                        {designs.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Daily Budget */}
+                    <div>
+                      <label className="text-[11px] font-medium text-slate-600 dark:text-zinc-400 block mb-1">
+                        Belanjawan Harian (RM)
+                      </label>
+                      <input
+                        type="number"
+                        min="10"
+                        step="5"
+                        value={dailyBudget}
+                        onChange={(e) => setDailyBudget(Number(e.target.value))}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-400 font-mono"
+                      />
+                    </div>
+
+                    {/* Launch & Copy Buttons */}
+                    <div className="pt-2 space-y-2">
+                      <button
+                        type="button"
+                        onClick={handlePublishCampaign}
+                        disabled={isPublishing}
+                        className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-semibold transition-all flex items-center justify-center space-x-2 disabled:opacity-50 shadow-xs cursor-pointer"
+                      >
+                        {isPublishing ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Melancarkan...</span>
+                          </>
+                        ) : publishSuccess ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Kempen Berjaya Dilancarkan!</span>
+                          </>
+                        ) : (
+                          <span>Lancar Kempen Iklan</span>
+                        )}
+                      </button>
+
+                      <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => {
-                            setShowAttachMenu(false);
-                            setShowCatalogModal(true);
-                          }}
-                          className="w-full px-3 py-2 rounded-lg flex items-center space-x-2.5 hover:bg-slate-50 dark:hover:bg-zinc-700/50 text-slate-700 dark:text-zinc-200 transition-colors text-left"
+                          onClick={handleCopyContent}
+                          className="flex-1 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-zinc-300 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 border border-slate-200/60 dark:border-zinc-700 transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
                         >
-                          <FolderArchive className="w-4 h-4 text-slate-500" />
-                          <span>Pilih dari Katalog</span>
+                          {copied ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Teks Disalin</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5 text-slate-400" />
+                              <span>Salin Teks</span>
+                            </>
+                          )}
                         </button>
                         <button
                           type="button"
-                          onClick={() => {
-                            setShowAttachMenu(false);
-                            fileInputRef.current?.click();
-                          }}
-                          className="w-full px-3 py-2 rounded-lg flex items-center space-x-2.5 hover:bg-slate-50 dark:hover:bg-zinc-700/50 text-slate-700 dark:text-zinc-200 transition-colors text-left"
+                          onClick={handleGenerateAi}
+                          disabled={isGeneratingAi}
+                          className="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 border border-slate-200/60 dark:border-zinc-700 transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
+                          title="Jana semula variasi iklan"
                         >
-                          <Upload className="w-4 h-4 text-slate-500" />
-                          <span>Muat Naik Foto / Mockup</span>
+                          <RefreshCw className={`w-3 h-3 ${isGeneratingAi ? 'animate-spin' : ''}`} />
+                          <span>Jana Semula</span>
                         </button>
                       </div>
-                    )}
+                    </div>
                   </div>
+                )}
+              </div>
+
+              {/* Floating Single-Pill Bar (Exact Gemini Spark Style) */}
+              <div className="absolute bottom-6 left-6 right-6 h-14 bg-white dark:bg-zinc-900 rounded-full border border-slate-200/90 dark:border-zinc-700 shadow-lg px-4 flex items-center gap-3 z-30 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-400 transition-all">
+                {/* Sisi Kiri: Tombol bulat + minimalis & Attachment Menu */}
+                <div className="relative shrink-0 flex items-center gap-2 min-w-0" ref={attachMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setShowAttachMenu(!showAttachMenu)}
+                    className="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 flex items-center justify-center text-slate-500 dark:text-zinc-400 text-lg transition-colors cursor-pointer shrink-0"
+                    title="Tambah lampiran (Foto atau Produk)"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+
+                  {/* Dropdown Menu for Attachment Choices */}
+                  {showAttachMenu && (
+                    <div className="absolute left-0 bottom-12 z-40 w-52 bg-white dark:bg-zinc-800 rounded-2xl p-1.5 shadow-xl border border-slate-100 dark:border-zinc-700 text-xs space-y-0.5 animate-in fade-in zoom-in-95">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAttachMenu(false);
+                          setShowCatalogModal(true);
+                        }}
+                        className="w-full px-3 py-2 rounded-xl flex items-center space-x-2.5 hover:bg-slate-50 dark:hover:bg-zinc-700/50 text-slate-700 dark:text-zinc-200 transition-colors text-left cursor-pointer"
+                      >
+                        <FolderArchive className="w-4 h-4 text-slate-500" />
+                        <span>Pilih dari Katalog</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAttachMenu(false);
+                          fileInputRef.current?.click();
+                        }}
+                        className="w-full px-3 py-2 rounded-xl flex items-center space-x-2.5 hover:bg-slate-50 dark:hover:bg-zinc-700/50 text-slate-700 dark:text-zinc-200 transition-colors text-left cursor-pointer"
+                      >
+                        <Upload className="w-4 h-4 text-slate-500" />
+                        <span>Muat Naik Foto / Mockup</span>
+                      </button>
+                    </div>
+                  )}
 
                   {/* Selected Attachment Chip */}
                   {(customImage || activeDesign) && (
-                    <div className="flex items-center space-x-2 bg-white dark:bg-zinc-800 rounded-lg p-1 pr-2 border border-slate-200/80 dark:border-zinc-700 shadow-2xs min-w-0">
-                      <div className="w-5 h-5 rounded-md overflow-hidden bg-slate-200 shrink-0">
+                    <div className="flex items-center space-x-1.5 bg-slate-100 dark:bg-zinc-800 rounded-full py-1 pl-1.5 pr-2 border border-slate-200/80 dark:border-zinc-700 shrink-0 max-w-[120px]">
+                      <div className="w-4 h-4 rounded-full overflow-hidden bg-slate-200 shrink-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.jpg'}
@@ -782,7 +756,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className="text-[11px] font-medium text-slate-800 dark:text-zinc-200 max-w-[110px] sm:max-w-[140px] truncate">
+                      <span className="text-[10px] font-medium text-slate-700 dark:text-zinc-300 truncate">
                         {customTitle || activeDesign?.title}
                       </span>
                       <button
@@ -792,60 +766,73 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                           setCustomTitle(null);
                           setSelectedDesignId(null);
                         }}
-                        className="w-4 h-4 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 flex items-center justify-center transition-colors shrink-0"
+                        className="w-3.5 h-3.5 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
                         title="Padam lampiran"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-2.5 h-2.5" />
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* Right Side: Generate / Jana Iklan Button */}
+                {/* Tengah: Input teks satu baris tanpa border */}
+                <input
+                  type="text"
+                  value={userPrompt}
+                  onChange={(e) => setUserPrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && userPrompt.trim() && !isGeneratingAi) {
+                      e.preventDefault();
+                      handleGenerateAi();
+                    }
+                  }}
+                  placeholder={`Tulis arahan kempen untuk ${
+                    selectedPlatform === 'facebook'
+                      ? 'Facebook Ads'
+                      : selectedPlatform === 'instagram'
+                      ? 'Instagram Ads'
+                      : selectedPlatform === 'google'
+                      ? 'Google Search Ads'
+                      : selectedPlatform === 'tiktok'
+                      ? 'TikTok Video Ads'
+                      : 'WhatsApp Direct Leads'
+                  }...`}
+                  className="flex-1 bg-transparent border-0 outline-none text-sm text-slate-700 dark:text-zinc-200 placeholder:text-slate-400 focus:ring-0 focus:outline-none p-0 min-w-0"
+                />
+
+                {/* Sisi Kanan: Tombol bulat kirim/generate berikon Sparkles */}
                 <button
                   type="button"
                   onClick={handleGenerateAi}
                   disabled={isGeneratingAi || !userPrompt.trim()}
-                  className="h-8 px-3.5 rounded-xl bg-slate-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all shrink-0 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed shadow-xs"
-                  title="Jana kempen iklan"
+                  className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white text-slate-600 dark:text-zinc-300 flex items-center justify-center transition-colors cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
+                  title="Jana Iklan AI"
                 >
                   {isGeneratingAi ? (
-                    <>
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      <span>Menjana...</span>
-                    </>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : (
-                    <>
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400 dark:text-amber-500" />
-                      <span>Jana Iklan AI</span>
-                    </>
+                    <Sparkles className="w-4 h-4" />
                   )}
                 </button>
               </div>
             </div>
 
-            {/* DOCKED TOGGLE HANDLE BUTTON ON RIGHT EDGE */}
+            {/* TOGGLE CAPSULE HANDLE (Rendered on outer wrapper, outside overflow-hidden) */}
             <button
               type="button"
               onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
               title={isLeftPanelCollapsed ? 'Buka Panel Konfigurasi' : 'Sembunyikan Panel Konfigurasi'}
-              className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-12 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full shadow-md flex items-center justify-center cursor-pointer z-30 hover:scale-105 transition-transform select-none"
+              className={`absolute ${
+                isLeftPanelCollapsed ? 'left-2' : '-right-3'
+              } top-1/2 -translate-y-1/2 w-6 h-14 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full shadow-md flex items-center justify-center cursor-pointer z-50 hover:bg-slate-50 dark:hover:bg-zinc-700 transition-all text-slate-500 hover:scale-105 select-none pointer-events-auto`}
             >
-              <ChevronLeft className="w-3.5 h-3.5 text-slate-500" />
+              {isLeftPanelCollapsed ? (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+              ) : (
+                <ChevronLeft className="w-3.5 h-3.5 text-slate-500" />
+              )}
             </button>
           </div>
-
-          {/* DOCKED TOGGLE HANDLE BUTTON WHEN COLLAPSED */}
-          {isLeftPanelCollapsed && (
-            <button
-              type="button"
-              onClick={() => setIsLeftPanelCollapsed(false)}
-              title="Buka Panel Konfigurasi"
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-6 h-12 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full shadow-md flex items-center justify-center cursor-pointer z-30 hover:scale-105 transition-transform select-none"
-            >
-              <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
-            </button>
-          )}
 
           {/* PANEL KANAN (Full Height Canvas) */}
           <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex-1 flex flex-col p-5 overflow-hidden transition-all duration-300">
