@@ -58,6 +58,53 @@ export default function AdPreviewCard({ platform, creative, connectedAccount }: 
 
   const socialHandle = displayName.toLowerCase().replace(/[^a-z0-9]/g, '');
 
+  // Live Profile Picture State (supports real photo from Graph API or cached connection)
+  const [livePicUrl, setLivePicUrl] = useState<string | undefined>(connectedAccount?.profilePictureUrl);
+
+  useEffect(() => {
+    if (connectedAccount?.profilePictureUrl) {
+      setLivePicUrl(connectedAccount.profilePictureUrl);
+      return;
+    }
+
+    // Auto-fetch real profile picture directly if connected via Meta Graph API
+    if (isConnected && (platform === 'facebook' || platform === 'meta' || platform === 'instagram')) {
+      try {
+        const token =
+          localStorage.getItem('svf_platform_token_facebook') ||
+          localStorage.getItem('svf_platform_token_meta') ||
+          localStorage.getItem('svf_platform_token_instagram');
+
+        if (token) {
+          fetch(
+            `https://graph.facebook.com/v20.0/me?fields=id,name,picture.width(200).height(200)&access_token=${token}`
+          )
+            .then((res) => res.json())
+            .then((data) => {
+              if (data?.picture?.data?.url) {
+                setLivePicUrl(data.picture.data.url);
+              }
+            })
+            .catch(() => {});
+
+          // Also check for connected Facebook Page picture (best for ads)
+          fetch(
+            `https://graph.facebook.com/v20.0/me/accounts?fields=id,name,picture.width(200).height(200)&access_token=${token}`
+          )
+            .then((res) => res.json())
+            .then((data) => {
+              if (data?.data && data.data.length > 0 && data.data[0]?.picture?.data?.url) {
+                setLivePicUrl(data.data[0].picture.data.url);
+              }
+            })
+            .catch(() => {});
+        }
+      } catch {
+        // Ignore
+      }
+    }
+  }, [connectedAccount, isConnected, platform]);
+
   // Format / Placement State
   const [activeFormat, setActiveFormat] = useState<string>('default');
   const [isFbExpanded, setIsFbExpanded] = useState<boolean>(false);
@@ -261,8 +308,20 @@ export default function AdPreviewCard({ platform, creative, connectedAccount }: 
               {/* Authentic Facebook Header */}
               <div className="p-3 sm:p-3.5 flex items-center justify-between">
                 <div className="flex items-center space-x-2.5">
-                  <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs tracking-wider shrink-0 border border-slate-200 shadow-2xs">
-                    {avatarInitials}
+                  <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs tracking-wider shrink-0 border border-slate-200 shadow-2xs overflow-hidden">
+                    {livePicUrl ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={livePicUrl}
+                        alt={displayName}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      avatarInitials
+                    )}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center space-x-1">
@@ -412,8 +471,13 @@ export default function AdPreviewCard({ platform, creative, connectedAccount }: 
                   <div className="w-2/3 bg-white h-full" />
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-7 h-7 rounded-full bg-white text-slate-900 flex items-center justify-center font-bold text-[10px]">
-                    {avatarInitials}
+                  <div className="w-7 h-7 rounded-full bg-white text-slate-900 flex items-center justify-center font-bold text-[10px] overflow-hidden">
+                    {livePicUrl ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={livePicUrl} alt={displayName} className="w-full h-full object-cover" />
+                    ) : (
+                      avatarInitials
+                    )}
                   </div>
                   <div className="min-w-0">
                     <span className="text-[12px] font-semibold text-white block truncate">{displayName}</span>
@@ -470,8 +534,17 @@ export default function AdPreviewCard({ platform, creative, connectedAccount }: 
               <div className="p-3 flex items-center justify-between border-b border-slate-100">
                 <div className="flex items-center space-x-2.5">
                   <div className="w-8 h-8 rounded-full p-0.5 bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shrink-0">
-                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center font-bold text-[9px] text-slate-900">
-                      {avatarInitials}
+                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center font-bold text-[9px] text-slate-900 overflow-hidden">
+                      {livePicUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={livePicUrl}
+                          alt={displayName}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        avatarInitials
+                      )}
                     </div>
                   </div>
                   <div>
@@ -557,9 +630,14 @@ export default function AdPreviewCard({ platform, creative, connectedAccount }: 
                   <div className="w-1/2 bg-white h-full" />
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 rounded-full p-0.5 bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600">
-                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center font-bold text-[8px] text-slate-900">
-                      {avatarInitials}
+                  <div className="w-6 h-6 rounded-full p-0.5 bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shrink-0">
+                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center font-bold text-[8px] text-slate-900 overflow-hidden">
+                      {livePicUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img src={livePicUrl} alt={displayName} className="w-full h-full object-cover rounded-full" />
+                      ) : (
+                        avatarInitials
+                      )}
                     </div>
                   </div>
                   <div>
@@ -599,8 +677,13 @@ export default function AdPreviewCard({ platform, creative, connectedAccount }: 
               <div className="relative z-10 flex items-end justify-between gap-2">
                 <div className="space-y-1.5 text-left flex-1 min-w-0">
                   <div className="flex items-center space-x-1.5">
-                    <div className="w-5 h-5 rounded-full bg-white text-slate-900 flex items-center justify-center font-bold text-[8px]">
-                      {avatarInitials}
+                    <div className="w-5 h-5 rounded-full bg-white text-slate-900 flex items-center justify-center font-bold text-[8px] overflow-hidden">
+                      {livePicUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img src={livePicUrl} alt={displayName} className="w-full h-full object-cover rounded-full" />
+                      ) : (
+                        avatarInitials
+                      )}
                     </div>
                     <span className="text-xs font-semibold text-white truncate">{socialHandle}</span>
                   </div>
@@ -655,8 +738,13 @@ export default function AdPreviewCard({ platform, creative, connectedAccount }: 
               <div className="relative z-10 flex items-end justify-between gap-2 text-left">
                 <div className="space-y-2 flex-1 min-w-0">
                   <div className="flex items-center space-x-1.5">
-                    <div className="w-6 h-6 rounded-full bg-white text-slate-900 flex items-center justify-center font-bold text-[9px]">
-                      {avatarInitials}
+                    <div className="w-6 h-6 rounded-full bg-white text-slate-900 flex items-center justify-center font-bold text-[9px] overflow-hidden">
+                      {livePicUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img src={livePicUrl} alt={displayName} className="w-full h-full object-cover" />
+                      ) : (
+                        avatarInitials
+                      )}
                     </div>
                     <span className="text-xs font-semibold text-white truncate">{socialHandle}</span>
                   </div>
@@ -731,8 +819,13 @@ export default function AdPreviewCard({ platform, creative, connectedAccount }: 
           {activeFormat === 'click_to_chat' && (
             <div className="bg-white rounded-2xl p-4 text-left font-sans space-y-3 border border-slate-200 shadow-2xs">
               <div className="flex items-center space-x-2">
-                <div className="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-                  <WhatsAppLogo className="w-4 h-4 fill-white" />
+                <div className="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 overflow-hidden">
+                  {livePicUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={livePicUrl} alt={displayName} className="w-full h-full object-cover" />
+                  ) : (
+                    <WhatsAppLogo className="w-4 h-4 fill-white" />
+                  )}
                 </div>
                 <div>
                   <h5 className="text-xs font-semibold text-slate-900">{displayName} (WhatsApp)</h5>
@@ -778,8 +871,13 @@ export default function AdPreviewCard({ platform, creative, connectedAccount }: 
             <div className="bg-[#EFEAE2] rounded-3xl overflow-hidden border border-slate-300 shadow-sm font-sans text-left">
               <div className="bg-[#075E54] text-white p-3 flex items-center justify-between">
                 <div className="flex items-center space-x-2.5">
-                  <div className="w-8 h-8 rounded-full bg-white text-slate-900 flex items-center justify-center font-bold text-xs shrink-0">
-                    {avatarInitials}
+                  <div className="w-8 h-8 rounded-full bg-white text-slate-900 flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
+                    {livePicUrl ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={livePicUrl} alt={displayName} className="w-full h-full object-cover" />
+                    ) : (
+                      avatarInitials
+                    )}
                   </div>
                   <div>
                     <div className="flex items-center space-x-1">

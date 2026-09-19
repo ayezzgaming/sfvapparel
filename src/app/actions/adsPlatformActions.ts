@@ -7,6 +7,7 @@ export interface VerifyPlatformResult {
   platform: AdPlatform;
   accountName?: string;
   accountId?: string;
+  profilePictureUrl?: string;
   balance?: number;
   currency?: string;
   statusText?: string;
@@ -52,6 +53,43 @@ export async function verifyMetaConnection(
     const cleanId = digitsOnly.length > 0 ? digitsOnly : rawId.trim();
     const formattedActId = `act_${cleanId}`;
 
+    // Attempt to fetch real live Profile Picture & Pages from Meta Graph API
+    let liveProfilePicUrl: string | undefined;
+    let fallbackUserName: string | undefined;
+    try {
+      const picUrl = new URL(`https://graph.facebook.com/v20.0/me`);
+      picUrl.searchParams.append('access_token', accessToken.trim());
+      picUrl.searchParams.append('fields', 'id,name,picture.width(200).height(200)');
+      const picRes = await fetch(picUrl.toString(), {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store'
+      });
+      if (picRes.ok) {
+        const picData = await picRes.json();
+        fallbackUserName = picData.name;
+        if (picData?.picture?.data?.url) {
+          liveProfilePicUrl = picData.picture.data.url;
+        }
+      }
+
+      // If user has a Facebook Page, use the Page profile picture for authentic ads preview
+      const pagesUrl = new URL(`https://graph.facebook.com/v20.0/me/accounts`);
+      pagesUrl.searchParams.append('access_token', accessToken.trim());
+      pagesUrl.searchParams.append('fields', 'id,name,picture.width(200).height(200)');
+      const pagesRes = await fetch(pagesUrl.toString(), {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store'
+      });
+      if (pagesRes.ok) {
+        const pagesData = await pagesRes.json();
+        if (pagesData?.data && pagesData.data.length > 0 && pagesData.data[0]?.picture?.data?.url) {
+          liveProfilePicUrl = pagesData.data[0].picture.data.url;
+        }
+      }
+    } catch {
+      // Ignore picture fetch error
+    }
+
     const url = new URL(`https://graph.facebook.com/v20.0/${formattedActId}`);
     url.searchParams.append('access_token', accessToken.trim());
     url.searchParams.append(
@@ -95,7 +133,7 @@ export async function verifyMetaConnection(
       try {
         const meUrl = new URL(`https://graph.facebook.com/v20.0/me`);
         meUrl.searchParams.append('access_token', accessToken.trim());
-        meUrl.searchParams.append('fields', 'id,name');
+        meUrl.searchParams.append('fields', 'id,name,picture.width(200).height(200)');
 
         const meRes = await fetch(meUrl.toString(), {
           method: 'GET',
@@ -106,6 +144,9 @@ export async function verifyMetaConnection(
         if (meRes.ok) {
           const meData = await meRes.json();
           latencyMs = Date.now() - startTime;
+          if (meData?.picture?.data?.url) {
+            liveProfilePicUrl = meData.picture.data.url;
+          }
 
           // Check if user has ad accounts
           const adAccountsUrl = new URL(`https://graph.facebook.com/v20.0/me/adaccounts`);
@@ -136,6 +177,7 @@ export async function verifyMetaConnection(
             platform: 'facebook',
             accountName: `${verifiedDisplayName} (Meta API)`,
             accountId: formattedActId,
+            profilePictureUrl: liveProfilePicUrl,
             balance: 0,
             currency: 'MYR',
             statusText: 'Connected (System User Verified)',
@@ -188,13 +230,14 @@ export async function verifyMetaConnection(
       parsedBalance = !isNaN(rawBal) ? rawBal / 100 : 0;
     }
 
-    const businessOrName = data.business_name || data.name || `Meta Ad Account ${formattedActId}`;
+    const businessOrName = data.business_name || data.name || fallbackUserName || `Meta Ad Account ${formattedActId}`;
 
     return {
       success: true,
       platform: 'facebook',
       accountName: businessOrName,
       accountId: data.id || formattedActId,
+      profilePictureUrl: liveProfilePicUrl,
       balance: parsedBalance,
       currency: data.currency || 'MYR',
       statusText,

@@ -320,6 +320,7 @@ export default function PlatformConnectCard({
     status: 'success' | 'error';
     accountName: string;
     accountId: string;
+    profilePictureUrl?: string;
     latencyMs: number;
     balance: number;
     currency: string;
@@ -415,6 +416,7 @@ export default function PlatformConnectCard({
           status: 'success',
           accountName: res.accountName || `SFV APPAREL Official (${platform.name})`,
           accountId: res.accountId || effectiveAccountId,
+          profilePictureUrl: res.profilePictureUrl,
           latencyMs: res.latencyMs || 120,
           balance: res.balance ?? 0,
           currency: res.currency || 'MYR',
@@ -493,7 +495,7 @@ export default function PlatformConnectCard({
         }
         setTimeout(() => setSyncSuccess(false), 2500);
       } else {
-        setLiveCampaigns([]);
+        setSyncSuccess(false);
         setSyncStatusMsg(res.message);
       }
     } catch {
@@ -547,6 +549,7 @@ export default function PlatformConnectCard({
     let verifiedName = testResult?.accountName;
     let verifiedBalance = testResult?.balance;
     let verifiedCurrency = testResult?.currency;
+    let verifiedPicture = testResult?.profilePictureUrl;
 
     if (!testResult || testResult.status !== 'success') {
       try {
@@ -560,6 +563,7 @@ export default function PlatformConnectCard({
           verifiedName = res.accountName;
           verifiedBalance = res.balance;
           verifiedCurrency = res.currency;
+          verifiedPicture = res.profilePictureUrl;
         }
       } catch {
         // Fallback to defaults if offline/bypass
@@ -574,6 +578,7 @@ export default function PlatformConnectCard({
       isConnected: true,
       accountId: effectiveAccountId,
       accountName: verifiedName || `SFV APPAREL Official (${platform.name})`,
+      profilePictureUrl: verifiedPicture || platform.profilePictureUrl,
       currency: verifiedCurrency || 'MYR',
       balance: verifiedBalance !== undefined ? verifiedBalance : (platform.balance ?? 0),
       pixelId: effectivePixelId,

@@ -22,6 +22,7 @@ export interface AdPlatformConnection {
   isConnected: boolean;
   accountId?: string;
   accountName?: string;
+  profilePictureUrl?: string;
   lastSynced?: string;
   currency?: string;
   balance?: number;
