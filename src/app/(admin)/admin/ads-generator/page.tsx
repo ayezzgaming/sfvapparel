@@ -704,60 +704,35 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
             {/* Kotak Input Kapsul di Bagian Bawah (Statis Footer, Anti-Tenggelam) */}
             <div className="shrink-0 pt-2 pb-1 w-full">
-              <div className="bg-white dark:bg-zinc-900 rounded-full border border-slate-300/80 dark:border-zinc-700 shadow-sm px-4 py-2.5 flex items-center gap-3 transition-all focus-within:border-slate-400">
-                {/* Tombol Lampiran (+) */}
-                <div className="relative shrink-0 flex items-center gap-1.5 min-w-0" ref={attachMenuRef}>
-                  <button
-                    type="button"
-                    onClick={() => setShowAttachMenu(!showAttachMenu)}
-                    className="text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors p-0.5 cursor-pointer shrink-0"
-                    title="Lampirkan Produk"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-
-                  {/* Dropdown Menu for Attachment Choices */}
-                  {showAttachMenu && (
-                    <div className="absolute left-0 bottom-12 z-40 w-52 bg-white dark:bg-zinc-800 rounded-2xl p-1.5 shadow-xl border border-slate-100 dark:border-zinc-700 text-xs space-y-0.5 animate-in fade-in zoom-in-95">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowAttachMenu(false);
-                          setShowCatalogModal(true);
-                        }}
-                        className="w-full px-3 py-2 rounded-xl flex items-center space-x-2.5 hover:bg-slate-50 dark:hover:bg-zinc-700/50 text-slate-700 dark:text-zinc-200 transition-colors text-left cursor-pointer"
-                      >
-                        <FolderArchive className="w-4 h-4 text-slate-500" />
-                        <span>Pilih dari Katalog</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowAttachMenu(false);
-                          fileInputRef.current?.click();
-                        }}
-                        className="w-full px-3 py-2 rounded-xl flex items-center space-x-2.5 hover:bg-slate-50 dark:hover:bg-zinc-700/50 text-slate-700 dark:text-zinc-200 transition-colors text-left cursor-pointer"
-                      >
-                        <Upload className="w-4 h-4 text-slate-500" />
-                        <span>Muat Naik Foto / Mockup</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Selected Attachment Chip */}
-                  {(customImage || activeDesign) && (
-                    <div className="flex items-center space-x-1 bg-slate-100 dark:bg-zinc-800 rounded-full py-0.5 pl-1 pr-1.5 border border-slate-200/80 dark:border-zinc-700 shrink-0 max-w-[110px]">
-                      <div className="w-4 h-4 rounded-full overflow-hidden bg-slate-200 shrink-0">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
+              <div
+                className={`bg-white dark:bg-zinc-900 border border-slate-300/80 dark:border-zinc-700 shadow-sm transition-all focus-within:border-slate-400 flex flex-col gap-2 ${
+                  customImage || activeDesign ? 'rounded-2xl p-2.5' : 'rounded-full px-4 py-2.5'
+                }`}
+              >
+                {/* BARIS 1: TRAY LAMPIRAN PRODUK (Hanya Muncul Jika Ada Produk Terpilih) */}
+                {(customImage || activeDesign) && (
+                  <div className="flex items-center gap-2 px-1 pt-0.5 overflow-x-auto">
+                    <div className="inline-flex items-center gap-2 bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-1.5 pr-2.5 max-w-full group">
+                      {/* Thumbnail Gambar Produk */}
+                      {customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img
                           src={customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.jpg'}
-                          alt="Lampiran"
-                          className="w-full h-full object-cover"
+                          alt={customTitle || activeDesign?.title || 'Produk'}
+                          className="w-7 h-7 rounded-lg object-cover shrink-0 border border-slate-200 dark:border-zinc-700"
                         />
-                      </div>
-                      <span className="text-[10px] font-medium text-slate-700 dark:text-zinc-300 truncate">
+                      ) : (
+                        <div className="w-7 h-7 rounded-lg bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                          PRD
+                        </div>
+                      )}
+
+                      {/* Nama Produk */}
+                      <span className="text-xs font-medium text-slate-700 dark:text-zinc-200 truncate max-w-[200px]">
                         {customTitle || activeDesign?.title}
                       </span>
+
+                      {/* Tombol Hapus Lampiran */}
                       <button
                         type="button"
                         onClick={() => {
@@ -765,53 +740,97 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                           setCustomTitle(null);
                           setSelectedDesignId(null);
                         }}
-                        className="w-3 h-3 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                        className="w-4 h-4 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-700 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 transition-colors ml-1 cursor-pointer"
+                        title="Hapus lampiran"
                       >
-                        <X className="w-2 h-2" />
+                        <X className="w-3 h-3" />
                       </button>
                     </div>
-                  )}
+                  </div>
+                )}
+
+                {/* BARIS 2: KONTROL INPUT TEKS (LEBAR PENUH 100% TANPA TERHIMPIT) */}
+                <div className="flex items-center gap-2 w-full">
+                  {/* Tombol Lampiran (+) */}
+                  <div className="relative shrink-0" ref={attachMenuRef}>
+                    <button
+                      type="button"
+                      onClick={() => setShowAttachMenu(!showAttachMenu)}
+                      className="text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors p-1 shrink-0 cursor-pointer"
+                      title="Lampirkan Produk Katalog"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+
+                    {/* Dropdown Menu for Attachment Choices */}
+                    {showAttachMenu && (
+                      <div className="absolute left-0 bottom-10 z-40 w-52 bg-white dark:bg-zinc-800 rounded-2xl p-1.5 shadow-xl border border-slate-100 dark:border-zinc-700 text-xs space-y-0.5 animate-in fade-in zoom-in-95">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowAttachMenu(false);
+                            setShowCatalogModal(true);
+                          }}
+                          className="w-full px-3 py-2 rounded-xl flex items-center space-x-2.5 hover:bg-slate-50 dark:hover:bg-zinc-700/50 text-slate-700 dark:text-zinc-200 transition-colors text-left cursor-pointer"
+                        >
+                          <FolderArchive className="w-4 h-4 text-slate-500" />
+                          <span>Pilih dari Katalog</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowAttachMenu(false);
+                            fileInputRef.current?.click();
+                          }}
+                          className="w-full px-3 py-2 rounded-xl flex items-center space-x-2.5 hover:bg-slate-50 dark:hover:bg-zinc-700/50 text-slate-700 dark:text-zinc-200 transition-colors text-left cursor-pointer"
+                        >
+                          <Upload className="w-4 h-4 text-slate-500" />
+                          <span>Muat Naik Foto / Mockup</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Input Teks Lebar Penuh */}
+                  <input
+                    type="text"
+                    value={userPrompt}
+                    onChange={(e) => setUserPrompt(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && userPrompt.trim() && !isGeneratingAi) {
+                        e.preventDefault();
+                        handleGenerateAi();
+                      }
+                    }}
+                    placeholder={`Tulis arahan kempen untuk ${
+                      selectedPlatform === 'facebook'
+                        ? 'Facebook Ads'
+                        : selectedPlatform === 'instagram'
+                        ? 'Instagram Ads'
+                        : selectedPlatform === 'google'
+                        ? 'Google Search Ads'
+                        : selectedPlatform === 'tiktok'
+                        ? 'TikTok Video Ads'
+                        : 'WhatsApp Direct Leads'
+                    }...`}
+                    className="flex-1 bg-transparent border-0 outline-none text-xs sm:text-sm text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 focus:ring-0 p-0"
+                  />
+
+                  {/* Tombol Kirim */}
+                  <button
+                    type="button"
+                    onClick={handleGenerateAi}
+                    disabled={isGeneratingAi || !userPrompt.trim()}
+                    className="text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 disabled:opacity-30 transition-colors p-1 shrink-0 cursor-pointer"
+                    title="Kirim Arahan"
+                  >
+                    {isGeneratingAi ? (
+                      <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
+                    ) : (
+                      <ArrowUp className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
-
-                {/* Input Teks */}
-                <input
-                  type="text"
-                  value={userPrompt}
-                  onChange={(e) => setUserPrompt(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && userPrompt.trim() && !isGeneratingAi) {
-                      e.preventDefault();
-                      handleGenerateAi();
-                    }
-                  }}
-                  placeholder={`Tulis arahan kempen untuk ${
-                    selectedPlatform === 'facebook'
-                      ? 'Facebook Ads'
-                      : selectedPlatform === 'instagram'
-                      ? 'Instagram Ads'
-                      : selectedPlatform === 'google'
-                      ? 'Google Search Ads'
-                      : selectedPlatform === 'tiktok'
-                      ? 'TikTok Video Ads'
-                      : 'WhatsApp Direct Leads'
-                  }...`}
-                  className="flex-1 bg-transparent border-0 outline-none text-xs sm:text-sm text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 focus:ring-0 p-0 min-w-0"
-                />
-
-                {/* Tombol Kirim */}
-                <button
-                  type="button"
-                  onClick={handleGenerateAi}
-                  disabled={isGeneratingAi || !userPrompt.trim()}
-                  className="text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 disabled:opacity-30 transition-colors p-0.5 cursor-pointer shrink-0"
-                  title="Kirim Arahan"
-                >
-                  {isGeneratingAi ? (
-                    <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
-                  ) : (
-                    <ArrowUp className="w-4 h-4" />
-                  )}
-                </button>
               </div>
             </div>
           </div>
