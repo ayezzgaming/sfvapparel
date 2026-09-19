@@ -437,7 +437,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-hidden p-3 flex flex-col gap-2 bg-[#e8eaed] dark:bg-zinc-950 w-full text-slate-900 dark:text-zinc-100 font-sans">
+    <div className="w-full h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] overflow-hidden bg-[#f0f4f9] dark:bg-zinc-950 flex flex-col text-slate-900 dark:text-zinc-100 font-sans">
       {/* Hidden File Input for Image Upload */}
       <input
         ref={fileInputRef}
@@ -447,10 +447,10 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
         className="hidden"
       />
 
-      {/* Sleek Top Navigation Bar - Ultra Clean, Static & Minimal */}
-      <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md flex flex-wrap items-center justify-between gap-3 p-2.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-2xs shrink-0">
+      {/* Baris Header Tab (Studio Iklan AI, Sambungan API, Kempen Aktif) */}
+      <div className="shrink-0 px-5 pt-3.5 pb-2 flex items-center justify-between">
         {/* Tab Switcher */}
-        <div className="flex items-center space-x-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl">
+        <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-zinc-800/90 backdrop-blur-md p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
           <button
             type="button"
             onClick={() => setActiveTab('create')}
@@ -490,7 +490,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
         <button
           type="button"
           onClick={() => setShowKeyModal(true)}
-          className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-700 dark:text-zinc-300 transition-colors shrink-0 cursor-pointer"
+          className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-zinc-800/90 hover:bg-slate-200 dark:hover:bg-zinc-700 text-xs font-medium text-slate-700 dark:text-zinc-300 transition-colors shrink-0 cursor-pointer border border-slate-200/80 dark:border-zinc-700/80"
           title="Tetapan Model AI & Kunci API"
         >
           <Bot className="w-3.5 h-3.5 text-slate-500" />
@@ -501,8 +501,8 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
       {/* ======================= TAB 1: STUDIO IKLAN AI ======================= */}
       {activeTab === 'create' && (
-        <div className="flex-1 min-h-0 overflow-hidden flex gap-3 relative items-stretch animate-in fade-in">
-          {/* SISI KIRI: PANEL KONTROL (STRUKTUR FLEX ANTI-TENGGELAM) */}
+        <div className="flex-1 min-h-0 overflow-hidden flex items-stretch px-5 pb-4 gap-4 relative animate-in fade-in">
+          {/* SISI KIRI: PANEL KONTROL (Tanpa Kartu Putih, Langsung di Atas #f0f4f9) */}
           <div
             className={`flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out select-none ${
               isLeftPanelCollapsed
@@ -510,8 +510,8 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                 : 'w-[360px] xl:w-[400px] opacity-100'
             }`}
           >
-            {/* Area Konten Kontrol (Scroll Mandiri) */}
-            <div className="flex-1 min-h-0 overflow-y-auto pr-2 pb-2 space-y-3">
+            {/* Area Konten Form (Scroll Internal Mandiri) */}
+            <div className="flex-1 min-h-0 overflow-y-auto pr-2 pb-2 space-y-3.5">
               {/* Error Notification Banner if API error occurs */}
               {generationError && (
                 <div className="bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 text-xs rounded-xl p-3.5 flex items-start justify-between gap-3 border border-red-200 dark:border-red-900/50">
@@ -702,14 +702,14 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
               )}
             </div>
 
-            {/* Kotak Input Kapsul di Bagian Bawah (Statis Footer, Anti-Tenggelam) */}
-            <div className="shrink-0 pt-2 pb-1 w-full">
+            {/* Kotak Input Melayang di Bawah (Struktur 2 Baris Anti-Himpit) */}
+            <div className="shrink-0 pt-2 pb-0 w-full">
               <div
-                className={`bg-white dark:bg-zinc-900 border border-slate-300/80 dark:border-zinc-700 shadow-sm transition-all focus-within:border-slate-400 flex flex-col gap-2 ${
-                  customImage || activeDesign ? 'rounded-2xl p-2.5' : 'rounded-full px-4 py-2.5'
+                className={`bg-white dark:bg-zinc-900 border border-slate-300/80 dark:border-zinc-700 shadow-sm flex flex-col gap-2 p-2.5 transition-all focus-within:border-slate-400 ${
+                  customImage || activeDesign ? 'rounded-2xl' : 'rounded-full px-4 py-2.5'
                 }`}
               >
-                {/* BARIS 1: TRAY LAMPIRAN PRODUK (Hanya Muncul Jika Ada Produk Terpilih) */}
+                {/* Baris Atas: Tray Lampiran Produk (Hanya Muncul Jika Ada Produk Terpilih) */}
                 {(customImage || activeDesign) && (
                   <div className="flex items-center gap-2 px-1 pt-0.5 overflow-x-auto">
                     <div className="inline-flex items-center gap-2 bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl p-1.5 pr-2.5 max-w-full group">
@@ -749,7 +749,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                   </div>
                 )}
 
-                {/* BARIS 2: KONTROL INPUT TEKS (LEBAR PENUH 100% TANPA TERHIMPIT) */}
+                {/* Baris Bawah: Input Teks & Tombol Aksi (Lebar Penuh 100%) */}
                 <div className="flex items-center gap-2 w-full">
                   {/* Tombol Lampiran (+) */}
                   <div className="relative shrink-0" ref={attachMenuRef}>
@@ -757,7 +757,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                       type="button"
                       onClick={() => setShowAttachMenu(!showAttachMenu)}
                       className="text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors p-1 shrink-0 cursor-pointer"
-                      title="Lampirkan Produk Katalog"
+                      title="Lampirkan Produk"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -791,7 +791,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     )}
                   </div>
 
-                  {/* Input Teks Lebar Penuh */}
+                  {/* Input Teks */}
                   <input
                     type="text"
                     value={userPrompt}
@@ -816,7 +816,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     className="flex-1 bg-transparent border-0 outline-none text-xs sm:text-sm text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 focus:ring-0 p-0"
                   />
 
-                  {/* Tombol Kirim */}
+                  {/* Tombol Kirim Minimalis */}
                   <button
                     type="button"
                     onClick={handleGenerateAi}
@@ -835,23 +835,17 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
             </div>
           </div>
 
-          {/* SISI KANAN: KARTU UTAMA (Dengan Ruang Kosong Cadangan di Kanan) */}
-          <div
-            className={`bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out ${
-              isLeftPanelCollapsed
-                ? 'flex-1 max-w-[calc(100%-240px)] mr-auto'
-                : 'flex-1 mr-4'
-            }`}
-          >
-            {/* Gagang Toggle di Dalam Kartu Kanan (left-[5px], Warna #e8eaed) */}
+          {/* SISI KANAN: KARTU PANGGUNG UTAMA (The Floating Stage Card) */}
+          <div className="flex-1 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col h-full relative overflow-hidden transition-all duration-300">
+            {/* Gagang Toggle Kapsul (Ghost Notch) */}
             <button
               type="button"
               onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
               title={isLeftPanelCollapsed ? 'Buka Panel Konfigurasi' : 'Sembunyikan Panel Konfigurasi'}
               className={`absolute left-[5px] top-1/2 -translate-y-1/2 h-12 rounded-full flex items-center justify-center cursor-pointer select-none z-40 transition-all duration-200 ease-out group p-0 border-0 outline-none origin-left ${
                 isLeftPanelCollapsed
-                  ? 'w-5 bg-[#e8eaed] hover:bg-[#dadce0] dark:bg-zinc-700'
-                  : 'w-1.5 hover:w-5 bg-[#e8eaed] hover:bg-[#dadce0] dark:bg-zinc-700'
+                  ? 'w-5 bg-[#f0f4f9] hover:bg-[#e2e7ee] dark:bg-zinc-700'
+                  : 'w-1.5 hover:w-5 bg-[#f0f4f9] hover:bg-[#e2e7ee] dark:bg-zinc-700'
               }`}
             >
               <span
@@ -1003,17 +997,17 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
         {/* ======================= TAB 2: SAMBUNGAN AKAUN API ======================= */}
         {activeTab === 'connections' && (
-          <div className="space-y-4">
-            <div className="bg-slate-50/90 p-4 sm:p-5 rounded-3xl border border-slate-200/80 text-xs text-slate-600 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+          <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-4 space-y-4 animate-in fade-in">
+            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-4 sm:p-5 rounded-3xl border border-slate-200/80 dark:border-zinc-800 text-xs text-slate-600 dark:text-zinc-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
               <div className="space-y-1">
                 <div className="flex items-center space-x-2">
-                  <p className="font-semibold text-slate-900 text-sm">Status Gerbang & Kawalan Pemasaran</p>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  <p className="font-semibold text-slate-900 dark:text-zinc-100 text-sm">Status Gerbang & Kawalan Pemasaran</p>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                     Pangkalan Data Terpusat (Supabase)
                   </span>
                 </div>
-                <p className="text-slate-500">
+                <p className="text-slate-500 dark:text-zinc-400">
                   Data sambungan disimpan ke pelayan berpusat supaya semua komputer/admin boleh melihat status akaun dan metrik yang sama serta-merta.
                 </p>
               </div>
@@ -1022,14 +1016,14 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                   type="button"
                   onClick={fetchDatabaseState}
                   disabled={isSyncingDb}
-                  className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-xs font-medium text-slate-700 transition-colors flex items-center space-x-1.5 shadow-2xs disabled:opacity-50"
+                  className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 border border-slate-200 dark:border-zinc-700 text-xs font-medium text-slate-700 dark:text-zinc-300 transition-colors flex items-center space-x-1.5 shadow-2xs disabled:opacity-50 cursor-pointer"
                   title="Segerak status terkini dari Pangkalan Data"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${isSyncingDb ? 'animate-spin' : ''}`} />
                   <span>{isSyncingDb ? 'Menyegerak...' : 'Segerak Pangkalan Data'}</span>
                 </button>
                 <div className="text-right">
-                  <span className="font-semibold text-slate-900">
+                  <span className="font-semibold text-slate-900 dark:text-zinc-100">
                     {platforms.filter((p) => p.isConnected).length} / {platforms.length}
                   </span>{' '}
                   aktif
@@ -1054,30 +1048,30 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
         {/* ======================= TAB 3: SENARAI KEMPEN AKTIF & PENILAIAN AI ======================= */}
         {activeTab === 'campaigns' && (
-          <div className="space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-4 space-y-4 animate-in fade-in">
             {/* KPI Summary Overview */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="bg-slate-50/80 p-4 rounded-3xl text-center">
+              <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-4 rounded-3xl border border-slate-200/80 dark:border-zinc-800 text-center">
                 <span className="text-[10px] text-slate-400 font-medium uppercase block">Jumlah Belanja</span>
-                <span className="text-base font-semibold text-slate-900 font-mono">
+                <span className="text-base font-semibold text-slate-900 dark:text-zinc-100 font-mono">
                   {formatCurrency(campaigns.reduce((acc, c) => acc + c.spent, 0))}
                 </span>
               </div>
-              <div className="bg-slate-50/80 p-4 rounded-3xl text-center">
+              <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-4 rounded-3xl border border-slate-200/80 dark:border-zinc-800 text-center">
                 <span className="text-[10px] text-slate-400 font-medium uppercase block">Prospek WhatsApp Masuk</span>
                 <span className="text-base font-semibold text-emerald-600 font-mono">
                   {campaigns.reduce((acc, c) => acc + c.leadsOrConversions, 0)} Orang
                 </span>
               </div>
-              <div className="bg-slate-50/80 p-4 rounded-3xl text-center">
+              <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-4 rounded-3xl border border-slate-200/80 dark:border-zinc-800 text-center">
                 <span className="text-[10px] text-slate-400 font-medium uppercase block">Purata Kos / Prospek</span>
-                <span className="text-base font-semibold text-slate-900 font-mono">
+                <span className="text-base font-semibold text-slate-900 dark:text-zinc-100 font-mono">
                   RM {(campaigns.reduce((acc, c) => acc + c.spent, 0) / Math.max(1, campaigns.reduce((acc, c) => acc + c.leadsOrConversions, 0))).toFixed(2)}
                 </span>
               </div>
-              <div className="bg-slate-50/80 p-4 rounded-3xl text-center">
+              <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-4 rounded-3xl border border-slate-200/80 dark:border-zinc-800 text-center">
                 <span className="text-[10px] text-slate-400 font-medium uppercase block">Status Keseluruhan</span>
-                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5 mt-1 border border-emerald-100">
+                <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5 mt-1 border border-emerald-100 dark:border-emerald-800/60">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                   Berjalan Baik
                 </span>
@@ -1085,10 +1079,10 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
             </div>
 
             {/* Campaigns Table with AI Evaluation Notes */}
-            <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-xs">
+            <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 text-xs font-medium border-b border-slate-100">
+                  <thead className="bg-slate-50/80 dark:bg-zinc-800/80 text-slate-500 dark:text-zinc-400 text-xs font-medium border-b border-slate-100 dark:border-zinc-800">
                     <tr>
                       <th className="py-3.5 px-4 font-medium">Nama Kempen & Platform</th>
                       <th className="py-3.5 px-4 font-medium">Objektif</th>
@@ -1099,12 +1093,12 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                       <th className="py-3.5 px-4 text-right font-medium">Tindakan</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-sm">
+                  <tbody className="divide-y divide-slate-100 dark:divide-zinc-800 text-sm">
                     {campaigns.map((camp) => (
-                      <tr key={camp.id} className="hover:bg-slate-50/60 transition-colors">
+                      <tr key={camp.id} className="hover:bg-slate-50/60 dark:hover:bg-zinc-800/60 transition-colors">
                         <td className="py-3.5 px-4">
                           <div className="flex items-center space-x-3">
-                            <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                            <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 shrink-0">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={camp.creative.imageUrl}
@@ -1113,8 +1107,8 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                               />
                             </div>
                             <div>
-                              <span className="font-medium text-slate-800 block text-xs">{camp.name}</span>
-                              <span className="text-[11px] text-slate-400 uppercase font-mono">
+                              <span className="font-medium text-slate-800 dark:text-zinc-200 block text-xs">{camp.name}</span>
+                              <span className="text-[11px] text-slate-400 dark:text-zinc-500 uppercase font-mono">
                                 {camp.platform} · {camp.createdAt}
                               </span>
                             </div>
@@ -1122,25 +1116,25 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                         </td>
 
                         <td className="py-3.5 px-4">
-                          <span className="text-xs text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap">
+                          <span className="text-xs text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap">
                             {camp.objective.replace('_', ' ').toUpperCase()}
                           </span>
                         </td>
 
                         <td className="py-3.5 px-4">
                           {camp.status === 'active' ? (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full whitespace-nowrap border border-emerald-100">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full whitespace-nowrap border border-emerald-100 dark:border-emerald-800/60">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                               Berjalan
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full whitespace-nowrap">
                               Jeda
                             </span>
                           )}
                         </td>
 
-                        <td className="py-3.5 px-4 font-mono text-slate-800 text-xs whitespace-nowrap">
+                        <td className="py-3.5 px-4 font-mono text-slate-800 dark:text-zinc-200 text-xs whitespace-nowrap">
                           {formatCurrency(camp.dailyBudget)}/hari
                         </td>
 
@@ -1149,14 +1143,14 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                             <span className="font-semibold text-emerald-600 font-mono block">
                               {camp.leadsOrConversions} Prospek WA
                             </span>
-                            <span className="text-slate-400 text-[11px] block">
+                            <span className="text-slate-400 dark:text-zinc-500 text-[11px] block">
                               {camp.clicks} klik • {camp.impressions.toLocaleString()} paparan
                             </span>
                           </div>
                         </td>
 
                         <td className="py-3.5 px-4 max-w-xs">
-                          <p className="text-xs text-slate-600 leading-snug">
+                          <p className="text-xs text-slate-600 dark:text-zinc-400 leading-snug">
                             {camp.evaluationNote || 'Kempen memaparkan respons stabil. Teruskan pemantauan baki kredit.'}
                           </p>
                         </td>
@@ -1165,10 +1159,10 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                           <button
                             type="button"
                             onClick={() => handleToggleCampaignStatus(camp.id)}
-                            className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                            className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
                               camp.status === 'active'
-                                ? 'text-slate-600 hover:bg-slate-100 border-slate-200'
-                                : 'text-slate-900 bg-slate-100 hover:bg-slate-200 border-slate-300'
+                                ? 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 border-slate-200 dark:border-zinc-700'
+                                : 'text-slate-900 dark:text-zinc-100 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 border-slate-300 dark:border-zinc-600'
                             }`}
                           >
                             {camp.status === 'active' ? 'Jeda' : 'Aktifkan'}
