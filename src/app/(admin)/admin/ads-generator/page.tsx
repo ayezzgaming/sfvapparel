@@ -224,7 +224,24 @@ export default function AdminAdsGeneratorPage() {
   const [selectedVariationIndex, setSelectedVariationIndex] = useState(0);
   const [selectedHookStyle, setSelectedHookStyle] = useState<string>('diskon');
   const [isAudienceModalOpen, setIsAudienceModalOpen] = useState(false);
+  const [isStudioModalOpen, setIsStudioModalOpen] = useState(false);
   const [bestTimeIndex, setBestTimeIndex] = useState(0);
+
+  // State data konfigurasi Meta Ads lengkap
+  const [metaConfig, setMetaConfig] = useState({
+    destination: 'whatsapp', // 'whatsapp' | 'instagram' | 'website'
+    ageMin: 18,
+    ageMax: 35,
+    gender: 'all', // 'all' | 'male' | 'female'
+    location: 'Malaysia (Semenanjung)',
+    interests: ['Futsal', 'Jersey Printing', 'Sukan Komuniti'],
+    engagedShoppers: true, // Fitur Emas Meta (Behavior: Engaged Shoppers)
+    placementType: 'advantage', // 'advantage' | 'manual'
+    manualPlacements: ['feed', 'stories', 'reels'],
+    scheduleType: 'peak_hours', // 'all_day' | 'peak_hours' (Dayparting Meta)
+    durationDays: 7,
+    dailyBudget: 30,
+  });
 
   const bestTimesList = [
     'Khamis – Ahad (8:00 PM – 10:30 PM)',
@@ -981,95 +998,74 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
             </div>
           </div>
 
-          {/* SISI KANAN: PANEL SETELAN IKLAN & SASARAN */}
+          {/* SISI KANAN: PANEL SETELAN IKLAN & SASARAN (Tingkat 1: Ringkasan Cerdas & Tombol Studio) */}
           {isRightPanelOpen && studioStep === 'result' && (
             <div className="w-72 xl:w-80 shrink-0 h-full flex flex-col justify-between p-4 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm transition-all duration-300">
-              <div className="space-y-5 overflow-y-auto pr-1">
+              <div className="space-y-4 overflow-y-auto pr-1">
                 {/* Header Panel Kanan */}
-                <div className="pb-2 border-b border-slate-100 dark:border-zinc-800">
+                <div className="pb-2 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                   <span className="text-xs font-semibold tracking-wider text-slate-500 dark:text-zinc-400 uppercase">
-                    Setelan Iklan
+                    Ringkasan Kempen (Meta)
+                  </span>
+                  <span className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 font-medium">
+                    Auto-Optimized
                   </span>
                 </div>
 
-                {/* 1. Gaya Hook: MENGGUNAKAN COMBOBOX / DROPDOWN */}
-                <div className="space-y-1.5">
+                {/* 1. Gaya Copywriting (Hook Dropdown) */}
+                <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-600 dark:text-zinc-400 block">
                     Gaya Copywriting (Hook)
                   </label>
-                  <div className="relative">
-                    <select
-                      value={selectedHookStyle}
-                      onChange={(e) => handleSelectHookStyle(e.target.value)}
-                      className="w-full h-10 px-3 py-2 text-xs text-slate-700 dark:text-zinc-200 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 rounded-xl outline-none focus:border-slate-400 focus:bg-white dark:focus:bg-zinc-800 transition-all appearance-none cursor-pointer"
-                    >
-                      <option value="diskon">Tawaran & Diskaun Langsung</option>
-                      <option value="fomo">Urgensi & Kouta Terhad (FOMO)</option>
-                      <option value="story">Komuniti & Semangat Pasukan</option>
-                      <option value="solusi">Kualiti Material & Ketahanan</option>
-                    </select>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    </div>
-                  </div>
+                  <select
+                    value={selectedHookStyle}
+                    onChange={(e) => handleSelectHookStyle(e.target.value)}
+                    className="w-full h-9 px-3 text-xs text-slate-700 dark:text-zinc-200 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl outline-none"
+                  >
+                    <option value="diskon">Tawaran & Diskaun Langsung</option>
+                    <option value="fomo">Urgensi & Kouta Terhad (FOMO)</option>
+                    <option value="story">Komuniti & Pasukan</option>
+                    <option value="solusi">Kualiti Material & Ketahanan</option>
+                  </select>
                 </div>
 
-                {/* 2. Sasaran Audiens (Dengan Ikon Pensil Edit) */}
-                <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-zinc-800">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-600 dark:text-zinc-400">Sasaran Audiens</span>
-                    <button
-                      type="button"
-                      onClick={() => setIsAudienceModalOpen(true)}
-                      className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-md transition-colors cursor-pointer"
-                      title="Ubah Target Audiens"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <div className="p-3 bg-slate-50/70 dark:bg-zinc-800/40 rounded-xl border border-slate-200/60 dark:border-zinc-700/60 space-y-1.5 text-xs text-slate-600 dark:text-zinc-300">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Demografi:</span>
-                      <span className="font-medium text-slate-700 dark:text-zinc-200">18 - 35 thn</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Minat:</span>
-                      <span className="font-medium text-slate-700 dark:text-zinc-200 truncate max-w-[140px]">
-                        Futsal, Jersey, Sukan
+                {/* 2. Sasaran Audiens & Fitur Pembeli Aktif (Ringkasan) */}
+                <div className="p-3 bg-slate-50/70 dark:bg-zinc-800/40 rounded-xl border border-slate-200/60 dark:border-zinc-700/60 space-y-1.5 text-xs text-slate-600 dark:text-zinc-300">
+                  <div className="flex items-center justify-between font-medium text-slate-700 dark:text-zinc-200">
+                    <span>Sasaran Audiens</span>
+                    {metaConfig.engagedShoppers && (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-slate-200 dark:bg-zinc-700 rounded text-slate-700 dark:text-zinc-300 font-medium">
+                        Pembeli Aktif ON
                       </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Wilayah:</span>
-                      <span className="font-medium text-slate-700 dark:text-zinc-200">Malaysia (Semenanjung)</span>
-                    </div>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-zinc-400">
+                    {metaConfig.ageMin}–{metaConfig.ageMax} thn • {metaConfig.gender === 'all' ? 'Semua' : metaConfig.gender} • {metaConfig.location}
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">
+                    Minat: {metaConfig.interests.join(', ')}
                   </div>
                 </div>
 
-                {/* 3. Waktu Siaran Rekomendasi (Dengan Ikon Regenerate Putar) */}
-                <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-zinc-800">
+                {/* 3. Waktu & Durasi Siaran (Ringkasan) */}
+                <div className="p-3 bg-slate-50/70 dark:bg-zinc-800/40 rounded-xl border border-slate-200/60 dark:border-zinc-700/60 space-y-1.5 text-xs text-slate-600 dark:text-zinc-300">
+                  <div className="flex items-center justify-between font-medium text-slate-700 dark:text-zinc-200">
+                    <span>Jadual & Durasi</span>
+                    <span className="text-[11px] font-semibold text-slate-800 dark:text-zinc-200">
+                      {metaConfig.durationDays} Hari
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-zinc-400">
+                    {metaConfig.scheduleType === 'peak_hours'
+                      ? 'Waktu Emas: 7:30 PM – 11:00 PM (Admin Siap)'
+                      : '24 Jam Penuh'}
+                  </div>
+                </div>
+
+                {/* 4. Bajet Harian & Unjuran Ringkas */}
+                <div className="p-3 bg-slate-50/70 dark:bg-zinc-800/40 rounded-xl border border-slate-200/60 dark:border-zinc-700/60 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-600 dark:text-zinc-400">Waktu Siaran Optimal</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRegenerateBestTime()}
-                      className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-md transition-colors cursor-pointer"
-                      title="Cari rekomendasi waktu lain"
-                    >
-                      <RotateCw className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <div className="p-3 bg-slate-50/70 dark:bg-zinc-800/40 rounded-xl border border-slate-200/60 dark:border-zinc-700/60">
-                    <div className="text-xs font-medium text-slate-700 dark:text-zinc-200 flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span>{bestPostTime}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4. Anggaran Harian & Unjuran Ringkas */}
-                <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-zinc-800">
-                  <div className="flex items-center justify-between text-xs font-medium text-slate-600 dark:text-zinc-400">
-                    <span>Bajet Harian</span>
+                    <span className="text-slate-600 dark:text-zinc-400">Bajet Harian</span>
                     <span className="font-semibold text-slate-800 dark:text-zinc-100">RM {dailyBudget}</span>
                   </div>
                   <input
@@ -1081,11 +1077,23 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     onChange={(e) => setDailyBudget(Number(e.target.value))}
                     className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-slate-600"
                   />
-                  <div className="flex justify-between text-[11px] text-slate-500 pt-0.5">
-                    <span>Paparan: ~{(dailyBudget * 180).toLocaleString()}</span>
-                    <span>WhatsApp: ~{Math.round(dailyBudget / 6.5)} prospek</span>
+                  <div className="flex justify-between text-[11px] text-slate-500 dark:text-zinc-400 pt-0.5 border-t border-slate-200/40 dark:border-zinc-700/40">
+                    <span>Jumlah: RM {(dailyBudget * metaConfig.durationDays).toLocaleString()}</span>
+                    <span>~{Math.round(dailyBudget / 6.5)} prospek/hari</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Tombol Akses Konfigurasi Lengkap Meta (Buka Studio Lebar) */}
+              <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsStudioModalOpen(true)}
+                  className="w-full h-9 px-3 text-xs font-medium bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
+                  Konfigurasi Lengkap Meta Ads
+                </button>
               </div>
             </div>
           )}
@@ -1472,6 +1480,264 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                 className="px-5 py-2 rounded-full bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-slate-900 text-xs font-medium shadow-xs transition-colors cursor-pointer"
               >
                 Tutup & Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: STUDIO KONFIGURASI META MARKETING API (GRID 3 KOLOM) */}
+      {isStudioModalOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-2xl w-full max-w-4xl p-6 flex flex-col gap-5 max-h-[90vh]">
+            {/* Header Modal */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800 shrink-0">
+              <div>
+                <h2 className="text-sm font-semibold text-slate-800 dark:text-zinc-100">
+                  Studio Konfigurasi Meta Marketing API
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Parameter resmi pengiklanan Facebook, Instagram, dan WhatsApp Ads
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsStudioModalOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Body Modal: Grid 3 Kolom yang Lega */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 flex-1 overflow-y-auto pr-1 text-xs">
+              {/* KOLOM 1: SASARAN AUDIENS & BEHAVIORS */}
+              <div className="space-y-3.5 p-4 bg-slate-50/60 dark:bg-zinc-800/40 rounded-2xl border border-slate-200/70 dark:border-zinc-700/70">
+                <span className="font-semibold text-slate-700 dark:text-zinc-200 block uppercase tracking-wider text-[11px]">
+                  1. Sasaran Audiens
+                </span>
+
+                {/* Umur */}
+                <div className="space-y-1">
+                  <label className="text-slate-500 dark:text-zinc-400">Rentang Umur</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="18"
+                      max="65"
+                      value={metaConfig.ageMin}
+                      onChange={(e) => setMetaConfig({ ...metaConfig, ageMin: Number(e.target.value) })}
+                      className="w-16 h-8 border border-slate-200 dark:border-zinc-700 rounded-lg text-center bg-white dark:bg-zinc-800 text-slate-800 dark:text-zinc-200"
+                    />
+                    <span className="text-slate-400">s/d</span>
+                    <input
+                      type="number"
+                      min="18"
+                      max="65"
+                      value={metaConfig.ageMax}
+                      onChange={(e) => setMetaConfig({ ...metaConfig, ageMax: Number(e.target.value) })}
+                      className="w-16 h-8 border border-slate-200 dark:border-zinc-700 rounded-lg text-center bg-white dark:bg-zinc-800 text-slate-800 dark:text-zinc-200"
+                    />
+                  </div>
+                </div>
+
+                {/* Jantina */}
+                <div className="space-y-1">
+                  <label className="text-slate-500 dark:text-zinc-400">Jantina</label>
+                  <div className="grid grid-cols-3 gap-1">
+                    {[
+                      { id: 'all', label: 'Semua' },
+                      { id: 'male', label: 'Lelaki' },
+                      { id: 'female', label: 'Wanita' },
+                    ].map((g) => (
+                      <button
+                        key={g.id}
+                        type="button"
+                        onClick={() => setMetaConfig({ ...metaConfig, gender: g.id })}
+                        className={`py-1.5 rounded-lg border text-center transition-colors cursor-pointer ${
+                          metaConfig.gender === g.id
+                            ? 'bg-slate-200 dark:bg-zinc-700 font-semibold text-slate-800 dark:text-zinc-100 border-slate-300 dark:border-zinc-600'
+                            : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
+                        }`}
+                      >
+                        {g.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Minat Resmi Meta */}
+                <div className="space-y-1">
+                  <label className="text-slate-500 dark:text-zinc-400">Minat Sasaran (Interests)</label>
+                  <div className="p-2 border border-slate-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 flex flex-wrap gap-1 min-h-[60px]">
+                    {metaConfig.interests.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center gap-1 bg-slate-100 dark:bg-zinc-700 px-2 py-0.5 rounded-md text-[11px] text-slate-700 dark:text-zinc-200"
+                      >
+                        {tag}
+                        <X
+                          className="w-3 h-3 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer"
+                          onClick={() =>
+                            setMetaConfig({
+                              ...metaConfig,
+                              interests: metaConfig.interests.filter((i) => i !== tag),
+                            })
+                          }
+                        />
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Toggle Emas: Pembeli Aktif (Engaged Shoppers) */}
+                <div className="pt-2 border-t border-slate-200/60 dark:border-zinc-700/60 flex items-center justify-between">
+                  <div>
+                    <span className="font-medium text-slate-700 dark:text-zinc-200 block">Sasaran Pembeli Aktif</span>
+                    <span className="text-[10px] text-slate-400">Behavior ID: 6071559926818</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={metaConfig.engagedShoppers}
+                    onChange={(e) => setMetaConfig({ ...metaConfig, engagedShoppers: e.target.checked })}
+                    className="w-4 h-4 accent-slate-700 cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              {/* KOLOM 2: PENEMPATAN IKLAN (PLACEMENTS) */}
+              <div className="space-y-3.5 p-4 bg-slate-50/60 dark:bg-zinc-800/40 rounded-2xl border border-slate-200/70 dark:border-zinc-700/70">
+                <span className="font-semibold text-slate-700 dark:text-zinc-200 block uppercase tracking-wider text-[11px]">
+                  2. Penempatan Iklan
+                </span>
+
+                <div className="space-y-2">
+                  <label className="flex items-start gap-2.5 p-2.5 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl cursor-pointer">
+                    <input
+                      type="radio"
+                      name="placement"
+                      value="advantage"
+                      checked={metaConfig.placementType === 'advantage'}
+                      onChange={() => setMetaConfig({ ...metaConfig, placementType: 'advantage' })}
+                      className="mt-0.5 accent-slate-700"
+                    />
+                    <div>
+                      <span className="font-medium text-slate-800 dark:text-zinc-200 block">
+                        Advantage+ Placements (Disyorkan)
+                      </span>
+                      <span className="text-[10px] text-slate-400 leading-tight block">
+                        AI Meta mengedarkan iklan automatik ke Feed, Reels, dan Stories dengan kos termurah.
+                      </span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-2.5 p-2.5 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl cursor-pointer">
+                    <input
+                      type="radio"
+                      name="placement"
+                      value="manual"
+                      checked={metaConfig.placementType === 'manual'}
+                      onChange={() => setMetaConfig({ ...metaConfig, placementType: 'manual' })}
+                      className="mt-0.5 accent-slate-700"
+                    />
+                    <div>
+                      <span className="font-medium text-slate-800 dark:text-zinc-200 block">Penempatan Manual</span>
+                      <span className="text-[10px] text-slate-400 leading-tight block">
+                        Pilih platform tertentu (Fokus Stories & Reels 9:16).
+                      </span>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="space-y-1 pt-1">
+                  <label className="text-slate-500 dark:text-zinc-400">Destinasi Mesej</label>
+                  <select
+                    value={metaConfig.destination}
+                    onChange={(e) => setMetaConfig({ ...metaConfig, destination: e.target.value })}
+                    className="w-full h-8 px-2.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-200 cursor-pointer"
+                  >
+                    <option value="whatsapp">WhatsApp Business (Nombor Utama)</option>
+                    <option value="instagram">Instagram Direct Message (DM)</option>
+                    <option value="website">Laman Web / Katalog Tempahan</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* KOLOM 3: JADUAL & JAM TAYANG PINTAR (DAYPARTING) */}
+              <div className="space-y-3.5 p-4 bg-slate-50/60 dark:bg-zinc-800/40 rounded-2xl border border-slate-200/70 dark:border-zinc-700/70">
+                <span className="font-semibold text-slate-700 dark:text-zinc-200 block uppercase tracking-wider text-[11px]">
+                  3. Jadual & Jam Siaran
+                </span>
+
+                <div className="space-y-1.5">
+                  <label className="text-slate-500 dark:text-zinc-400">Durasi Tempoh Siaran</label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { days: 3, label: '3 Hari' },
+                      { days: 7, label: '7 Hari' },
+                      { days: 14, label: '14 Hari' },
+                    ].map((d) => (
+                      <button
+                        key={d.days}
+                        type="button"
+                        onClick={() => setMetaConfig({ ...metaConfig, durationDays: d.days })}
+                        className={`py-1.5 rounded-lg border text-center transition-colors cursor-pointer ${
+                          metaConfig.durationDays === d.days
+                            ? 'bg-slate-200 dark:bg-zinc-700 font-semibold text-slate-800 dark:text-zinc-100 border-slate-300 dark:border-zinc-600'
+                            : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
+                        }`}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 pt-1">
+                  <label className="text-slate-500 dark:text-zinc-400">Mod Jam Siaran (Meta Dayparting)</label>
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 p-2 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg cursor-pointer">
+                      <input
+                        type="radio"
+                        name="schedule"
+                        value="peak_hours"
+                        checked={metaConfig.scheduleType === 'peak_hours'}
+                        onChange={() => setMetaConfig({ ...metaConfig, scheduleType: 'peak_hours' })}
+                        className="accent-slate-700"
+                      />
+                      <span className="text-slate-700 dark:text-zinc-200">Waktu Emas (7:30 PM - 11:00 PM)</span>
+                    </label>
+                    <label className="flex items-center gap-2 p-2 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg cursor-pointer">
+                      <input
+                        type="radio"
+                        name="schedule"
+                        value="all_day"
+                        checked={metaConfig.scheduleType === 'all_day'}
+                        onChange={() => setMetaConfig({ ...metaConfig, scheduleType: 'all_day' })}
+                        className="accent-slate-700"
+                      />
+                      <span className="text-slate-700 dark:text-zinc-200">24 Jam Penuh Tanpa Henti</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Modal: Tombol Aksi */}
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-zinc-800 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsStudioModalOpen(false)}
+                className="h-9 px-4 text-xs font-medium text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-xl transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsStudioModalOpen(false)}
+                className="h-9 px-5 text-xs font-medium bg-slate-900 text-white rounded-xl hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-zinc-200 transition-colors shadow-sm cursor-pointer"
+              >
+                Simpan & Terapkan ke Kempen
               </button>
             </div>
           </div>
