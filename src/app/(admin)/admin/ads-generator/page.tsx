@@ -825,79 +825,88 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
               </span>
             </button>
             {/* Header Kanvas */}
-            <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 dark:border-zinc-800 shrink-0 gap-3">
-              {/* Sisi Kiri: Tab format */}
-              <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl shrink-0">
-                {[
-                  { id: 'feed', label: 'Feed Post' },
-                  { id: 'story', label: 'Stories' },
-                  { id: 'reels', label: 'Reels / Video' },
-                ].map((fmt) => (
-                  <button
-                    key={fmt.id}
-                    type="button"
-                    onClick={() => setAdFormat(fmt.id as 'feed' | 'story' | 'reels')}
-                    className={`px-3 py-1 text-xs font-medium rounded-lg transition-all ${
-                      adFormat === fmt.id
-                        ? 'bg-white dark:bg-zinc-700 text-slate-800 dark:text-zinc-100 shadow-sm font-semibold'
-                        : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400'
-                    }`}
-                  >
-                    {fmt.label}
-                  </button>
-                ))}
-              </div>
+            <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 dark:border-zinc-800 min-h-[56px] shrink-0 gap-3">
+              {studioStep === 'result' ? (
+                <>
+                  {/* Sisi Kiri: Tab Format */}
+                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl shrink-0">
+                    {[
+                      { id: 'feed', label: 'Feed Post' },
+                      { id: 'story', label: 'Stories' },
+                      { id: 'reels', label: 'Reels / Video' },
+                    ].map((fmt) => (
+                      <button
+                        key={fmt.id}
+                        type="button"
+                        onClick={() => setAdFormat(fmt.id as 'feed' | 'story' | 'reels')}
+                        className={`px-3 py-1 text-xs font-medium rounded-lg transition-all ${
+                          adFormat === fmt.id
+                            ? 'bg-white dark:bg-zinc-700 text-slate-800 dark:text-zinc-100 shadow-sm font-semibold'
+                            : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400'
+                        }`}
+                      >
+                        {fmt.label}
+                      </button>
+                    ))}
+                  </div>
 
-              {/* Quick Platform Switcher (Circle Icons Tanpa Teks) */}
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-zinc-800 rounded-full border border-slate-200/60 dark:border-zinc-700">
-                {[
-                  { id: 'facebook' as AdPlatform, name: 'Facebook', Icon: FacebookLogo },
-                  { id: 'instagram' as AdPlatform, name: 'Instagram', Icon: InstagramLogo },
-                  { id: 'google' as AdPlatform, name: 'Google Ads', Icon: GoogleAdsLogo },
-                  { id: 'tiktok' as AdPlatform, name: 'TikTok Ads', Icon: TikTokLogo },
-                  { id: 'whatsapp' as AdPlatform, name: 'WhatsApp', Icon: WhatsAppLogo }
-                ].map(({ id, name, Icon }) => {
-                  const isActive = selectedPlatform === id;
-                  return (
+                  {/* Sisi Kanan: Quick Platform Circle Switcher & Salin Teks */}
+                  <div className="flex items-center gap-3">
+                    {/* 5 Ikon Lingkaran Platform Tanpa Teks */}
+                    <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-zinc-800 rounded-full border border-slate-200/60 dark:border-zinc-700">
+                      {[
+                        { id: 'facebook' as AdPlatform, name: 'Facebook', Icon: FacebookLogo },
+                        { id: 'instagram' as AdPlatform, name: 'Instagram', Icon: InstagramLogo },
+                        { id: 'google' as AdPlatform, name: 'Google Ads', Icon: GoogleAdsLogo },
+                        { id: 'tiktok' as AdPlatform, name: 'TikTok Ads', Icon: TikTokLogo },
+                        { id: 'whatsapp' as AdPlatform, name: 'WhatsApp', Icon: WhatsAppLogo }
+                      ].map(({ id, name, Icon }) => {
+                        const isActive = selectedPlatform === id;
+                        return (
+                          <button
+                            key={id}
+                            type="button"
+                            onClick={() => setSelectedPlatform(id)}
+                            title={`Alihkan Pratinjau ke ${name}`}
+                            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                              isActive 
+                                ? 'bg-white dark:bg-zinc-900 shadow-xs ring-2 ring-blue-500/30 scale-105' 
+                                : 'opacity-50 hover:opacity-100 hover:bg-white/60 dark:hover:bg-zinc-700/60'
+                            }`}
+                          >
+                            <Icon className="w-3.5 h-3.5" />
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Tombol Aksi Salin Teks */}
                     <button
-                      key={id}
                       type="button"
-                      onClick={() => setSelectedPlatform(id)}
-                      title={`Alihkan Pratinjau ke ${name}`}
-                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                        isActive 
-                          ? 'bg-white dark:bg-zinc-900 shadow-xs ring-2 ring-blue-500/30 scale-105' 
-                          : 'opacity-50 hover:opacity-100 hover:bg-white/60 dark:hover:bg-zinc-700/60'
-                      }`}
+                      onClick={handleCopyContent}
+                      className="h-8 px-3 text-xs font-medium border border-slate-200 dark:border-zinc-700 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors flex items-center space-x-1.5 cursor-pointer text-slate-700 dark:text-zinc-300 shadow-2xs"
                     >
-                      <Icon className="w-3.5 h-3.5" />
+                      {copied ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Disalin</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Salin Teks</span>
+                        </>
+                      )}
                     </button>
-                  );
-                })}
-              </div>
-
-              {/* Sisi Kanan: Tombol Aksi Salin Teks */}
-              <div className="flex items-center gap-2 shrink-0">
-                {studioStep === 'result' && (
-                  <button
-                    type="button"
-                    onClick={handleCopyContent}
-                    className="h-8 px-3 text-xs font-medium border border-slate-200 dark:border-zinc-700 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors flex items-center space-x-1.5 cursor-pointer text-slate-700 dark:text-zinc-300"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Disalin</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5 text-slate-400" />
-                        <span>Salin Teks</span>
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
+                  </div>
+                </>
+              ) : (
+                /* State Awal Sebelum Generate: Header Bersih Kosong (Tanpa Tombol Prematur) */
+                <div className="w-full flex items-center justify-between text-xs text-slate-400 dark:text-zinc-500 font-medium">
+                  <span>Pratinjau Langsung</span>
+                  <span className="text-[11px] text-slate-400/80 dark:text-zinc-500/80">Menunggu arahan...</span>
+                </div>
+              )}
             </div>
 
             {/* Area Kanvas Bersih */}
