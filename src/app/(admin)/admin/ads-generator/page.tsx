@@ -909,8 +909,9 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
               </div>
               <div className="bg-slate-50/80 p-4 rounded-3xl text-center">
                 <span className="text-[10px] text-slate-400 font-medium uppercase block">Status Keseluruhan</span>
-                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full inline-block mt-1">
-                  ● Berjalan Baik
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5 mt-1 border border-emerald-100">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  Berjalan Baik
                 </span>
               </div>
             </div>
@@ -960,8 +961,9 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
 
                         <td className="py-3.5 px-4">
                           {camp.status === 'active' ? (
-                            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full whitespace-nowrap">
-                              ● Berjalan
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full whitespace-nowrap border border-emerald-100">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                              Berjalan
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full whitespace-nowrap">
