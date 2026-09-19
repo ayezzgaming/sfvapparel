@@ -869,32 +869,6 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                 )}
               </span>
             </button>
-
-            {/* Gagang Toggle Kapsul Sisi Kanan (Khusus Menampilkan / Menyembunyikan Panel Kanan) */}
-            {studioStep === 'result' && (
-              <button
-                type="button"
-                onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
-                title={isRightPanelOpen ? 'Sembunyikan Panel Setelan' : 'Tampilkan Panel Setelan'}
-                className={`absolute right-[5px] top-1/2 -translate-y-1/2 h-12 rounded-full flex items-center justify-center cursor-pointer select-none z-40 transition-all duration-200 ease-out group p-0 border-0 outline-none origin-right ${
-                  !isRightPanelOpen
-                    ? 'w-5 bg-[#f0f4f9] hover:bg-[#e2e7ee] dark:bg-zinc-700'
-                    : 'w-1.5 hover:w-5 bg-[#f0f4f9] hover:bg-[#e2e7ee] dark:bg-zinc-700'
-                }`}
-              >
-                <span
-                  className={`transition-opacity duration-150 flex items-center justify-center text-slate-500 dark:text-zinc-300 ${
-                    !isRightPanelOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                  }`}
-                >
-                  {!isRightPanelOpen ? (
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                  ) : (
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  )}
-                </span>
-              </button>
-            )}
             {/* Header Kanvas */}
             <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 dark:border-zinc-800 min-h-[56px] shrink-0 gap-3">
               {studioStep === 'result' ? (
@@ -1012,18 +986,10 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
             <div className="w-72 xl:w-80 shrink-0 h-full flex flex-col justify-between p-4 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm transition-all duration-300">
               <div className="space-y-5 overflow-y-auto pr-1">
                 {/* Header Panel Kanan */}
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-800">
+                <div className="pb-2 border-b border-slate-100 dark:border-zinc-800">
                   <span className="text-xs font-semibold tracking-wider text-slate-500 dark:text-zinc-400 uppercase">
                     Setelan Iklan
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsRightPanelOpen(false)}
-                    className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 transition-colors cursor-pointer"
-                    title="Tutup Panel"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
                 </div>
 
                 {/* 1. Gaya Hook: MENGGUNAKAN COMBOBOX / DROPDOWN */}
