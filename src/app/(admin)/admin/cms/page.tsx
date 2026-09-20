@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { 
   Palette,
-  Globe, 
   Image as ImageIcon, 
   Layers, 
   Video, 
@@ -20,18 +19,18 @@ import {
   Eye,
   Save,
   RotateCcw,
-  Smartphone,
   CheckCircle2,
   LayoutGrid,
   List,
-  ChevronDown,
-  ChevronUp,
-  ShieldCheck,
+  Sparkles,
   Phone,
   Mail,
   MapPin,
   Clock,
-  Sparkles
+  ShieldCheck,
+  Globe,
+  SlidersHorizontal,
+  ChevronRight
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store/app-store';
 import { 
@@ -40,14 +39,12 @@ import {
   CmsProductionVideo, 
   CmsProductionGalleryItem, 
   CmsTestimonial, 
-  CmsCompanySettings, 
-  CmsSloganQuote,
-  CmsPolicy,
   CmsThemeSettings,
   CmsThemePresetKey
 } from '@/types/database';
-import { THEME_PRESETS } from '@/lib/store/seed-data';
 import ImageUploadField from '@/components/admin/ImageUploadField';
+
+type CmsTabKey = 'theme' | 'hero' | 'services' | 'slogan' | 'videos' | 'gallery' | 'testimonials' | 'company' | 'policies';
 
 export default function AdminCmsPage() {
   const {
@@ -83,32 +80,14 @@ export default function AdminCmsPage() {
     resetToSeedData,
   } = useAppStore();
 
-  const [activeTab, setActiveTab] = useState<'theme' | 'hero' | 'services' | 'slogan' | 'videos' | 'gallery' | 'testimonials' | 'company' | 'policies'>('theme');
+  const [activeTab, setActiveTab] = useState<CmsTabKey>('theme');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [saveToast, setSaveToast] = useState<string | null>(null);
 
-  // Accordion states for Google One style collapsible panels
-  const [companyAccordion, setCompanyAccordion] = useState<Record<string, boolean>>({
-    basic: true,
-    contact: true,
-    social: false,
-    developer: true,
-  });
-
-  const [policyAccordion, setPolicyAccordion] = useState<Record<string, boolean>>({
-    privacy: true,
-    terms: false,
-    warranty: false,
-    shipping: false,
-  });
-
-  const toggleCompanyAcc = (key: string) => {
-    setCompanyAccordion(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const togglePolicyAcc = (key: string) => {
-    setPolicyAccordion(prev => ({ ...prev, [key]: !prev[key] }));
-  };
+  // Sub-tab toggles for complex sections
+  const [themeSubTab, setThemeSubTab] = useState<'presets' | 'custom'>('presets');
+  const [companySubTab, setCompanySubTab] = useState<'basic' | 'contact' | 'social' | 'developer'>('basic');
+  const [policySubTab, setPolicySubTab] = useState<'privacy' | 'terms' | 'warranty' | 'shipping'>('privacy');
 
   const triggerToast = (msg: string) => {
     setSaveToast(msg);
@@ -377,8 +356,8 @@ export default function AdminCmsPage() {
     name: '',
     location: '',
     initial: 'A',
-    avatar_bg: 'bg-blue-100',
-    avatar_text: 'text-blue-600',
+    avatar_bg: 'bg-sky-50',
+    avatar_text: 'text-sky-600',
     platform: 'google',
     rating: 5,
     review: '',
@@ -405,8 +384,8 @@ export default function AdminCmsPage() {
         name: 'Ahmad Faiz',
         location: 'Shah Alam, Selangor',
         initial: 'A',
-        avatar_bg: 'bg-blue-100',
-        avatar_text: 'text-blue-600',
+        avatar_bg: 'bg-sky-50',
+        avatar_text: 'text-[#00BDFF]',
         platform: 'google',
         rating: 5,
         review: 'Kualiti jersi dan jahitan memang kemas. Warna cetakan sangat tajam dan penghantaran tepat pada masa yang dijanjikan.',
@@ -430,323 +409,451 @@ export default function AdminCmsPage() {
     setIsTestiModalOpen(false);
   };
 
-  return (
-    <div className="space-y-6">
-      {/* ----------------- TOP HEADER BAR ----------------- */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-normal text-slate-800 tracking-tight">
-            Kandungan & Tema
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Pengurusan tema warna, hero banner, senarai servis, galeri kilang, dan maklumat syarikat
-          </p>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          {saveToast && (
-            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium animate-in fade-in">
-              <Check className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{saveToast}</span>
-            </div>
-          )}
-
+  // Dynamic + Button config based on activeTab
+  const renderAddButton = () => {
+    switch (activeTab) {
+      case 'hero':
+        return (
           <button
-            onClick={() => {
-              if (confirm('Tetapkan semula semua data CMS dan Tema ke nilai asal?')) {
-                resetToSeedData();
-                triggerToast('Semua tetapan dikembalikan ke nilai lalai asal');
-              }
-            }}
-            className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-xs transition-colors"
+            type="button"
+            onClick={() => handleOpenBannerModal()}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-            <span>Reset Lalai</span>
+            <Plus className="w-3.5 h-3.5" />
+            <span>Tambah Banner</span>
           </button>
-
-          <Link
-            href="/"
-            target="_blank"
-            className="flex items-center space-x-1.5 px-4 py-1.5 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-colors"
+        );
+      case 'services':
+        return (
+          <button
+            type="button"
+            onClick={() => handleOpenServiceModal()}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
           >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Lihat Laman Awam</span>
-            <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
-          </Link>
-        </div>
-      </div>
+            <Plus className="w-3.5 h-3.5" />
+            <span>Tambah Servis</span>
+          </button>
+        );
+      case 'videos':
+        return (
+          <button
+            type="button"
+            onClick={() => handleOpenVideoModal()}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Tambah Video</span>
+          </button>
+        );
+      case 'gallery':
+        return (
+          <button
+            type="button"
+            onClick={() => handleOpenGalleryModal()}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Tambah Hasil</span>
+          </button>
+        );
+      case 'testimonials':
+        return (
+          <button
+            type="button"
+            onClick={() => handleOpenTestiModal()}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Tambah Testimoni</span>
+          </button>
+        );
+      default:
+        return null;
+    }
+  };
 
-      {/* ----------------- 2-PANEL LAYOUT ----------------- */}
-      <div className="flex flex-col md:flex-row gap-6 items-start">
-        {/* LEFT PANEL: Vertical Section Navigation */}
-        <aside className="w-full md:w-56 shrink-0 bg-white p-2 rounded-2xl border border-slate-200 shadow-xs space-y-1 md:sticky md:top-20">
-          {[
-            { id: 'theme', label: 'Tema & Warna', icon: Palette },
-            { id: 'hero', label: 'Hero Banner', icon: ImageIcon, count: heroBanners.length },
-            { id: 'services', label: 'Servis', icon: Layers, count: services.length },
-            { id: 'slogan', label: 'Slogan & CTA', icon: Quote },
-            { id: 'videos', label: 'Video', icon: Video, count: productionVideos.length },
-            { id: 'gallery', label: 'Galeri Kilang', icon: ImageIcon, count: productionGallery.length },
-            { id: 'testimonials', label: 'Testimoni', icon: Star, count: testimonials.length },
-            { id: 'company', label: 'Syarikat', icon: Building2 },
-            { id: 'policies', label: 'Polisi', icon: FileText },
-          ].map((tab) => {
+  const TABS: { id: CmsTabKey; label: string; icon: React.ElementType; count?: number }[] = [
+    { id: 'theme', label: 'Tema & Warna', icon: Palette },
+    { id: 'hero', label: 'Banner Utama', icon: ImageIcon, count: heroBanners.length },
+    { id: 'services', label: 'Servis', icon: Layers, count: services.length },
+    { id: 'slogan', label: 'Slogan & CTA', icon: Quote },
+    { id: 'videos', label: 'Video Produksi', icon: Video, count: productionVideos.length },
+    { id: 'gallery', label: 'Hasil Kilang', icon: ImageIcon, count: productionGallery.length },
+    { id: 'testimonials', label: 'Testimoni', icon: Star, count: testimonials.length },
+    { id: 'company', label: 'Syarikat', icon: Building2 },
+    { id: 'policies', label: 'Polisi & Terma', icon: FileText },
+  ];
+
+  return (
+    <div className="w-full h-full overflow-hidden bg-[#f0f4f9] dark:bg-zinc-950 flex flex-col p-4 gap-3 text-slate-900 dark:text-zinc-100 font-sans select-none">
+      {/* Toast Notification */}
+      {saveToast && (
+        <div className="fixed top-5 right-5 z-50 bg-emerald-900 text-white px-4 py-2.5 rounded-2xl shadow-xl border border-emerald-700 flex items-center space-x-2 text-xs animate-in fade-in slide-in-from-top-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{saveToast}</span>
+        </div>
+      )}
+
+      {/* ----------------- TOP HEADER BAR (Pill Switcher & Actions) ----------------- */}
+      <div className="shrink-0 flex items-center justify-between gap-3">
+        {/* Main Tab Switcher Bar */}
+        <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-zinc-800/90 backdrop-blur-md p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs overflow-x-auto scrollbar-none no-scrollbar">
+          {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-full text-xs font-medium transition-all ${
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-[#C2E7FF] text-[#001D35] font-semibold'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                    : 'text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-zinc-200'
                 }`}
               >
-                <div className="flex items-center space-x-2.5">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#001D35]' : 'text-slate-500'}`} />
-                  <span>{tab.label}</span>
-                </div>
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{tab.label}</span>
                 {tab.count !== undefined && (
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/70 text-[#001D35] font-semibold' : 'text-slate-400'}`}>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${isActive ? 'bg-white/20 text-white' : 'bg-slate-200/70 text-slate-500 dark:bg-zinc-700 dark:text-zinc-400'}`}>
                     {tab.count}
                   </span>
                 )}
               </button>
             );
           })}
-        </aside>
+        </div>
 
-        {/* RIGHT PANEL: Active Section Content */}
-        <main className="flex-1 min-w-0 space-y-6">
+        {/* Toolbar Kanan */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm('Kembalikan semua tetapan CMS dan Tema ke nilai lalai asal?')) {
+                resetToSeedData();
+                triggerToast('Semua tetapan dikembalikan ke nilai asal.');
+              }
+            }}
+            title="Set semula data ke nilai asal"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 text-slate-700 dark:text-zinc-200 text-xs font-medium transition-all shadow-2xs cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+            <span className="hidden sm:inline">Reset Lalai</span>
+          </button>
 
-        {/* =========================================================================
-            TAB 0: TEMA & WARNA (GOOGLE ONE CLEAN SETTINGS STYLE)
-           ========================================================================= */}
-        {activeTab === 'theme' && (
-          <div className="max-w-4xl space-y-6">
-            <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-xs space-y-5">
-              <div className="border-b border-slate-100 pb-3">
-                <h2 className="text-base font-normal text-slate-800">Tema & Penjenamaan Laman</h2>
-                <p className="text-xs text-slate-500 mt-0.5">Pilih tema warna rasmi untuk bar atas, butang dan navigasi laman awam</p>
-              </div>
+          <Link
+            href="/"
+            target="_blank"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 text-slate-700 dark:text-zinc-200 text-xs font-medium transition-all shadow-2xs cursor-pointer"
+          >
+            <Eye className="w-3.5 h-3.5 text-slate-500" />
+            <span className="hidden sm:inline">Lihat Web Awam</span>
+            <ExternalLink className="w-3 h-3 text-slate-400" />
+          </Link>
 
-              {/* Status Box (Google One style) */}
-              <div className="bg-[#F0F4F9] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="space-y-0.5">
-                  <span className="text-[11px] text-slate-500 font-medium uppercase tracking-wider block">Tema Semasa</span>
-                  <span className="text-base font-medium text-slate-800">
-                    {themeSettings?.preset === 'clean_white'
-                      ? 'Clean Minimal White'
-                      : themeSettings?.preset === 'full_blue'
-                      ? 'Full Royal Blue'
-                      : 'Royal Blue Hybrid (Lalai)'}
-                  </span>
-                </div>
-                <span className="text-xs font-medium text-[#0B57D0] bg-white px-4 py-1.5 rounded-full border border-slate-200 shadow-xs self-start sm:self-auto">
-                  Sedang Aktif di Web Awam
-                </span>
-              </div>
+          {/* Contextual Add Button */}
+          {renderAddButton()}
+        </div>
+      </div>
 
-              {/* Clean Theme Option Cards (Google One Benefits style, NO messy preview widgets) */}
-              <div className="space-y-3 pt-2">
-                <span className="text-xs font-medium text-slate-700 block">Pilihan Tema Pratetap:</span>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {[
-                    { key: 'hybrid', title: 'Royal Blue Hybrid', desc: 'Bar atas biru diraja, kandungan latar putih cerah & navigasi bawah bersih.' },
-                    { key: 'clean_white', title: 'Clean Minimal White', desc: 'Tema putih minimalis moden, kemas dan elegan untuk katalog.' },
-                    { key: 'full_blue', title: 'Full Royal Blue', desc: 'Warna biru penuh pada bar atas dan navigasi bawah untuk jenama tegap.' },
-                  ].map((item) => {
-                    const isSelected = (themeSettings?.preset || 'hybrid') === item.key;
-                    return (
-                      <div
-                        key={item.key}
-                        onClick={() => {
-                          applyThemePreset(item.key as any);
-                          triggerToast(`Tema "${item.title}" telah diaktifkan`);
-                        }}
-                        className={`p-5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between space-y-4 ${
-                          isSelected
-                            ? 'border-[#0B57D0] bg-blue-50/20 shadow-xs'
-                            : 'border-slate-200 hover:border-slate-300 bg-white'
-                        }`}
-                      >
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium text-sm text-slate-800">{item.title}</span>
-                            {isSelected && <Check className="w-4 h-4 text-[#0B57D0]" />}
-                          </div>
-                          <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
-                        </div>
-
-                        <button
-                          type="button"
-                          className={`w-full py-2 rounded-full text-xs font-medium transition-all ${
-                            isSelected
-                              ? 'bg-[#0B57D0] text-white shadow-xs'
-                              : 'border border-slate-300 text-[#0B57D0] hover:bg-blue-50/40'
-                          }`}
-                        >
-                          {isSelected ? 'Sedang Digunakan' : 'Gunakan Tema'}
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+      {/* ----------------- MAIN UNIFIED CARD CONTAINER ----------------- */}
+      <div className="flex-1 min-h-0 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-xs overflow-hidden flex flex-col">
+        
+        {/* ----------------- INTERNAL CARD HEADER WITH TOGGLES ----------------- */}
+        <div className="shrink-0 px-5 py-3.5 border-b border-slate-100 dark:border-zinc-800/80 flex items-center justify-between gap-4 bg-slate-50/50 dark:bg-zinc-900/50">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
+              {activeTab === 'theme' && 'Tema & Penjenamaan Web Awam'}
+              {activeTab === 'hero' && 'Pengurusan Slide Banner Utama'}
+              {activeTab === 'services' && 'Pengurusan Pilihan Servis Kilang'}
+              {activeTab === 'slogan' && 'Slogan Utama & Ajakan Tindakan'}
+              {activeTab === 'videos' && 'Rakaman Video Proses Produksi'}
+              {activeTab === 'gallery' && 'Galeri Hasil Tempahan Sebenar'}
+              {activeTab === 'testimonials' && 'Ulasan & Testimoni Pelanggan'}
+              {activeTab === 'company' && 'Identiti Syarikat & Maklumat Rasmi'}
+              {activeTab === 'policies' && 'Dasar, Jaminan & Polisi Kilang'}
+            </h2>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {activeTab === 'theme' && 'Pilih gaya tema pratetap atau sesuaikan warna latar bar navigasi'}
+              {activeTab === 'hero' && 'Susun imej banner, tajuk, tag dan pautan butang katalog'}
+              {activeTab === 'services' && 'Katalog kad servis, jenis cetakan dan penentuan harga'}
+              {activeTab === 'slogan' && 'Sesuaikan teks tajuk inspirasi dan mesej templat WhatsApp'}
+              {activeTab === 'videos' && 'Pautan rakaman YouTube untuk tatapan pelanggan'}
+              {activeTab === 'gallery' && 'Pameran portfolio jersi siap dengan spesifikasi fabrik'}
+              {activeTab === 'testimonials' && 'Koleksi maklum balas dan ulasan bintang daripada pelanggan'}
+              {activeTab === 'company' && 'Maklumat rasmi SSM, nombor telefon, alamat, dan pautan media sosial'}
+              {activeTab === 'policies' && 'Fasal jaminan kualiti, dasar pemulangan, dan terma tempahan'}
+            </p>
           </div>
-        )}
 
-        {/* =========================================================================
-            TAB 1: HERO BANNERS (GOOGLE ONE BENEFIT CARD STYLE)
-           ========================================================================= */}
-        {activeTab === 'hero' && (
-          <div className="space-y-5 max-w-6xl">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-5 rounded-2xl border border-slate-200 shadow-xs gap-3">
-              <div>
-                <h2 className="text-base font-normal text-slate-800">Slide Banner Utama</h2>
-                <p className="text-xs text-slate-500 mt-0.5">Uruskan gambar banner di bahagian atas halaman utama</p>
-              </div>
-              <div className="flex items-center space-x-3 self-end sm:self-auto">
-                <span className="text-xs text-slate-500 hidden sm:inline-block">{heroBanners.length} tersedia</span>
-                
-                {/* View Mode Toggle */}
-                <div className="flex items-center bg-slate-100 p-1 rounded-full border border-slate-200">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'grid' ? 'bg-white text-[#0B57D0] shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
-                    title="Paparan Grid"
-                  >
-                    <LayoutGrid className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'list' ? 'bg-white text-[#0B57D0] shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
-                    title="Paparan Senarai"
-                  >
-                    <List className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
+          {/* Contextual Internal Sub-Toggles */}
+          <div className="flex items-center gap-2 shrink-0">
+            {activeTab === 'theme' && (
+              <div className="flex items-center bg-slate-100/90 dark:bg-zinc-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
                 <button
-                  onClick={() => handleOpenBannerModal()}
-                  className="flex items-center space-x-1.5 px-4 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
+                  type="button"
+                  onClick={() => setThemeSubTab('presets')}
+                  className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${themeSubTab === 'presets' ? 'bg-white text-blue-600 shadow-xs font-semibold' : 'text-slate-600 hover:text-slate-900'}`}
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Banner</span>
+                  Pratetap
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setThemeSubTab('custom')}
+                  className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${themeSubTab === 'custom' ? 'bg-white text-blue-600 shadow-xs font-semibold' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  Kustomisasi
                 </button>
               </div>
-            </div>
+            )}
 
-            {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {heroBanners.map((banner, index) => (
-                  <div key={banner.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
-                    {/* Top Image Preview */}
-                    <div className="relative h-40 bg-slate-100 overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={banner.image_url} alt={banner.title} className="w-full h-full object-cover" />
-                      <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-2.5 py-0.5 rounded-full text-[10px] font-medium text-slate-800 shadow-xs">
-                        Slide #{index + 1}
-                      </div>
-                    </div>
+            {(activeTab === 'hero' || activeTab === 'services' || activeTab === 'videos' || activeTab === 'gallery' || activeTab === 'testimonials') && (
+              <div className="flex items-center bg-slate-100/90 dark:bg-zinc-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  title="Paparan Grid"
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                    viewMode === 'grid'
+                      ? 'bg-white text-blue-600 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400'
+                  }`}
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('list')}
+                  title="Paparan Senarai"
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                    viewMode === 'list'
+                      ? 'bg-white text-blue-600 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400'
+                  }`}
+                >
+                  <List className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
 
-                    {/* Google One Card Body */}
-                    <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
-                      <div className="space-y-1.5">
-                        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-                          {banner.tag_text || 'BANNER UTAMA'}
-                        </span>
-                        <h3 className="text-base font-normal text-slate-800 line-clamp-1">{banner.title}</h3>
-                        <p className="text-xs text-slate-500 line-clamp-1">
-                          Pill: <span className="text-slate-700">{banner.status_pill}</span> &bull; Pautan: <span className="font-mono text-[#0B57D0]">{banner.button_link}</span>
-                        </p>
-                      </div>
-
-                      {/* Bottom Actions */}
-                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${banner.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                          {banner.is_active ? 'Aktif' : 'Tidak Aktif'}
-                        </span>
-
-                        <div className="flex items-center space-x-1">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenBannerModal(banner)}
-                            title="Ubah Banner"
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                          {heroBanners.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (confirm('Padam slide banner ini?')) {
-                                  deleteHeroBanner(banner.id);
-                                  triggerToast('Banner berjaya dipadam.');
-                                }
-                              }}
-                              title="Padam Banner"
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            {activeTab === 'company' && (
+              <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-zinc-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
+                {[
+                  { id: 'basic', label: 'Asas & Jenama' },
+                  { id: 'contact', label: 'Hubungi' },
+                  { id: 'social', label: 'Media Sosial' },
+                  { id: 'developer', label: 'Pembangun' },
+                ].map((sub) => (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() => setCompanySubTab(sub.id as any)}
+                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                      companySubTab === sub.id
+                        ? 'bg-white text-blue-600 shadow-xs font-semibold'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {sub.label}
+                  </button>
                 ))}
               </div>
-            ) : (
-              /* List Mode Table */
-              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-xs font-medium tracking-wider border-b border-slate-200">
-                    <tr>
-                      <th className="py-3.5 px-4">Susunan & Imej</th>
-                      <th className="py-3.5 px-4">Tajuk Banner</th>
-                      <th className="py-3.5 px-4">Tag / Status Pill</th>
-                      <th className="py-3.5 px-4">Pautan Butang</th>
-                      <th className="py-3.5 px-4">Status</th>
-                      <th className="py-3.5 px-4 text-center">Tindakan</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-normal">
-                    {heroBanners.map((banner, idx) => (
-                      <tr key={banner.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3.5 px-4">
-                          <div className="flex items-center space-x-3">
-                            <span className="text-slate-400 font-mono text-xs">#{idx + 1}</span>
-                            <div className="w-16 h-10 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={banner.image_url} alt={banner.title} className="w-full h-full object-cover" />
+            )}
+
+            {activeTab === 'policies' && (
+              <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-zinc-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
+                {[
+                  { id: 'privacy', label: 'Privasi' },
+                  { id: 'terms', label: 'Terma' },
+                  { id: 'warranty', label: 'Jaminan' },
+                  { id: 'shipping', label: 'Penghantaran' },
+                ].map((sub) => (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() => setPolicySubTab(sub.id as any)}
+                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                      policySubTab === sub.id
+                        ? 'bg-white text-blue-600 shadow-xs font-semibold'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {sub.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ----------------- SCROLLABLE CARD BODY ----------------- */}
+        <div className="flex-1 overflow-y-auto sparkle-scroll p-5 sm:p-6 space-y-6">
+
+          {/* =========================================================================
+              TAB 1: TEMA & WARNA
+             ========================================================================= */}
+          {activeTab === 'theme' && (
+            <div className="max-w-4xl space-y-6">
+              {themeSubTab === 'presets' ? (
+                <div className="space-y-4">
+                  {/* Current Active Status Pill Banner */}
+                  <div className="bg-blue-50/60 dark:bg-zinc-800/50 rounded-2xl p-4 border border-blue-100/80 dark:border-zinc-700 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10.5px] font-bold uppercase tracking-wider text-blue-600 block">Tema Aktif Semasa</span>
+                      <span className="text-sm font-bold text-slate-800 dark:text-zinc-100 mt-0.5 block">
+                        {themeSettings?.preset === 'clean_white'
+                          ? 'Clean Minimal White'
+                          : themeSettings?.preset === 'full_blue'
+                          ? 'Full Royal Blue'
+                          : 'Royal Blue Hybrid (Lalai)'}
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/60 shadow-2xs">
+                      ● Aktif di Laman Web
+                    </span>
+                  </div>
+
+                  {/* Preset Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                      { key: 'hybrid', title: 'Royal Blue Hybrid', desc: 'Bar atas biru diraja, kandungan latar putih cerah & navigasi bawah bersih.' },
+                      { key: 'clean_white', title: 'Clean Minimal White', desc: 'Tema putih minimalis moden, kemas dan elegan untuk katalog.' },
+                      { key: 'full_blue', title: 'Full Royal Blue', desc: 'Warna biru penuh pada bar atas dan navigasi bawah untuk jenama tegap.' },
+                    ].map((item) => {
+                      const isSelected = (themeSettings?.preset || 'hybrid') === item.key;
+                      return (
+                        <div
+                          key={item.key}
+                          onClick={() => {
+                            applyThemePreset(item.key as any);
+                            triggerToast(`Tema "${item.title}" diaktifkan!`);
+                          }}
+                          className={`p-5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between space-y-4 ${
+                            isSelected
+                              ? 'border-blue-500 bg-blue-50/30 dark:bg-zinc-800/80 shadow-xs ring-2 ring-blue-500/10'
+                              : 'border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 bg-white dark:bg-zinc-900'
+                          }`}
+                        >
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-sm text-slate-900 dark:text-zinc-100">{item.title}</span>
+                              {isSelected && <Check className="w-4 h-4 text-blue-600" />}
                             </div>
+                            <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">{item.desc}</p>
                           </div>
-                        </td>
-                        <td className="py-3.5 px-4 font-medium text-slate-800">{banner.title}</td>
-                        <td className="py-3.5 px-4">
-                          <span className="text-slate-700 block">{banner.tag_text}</span>
-                          <span className="text-xs text-slate-400">{banner.status_pill}</span>
-                        </td>
-                        <td className="py-3.5 px-4 font-mono text-[#0B57D0]">{banner.button_text} ({banner.button_link})</td>
-                        <td className="py-3.5 px-4">
-                          <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${banner.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+
+                          <button
+                            type="button"
+                            className={`w-full py-2 rounded-xl text-xs font-semibold transition-all ${
+                              isSelected
+                                ? 'bg-blue-600 text-white shadow-xs'
+                                : 'border border-slate-200 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800'
+                            }`}
+                          >
+                            {isSelected ? 'Sedang Digunakan' : 'Gunakan Tema'}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                /* Manual Customizer */
+                <div className="bg-slate-50/50 dark:bg-zinc-800/40 rounded-2xl p-5 border border-slate-200/80 dark:border-zinc-700/80 space-y-4">
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100 uppercase tracking-wider">Tetapan Warna Lanjutan</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-slate-700 dark:text-zinc-300">Warna Latar Bar Atas (Header)</label>
+                      <input
+                        type="text"
+                        value={themeSettings?.header_bg || '#FFFFFF'}
+                        onChange={(e) => updateThemeSettings({ header_bg: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-800 dark:text-zinc-200"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-slate-700 dark:text-zinc-300">Warna Latar Navigasi Bawah (Bottom Nav)</label>
+                      <input
+                        type="text"
+                        value={themeSettings?.bottom_nav_bg || 'rgba(255, 255, 255, 0.95)'}
+                        onChange={(e) => updateThemeSettings({ bottom_nav_bg: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-800 dark:text-zinc-200"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-slate-700 dark:text-zinc-300">Warna Aksen Aktif (Active Color)</label>
+                      <input
+                        type="text"
+                        value={themeSettings?.bottom_nav_active_color || '#00BDFF'}
+                        onChange={(e) => updateThemeSettings({ bottom_nav_active_color: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-800 dark:text-zinc-200"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-slate-700 dark:text-zinc-300">Warna Butang WhatsApp FAB</label>
+                      <input
+                        type="text"
+                        value={themeSettings?.whatsapp_fab_bg || '#25D366'}
+                        onChange={(e) => updateThemeSettings({ whatsapp_fab_bg: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-800 dark:text-zinc-200"
+                      />
+                    </div>
+                  </div>
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => triggerToast('Tetapan warna berjaya disimpan!')}
+                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs"
+                    >
+                      Simpan Warna Kustom
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* =========================================================================
+              TAB 2: HERO BANNERS
+             ========================================================================= */}
+          {activeTab === 'hero' && (
+            <div className="space-y-4">
+              {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {heroBanners.map((banner, index) => (
+                    <div key={banner.id} className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+                      <div className="relative h-38 bg-slate-100 dark:bg-zinc-800 overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={banner.image_url} alt={banner.title} className="w-full h-full object-cover" />
+                        <div className="absolute top-2.5 left-2.5 bg-white/95 dark:bg-zinc-900/90 backdrop-blur-xs px-2.5 py-0.5 rounded-full text-[10px] font-bold text-slate-800 dark:text-zinc-200 shadow-xs border border-slate-200/60">
+                          Slide #{index + 1}
+                        </div>
+                      </div>
+
+                      <div className="p-4 space-y-2.5 flex-1 flex flex-col justify-between">
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider block">
+                            {banner.tag_text || 'BANNER UTAMA'}
+                          </span>
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100 line-clamp-1">{banner.title}</h3>
+                          <p className="text-xs text-slate-500 line-clamp-1">
+                            {banner.status_pill} &bull; Pautan: <span className="font-mono text-blue-600">{banner.button_link}</span>
+                          </p>
+                        </div>
+
+                        <div className="pt-2.5 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between">
+                          <span className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-full ${banner.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
                             {banner.is_active ? 'Aktif' : 'Tidak Aktif'}
                           </span>
-                        </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <div className="flex items-center justify-center space-x-1">
+
+                          <div className="flex items-center space-x-1">
                             <button
                               type="button"
                               onClick={() => handleOpenBannerModal(banner)}
                               title="Ubah Banner"
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition-colors"
                             >
-                              <Edit3 className="w-4 h-4" />
+                              <Edit3 className="w-3.5 h-3.5" />
                             </button>
                             {heroBanners.length > 1 && (
                               <button
@@ -758,157 +865,123 @@ export default function AdminCmsPage() {
                                   }
                                 }}
                                 title="Padam Banner"
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             )}
                           </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB 2: PILIHAN SERVIS (GOOGLE ONE BENEFIT CARD STYLE)
-           ========================================================================= */}
-        {activeTab === 'services' && (
-          <div className="space-y-5 max-w-6xl">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-5 rounded-2xl border border-slate-200 shadow-xs gap-3">
-              <div>
-                <h2 className="text-base font-normal text-slate-800">Kad Pilihan Servis</h2>
-                <p className="text-xs text-slate-500 mt-0.5">Ubah tajuk servis, gambar, harga bermula dan butiran penerangan</p>
-              </div>
-              <div className="flex items-center space-x-3 self-end sm:self-auto">
-                <span className="text-xs text-slate-500 hidden sm:inline-block">{services.length} tersedia</span>
-                
-                <div className="flex items-center bg-slate-100 p-1 rounded-full border border-slate-200">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'grid' ? 'bg-white text-[#0B57D0] shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
-                    title="Paparan Grid"
-                  >
-                    <LayoutGrid className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'list' ? 'bg-white text-[#0B57D0] shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
-                    title="Paparan Senarai"
-                  >
-                    <List className="w-3.5 h-3.5" />
-                  </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-
-                <button
-                  onClick={() => handleOpenServiceModal()}
-                  className="flex items-center space-x-1.5 px-4 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Servis</span>
-                </button>
-              </div>
-            </div>
-
-            {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                {services.map((item) => (
-                  <div key={item.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
-                    <div className="relative h-36 bg-slate-100 overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
-                      <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs text-slate-800 text-[10px] font-medium px-2.5 py-0.5 rounded-full shadow-xs">
-                        {item.category}
-                      </div>
-                    </div>
-
-                    <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
-                      <div className="space-y-1.5">
-                        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-                          {item.category}
-                        </span>
-                        <h3 className="text-base font-normal text-slate-800 line-clamp-1">{item.title}</h3>
-                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{item.highlight}</p>
-                        <div className="pt-1 text-xs font-mono font-medium text-[#0B57D0]">
-                          {item.price_prefix} {item.price_amount} {item.price_unit}
-                        </div>
-                      </div>
-
-                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <span className="text-xs text-slate-500">{item.details?.length || 0} butiran</span>
-                        <div className="flex items-center space-x-1">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenServiceModal(item)}
-                            title="Ubah Servis"
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                          {services.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (confirm('Padam servis ini?')) {
-                                  deleteService(item.id);
-                                  triggerToast('Servis berjaya dipadam.');
-                                }
-                              }}
-                              title="Padam Servis"
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              /* List View Table */
-              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-xs font-medium tracking-wider border-b border-slate-200">
-                    <tr>
-                      <th className="py-3.5 px-4">Imej & Kategori</th>
-                      <th className="py-3.5 px-4">Tajuk Servis</th>
-                      <th className="py-3.5 px-4">Sorotan / Highlight</th>
-                      <th className="py-3.5 px-4">Harga Bermula</th>
-                      <th className="py-3.5 px-4 text-center">Tindakan</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-normal">
-                    {services.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3.5 px-4">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-14 h-10 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+              ) : (
+                /* List Mode Table */
+                <div className="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-2xs">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50 dark:bg-zinc-800/50 text-slate-500 uppercase text-[10.5px] font-semibold border-b border-slate-200/80">
+                      <tr>
+                        <th className="py-3 px-4">Imej</th>
+                        <th className="py-3 px-4">Tajuk Banner</th>
+                        <th className="py-3 px-4">Tag / Status Pill</th>
+                        <th className="py-3 px-4">Pautan Butang</th>
+                        <th className="py-3 px-4">Status</th>
+                        <th className="py-3 px-4 text-center">Tindakan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+                      {heroBanners.map((banner, idx) => (
+                        <tr key={banner.id} className="hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-slate-400 font-mono text-[10.5px]">#{idx + 1}</span>
+                              <div className="w-14 h-9 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={banner.image_url} alt={banner.title} className="w-full h-full object-cover" />
+                              </div>
                             </div>
-                            <span className="font-medium text-slate-800">{item.category}</span>
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-slate-900 dark:text-zinc-100">{banner.title}</td>
+                          <td className="py-3 px-4 text-slate-600 dark:text-zinc-300">
+                            <span>{banner.tag_text}</span>
+                            <span className="text-slate-400 block text-[10.5px]">{banner.status_pill}</span>
+                          </td>
+                          <td className="py-3 px-4 font-mono text-blue-600">{banner.button_text} ({banner.button_link})</td>
+                          <td className="py-3 px-4">
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${banner.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                              {banner.is_active ? 'Aktif' : 'Tidak Aktif'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <div className="flex items-center justify-center space-x-1">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenBannerModal(banner)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition-colors"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                              {heroBanners.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm('Padam slide banner ini?')) {
+                                      deleteHeroBanner(banner.id);
+                                      triggerToast('Banner berjaya dipadam.');
+                                    }
+                                  }}
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* =========================================================================
+              TAB 3: PILIHAN SERVIS
+             ========================================================================= */}
+          {activeTab === 'services' && (
+            <div className="space-y-4">
+              {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {services.map((item) => (
+                    <div key={item.id} className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+                      <div className="relative h-34 bg-slate-100 dark:bg-zinc-800 overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                        <div className="absolute top-2.5 left-2.5 bg-white/95 dark:bg-zinc-900/90 text-slate-800 dark:text-zinc-200 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs border border-slate-200/60">
+                          {item.category}
+                        </div>
+                      </div>
+
+                      <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                        <div className="space-y-1">
+                          <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100 line-clamp-1">{item.title}</h3>
+                          <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">{item.highlight}</p>
+                          <div className="pt-1 text-xs font-mono font-bold text-blue-600">
+                            {item.price_prefix} {item.price_amount} {item.price_unit}
                           </div>
-                        </td>
-                        <td className="py-3.5 px-4 font-medium text-slate-800">{item.title}</td>
-                        <td className="py-3.5 px-4 text-slate-600 max-w-[240px] truncate">{item.highlight}</td>
-                        <td className="py-3.5 px-4 font-mono font-medium text-[#0B57D0]">
-                          {item.price_prefix} {item.price_amount} {item.price_unit}
-                        </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <div className="flex items-center justify-center space-x-1">
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between">
+                          <span className="text-[10.5px] text-slate-400">{item.details?.length || 0} butiran</span>
+                          <div className="flex items-center space-x-1">
                             <button
                               type="button"
                               onClick={() => handleOpenServiceModal(item)}
-                              title="Ubah Servis"
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition-colors"
                             >
-                              <Edit3 className="w-4 h-4" />
+                              <Edit3 className="w-3.5 h-3.5" />
                             </button>
                             {services.length > 1 && (
                               <button
@@ -919,271 +992,215 @@ export default function AdminCmsPage() {
                                     triggerToast('Servis berjaya dipadam.');
                                   }
                                 }}
-                                title="Padam Servis"
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             )}
                           </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB 3: KAD SLOGAN & CTA (GOOGLE ONE SETTINGS STYLE)
-           ========================================================================= */}
-        {activeTab === 'slogan' && (
-          <div className="max-w-4xl space-y-6">
-            <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-xs space-y-5">
-              <div className="border-b border-slate-100 pb-3">
-                <h2 className="text-base font-normal text-slate-800">Slogan & Ajakan WhatsApp</h2>
-                <p className="text-sm text-slate-500 mt-0.5">Ubah teks slogan rasmi, keterangan, dan mesej templat WhatsApp</p>
-              </div>
-
-              {/* Status Box */}
-              <div className="bg-[#F0F4F9] rounded-2xl p-5 flex items-center justify-between">
-                <div>
-                  <span className="text-xs text-slate-500 font-medium block">Headline Semasa</span>
-                  <span className="text-base font-medium text-slate-800">{sloganQuote.headline} {sloganQuote.highlight_text}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <span className="text-sm text-slate-700 font-medium bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-xs">
-                  Aktif di Laman Web
-                </span>
+              ) : (
+                /* List View Table */
+                <div className="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-2xs">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50 dark:bg-zinc-800/50 text-slate-500 uppercase text-[10.5px] font-semibold border-b border-slate-200/80">
+                      <tr>
+                        <th className="py-3 px-4">Imej & Kategori</th>
+                        <th className="py-3 px-4">Tajuk Servis</th>
+                        <th className="py-3 px-4">Sorotan / Highlight</th>
+                        <th className="py-3 px-4">Harga Bermula</th>
+                        <th className="py-3 px-4 text-center">Tindakan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+                      {services.map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center space-x-2.5">
+                              <div className="w-12 h-9 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                              </div>
+                              <span className="font-semibold text-slate-800 dark:text-zinc-200">{item.category}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 font-bold text-slate-900 dark:text-zinc-100">{item.title}</td>
+                          <td className="py-3 px-4 text-slate-600 dark:text-zinc-400 max-w-[240px] truncate">{item.highlight}</td>
+                          <td className="py-3 px-4 font-mono font-bold text-blue-600">
+                            {item.price_prefix} {item.price_amount} {item.price_unit}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <div className="flex items-center justify-center space-x-1">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenServiceModal(item)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition-colors"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                              {services.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm('Padam servis ini?')) {
+                                      deleteService(item.id);
+                                      triggerToast('Servis berjaya dipadam.');
+                                    }
+                                  }}
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* =========================================================================
+              TAB 4: SLOGAN & CTA
+             ========================================================================= */}
+          {activeTab === 'slogan' && (
+            <div className="max-w-3xl space-y-5">
+              {/* Soft Live Preview Box */}
+              <div className="rounded-2xl bg-gradient-to-r from-blue-50/90 via-sky-50/70 to-indigo-50/40 p-4 sm:p-5 border border-blue-100/90">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 block">Pratonton Langsung Slogan</span>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 mt-1">
+                  {sloganQuote.headline} <span className="text-blue-600">{sloganQuote.highlight_text}</span>
+                </h3>
+                <p className="text-xs text-slate-600 font-medium mt-1">{sloganQuote.question_text}</p>
+                <p className="text-[11.5px] text-slate-500 mt-0.5">{sloganQuote.description_text}</p>
               </div>
 
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700">Baris Utama Slogan</label>
+              {/* Slogan Form Fields */}
+              <div className="bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl p-5 border border-slate-200/80 dark:border-zinc-700/80 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Baris Utama Slogan</label>
                     <input
                       type="text"
                       value={sloganQuote.headline}
                       onChange={(e) => updateSloganQuote({ headline: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700">Teks Sorotan (Highlight)</label>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Teks Sorotan (Highlight)</label>
                     <input
                       type="text"
                       value={sloganQuote.highlight_text}
                       onChange={(e) => updateSloganQuote({ highlight_text: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Ayat Soalan</label>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Ayat Soalan</label>
                   <input
                     type="text"
                     value={sloganQuote.question_text}
                     onChange={(e) => updateSloganQuote({ question_text: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Keterangan Ajakan</label>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Keterangan Ajakan</label>
                   <textarea
-                    rows={3}
+                    rows={2}
                     value={sloganQuote.description_text}
                     onChange={(e) => updateSloganQuote({ description_text: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700">Label Butang WhatsApp</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Label Butang WhatsApp</label>
                     <input
                       type="text"
                       value={sloganQuote.button_text}
                       onChange={(e) => updateSloganQuote({ button_text: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700">Mesej Templat WhatsApp</label>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Mesej Templat WhatsApp</label>
                     <input
                       type="text"
                       value={sloganQuote.whatsapp_message}
                       onChange={(e) => updateSloganQuote({ whatsapp_message: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                      className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
                 </div>
 
                 <div className="pt-2 flex justify-end">
                   <button
+                    type="button"
                     onClick={() => triggerToast('Slogan & ajakan WhatsApp berjaya disimpan!')}
-                    className="flex items-center space-x-1.5 px-6 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white text-sm font-medium shadow-xs transition-all"
+                    className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5"
                   >
-                    <Save className="w-4 h-4" />
-                    <span>Simpan Perubahan Slogan</span>
+                    <Save className="w-3.5 h-3.5" />
+                    <span>Simpan Slogan</span>
                   </button>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* =========================================================================
-            TAB 4: VIDEO PROSES PRODUKSI (GOOGLE ONE BENEFIT CARD STYLE)
-           ========================================================================= */}
-        {activeTab === 'videos' && (
-          <div className="space-y-5 max-w-6xl">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-5 rounded-2xl border border-slate-200 shadow-xs gap-3">
-              <div>
-                <h2 className="text-base font-normal text-slate-800">Video Proses Produksi</h2>
-                <p className="text-xs text-slate-500 mt-0.5">Tukar ID YouTube, gambar thumbnail dan label kategori rakaman kilang</p>
-              </div>
-              <div className="flex items-center space-x-3 self-end sm:self-auto">
-                <span className="text-xs text-slate-500 hidden sm:inline-block">{productionVideos.length} tersedia</span>
-                
-                <div className="flex items-center bg-slate-100 p-1 rounded-full border border-slate-200">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'grid' ? 'bg-white text-[#0B57D0] shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
-                    title="Paparan Grid"
-                  >
-                    <LayoutGrid className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'list' ? 'bg-white text-[#0B57D0] shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
-                    title="Paparan Senarai"
-                  >
-                    <List className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => handleOpenVideoModal()}
-                  className="flex items-center space-x-1.5 px-4 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Video</span>
-                </button>
-              </div>
-            </div>
-
-            {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                {productionVideos.map((video) => (
-                  <div key={video.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
-                    <div className="relative aspect-[9/14] bg-slate-100 overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
-                      <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs text-slate-800 text-[10px] font-medium px-2.5 py-0.5 rounded-full shadow-xs">
-                        {video.category}
-                      </div>
-                    </div>
-
-                    <div className="p-4 space-y-3 bg-white flex-1 flex flex-col justify-between">
-                      <div className="space-y-1">
-                        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+          {/* =========================================================================
+              TAB 5: VIDEO PRODUKSI
+             ========================================================================= */}
+          {activeTab === 'videos' && (
+            <div className="space-y-4">
+              {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {productionVideos.map((video) => (
+                    <div key={video.id} className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+                      <div className="relative aspect-[9/13] bg-slate-100 dark:bg-zinc-800 overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
+                        <div className="absolute top-2.5 left-2.5 bg-white/95 dark:bg-zinc-900/90 text-slate-800 dark:text-zinc-200 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs border border-slate-200/60">
                           {video.category}
-                        </span>
-                        <h3 className="text-sm font-normal text-slate-800 line-clamp-1">{video.title}</h3>
-                        <p className="text-[11px] text-slate-400 font-mono">YouTube: {video.youtube_id}</p>
-                      </div>
-
-                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <a
-                          href={`https://www.youtube.com/watch?v=${video.youtube_id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title="Tonton di YouTube"
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-
-                        <div className="flex items-center space-x-1">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenVideoModal(video)}
-                            title="Ubah Video"
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                          {productionVideos.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (confirm('Padam video ini?')) {
-                                  deleteProductionVideo(video.id);
-                                  triggerToast('Video berjaya dipadam.');
-                                }
-                              }}
-                              title="Padam Video"
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              /* List View Table */
-              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-xs font-medium tracking-wider border-b border-slate-200">
-                    <tr>
-                      <th className="py-3.5 px-4">Thumbnail & Kategori</th>
-                      <th className="py-3.5 px-4">Tajuk Video</th>
-                      <th className="py-3.5 px-4">YouTube ID</th>
-                      <th className="py-3.5 px-4">Pautan Semakan</th>
-                      <th className="py-3.5 px-4 text-center">Tindakan</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-normal">
-                    {productionVideos.map((video) => (
-                      <tr key={video.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3.5 px-4">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-12 h-16 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
-                            </div>
-                            <span className="font-medium text-slate-800">{video.category}</span>
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 font-medium text-slate-800">{video.title}</td>
-                        <td className="py-3.5 px-4 font-mono text-slate-600">{video.youtube_id}</td>
-                        <td className="py-3.5 px-4">
+
+                      <div className="p-4 space-y-2 bg-white dark:bg-zinc-900 flex-1 flex flex-col justify-between">
+                        <div className="space-y-0.5">
+                          <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100 line-clamp-1">{video.title}</h3>
+                          <p className="text-[10.5px] text-slate-400 font-mono">ID: {video.youtube_id}</p>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                           <a
                             href={`https://www.youtube.com/watch?v=${video.youtube_id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#0B57D0] hover:underline inline-flex items-center space-x-1"
+                            className="p-1 rounded-lg text-slate-400 hover:text-blue-600 transition-colors"
+                            title="Tonton di YouTube"
                           >
-                            <span>Buka YouTube</span>
                             <ExternalLink className="w-3.5 h-3.5" />
                           </a>
-                        </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <div className="flex items-center justify-center space-x-1">
+
+                          <div className="flex items-center space-x-1">
                             <button
                               type="button"
                               onClick={() => handleOpenVideoModal(video)}
-                              title="Ubah Video"
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition-colors"
                             >
-                              <Edit3 className="w-4 h-4" />
+                              <Edit3 className="w-3.5 h-3.5" />
                             </button>
                             {productionVideos.length > 1 && (
                               <button
@@ -1194,154 +1211,110 @@ export default function AdminCmsPage() {
                                     triggerToast('Video berjaya dipadam.');
                                   }
                                 }}
-                                title="Padam Video"
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             )}
                           </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB 5: HASIL PRODUKSI KILANG (GOOGLE ONE BENEFIT CARD STYLE)
-           ========================================================================= */}
-        {activeTab === 'gallery' && (
-          <div className="space-y-5 max-w-6xl">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-5 rounded-2xl border border-slate-200 shadow-xs gap-3">
-              <div>
-                <h2 className="text-base font-normal text-slate-800">Galeri Hasil Produksi</h2>
-                <p className="text-xs text-slate-500 mt-0.5">Tambah foto jersi siap, perincian fabrik, nama klien dan kuantiti</p>
-              </div>
-              <div className="flex items-center space-x-3 self-end sm:self-auto">
-                <span className="text-xs text-slate-500 hidden sm:inline-block">{productionGallery.length} tersedia</span>
-                
-                <div className="flex items-center bg-slate-100 p-1 rounded-full border border-slate-200">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'grid' ? 'bg-white text-[#0B57D0] shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
-                    title="Paparan Grid"
-                  >
-                    <LayoutGrid className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'list' ? 'bg-white text-[#0B57D0] shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
-                    title="Paparan Senarai"
-                  >
-                    <List className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => handleOpenGalleryModal()}
-                  className="flex items-center space-x-1.5 px-4 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Hasil Produksi</span>
-                </button>
-              </div>
-            </div>
-
-            {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {productionGallery.map((item) => (
-                  <div key={item.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
-                    <div className="relative h-40 bg-slate-100 overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
-                      <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs text-slate-800 text-[10px] font-medium px-2.5 py-0.5 rounded-full shadow-xs">
-                        {item.tag}
-                      </div>
-                    </div>
-
-                    <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
-                      <div className="space-y-1">
-                        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-                          {item.tag}
-                        </span>
-                        <h3 className="text-base font-normal text-slate-800 line-clamp-1">{item.title}</h3>
-                        <p className="text-xs text-slate-500">{item.fabric}</p>
-                        <p className="text-xs text-[#0B57D0] font-medium">{item.client}</p>
-                      </div>
-
-                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <span className="text-xs text-slate-400">{item.category}</span>
-                        <div className="flex items-center space-x-1">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenGalleryModal(item)}
-                            title="Ubah Item Galeri"
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                          {productionGallery.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (confirm('Padam item galeri ini?')) {
-                                  deleteGalleryItem(item.id);
-                                  triggerToast('Item galeri berjaya dipadam.');
-                                }
-                              }}
-                              title="Padam Item Galeri"
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              /* List View Table */
-              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-xs font-medium tracking-wider border-b border-slate-200">
-                    <tr>
-                      <th className="py-3.5 px-4">Foto & Tag</th>
-                      <th className="py-3.5 px-4">Tajuk Tempahan</th>
-                      <th className="py-3.5 px-4">Spesifikasi Fabrik</th>
-                      <th className="py-3.5 px-4">Klien & Kuantiti</th>
-                      <th className="py-3.5 px-4 text-center">Tindakan</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-normal">
-                    {productionGallery.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3.5 px-4">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-14 h-10 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                  ))}
+                </div>
+              ) : (
+                /* List View Table */
+                <div className="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-2xs">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50 dark:bg-zinc-800/50 text-slate-500 uppercase text-[10.5px] font-semibold border-b border-slate-200/80">
+                      <tr>
+                        <th className="py-3 px-4">Thumbnail & Kategori</th>
+                        <th className="py-3 px-4">Tajuk Video</th>
+                        <th className="py-3 px-4">YouTube ID</th>
+                        <th className="py-3 px-4 text-center">Tindakan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+                      {productionVideos.map((video) => (
+                        <tr key={video.id} className="hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center space-x-2.5">
+                              <div className="w-12 h-14 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
+                              </div>
+                              <span className="font-semibold text-slate-800 dark:text-zinc-200">{video.category}</span>
                             </div>
-                            <span className="font-medium text-slate-800">{item.tag}</span>
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 font-medium text-slate-800">{item.title}</td>
-                        <td className="py-3.5 px-4 text-slate-600">{item.fabric}</td>
-                        <td className="py-3.5 px-4 text-slate-800">{item.client}</td>
-                        <td className="py-3.5 px-4 text-center">
-                          <div className="flex items-center justify-center space-x-1">
+                          </td>
+                          <td className="py-3 px-4 font-bold text-slate-900 dark:text-zinc-100">{video.title}</td>
+                          <td className="py-3 px-4 font-mono text-blue-600">{video.youtube_id}</td>
+                          <td className="py-3 px-4 text-center">
+                            <div className="flex items-center justify-center space-x-1">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenVideoModal(video)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition-colors"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                              {productionVideos.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm('Padam video ini?')) {
+                                      deleteProductionVideo(video.id);
+                                      triggerToast('Video berjaya dipadam.');
+                                    }
+                                  }}
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* =========================================================================
+              TAB 6: HASIL KILANG (GALLERY)
+             ========================================================================= */}
+          {activeTab === 'gallery' && (
+            <div className="space-y-4">
+              {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {productionGallery.map((item) => (
+                    <div key={item.id} className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+                      <div className="relative h-38 bg-slate-100 dark:bg-zinc-800 overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                        <div className="absolute top-2.5 left-2.5 bg-white/95 dark:bg-zinc-900/90 text-slate-800 dark:text-zinc-200 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs border border-slate-200/60">
+                          {item.tag}
+                        </div>
+                      </div>
+
+                      <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                        <div className="space-y-1">
+                          <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100 line-clamp-1">{item.title}</h3>
+                          <p className="text-[11px] text-slate-500 line-clamp-1">{item.fabric}</p>
+                          <p className="text-[11px] font-semibold text-blue-600">{item.client}</p>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between">
+                          <span className="text-[10.5px] text-slate-400">{item.category}</span>
+                          <div className="flex items-center space-x-1">
                             <button
                               type="button"
                               onClick={() => handleOpenGalleryModal(item)}
-                              title="Ubah Item Galeri"
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition-colors"
                             >
-                              <Edit3 className="w-4 h-4" />
+                              <Edit3 className="w-3.5 h-3.5" />
                             </button>
                             {productionGallery.length > 1 && (
                               <button
@@ -1352,554 +1325,503 @@ export default function AdminCmsPage() {
                                     triggerToast('Item galeri berjaya dipadam.');
                                   }
                                 }}
-                                title="Padam Item Galeri"
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             )}
                           </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB 6: TESTIMONI PELANGGAN (GOOGLE ONE BENEFIT CARD STYLE)
-           ========================================================================= */}
-        {activeTab === 'testimonials' && (
-          <div className="space-y-5 max-w-6xl">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-5 rounded-2xl border border-slate-200 shadow-xs gap-3">
-              <div>
-                <h2 className="text-base font-normal text-slate-800">Ulasan & Testimoni</h2>
-                <p className="text-xs text-slate-500 mt-0.5">Uruskan ulasan di bahagian Apa Kata Mereka di Halaman Utama</p>
-              </div>
-              <div className="flex items-center space-x-3 self-end sm:self-auto">
-                <span className="text-xs text-slate-500 hidden sm:inline-block">{testimonials.length} ulasan</span>
-                
-                <div className="flex items-center bg-slate-100 p-1 rounded-full border border-slate-200">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'grid' ? 'bg-white text-[#0B57D0] shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
-                    title="Paparan Grid"
-                  >
-                    <LayoutGrid className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'list' ? 'bg-white text-[#0B57D0] shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
-                    title="Paparan Senarai"
-                  >
-                    <List className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => handleOpenTestiModal()}
-                  className="flex items-center space-x-1.5 px-4 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Testimoni</span>
-                </button>
-              </div>
-            </div>
-
-            {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {testimonials.map((t) => (
-                  <div key={t.id} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2.5">
-                          <div className={`w-8 h-8 rounded-full ${t.avatar_bg} ${t.avatar_text} font-medium text-xs flex items-center justify-center`}>
-                            {t.initial}
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-sm text-slate-800">{t.name}</h4>
-                            <p className="text-xs text-slate-500">{t.location}</p>
-                          </div>
                         </div>
-                        <span className="text-xs font-medium uppercase px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                          {t.platform}
-                        </span>
                       </div>
-
-                      <div className="flex text-amber-400">
-                        {Array.from({ length: t.rating }).map((_, i) => (
-                          <Star key={i} className="w-4 h-4 fill-amber-400" />
-                        ))}
-                      </div>
-
-                      <p className="text-sm text-slate-600 leading-relaxed line-clamp-4">&quot;{t.review.replace(/"/g, '')}&quot;</p>
                     </div>
+                  ))}
+                </div>
+              ) : (
+                /* List View Table */
+                <div className="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-2xs">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50 dark:bg-zinc-800/50 text-slate-500 uppercase text-[10.5px] font-semibold border-b border-slate-200/80">
+                      <tr>
+                        <th className="py-3 px-4">Foto & Tag</th>
+                        <th className="py-3 px-4">Tajuk Tempahan</th>
+                        <th className="py-3 px-4">Spesifikasi Fabrik</th>
+                        <th className="py-3 px-4">Klien & Kuantiti</th>
+                        <th className="py-3 px-4 text-center">Tindakan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+                      {productionGallery.map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center space-x-2.5">
+                              <div className="w-12 h-9 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                              </div>
+                              <span className="font-semibold text-slate-800 dark:text-zinc-200">{item.tag}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 font-bold text-slate-900 dark:text-zinc-100">{item.title}</td>
+                          <td className="py-3 px-4 text-slate-600 dark:text-zinc-400">{item.fabric}</td>
+                          <td className="py-3 px-4 text-blue-600 font-semibold">{item.client}</td>
+                          <td className="py-3 px-4 text-center">
+                            <div className="flex items-center justify-center space-x-1">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenGalleryModal(item)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition-colors"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                              {productionGallery.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm('Padam item galeri ini?')) {
+                                      deleteGalleryItem(item.id);
+                                      triggerToast('Item galeri berjaya dipadam.');
+                                    }
+                                  }}
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
 
-                    <div className="pt-3 border-t border-slate-100 flex justify-end space-x-1">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenTestiModal(t)}
-                        title="Ubah Testimoni"
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                      {testimonials.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm('Padam ulasan ini?')) {
-                              deleteTestimonial(t.id);
-                              triggerToast('Testimoni berjaya dipadam.');
-                            }
-                          }}
-                          title="Padam Testimoni"
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              /* List View Table */
-              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-xs font-medium tracking-wider border-b border-slate-200">
-                    <tr>
-                      <th className="py-3.5 px-4">Pelanggan & Lokasi</th>
-                      <th className="py-3.5 px-4">Platform</th>
-                      <th className="py-3.5 px-4">Penilaian</th>
-                      <th className="py-3.5 px-4">Isi Ulasan</th>
-                      <th className="py-3.5 px-4 text-center">Tindakan</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-normal">
-                    {testimonials.map((t) => (
-                      <tr key={t.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3.5 px-4">
-                          <div className="flex items-center space-x-2.5">
-                            <div className={`w-8 h-8 rounded-full ${t.avatar_bg} ${t.avatar_text} font-medium text-xs flex items-center justify-center`}>
+          {/* =========================================================================
+              TAB 7: TESTIMONI
+             ========================================================================= */}
+          {activeTab === 'testimonials' && (
+            <div className="space-y-4">
+              {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {testimonials.map((t) => (
+                    <div key={t.id} className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-3">
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className={`w-7 h-7 rounded-full ${t.avatar_bg} ${t.avatar_text} font-bold text-xs flex items-center justify-center shadow-2xs`}>
                               {t.initial}
                             </div>
                             <div>
-                              <h4 className="font-medium text-slate-800">{t.name}</h4>
-                              <p className="text-xs text-slate-500">{t.location}</p>
+                              <h4 className="font-bold text-xs text-slate-900 dark:text-zinc-100">{t.name}</h4>
+                              <p className="text-[10.5px] text-slate-400">{t.location}</p>
                             </div>
                           </div>
-                        </td>
-                        <td className="py-3.5 px-4 uppercase font-medium text-xs text-slate-600">{t.platform}</td>
-                        <td className="py-3.5 px-4">
-                          <div className="flex text-amber-400">
-                            {Array.from({ length: t.rating }).map((_, i) => (
-                              <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
-                            ))}
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 text-slate-600 max-w-[320px] truncate">&quot;{t.review}&quot;</td>
-                        <td className="py-3.5 px-4 text-center">
-                          <div className="flex items-center justify-center space-x-1">
-                            <button
-                              type="button"
-                              onClick={() => handleOpenTestiModal(t)}
-                              title="Ubah Testimoni"
-                              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                            >
-                              <Edit3 className="w-4 h-4" />
-                            </button>
-                            {testimonials.length > 1 && (
+                          <span className="text-[9.5px] font-bold uppercase px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400">
+                            {t.platform}
+                          </span>
+                        </div>
+
+                        <div className="flex text-amber-400">
+                          {Array.from({ length: t.rating }).map((_, i) => (
+                            <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
+                          ))}
+                        </div>
+
+                        <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed line-clamp-3">&quot;{t.review.replace(/"/g, '')}&quot;</p>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 flex justify-end space-x-1">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenTestiModal(t)}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition-colors"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        {testimonials.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm('Padam ulasan ini?')) {
+                                deleteTestimonial(t.id);
+                                triggerToast('Testimoni berjaya dipadam.');
+                              }
+                            }}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                /* List View Table */
+                <div className="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-2xs">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50 dark:bg-zinc-800/50 text-slate-500 uppercase text-[10.5px] font-semibold border-b border-slate-200/80">
+                      <tr>
+                        <th className="py-3 px-4">Pelanggan</th>
+                        <th className="py-3 px-4">Platform</th>
+                        <th className="py-3 px-4">Penilaian</th>
+                        <th className="py-3 px-4">Isi Ulasan</th>
+                        <th className="py-3 px-4 text-center">Tindakan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+                      {testimonials.map((t) => (
+                        <tr key={t.id} className="hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center space-x-2">
+                              <div className={`w-7 h-7 rounded-full ${t.avatar_bg} ${t.avatar_text} font-bold text-xs flex items-center justify-center`}>
+                                {t.initial}
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-slate-900 dark:text-zinc-100">{t.name}</h4>
+                                <p className="text-[10px] text-slate-400">{t.location}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 uppercase font-bold text-[10px] text-slate-600 dark:text-zinc-400">{t.platform}</td>
+                          <td className="py-3 px-4">
+                            <div className="flex text-amber-400">
+                              {Array.from({ length: t.rating }).map((_, i) => (
+                                <Star key={i} className="w-3 h-3 fill-amber-400" />
+                              ))}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-slate-600 dark:text-zinc-400 max-w-[320px] truncate">&quot;{t.review}&quot;</td>
+                          <td className="py-3 px-4 text-center">
+                            <div className="flex items-center justify-center space-x-1">
                               <button
                                 type="button"
-                                onClick={() => {
-                                  if (confirm('Padam ulasan ini?')) {
-                                    deleteTestimonial(t.id);
-                                    triggerToast('Testimoni berjaya dipadam.');
-                                  }
-                                }}
-                                title="Padam Testimoni"
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                onClick={() => handleOpenTestiModal(t)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition-colors"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Edit3 className="w-3.5 h-3.5" />
                               </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB 7: IDENTITI SYARIKAT (GOOGLE ONE ACCORDION SETTINGS STYLE)
-           ========================================================================= */}
-        {activeTab === 'company' && (
-          <div className="max-w-4xl space-y-6">
-            <div>
-              <h2 className="text-base font-normal text-slate-800">Identiti Syarikat & Maklumat Rasmi</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Maklumat ini dipaparkan di Footer laman web, WhatsApp, dan pendaftaran SSM</p>
+                              {testimonials.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm('Padam ulasan ini?')) {
+                                      deleteTestimonial(t.id);
+                                      triggerToast('Testimoni berjaya dipadam.');
+                                    }
+                                  }}
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
+          )}
 
-            {/* Google One Accordion Container */}
-            <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs divide-y divide-slate-200">
-              {/* Accordion 1: Basic Info */}
-              <div>
-                <button
-                  type="button"
-                  onClick={() => toggleCompanyAcc('basic')}
-                  className="w-full p-5 sm:p-6 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
-                >
-                  <div className="flex items-center space-x-3.5">
-                    <Building2 className="w-5 h-5 text-slate-600 shrink-0" />
-                    <div>
-                      <h3 className="text-base font-medium text-slate-800">Maklumat Asas Syarikat & Jenama</h3>
-                      <p className="text-sm text-slate-500">Nama berdaftar SSM, jenama rasmi, dan no. pendaftaran</p>
-                    </div>
-                  </div>
-                  {companyAccordion.basic ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
-                </button>
-
-                {companyAccordion.basic && (
-                  <div className="p-6 sm:p-7 bg-slate-50/40 border-t border-slate-100 space-y-4 animate-in fade-in duration-150">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-700">Nama Syarikat Berdaftar</label>
+          {/* =========================================================================
+              TAB 8: IDENTITI SYARIKAT
+             ========================================================================= */}
+          {activeTab === 'company' && (
+            <div className="max-w-3xl space-y-5">
+              <div className="bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl p-5 border border-slate-200/80 dark:border-zinc-700/80 space-y-4">
+                {companySubTab === 'basic' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Nama Syarikat Berdaftar</label>
                         <input
                           type="text"
                           value={companySettings.company_name}
                           onChange={(e) => updateCompanySettings({ company_name: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500/20"
                         />
                       </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-700">Nama Jenama (Brand)</label>
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Nama Jenama (Brand)</label>
                         <input
                           type="text"
                           value={companySettings.brand_name}
                           onChange={(e) => updateCompanySettings({ brand_name: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500/20"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-700">Nombor Pendaftaran Syarikat (SSM)</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">No. Pendaftaran Syarikat (SSM)</label>
                         <input
                           type="text"
                           value={companySettings.registration_number}
                           onChange={(e) => updateCompanySettings({ registration_number: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500/20"
                         />
                       </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-700">Nombor WhatsApp Rasmi</label>
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Slogan Rasmi (Tagline)</label>
+                        <input
+                          type="text"
+                          value={companySettings.tagline}
+                          onChange={(e) => updateCompanySettings({ tagline: e.target.value })}
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500/20"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {companySubTab === 'contact' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">No. Telefon WhatsApp Kilang</label>
                         <input
                           type="text"
                           value={companySettings.whatsapp_number}
                           onChange={(e) => updateCompanySettings({ whatsapp_number: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-900 dark:text-zinc-100"
                         />
                       </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Accordion 2: Contact & Address */}
-              <div>
-                <button
-                  type="button"
-                  onClick={() => toggleCompanyAcc('contact')}
-                  className="w-full p-5 sm:p-6 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
-                >
-                  <div className="flex items-center space-x-3.5">
-                    <MapPin className="w-5 h-5 text-slate-600 shrink-0" />
-                    <div>
-                      <h3 className="text-base font-medium text-slate-800">Hubungi & Alamat Kilang</h3>
-                      <p className="text-sm text-slate-500">Email perkhidmatan, telefon pejabat, alamat fizikal, dan tagline</p>
-                    </div>
-                  </div>
-                  {companyAccordion.contact ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
-                </button>
-
-                {companyAccordion.contact && (
-                  <div className="p-6 sm:p-7 bg-slate-50/40 border-t border-slate-100 space-y-4 animate-in fade-in duration-150">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-700">Email Khidmat Pelanggan</label>
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Emel Rasmi Sokongan</label>
                         <input
                           type="email"
                           value={companySettings.email}
                           onChange={(e) => updateCompanySettings({ email: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-700">No Telefon Pejabat</label>
-                        <input
-                          type="text"
-                          value={companySettings.phone}
-                          onChange={(e) => updateCompanySettings({ phone: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100"
                         />
                       </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-slate-700">Alamat Kilang / Pejabat</label>
-                      <input
-                        type="text"
-                        value={companySettings.address}
-                        onChange={(e) => updateCompanySettings({ address: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-slate-700">Tagline Syarikat (Footer)</label>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Alamat Penuh Kilang / Pejabat</label>
                       <textarea
                         rows={2}
-                        value={companySettings.tagline}
-                        onChange={(e) => updateCompanySettings({ tagline: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                        value={companySettings.address}
+                        onChange={(e) => updateCompanySettings({ address: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Waktu Operasi Kilang</label>
+                      <input
+                        type="text"
+                        value={companySettings.working_hours}
+                        onChange={(e) => updateCompanySettings({ working_hours: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100"
                       />
                     </div>
                   </div>
                 )}
-              </div>
 
-              {/* Accordion 3: Social Media Links */}
-              <div>
-                <button
-                  type="button"
-                  onClick={() => toggleCompanyAcc('social')}
-                  className="w-full p-5 sm:p-6 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
-                >
-                  <div className="flex items-center space-x-3.5">
-                    <Globe className="w-5 h-5 text-slate-600 shrink-0" />
-                    <div>
-                      <h3 className="text-base font-medium text-slate-800">Pautan Media Sosial</h3>
-                      <p className="text-sm text-slate-500">Telegram, Facebook, Instagram, dan TikTok</p>
+                {companySubTab === 'social' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Telegram URL</label>
+                      <input
+                        type="text"
+                        value={companySettings.telegram_catalog_url}
+                        onChange={(e) => updateCompanySettings({ telegram_catalog_url: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono"
+                      />
                     </div>
-                  </div>
-                  {companyAccordion.social ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
-                </button>
-
-                {companyAccordion.social && (
-                  <div className="p-6 sm:p-7 bg-slate-50/40 border-t border-slate-100 space-y-4 animate-in fade-in duration-150">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-700">Telegram Katalog</label>
-                        <input
-                          type="text"
-                          value={companySettings.telegram_catalog_url}
-                          onChange={(e) => updateCompanySettings({ telegram_catalog_url: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-800"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-700">Facebook URL</label>
-                        <input
-                          type="text"
-                          value={companySettings.facebook_url}
-                          onChange={(e) => updateCompanySettings({ facebook_url: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-800"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-700">Instagram URL</label>
-                        <input
-                          type="text"
-                          value={companySettings.instagram_url}
-                          onChange={(e) => updateCompanySettings({ instagram_url: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-800"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-700">TikTok URL</label>
-                        <input
-                          type="text"
-                          value={companySettings.tiktok_url}
-                          onChange={(e) => updateCompanySettings({ tiktok_url: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-800"
-                        />
-                      </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Facebook URL</label>
+                      <input
+                        type="text"
+                        value={companySettings.facebook_url}
+                        onChange={(e) => updateCompanySettings({ facebook_url: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Instagram URL</label>
+                      <input
+                        type="text"
+                        value={companySettings.instagram_url}
+                        onChange={(e) => updateCompanySettings({ instagram_url: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">TikTok URL</label>
+                      <input
+                        type="text"
+                        value={companySettings.tiktok_url}
+                        onChange={(e) => updateCompanySettings({ tiktok_url: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono"
+                      />
                     </div>
                   </div>
                 )}
-              </div>
 
-              {/* Accordion 4: Developer Credit */}
-              <div>
-                <button
-                  type="button"
-                  onClick={() => toggleCompanyAcc('developer')}
-                  className="w-full p-5 sm:p-6 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
-                >
-                  <div className="flex items-center space-x-3.5">
-                    <Sparkles className="w-5 h-5 text-slate-600 shrink-0" />
-                    <div>
-                      <h3 className="text-base font-medium text-slate-800">Kredit Pembangun Web</h3>
-                      <p className="text-sm text-slate-500">Papar pengiktirafan pembangun sistem di footer</p>
+                {companySubTab === 'developer' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Nama Pembangun Web</label>
+                      <input
+                        type="text"
+                        value={companySettings.developer_name || 'AYEZZ Studio'}
+                        onChange={(e) => updateCompanySettings({ developer_name: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-bold"
+                      />
                     </div>
-                  </div>
-                  {companyAccordion.developer ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
-                </button>
-
-                {companyAccordion.developer && (
-                  <div className="p-6 sm:p-7 bg-slate-50/40 border-t border-slate-100 space-y-4 animate-in fade-in duration-150">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-700">Nama Pembangun Web</label>
-                        <input
-                          type="text"
-                          value={companySettings.developer_name || 'AYEZZ Studio'}
-                          onChange={(e) => updateCompanySettings({ developer_name: e.target.value })}
-                          placeholder="cth: AYEZZ Studio"
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-800 font-medium"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-700">Pautan URL Pembangun (Portfolio/Web)</label>
-                        <input
-                          type="text"
-                          value={companySettings.developer_url || 'https://ayezz.com'}
-                          onChange={(e) => updateCompanySettings({ developer_url: e.target.value })}
-                          placeholder="https://..."
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-800 font-mono"
-                        />
-                      </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Pautan URL Pembangun</label>
+                      <input
+                        type="text"
+                        value={companySettings.developer_url || 'https://ayezz.com'}
+                        onChange={(e) => updateCompanySettings({ developer_url: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono"
+                      />
                     </div>
                   </div>
                 )}
+
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => triggerToast('Maklumat syarikat berjaya dikemaskini!')}
+                    className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>Simpan Maklumat Syarikat</span>
+                  </button>
+                </div>
               </div>
             </div>
+          )}
 
-            <div className="flex justify-end">
-              <button
-                onClick={() => triggerToast('Identiti syarikat berjaya dikemaskini!')}
-                className="flex items-center space-x-1.5 px-6 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white text-sm font-medium shadow-xs transition-all"
-              >
-                <Save className="w-4 h-4" />
-                <span>Simpan Maklumat Syarikat</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================================
-            TAB 8: DASAR & POLISI KILANG (GOOGLE ONE ACCORDION STYLE)
-           ========================================================================= */}
-        {activeTab === 'policies' && (
-          <div className="max-w-4xl space-y-6">
-            <div>
-              <h2 className="text-base font-normal text-slate-800">Dasar & Polisi Kilang</h2>
-              <p className="text-sm text-slate-500 mt-0.5">Ubah isi kandungan terma, privasi, jaminan pemulangan dan dasar penghantaran</p>
-            </div>
-
-            <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs divide-y divide-slate-200">
-              {(['privacy', 'terms', 'warranty', 'shipping'] as const).map((key) => {
-                const pol = policies[key];
-                const isOpen = policyAccordion[key];
+          {/* =========================================================================
+              TAB 9: DASAR & POLISI KILANG
+             ========================================================================= */}
+          {activeTab === 'policies' && (
+            <div className="max-w-3xl space-y-4">
+              {(() => {
+                const pol = policies[policySubTab];
+                if (!pol) return null;
                 return (
-                  <div key={key}>
-                    <button
-                      type="button"
-                      onClick={() => togglePolicyAcc(key)}
-                      className="w-full p-5 sm:p-6 flex items-center justify-between hover:bg-slate-50/60 transition-colors text-left"
-                    >
-                      <div className="flex items-center space-x-3.5">
-                        <ShieldCheck className="w-5 h-5 text-slate-600 shrink-0" />
-                        <div>
-                          <h3 className="text-base font-medium text-slate-800">{pol.title}</h3>
-                          <p className="text-sm text-slate-500 mt-0.5">{pol.description}</p>
-                        </div>
-                      </div>
-                      {isOpen ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
-                    </button>
+                  <div className="bg-slate-50/50 dark:bg-zinc-800/30 rounded-2xl p-5 border border-slate-200/80 dark:border-zinc-700/80 space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Tajuk Polisi</label>
+                      <input
+                        type="text"
+                        value={pol.title}
+                        onChange={(e) => updatePolicy(policySubTab, { title: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-bold text-slate-900 dark:text-zinc-100"
+                      />
+                    </div>
 
-                    {isOpen && (
-                      <div className="p-6 bg-slate-50/40 border-t border-slate-100 space-y-4 animate-in fade-in duration-150">
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-slate-700">Penerangan Ringkas</label>
-                          <input
-                            type="text"
-                            value={pol.description}
-                            onChange={(e) => updatePolicy(key, { description: e.target.value })}
-                            className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800"
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Penerangan Ringkas</label>
+                      <input
+                        type="text"
+                        value={pol.description}
+                        onChange={(e) => updatePolicy(policySubTab, { description: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-800 dark:text-zinc-200"
+                      />
+                    </div>
+
+                    <div className="space-y-3 pt-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-900 dark:text-zinc-100 uppercase tracking-wider">Seksyen Fasal</label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextSecs = [...(pol.sections || []), { heading: 'Fasal Baharu', text: 'Keterangan fasal di sini.' }];
+                            updatePolicy(policySubTab, { sections: nextSecs });
+                          }}
+                          className="text-[11px] font-semibold text-blue-600 hover:underline flex items-center gap-1"
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>Tambah Fasal</span>
+                        </button>
+                      </div>
+
+                      {pol.sections?.map((sec, idx) => (
+                        <div key={idx} className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-700 space-y-2 relative group">
+                          <div className="flex items-center justify-between gap-2">
+                            <input
+                              type="text"
+                              value={sec.heading}
+                              onChange={(e) => {
+                                const nextSecs = [...pol.sections];
+                                nextSecs[idx] = { ...nextSecs[idx], heading: e.target.value };
+                                updatePolicy(policySubTab, { sections: nextSecs });
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-zinc-800 border border-slate-200/60 dark:border-zinc-700 text-xs font-bold text-slate-800 dark:text-zinc-200"
+                            />
+                            {pol.sections.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const nextSecs = pol.sections.filter((_, i) => i !== idx);
+                                  updatePolicy(policySubTab, { sections: nextSecs });
+                                }}
+                                className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                          <textarea
+                            rows={2}
+                            value={sec.text}
+                            onChange={(e) => {
+                              const nextSecs = [...pol.sections];
+                              nextSecs[idx] = { ...nextSecs[idx], text: e.target.value };
+                              updatePolicy(policySubTab, { sections: nextSecs });
+                            }}
+                            className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-zinc-800 border border-slate-200/60 dark:border-zinc-700 text-xs text-slate-700 dark:text-zinc-300"
                           />
                         </div>
+                      ))}
+                    </div>
 
-                        <div className="space-y-3 pt-1">
-                          <label className="text-xs font-medium text-slate-700">Seksyen Fasal</label>
-                          {pol.sections?.map((sec, idx) => (
-                            <div key={idx} className="p-3.5 rounded-2xl bg-white border border-slate-200 space-y-2">
-                              <input
-                                type="text"
-                                value={sec.heading}
-                                onChange={(e) => {
-                                  const nextSecs = [...pol.sections];
-                                  nextSecs[idx] = { ...nextSecs[idx], heading: e.target.value };
-                                  updatePolicy(key, { sections: nextSecs });
-                                }}
-                                className="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-medium text-slate-800"
-                              />
-                              <textarea
-                                rows={2}
-                                value={sec.text}
-                                onChange={(e) => {
-                                  const nextSecs = [...pol.sections];
-                                  nextSecs[idx] = { ...nextSecs[idx], text: e.target.value };
-                                  updatePolicy(key, { sections: nextSecs });
-                                }}
-                                className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <div className="pt-2 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => triggerToast(`Polisi ${pol.title} berjaya disimpan!`)}
+                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5"
+                      >
+                        <Save className="w-3.5 h-3.5" />
+                        <span>Simpan Polisi Ini</span>
+                      </button>
+                    </div>
                   </div>
                 );
-              })}
+              })()}
             </div>
+          )}
 
-            <div className="flex justify-end">
-              <button
-                onClick={() => triggerToast('Dasar & polisi berjaya dikemaskini!')}
-                className="flex items-center space-x-1.5 px-6 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white text-sm font-medium shadow-xs transition-all"
-              >
-                <Save className="w-4 h-4" />
-                <span>Simpan Semua Polisi</span>
-              </button>
-            </div>
-          </div>
-        )}
-        </main>
+        </div>
       </div>
 
       {/* =========================================================================
-          HERO BANNER MODAL (WITH IMAGE UPLOAD FIELD)
+          HERO BANNER MODAL
          ========================================================================= */}
       {isBannerModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-white border border-slate-200/80 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-normal text-slate-800">
+          <div className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                 {editingBanner ? 'Kemaskini Slide Banner' : 'Tambah Slide Banner'}
               </h3>
               <button
+                type="button"
                 onClick={() => setIsBannerModalOpen(false)}
-                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all"
+                className="w-7 h-7 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 flex items-center justify-center transition-all text-xs"
               >
                 ✕
               </button>
@@ -1910,71 +1832,71 @@ export default function AdminCmsPage() {
                 value={bannerForm.image_url}
                 onChange={(val) => setBannerForm({ ...bannerForm, image_url: val })}
                 aspectRatio="banner"
-                helperText="Muat naik fail dari peranti atau masukkan pautan gambar."
+                helperText="Muat naik fail gambar banner utama."
                 required
               />
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">Tajuk Utama</label>
+                <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Tajuk Utama</label>
                 <input
                   type="text"
                   required
                   value={bannerForm.title}
                   onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Tag / Kategori</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Tag / Kategori</label>
                   <input
                     type="text"
                     value={bannerForm.tag_text}
                     onChange={(e) => setBannerForm({ ...bannerForm, tag_text: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Pill Status</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Pill Status</label>
                   <input
                     type="text"
                     value={bannerForm.status_pill}
                     onChange={(e) => setBannerForm({ ...bannerForm, status_pill: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Teks Butang</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Teks Butang</label>
                   <input
                     type="text"
                     value={bannerForm.button_text}
                     onChange={(e) => setBannerForm({ ...bannerForm, button_text: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Pautan Butang</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Pautan Butang</label>
                   <input
                     type="text"
                     value={bannerForm.button_link}
                     onChange={(e) => setBannerForm({ ...bannerForm, button_link: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   />
                 </div>
               </div>
-              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100">
+              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setIsBannerModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
+                  className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
+                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
                 >
                   Simpan Banner
                 </button>
@@ -1985,18 +1907,19 @@ export default function AdminCmsPage() {
       )}
 
       {/* =========================================================================
-          SERVICE MODAL (WITH IMAGE UPLOAD FIELD)
+          SERVICE MODAL
          ========================================================================= */}
       {isServiceModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-white border border-slate-200/80 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-normal text-slate-800">
+          <div className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                 {editingService ? 'Kemaskini Servis' : 'Tambah Servis Baharu'}
               </h3>
               <button
+                type="button"
                 onClick={() => setIsServiceModalOpen(false)}
-                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all"
+                className="w-7 h-7 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 flex items-center justify-center transition-all text-xs"
               >
                 ✕
               </button>
@@ -2013,84 +1936,84 @@ export default function AdminCmsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Kategori Servis</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Kategori Servis</label>
                   <input
                     type="text"
                     required
                     value={serviceForm.category}
                     onChange={(e) => setServiceForm({ ...serviceForm, category: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Tajuk Servis</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Tajuk Servis</label>
                   <input
                     type="text"
                     required
                     value={serviceForm.title}
                     onChange={(e) => setServiceForm({ ...serviceForm, title: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   />
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">Headline Ringkas</label>
+                <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Headline Ringkas</label>
                 <input
                   type="text"
                   value={serviceForm.headline}
                   onChange={(e) => setServiceForm({ ...serviceForm, headline: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">Keterangan</label>
+                <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Keterangan Ringkas</label>
                 <textarea
                   rows={2}
                   value={serviceForm.highlight}
                   onChange={(e) => setServiceForm({ ...serviceForm, highlight: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                 />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Prefix</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Prefix</label>
                   <input
                     type="text"
                     value={serviceForm.price_prefix}
                     onChange={(e) => setServiceForm({ ...serviceForm, price_prefix: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Harga</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Harga</label>
                   <input
                     type="text"
                     value={serviceForm.price_amount}
                     onChange={(e) => setServiceForm({ ...serviceForm, price_amount: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20 font-medium"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs font-bold"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Unit</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Unit</label>
                   <input
                     type="text"
                     value={serviceForm.price_unit}
                     onChange={(e) => setServiceForm({ ...serviceForm, price_unit: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   />
                 </div>
               </div>
-              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100">
+              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setIsServiceModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
+                  className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
+                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
                 >
                   Simpan Servis
                 </button>
@@ -2101,18 +2024,19 @@ export default function AdminCmsPage() {
       )}
 
       {/* =========================================================================
-          VIDEO MODAL (WITH IMAGE UPLOAD FIELD)
+          VIDEO MODAL
          ========================================================================= */}
       {isVideoModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-normal text-slate-800">
+          <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                 {editingVideo ? 'Kemaskini Video' : 'Tambah Video'}
               </h3>
               <button
+                type="button"
                 onClick={() => setIsVideoModalOpen(false)}
-                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all"
+                className="w-7 h-7 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 flex items-center justify-center transition-all text-xs"
               >
                 ✕
               </button>
@@ -2127,45 +2051,45 @@ export default function AdminCmsPage() {
               />
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">Tajuk Video</label>
+                <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Tajuk Video</label>
                 <input
                   type="text"
                   required
                   value={videoForm.title}
                   onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">Kategori</label>
+                <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Kategori</label>
                 <input
                   type="text"
                   value={videoForm.category}
                   onChange={(e) => setVideoForm({ ...videoForm, category: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">YouTube Video ID (cth: q6U_y9-pX_4)</label>
+                <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">YouTube Video ID (cth: q6U_y9-pX_4)</label>
                 <input
                   type="text"
                   required
                   value={videoForm.youtube_id}
                   onChange={(e) => setVideoForm({ ...videoForm, youtube_id: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20 font-mono"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs font-mono"
                 />
               </div>
-              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100">
+              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setIsVideoModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
+                  className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
+                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
                 >
                   Simpan Video
                 </button>
@@ -2176,18 +2100,19 @@ export default function AdminCmsPage() {
       )}
 
       {/* =========================================================================
-          GALLERY MODAL (WITH IMAGE UPLOAD FIELD)
+          GALLERY MODAL
          ========================================================================= */}
       {isGalleryModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-normal text-slate-800">
+          <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                 {editingGallery ? 'Kemaskini Galeri' : 'Tambah Hasil Produksi'}
               </h3>
               <button
+                type="button"
                 onClick={() => setIsGalleryModalOpen(false)}
-                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all"
+                className="w-7 h-7 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 flex items-center justify-center transition-all text-xs"
               >
                 ✕
               </button>
@@ -2203,66 +2128,66 @@ export default function AdminCmsPage() {
               />
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">Tajuk Tempahan</label>
+                <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Tajuk Tempahan</label>
                 <input
                   type="text"
                   required
                   value={galleryForm.title}
                   onChange={(e) => setGalleryForm({ ...galleryForm, title: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Info Fabrik & Kolar</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Info Fabrik & Kolar</label>
                   <input
                     type="text"
                     value={galleryForm.fabric}
                     onChange={(e) => setGalleryForm({ ...galleryForm, fabric: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Kuantiti & Klien</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Kuantiti & Klien</label>
                   <input
                     type="text"
                     value={galleryForm.client}
                     onChange={(e) => setGalleryForm({ ...galleryForm, client: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Tag Label</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Tag Label</label>
                   <input
                     type="text"
                     value={galleryForm.tag}
                     onChange={(e) => setGalleryForm({ ...galleryForm, tag: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Kategori</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Kategori</label>
                   <input
                     type="text"
                     value={galleryForm.category}
                     onChange={(e) => setGalleryForm({ ...galleryForm, category: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   />
                 </div>
               </div>
-              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100">
+              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setIsGalleryModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
+                  className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
+                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
                 >
                   Simpan Galeri
                 </button>
@@ -2277,14 +2202,15 @@ export default function AdminCmsPage() {
          ========================================================================= */}
       {isTestiModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-normal text-slate-800">
+          <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-3xl p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                 {editingTesti ? 'Kemaskini Testimoni' : 'Tambah Testimoni'}
               </h3>
               <button
+                type="button"
                 onClick={() => setIsTestiModalOpen(false)}
-                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all"
+                className="w-7 h-7 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 flex items-center justify-center transition-all text-xs"
               >
                 ✕
               </button>
@@ -2292,32 +2218,32 @@ export default function AdminCmsPage() {
             <form onSubmit={handleSaveTesti} className="space-y-3.5">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Nama Pelanggan</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Nama Pelanggan</label>
                   <input
                     type="text"
                     required
                     value={testiForm.name}
                     onChange={(e) => setTestiForm({ ...testiForm, name: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Lokasi</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Lokasi</label>
                   <input
                     type="text"
                     value={testiForm.location}
                     onChange={(e) => setTestiForm({ ...testiForm, location: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Platform</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Platform</label>
                   <select
                     value={testiForm.platform}
                     onChange={(e) => setTestiForm({ ...testiForm, platform: e.target.value as any })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   >
                     <option value="google">Google Review</option>
                     <option value="tiktok">TikTok</option>
@@ -2326,11 +2252,11 @@ export default function AdminCmsPage() {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-700">Penilaian (Bintang)</label>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Penilaian (Bintang)</label>
                   <select
                     value={testiForm.rating}
                     onChange={(e) => setTestiForm({ ...testiForm, rating: Number(e.target.value) })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                   >
                     <option value={5}>5 Bintang (Cemerlang)</option>
                     <option value={4}>4 Bintang (Bagus)</option>
@@ -2339,26 +2265,26 @@ export default function AdminCmsPage() {
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">Ulasan</label>
+                <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Ulasan Pelanggan</label>
                 <textarea
                   rows={3}
                   required
                   value={testiForm.review}
                   onChange={(e) => setTestiForm({ ...testiForm, review: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B57D0]/20"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs"
                 />
               </div>
-              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100">
+              <div className="pt-3 flex justify-end items-center space-x-2 border-t border-slate-100 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setIsTestiModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
+                  className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-full bg-[#0B57D0] hover:bg-[#0842A0] text-white text-xs font-medium shadow-xs transition-all"
+                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all"
                 >
                   Simpan Testimoni
                 </button>
