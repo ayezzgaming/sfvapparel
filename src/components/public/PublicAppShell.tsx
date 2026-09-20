@@ -65,59 +65,40 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
         {/* 2. MASTER CONTAINER APLIKASI (Fixed 100% height of the pinned frame) */}
         <div className="w-full max-w-md h-full bg-white shadow-2xl flex flex-col overflow-hidden relative overscroll-none touch-pan-y select-none">
           
-          {/* Header / Navbar (Theme customizable) */}
+          {/* Header / Navbar (Clean White Apple-Grade Polish) */}
           <header 
-            className={`shrink-0 z-40 px-5 py-3.5 pt-[calc(env(safe-area-inset-top,0px)+0.85rem)] flex items-center justify-between border-b shadow-sm select-none touch-none transition-colors duration-200 ${
-              isHeaderSolidBlue 
-                ? 'text-white border-blue-600/40' 
-                : 'text-slate-900 border-slate-200/80 backdrop-blur-md'
-            }`}
-            style={{ 
-              backgroundColor: headerBg,
-              touchAction: 'none' 
-            }}
+            className="shrink-0 z-40 px-4 py-3 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] flex items-center justify-between border-b border-slate-200/80 bg-white/95 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.03)] select-none touch-none transition-colors"
+            style={{ touchAction: 'none' }}
           >
-            {/* Brand Logo with dynamic color/invert */}
-            <Link href="/" draggable={false} className="inline-flex items-center gap-2.5 select-none active:opacity-80 transition-opacity">
+            {/* Brand Logo & Wordmark */}
+            <Link href="/" draggable={false} className="inline-flex items-center gap-2.5 select-none active:opacity-75 transition-opacity group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo.svg"
                 alt="SFV Apparel Logo"
-                className={`h-7 w-7 object-contain shrink-0 pointer-events-none transition-all ${
-                  logoMode === 'inverted_white' ? 'brightness-0 invert' : ''
-                }`}
+                className="h-7 w-7 object-contain shrink-0 pointer-events-none group-active:scale-95 transition-transform"
               />
               <div className="flex items-baseline">
-                <span className={`font-black text-[21px] sm:text-[22px] tracking-tight leading-none ${
-                  isHeaderSolidBlue ? 'text-white' : 'text-[#0052FF]'
-                }`}>
+                <span className="font-black text-[20px] sm:text-[21px] tracking-tight leading-none text-[#0052FF]">
                   SFV
                 </span>
-                <span className={`font-bold text-[14.5px] sm:text-[15px] tracking-[0.22em] ml-2 uppercase leading-none ${
-                  isHeaderSolidBlue ? 'text-white/90' : 'text-slate-900'
-                }`}>
+                <span className="font-extrabold text-[13.5px] sm:text-[14px] tracking-[0.22em] ml-1.5 uppercase leading-none text-slate-900">
                   APPAREL
                 </span>
               </div>
             </Link>
 
             {/* Header Action Icons */}
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1.5">
               <button
                 type="button"
                 onClick={() => setIsFavoritesOpen(true)}
                 aria-label="Senarai Pilihan Kegemaran"
-                className={`p-2 relative transition-colors active:scale-90 flex items-center justify-center rounded-full touch-manipulation ${
-                  isHeaderSolidBlue 
-                    ? 'text-white hover:text-white/90 hover:bg-white/10' 
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
-                }`}
+                className="w-9 h-9 relative transition-all active:scale-90 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200/60 shadow-2xs cursor-pointer touch-manipulation"
               >
-                <Heart className={`w-5 h-5 stroke-[2] ${isHeaderSolidBlue ? 'text-white' : 'text-slate-700'}`} />
+                <Heart className="w-4.5 h-4.5 stroke-[2] text-slate-700" />
                 {favoritesCount > 0 && (
-                  <span className={`absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#FF3B30] text-white text-[9.5px] font-bold flex items-center justify-center shadow-xs leading-none pointer-events-none ${
-                    isHeaderSolidBlue ? 'ring-2 ring-[#0052FF]' : 'ring-2 ring-white'
-                  }`}>
+                  <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#FF3B30] text-white text-[9.5px] font-bold flex items-center justify-center shadow-xs ring-2 ring-white leading-none pointer-events-none animate-in zoom-in-75">
                     {favoritesCount > 99 ? '99+' : favoritesCount}
                   </span>
                 )}
@@ -127,17 +108,11 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 type="button"
                 onClick={() => setIsBagOpen(true)}
                 aria-label="Bakul Pesanan Aktif"
-                className={`p-2 relative transition-colors active:scale-90 flex items-center justify-center rounded-full touch-manipulation ${
-                  isHeaderSolidBlue 
-                    ? 'text-white hover:text-white/90 hover:bg-white/10' 
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
-                }`}
+                className="w-9 h-9 relative transition-all active:scale-90 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200/60 shadow-2xs cursor-pointer touch-manipulation"
               >
-                <ShoppingBag className={`w-5 h-5 stroke-[2] ${isHeaderSolidBlue ? 'text-white' : 'text-slate-700'}`} />
+                <ShoppingBag className="w-4.5 h-4.5 stroke-[2] text-slate-700" />
                 {activeOrdersCount > 0 && (
-                  <span className={`absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#FF3B30] text-white text-[9.5px] font-bold flex items-center justify-center shadow-xs leading-none pointer-events-none ${
-                    isHeaderSolidBlue ? 'ring-2 ring-[#0052FF]' : 'ring-2 ring-white'
-                  }`}>
+                  <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#FF3B30] text-white text-[9.5px] font-bold flex items-center justify-center shadow-xs ring-2 ring-white leading-none pointer-events-none animate-in zoom-in-75">
                     {activeOrdersCount > 99 ? '99+' : activeOrdersCount}
                   </span>
                 )}

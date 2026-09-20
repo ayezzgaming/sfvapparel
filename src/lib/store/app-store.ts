@@ -148,7 +148,22 @@ function initStoreIfNeeded() {
     sloganQuote: getLocalData(STORAGE_KEYS.SLOGAN, INITIAL_CMS_SLOGAN_QUOTE),
     companySettings: getLocalData(STORAGE_KEYS.COMPANY, INITIAL_CMS_COMPANY_SETTINGS),
     policies: getLocalData(STORAGE_KEYS.POLICIES, INITIAL_CMS_POLICIES),
-    themeSettings: getLocalData(STORAGE_KEYS.THEME, INITIAL_CMS_THEME_SETTINGS),
+    themeSettings: (() => {
+      const saved = getLocalData<CmsThemeSettings>(STORAGE_KEYS.THEME, INITIAL_CMS_THEME_SETTINGS);
+      if (saved && (saved.header_bg === '#0052FF' || saved.header_style === 'solid_blue')) {
+        const reset: CmsThemeSettings = {
+          ...INITIAL_CMS_THEME_SETTINGS,
+          ...saved,
+          preset: 'clean_white',
+          header_bg: '#FFFFFF',
+          header_style: 'frosted_white',
+          header_logo_mode: 'original_blue',
+        };
+        setLocalData(STORAGE_KEYS.THEME, reset);
+        return reset;
+      }
+      return saved || INITIAL_CMS_THEME_SETTINGS;
+    })(),
     isInitialized: true,
   };
   notify();
