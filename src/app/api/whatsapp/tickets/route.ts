@@ -11,19 +11,8 @@ export interface SupportTicket {
   createdAt: string;
 }
 
-// In-memory / persistent mock store for support tickets
-let GLOBAL_TICKETS: SupportTicket[] = [
-  {
-    id: 't-1',
-    ticketNumber: 'TIKET-2026-1042',
-    customerPhone: '60148599138',
-    customerName: 'Ahmad Khairi',
-    category: 'custom_order',
-    summary: 'Ingin rundingan tempahan jersi korporat 250 helai berserta kolar mandarin & poket.',
-    status: 'open',
-    createdAt: new Date().toISOString(),
-  },
-];
+// In-memory / persistent store for support tickets
+let GLOBAL_TICKETS: SupportTicket[] = [];
 
 export const dynamic = 'force-dynamic';
 

@@ -150,11 +150,21 @@ export default function WhatsAppHubPage() {
 
       if (data.qr) {
         setQrCode(data.qr);
+        setChats([]);
+        setMessages([]);
+        setSelectedChat(null);
       } else if (newStatus === 'WORKING') {
         setQrCode(null);
+      } else {
+        setChats([]);
+        setMessages([]);
+        setSelectedChat(null);
       }
     } catch {
       setStatusData({ name: 'default', status: 'UNKNOWN' });
+      setChats([]);
+      setMessages([]);
+      setSelectedChat(null);
     } finally {
       setLoading(false);
       if (isManual) setRefreshing(false);
@@ -177,8 +187,16 @@ export default function WhatsAppHubPage() {
           }
           return prev;
         });
+      } else {
+        setChats([]);
+        setMessages([]);
+        setSelectedChat(null);
       }
-    } catch {}
+    } catch {
+      setChats([]);
+      setMessages([]);
+      setSelectedChat(null);
+    }
   }, []);
 
   // Fetch tickets
