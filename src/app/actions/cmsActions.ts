@@ -124,7 +124,7 @@ export interface CmsFullData {
 }
 
 /**
- * Fetch all CMS data from Supabase database with auto-seeding if empty
+ * Fetch all CMS data from Supabase database (Pure Database, No LocalStorage / Hardcode)
  */
 export async function getCmsDataDb(): Promise<{
   success: boolean;
@@ -137,11 +137,11 @@ export async function getCmsDataDb(): Promise<{
       return {
         success: false,
         data: {
-          heroBanners: INITIAL_CMS_HERO_BANNERS,
-          services: INITIAL_CMS_SERVICES,
-          productionVideos: INITIAL_CMS_PRODUCTION_VIDEOS,
-          productionGallery: INITIAL_CMS_PRODUCTION_GALLERY,
-          testimonials: INITIAL_CMS_TESTIMONIALS,
+          heroBanners: [],
+          services: [],
+          productionVideos: [],
+          productionGallery: [],
+          testimonials: [],
           sloganQuote: INITIAL_CMS_SLOGAN_QUOTE,
           companySettings: INITIAL_CMS_COMPANY_SETTINGS,
           policies: INITIAL_CMS_POLICIES,
@@ -151,117 +151,39 @@ export async function getCmsDataDb(): Promise<{
     }
 
     // 1. Fetch Hero Banners
-    let { data: banners, error: bannersErr } = await supabase
+    const { data: banners, error: bannersErr } = await supabase
       .from('cms_hero_banners')
       .select('*')
       .order('sort_order', { ascending: true });
-
-    if (!banners || banners.length === 0) {
-      const seedBanners = INITIAL_CMS_HERO_BANNERS.map((b) => ({
-        id: toUuid(b.id),
-        image_url: b.image_url,
-        status_pill: b.status_pill || 'Kilang Beroperasi',
-        tag_text: b.tag_text || 'Koleksi Rasmi 2026',
-        title: b.title,
-        button_text: b.button_text || 'Katalog',
-        button_link: b.button_link || '/catalog',
-        sort_order: b.sort_order,
-        is_active: b.is_active,
-      }));
-      await supabase.from('cms_hero_banners').upsert(seedBanners);
-      banners = seedBanners;
-    }
+    if (bannersErr) console.error('banners fetch error:', bannersErr.message);
 
     // 2. Fetch Services
-    let { data: services } = await supabase
+    const { data: services, error: servicesErr } = await supabase
       .from('cms_services')
       .select('*')
       .order('sort_order', { ascending: true });
-
-    if (!services || services.length === 0) {
-      const seedServices = INITIAL_CMS_SERVICES.map((s) => ({
-        id: toUuid(s.id),
-        category: s.category,
-        title: s.title,
-        headline: s.headline,
-        highlight: s.highlight,
-        price_prefix: s.price_prefix || 'Bermula',
-        price_amount: s.price_amount,
-        price_unit: s.price_unit || '/ helai',
-        image_url: s.image_url,
-        href: s.href || '/catalog',
-        details: s.details || [],
-        sort_order: s.sort_order,
-        is_active: s.is_active,
-      }));
-      await supabase.from('cms_services').upsert(seedServices);
-      services = seedServices;
-    }
+    if (servicesErr) console.error('services fetch error:', servicesErr.message);
 
     // 3. Fetch Production Videos
-    let { data: videos } = await supabase
+    const { data: videos, error: videosErr } = await supabase
       .from('cms_production_videos')
       .select('*')
       .order('sort_order', { ascending: true });
-
-    if (!videos || videos.length === 0) {
-      const seedVideos = INITIAL_CMS_PRODUCTION_VIDEOS.map((v) => ({
-        id: toUuid(v.id),
-        category: v.category,
-        title: v.title,
-        thumbnail_url: v.thumbnail_url,
-        youtube_id: v.youtube_id,
-        sort_order: v.sort_order,
-        is_active: v.is_active,
-      }));
-      await supabase.from('cms_production_videos').upsert(seedVideos);
-      videos = seedVideos;
-    }
+    if (videosErr) console.error('videos fetch error:', videosErr.message);
 
     // 4. Fetch Production Gallery
-    let { data: gallery } = await supabase
+    const { data: gallery, error: galleryErr } = await supabase
       .from('cms_production_gallery')
       .select('*')
       .order('sort_order', { ascending: true });
-
-    if (!gallery || gallery.length === 0) {
-      const seedGallery = INITIAL_CMS_PRODUCTION_GALLERY.map((g) => ({
-        id: toUuid(g.id),
-        title: g.title,
-        category: g.category,
-        fabric: g.fabric,
-        image_url: g.image_url,
-        client: g.client,
-        tag: g.tag,
-        sort_order: g.sort_order,
-        is_active: g.is_active,
-      }));
-      await supabase.from('cms_production_gallery').upsert(seedGallery);
-      gallery = seedGallery;
-    }
+    if (galleryErr) console.error('gallery fetch error:', galleryErr.message);
 
     // 5. Fetch Testimonials
-    let { data: testimonials } = await supabase
+    const { data: testimonials, error: testErr } = await supabase
       .from('cms_testimonials')
       .select('*')
       .order('created_at', { ascending: false });
-
-    if (!testimonials || testimonials.length === 0) {
-      const seedTestimonials = INITIAL_CMS_TESTIMONIALS.map((t) => ({
-        id: toUuid(t.id),
-        name: t.name,
-        location: t.location,
-        initial: t.initial,
-        avatar_bg: t.avatar_bg || 'bg-blue-100',
-        avatar_text: t.avatar_text || 'text-blue-600',
-        platform: t.platform,
-        rating: t.rating,
-        review: t.review,
-        is_active: t.is_active,
-      }));
-      await supabase.from('cms_testimonials').upsert(seedTestimonials);
-      testimonials = seedTestimonials;
-    }
+    if (testErr) console.error('testimonials fetch error:', testErr.message);
 
     // 6. Fetch Slogan Quote
     let { data: sloganList } = await supabase
@@ -548,8 +470,12 @@ export async function deleteHeroBannerDb(id: string): Promise<{ success: boolean
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    const { error } = await supabase.from('cms_hero_banners').delete().eq('id', id);
-    if (error) return { success: false, message: error.message };
+    const targetId = toUuid(id);
+    const { error } = await supabase.from('cms_hero_banners').delete().eq('id', targetId);
+    if (error) {
+      console.error('deleteHeroBannerDb error:', error.message);
+      return { success: false, message: error.message };
+    }
     return { success: true };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Gagal memadam Banner Utama.';
@@ -619,8 +545,12 @@ export async function deleteServiceDb(id: string): Promise<{ success: boolean; m
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    const { error } = await supabase.from('cms_services').delete().eq('id', id);
-    if (error) return { success: false, message: error.message };
+    const targetId = toUuid(id);
+    const { error } = await supabase.from('cms_services').delete().eq('id', targetId);
+    if (error) {
+      console.error('deleteServiceDb error:', error.message);
+      return { success: false, message: error.message };
+    }
     return { success: true };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Gagal memadam Servis.';
@@ -684,8 +614,12 @@ export async function deleteProductionVideoDb(id: string): Promise<{ success: bo
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    const { error } = await supabase.from('cms_production_videos').delete().eq('id', id);
-    if (error) return { success: false, message: error.message };
+    const targetId = toUuid(id);
+    const { error } = await supabase.from('cms_production_videos').delete().eq('id', targetId);
+    if (error) {
+      console.error('deleteProductionVideoDb error:', error.message);
+      return { success: false, message: error.message };
+    }
     return { success: true };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Gagal memadam Video.';
@@ -751,8 +685,12 @@ export async function deleteProductionGalleryDb(id: string): Promise<{ success: 
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    const { error } = await supabase.from('cms_production_gallery').delete().eq('id', id);
-    if (error) return { success: false, message: error.message };
+    const targetId = toUuid(id);
+    const { error } = await supabase.from('cms_production_gallery').delete().eq('id', targetId);
+    if (error) {
+      console.error('deleteProductionGalleryDb error:', error.message);
+      return { success: false, message: error.message };
+    }
     return { success: true };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Gagal memadam Galeri.';
@@ -814,8 +752,12 @@ export async function deleteTestimonialDb(id: string): Promise<{ success: boolea
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    const { error } = await supabase.from('cms_testimonials').delete().eq('id', id);
-    if (error) return { success: false, message: error.message };
+    const targetId = toUuid(id);
+    const { error } = await supabase.from('cms_testimonials').delete().eq('id', targetId);
+    if (error) {
+      console.error('deleteTestimonialDb error:', error.message);
+      return { success: false, message: error.message };
+    }
     return { success: true };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Gagal memadam Testimoni.';
