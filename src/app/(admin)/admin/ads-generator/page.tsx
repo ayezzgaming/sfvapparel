@@ -80,6 +80,7 @@ interface AiVariation {
   primaryText: string;
   callToAction: string;
   whatsappMessage: string;
+  imageUrl?: string;
 }
 
 export default function AdminAdsGeneratorPage() {
@@ -654,6 +655,9 @@ export default function AdminAdsGeneratorPage() {
       if (data.variations && Array.isArray(data.variations) && data.variations.length > 0) {
         setAiVariations(data.variations);
         setSelectedVariationIndex(0);
+        if (data.variations[0]?.imageUrl) {
+          setCustomImage(data.variations[0].imageUrl);
+        }
 
         // Dynamically configure Meta Ads Studio from intelligent AI recommendations
         if (data.adSettings) {
@@ -1234,26 +1238,54 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
             <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 dark:border-zinc-800 min-h-[56px] shrink-0 gap-3">
               {studioStep === 'result' ? (
                 <>
-                  {/* Sisi Kiri: Tab Format */}
-                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl shrink-0">
-                    {[
-                      { id: 'feed', label: 'Feed Post' },
-                      { id: 'story', label: 'Stories' },
-                      { id: 'reels', label: 'Reels / Video' },
-                    ].map((fmt) => (
-                      <button
-                        key={fmt.id}
-                        type="button"
-                        onClick={() => setAdFormat(fmt.id as 'feed' | 'story' | 'reels')}
-                        className={`px-3 py-1 text-xs font-medium rounded-lg transition-all ${
-                          adFormat === fmt.id
-                            ? 'bg-white dark:bg-zinc-700 text-slate-800 dark:text-zinc-100 shadow-sm font-semibold'
-                            : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400'
-                        }`}
-                      >
-                        {fmt.label}
-                      </button>
-                    ))}
+                  {/* Sisi Kiri: Tab Format & Variasi AI Switcher */}
+                  <div className="flex items-center gap-2 overflow-x-auto">
+                    <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl shrink-0">
+                      {[
+                        { id: 'feed', label: 'Feed Post' },
+                        { id: 'story', label: 'Stories' },
+                        { id: 'reels', label: 'Reels / Video' },
+                      ].map((fmt) => (
+                        <button
+                          key={fmt.id}
+                          type="button"
+                          onClick={() => setAdFormat(fmt.id as 'feed' | 'story' | 'reels')}
+                          className={`px-3 py-1 text-xs font-medium rounded-lg transition-all ${
+                            adFormat === fmt.id
+                              ? 'bg-white dark:bg-zinc-700 text-slate-800 dark:text-zinc-100 shadow-sm font-semibold'
+                              : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400'
+                          }`}
+                        >
+                          {fmt.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* 5 Variasi AI Switcher */}
+                    {aiVariations.length > 1 && (
+                      <div className="hidden sm:flex items-center gap-1 bg-slate-100/80 dark:bg-zinc-800/80 p-1 rounded-xl shrink-0 border border-slate-200/50 dark:border-zinc-700/50">
+                        {aiVariations.map((v, idx) => (
+                          <button
+                            key={v.id || idx}
+                            type="button"
+                            onClick={() => {
+                              setSelectedVariationIndex(idx);
+                              if (v.imageUrl) {
+                                setCustomImage(v.imageUrl);
+                              }
+                            }}
+                            title={v.angleName || `Sudut ${idx + 1}`}
+                            className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                              selectedVariationIndex === idx
+                                ? 'bg-white dark:bg-zinc-700 text-slate-900 dark:text-zinc-100 shadow-2xs font-semibold'
+                                : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400 hover:bg-slate-200/50'
+                            }`}
+                          >
+                            Variasi {idx + 1}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Sisi Kanan: Skala Pratinjau, Platform Switcher & Salin Teks */}
