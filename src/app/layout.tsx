@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     'jersi bola sublimasi',
     'jersi esport'
   ],
-  authors: [{ name: 'SFV APPAREL' }, { name: 'AYEZZ Studio' }],
+  authors: [{ name: 'SFV APPAREL' }, { name: 'AYEZZ Global' }],
   creator: 'SFV APPAREL',
   publisher: 'SFV Ventures Marketing',
   robots: {

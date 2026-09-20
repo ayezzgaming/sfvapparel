@@ -1158,21 +1158,23 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* 4. Copyright & Developer Credit */}
-        <div className="pt-4 border-t border-gray-200/60 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2.5">
-          <span>&copy; {new Date().getFullYear()} {companySettings.brand_name}. Hak Cipta Terpelihara.</span>
+        {/* 4. Copyright & Developer Credit (Apple-grade Clean, Responsive & Beautiful) */}
+        <div className="pt-6 border-t border-slate-200/80 flex flex-col items-center justify-center text-center space-y-2 select-none">
+          <p className="text-[11.5px] text-slate-500 font-medium">
+            &copy; {new Date().getFullYear()} <span className="font-bold text-slate-700">{companySettings.brand_name || 'SFV APPAREL'}</span>. Hak Cipta Terpelihara.
+          </p>
           
-          {/* Developer Credit: AYEZZ Studio */}
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+          {/* Developer Credit: AYEZZ Global */}
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
             <span>Dibangunkan oleh</span>
             <a
               href={companySettings.developer_url || 'https://ayezz.com'}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-bold text-slate-800 hover:text-[#00BDFF] transition-colors inline-flex items-center gap-1 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs hover:border-[#00BDFF]/40"
+              className="inline-flex items-center gap-1.5 font-bold text-slate-800 hover:text-[#00BDFF] bg-white px-3 py-1 rounded-full border border-slate-200/90 shadow-2xs hover:border-[#00BDFF]/40 active:scale-95 transition-all whitespace-nowrap"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#00BDFF]" />
-              <span>{companySettings.developer_name || 'AYEZZ Studio'}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00BDFF] shrink-0" />
+              <span className="tracking-tight text-slate-800 font-semibold">{(!companySettings.developer_name || companySettings.developer_name === 'AYEZZ Studio') ? 'AYEZZ Global' : companySettings.developer_name}</span>
             </a>
           </div>
         </div>

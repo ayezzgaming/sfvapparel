@@ -738,7 +738,7 @@ export const INITIAL_CMS_COMPANY_SETTINGS = {
   facebook_url: 'https://www.facebook.com/sfvapparel/',
   instagram_url: 'https://www.instagram.com/sfv.apparel/',
   tiktok_url: 'https://www.tiktok.com/@sfvapparel',
-  developer_name: 'AYEZZ Studio',
+  developer_name: 'AYEZZ Global',
   developer_url: 'https://ayezz.com',
 };
 
