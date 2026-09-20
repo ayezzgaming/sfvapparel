@@ -77,7 +77,9 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               <img
                 src="/logo/SVFapparel-logo.svg"
                 alt="SVF Apparel"
-                className="h-7 sm:h-8 w-auto object-contain shrink-0 pointer-events-none group-active:scale-95 transition-transform"
+                height={32}
+                style={{ maxHeight: '32px', height: '32px', width: 'auto' }}
+                className="h-7 sm:h-8 w-auto max-h-8 object-contain shrink-0 pointer-events-none group-active:scale-95 transition-transform"
               />
             </Link>
 

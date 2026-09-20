@@ -94,20 +94,6 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // Unregister stale service workers
-              if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                  for (let registration of registrations) {
-                    registration.unregister();
-                  }
-                });
-                if ('caches' in window) {
-                  caches.keys().then(function(names) {
-                    for (let name of names) caches.delete(name);
-                  });
-                }
-              }
-
               // Mobile First: Prevent pinch zoom, double-tap zoom & gesture zoom
               if (typeof window !== 'undefined') {
                 // Prevent multi-touch pinch zoom
