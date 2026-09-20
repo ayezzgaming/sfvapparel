@@ -1004,48 +1004,48 @@ export default function HomePage() {
             <span className="text-[10px] text-slate-400">Enkripsi 256-Bit SSL • Transaksi Disahkan</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 pt-1">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
             {/* FPX */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/payments/logobaru/FPX Logo Vector.svg"
               alt="FPX Online Banking"
-              className="h-5 w-auto object-contain shrink-0"
+              className="h-4 w-auto object-contain shrink-0"
             />
             {/* DuitNow */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/payments/logobaru/duitnow.svg"
               alt="DuitNow QR"
-              className="h-5 w-auto object-contain shrink-0"
+              className="h-4.5 w-auto object-contain shrink-0"
             />
             {/* Touch 'n Go */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/payments/logobaru/Touch_'n_Go_eWallet_logo.svg"
               alt="Touch 'n Go eWallet"
-              className="h-5.5 w-auto object-contain shrink-0"
+              className="h-4.5 w-auto object-contain shrink-0"
             />
             {/* Maybank */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/payments/logobaru/maybank-vector-logo.svg"
               alt="Maybank"
-              className="h-4.5 w-auto object-contain shrink-0"
+              className="h-4 w-auto object-contain shrink-0"
             />
             {/* Visa */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/payments/logobaru/Visa_Inc._logo_(2021–present).svg"
               alt="Visa"
-              className="h-3.5 w-auto object-contain shrink-0"
+              className="h-3 w-auto object-contain shrink-0"
             />
             {/* Mastercard */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/payments/logobaru/Mastercard-logo.svg"
               alt="Mastercard"
-              className="h-5 w-auto object-contain shrink-0"
+              className="h-4 w-auto object-contain shrink-0"
             />
           </div>
         </div>
