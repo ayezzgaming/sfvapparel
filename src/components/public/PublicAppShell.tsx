@@ -127,9 +127,9 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             {children}
           </main>
 
-          {/* iOS Bottom Tab Bar (Theme customizable) */}
+          {/* iOS Bottom Tab Bar (With Modern Center Raised Circular Button) */}
           <nav 
-            className={`shrink-0 z-40 w-full border-t px-3 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.65rem)] flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.05)] select-none touch-none overscroll-none transition-all duration-300 ease-in-out transform ${
+            className={`shrink-0 z-40 w-full border-t px-2 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.65rem)] flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.05)] select-none touch-none overscroll-none transition-all duration-300 ease-in-out transform ${
               isBottomNavDark ? 'border-blue-600/40' : 'border-slate-200/80 backdrop-blur-xl'
             } ${
               shouldHideBottomNav
@@ -141,7 +141,6 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               touchAction: 'none' 
             }}
           >
-            
             {/* Tab 1: Utama */}
             <Link
               href="/"
@@ -156,7 +155,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                   <IoHomeOutline className="w-5.5 h-5.5 transition-colors" style={{ color: bottomInactiveColor }} />
                 )}
               </div>
-              <span className={`text-[10.5px] tracking-tight mt-0.5 transition-colors ${isHome ? 'font-bold' : 'font-medium'}`} style={{ color: isHome ? bottomActiveColor : bottomInactiveColor }}>
+              <span className={`text-[10px] tracking-tight mt-0.5 transition-colors ${isHome ? 'font-bold' : 'font-medium'}`} style={{ color: isHome ? bottomActiveColor : bottomInactiveColor }}>
                 Utama
               </span>
             </Link>
@@ -175,12 +174,30 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                   <IoGridOutline className="w-5.5 h-5.5 transition-colors" style={{ color: bottomInactiveColor }} />
                 )}
               </div>
-              <span className={`text-[10.5px] tracking-tight mt-0.5 transition-colors ${isCatalog ? 'font-bold' : 'font-medium'}`} style={{ color: isCatalog ? bottomActiveColor : bottomInactiveColor }}>
+              <span className={`text-[10px] tracking-tight mt-0.5 transition-colors ${isCatalog ? 'font-bold' : 'font-medium'}`} style={{ color: isCatalog ? bottomActiveColor : bottomInactiveColor }}>
                 Katalog
               </span>
             </Link>
 
-            {/* Tab 3: Pesanan */}
+            {/* Tab 3 (Center): Raised Circular WhatsApp Action */}
+            <div className="flex flex-col items-center justify-center flex-1 -mt-5 relative z-10">
+              <a
+                href={`https://wa.me/${companySettings?.whatsapp_number || '60148599138'}?text=${encodeURIComponent(companySettings?.whatsapp_default_message || 'Hai SFV Apparel, saya ingin bertanya tentang tempahan custom.')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                draggable={false}
+                aria-label="Hubungi Kilang di WhatsApp"
+                style={{ backgroundColor: whatsappFabBg || '#25D366' }}
+                className="w-12 h-12 rounded-full text-white flex items-center justify-center shadow-[0_4px_14px_rgba(37,211,102,0.4)] ring-4 ring-white active:scale-90 hover:scale-105 transition-all select-none touch-manipulation cursor-pointer group"
+              >
+                <FaWhatsapp className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+              </a>
+              <span className="text-[10px] tracking-tight mt-0.5 font-semibold text-slate-500">
+                WhatsApp
+              </span>
+            </div>
+
+            {/* Tab 4: Pesanan */}
             <Link
               href="/history"
               draggable={false}
@@ -197,12 +214,12 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                   <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#FF3B30] ring-2 ring-white" />
                 )}
               </div>
-              <span className={`text-[10.5px] tracking-tight mt-0.5 transition-colors ${isHistory ? 'font-bold' : 'font-medium'}`} style={{ color: isHistory ? bottomActiveColor : bottomInactiveColor }}>
+              <span className={`text-[10px] tracking-tight mt-0.5 transition-colors ${isHistory ? 'font-bold' : 'font-medium'}`} style={{ color: isHistory ? bottomActiveColor : bottomInactiveColor }}>
                 Pesanan
               </span>
             </Link>
 
-            {/* Tab 4: Profil */}
+            {/* Tab 5: Profil */}
             <Link
               href="/profile"
               draggable={false}
@@ -216,28 +233,11 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                   <IoPersonOutline className="w-5.5 h-5.5 transition-colors" style={{ color: bottomInactiveColor }} />
                 )}
               </div>
-              <span className={`text-[10.5px] tracking-tight mt-0.5 transition-colors ${isProfile ? 'font-bold' : 'font-medium'}`} style={{ color: isProfile ? bottomActiveColor : bottomInactiveColor }}>
+              <span className={`text-[10px] tracking-tight mt-0.5 transition-colors ${isProfile ? 'font-bold' : 'font-medium'}`} style={{ color: isProfile ? bottomActiveColor : bottomInactiveColor }}>
                 Profil
               </span>
             </Link>
           </nav>
-
-          {/* Floating WhatsApp Action Button */}
-          <a
-            href={`https://wa.me/${companySettings?.whatsapp_number || '60148599138'}?text=${encodeURIComponent(companySettings?.whatsapp_default_message || 'Hai SFV Apparel, saya ingin bertanya tentang tempahan custom.')}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            draggable={false}
-            aria-label="Hubungi Kilang di WhatsApp"
-            style={{ backgroundColor: whatsappFabBg }}
-            className={`absolute bottom-[calc(env(safe-area-inset-bottom,0px)+5rem)] right-4 z-30 w-12 h-12 rounded-full text-white flex items-center justify-center shadow-[0_8px_20px_rgba(37,211,102,0.35)] active:scale-90 hover:scale-105 transition-all duration-300 ease-in-out select-none touch-manipulation transform ${
-              shouldHideBottomNav
-                ? 'translate-y-24 opacity-0 pointer-events-none scale-75'
-                : 'translate-y-0 opacity-100 scale-100'
-            }`}
-          >
-            <FaWhatsapp className="w-6 h-6 text-white" />
-          </a>
 
           {/* =========================================================================
               QUICK ACTIVE ORDERS / BAG MODAL SHEET (SWIPEABLE iOS DRAWER)
