@@ -43,7 +43,6 @@ import {
 } from './seed-data';
 
 const STORAGE_KEYS = {
-  DESIGNS: 'svf_designs_v3',
   FABRICS: 'svf_fabrics_v3',
   CUTS: 'svf_cuts_v3',
   DTF_DIMS: 'svf_dtf_dims_v3',
@@ -100,6 +99,7 @@ interface AppStoreState {
   policies: Record<'privacy' | 'terms' | 'warranty' | 'shipping', CmsPolicy>;
   themeSettings: CmsThemeSettings;
   isInitialized: boolean;
+  isLoadingDesigns: boolean;
 }
 
 let storeState: AppStoreState = {
@@ -121,6 +121,7 @@ let storeState: AppStoreState = {
   policies: INITIAL_CMS_POLICIES,
   themeSettings: INITIAL_CMS_THEME_SETTINGS,
   isInitialized: false,
+  isLoadingDesigns: false,
 };
 
 const listeners = new Set<() => void>();
@@ -129,10 +130,33 @@ function notify() {
   listeners.forEach((listener) => listener());
 }
 
+async function fetchAndSyncDesigns() {
+  storeState = { ...storeState, isLoadingDesigns: true };
+  notify();
+  try {
+    const res = await getDesignsDb();
+    if (res.success && res.designs && res.designs.length > 0) {
+      storeState = {
+        ...storeState,
+        designs: res.designs,
+        isLoadingDesigns: false,
+      };
+      notify();
+    } else {
+      storeState = { ...storeState, isLoadingDesigns: false };
+      notify();
+    }
+  } catch (err) {
+    console.error('Error fetching designs from Supabase:', err);
+    storeState = { ...storeState, isLoadingDesigns: false };
+    notify();
+  }
+}
+
 function initStoreIfNeeded() {
   if (typeof window === 'undefined' || storeState.isInitialized) return;
   storeState = {
-    designs: getLocalData(STORAGE_KEYS.DESIGNS, INITIAL_DESIGNS),
+    designs: INITIAL_DESIGNS, // Designs are in-memory only, no localStorage!
     fabrics: getLocalData(STORAGE_KEYS.FABRICS, INITIAL_FABRIC_MATERIALS),
     cuts: getLocalData(STORAGE_KEYS.CUTS, INITIAL_APPAREL_CUTS),
     dtfDimensions: getLocalData(STORAGE_KEYS.DTF_DIMS, INITIAL_DTF_DIMENSIONS),
@@ -165,27 +189,18 @@ function initStoreIfNeeded() {
       return saved || INITIAL_CMS_THEME_SETTINGS;
     })(),
     isInitialized: true,
+    isLoadingDesigns: false,
   };
   notify();
 
-  // Async load shared designs from Supabase DB
-  getDesignsDb().then((res) => {
-    if (res.success && res.designs && res.designs.length > 0) {
-      storeState = {
-        ...storeState,
-        designs: res.designs,
-      };
-      setLocalData(STORAGE_KEYS.DESIGNS, res.designs);
-      notify();
-    }
-  }).catch(() => {});
+  // Async load fresh shared designs directly from Supabase DB
+  fetchAndSyncDesigns();
 }
 
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (e: StorageEvent) => {
     if (!e.newValue) return;
     try {
-      if (e.key === STORAGE_KEYS.DESIGNS) storeState.designs = JSON.parse(e.newValue);
       if (e.key === STORAGE_KEYS.FABRICS) storeState.fabrics = JSON.parse(e.newValue);
       if (e.key === STORAGE_KEYS.CUTS) storeState.cuts = JSON.parse(e.newValue);
       if (e.key === STORAGE_KEYS.DTF_DIMS) storeState.dtfDimensions = JSON.parse(e.newValue);
@@ -239,6 +254,7 @@ const serverSnapshot: AppStoreState = {
   policies: INITIAL_CMS_POLICIES,
   themeSettings: INITIAL_CMS_THEME_SETTINGS,
   isInitialized: false,
+  isLoadingDesigns: false,
 };
 
 function getServerSnapshot() {
@@ -251,6 +267,16 @@ export function useAppStore() {
   }, []);
 
   const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  // Re-fetch designs from Supabase on-demand
+  const refreshDesigns = useCallback(async () => {
+    await fetchAndSyncDesigns();
+  }, []);
+
+  const setDesigns = useCallback((designsList: Design[]) => {
+    storeState = { ...storeState, designs: designsList };
+    notify();
+  }, []);
 
   // Favorites
   const toggleFavorite = useCallback((designId: string) => {
@@ -312,43 +338,35 @@ export function useAppStore() {
     notify();
   }, []);
 
-  // Catalog Designs
-  const addDesign = useCallback((design: Omit<Design, 'id'>) => {
+  // Catalog Designs (Supabase database as single source of truth, NO localStorage)
+  const addDesign = useCallback((design: Design) => {
     initStoreIfNeeded();
-    const newDesign: Design = { ...design, id: `des-${Date.now()}` };
-    const nextDesigns = [newDesign, ...storeState.designs];
+    const exists = storeState.designs.some((d) => d.id === design.id);
+    const nextDesigns = exists
+      ? storeState.designs.map((d) => (d.id === design.id ? design : d))
+      : [design, ...storeState.designs];
     storeState = { ...storeState, designs: nextDesigns };
-    setLocalData(STORAGE_KEYS.DESIGNS, nextDesigns);
     notify();
-    saveDesignDb(newDesign).catch(() => {});
-    return newDesign;
+    return design;
   }, []);
 
   const updateDesign = useCallback((id: string, updates: Partial<Design>) => {
     initStoreIfNeeded();
-    let updatedDesign: Design | null = null;
     const nextDesigns = storeState.designs.map((d) => {
       if (d.id === id) {
-        updatedDesign = { ...d, ...updates };
-        return updatedDesign;
+        return { ...d, ...updates };
       }
       return d;
     });
     storeState = { ...storeState, designs: nextDesigns };
-    setLocalData(STORAGE_KEYS.DESIGNS, nextDesigns);
     notify();
-    if (updatedDesign) {
-      saveDesignDb(updatedDesign).catch(() => {});
-    }
   }, []);
 
   const deleteDesign = useCallback((id: string) => {
     initStoreIfNeeded();
     const nextDesigns = storeState.designs.filter((d) => d.id !== id);
     storeState = { ...storeState, designs: nextDesigns };
-    setLocalData(STORAGE_KEYS.DESIGNS, nextDesigns);
     notify();
-    deleteDesignDb(id).catch(() => {});
   }, []);
 
   // Pricing Rules
@@ -600,8 +618,8 @@ export function useAppStore() {
       policies: INITIAL_CMS_POLICIES,
       themeSettings: INITIAL_CMS_THEME_SETTINGS,
       isInitialized: true,
+      isLoadingDesigns: false,
     };
-    setLocalData(STORAGE_KEYS.DESIGNS, INITIAL_DESIGNS);
     setLocalData(STORAGE_KEYS.FABRICS, INITIAL_FABRIC_MATERIALS);
     setLocalData(STORAGE_KEYS.CUTS, INITIAL_APPAREL_CUTS);
     setLocalData(STORAGE_KEYS.DTF_DIMS, INITIAL_DTF_DIMENSIONS);
@@ -619,10 +637,12 @@ export function useAppStore() {
     setLocalData(STORAGE_KEYS.POLICIES, INITIAL_CMS_POLICIES);
     setLocalData(STORAGE_KEYS.THEME, INITIAL_CMS_THEME_SETTINGS);
     notify();
+    fetchAndSyncDesigns();
   }, []);
 
   return {
     isInitialized: state.isInitialized,
+    isLoadingDesigns: state.isLoadingDesigns,
     designs: state.designs,
     fabrics: state.fabrics,
     cuts: state.cuts,
@@ -640,6 +660,8 @@ export function useAppStore() {
     companySettings: state.companySettings,
     policies: state.policies,
     themeSettings: state.themeSettings,
+    refreshDesigns,
+    setDesigns,
     toggleFavorite,
     isFavorite,
     addOrder,
@@ -675,5 +697,3 @@ export function useAppStore() {
     resetToSeedData,
   };
 }
-
-

@@ -26,11 +26,15 @@ function CatalogContent() {
   const searchParams = useSearchParams();
   const initialType = searchParams.get('type') || 'all';
 
-  const { designs, favorites, toggleFavorite } = useAppStore();
+  const { designs, favorites, toggleFavorite, refreshDesigns } = useAppStore();
   const [selectedCategory, setSelectedCategory] = useState<string>(initialType);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDesign, setSelectedDesign] = useState<Design | null>(designs[0] || null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  useEffect(() => {
+    refreshDesigns();
+  }, [refreshDesigns]);
 
   const handleOpenDesign = (design: Design) => {
     setSelectedDesign(design);

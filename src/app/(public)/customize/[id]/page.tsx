@@ -34,8 +34,13 @@ export default function CustomizePage() {
     cuts, 
     dtfDimensions, 
     tiers, 
-    addOrder 
+    addOrder,
+    refreshDesigns
   } = useAppStore();
+
+  React.useEffect(() => {
+    refreshDesigns();
+  }, [refreshDesigns]);
 
   const design = useMemo(() => {
     return designs.find((d) => d.id === designId) || designs[0];

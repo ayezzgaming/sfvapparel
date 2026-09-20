@@ -16,6 +16,7 @@ import {
   ImageIcon,
   Sparkles,
   CheckCircle2,
+  AlertCircle,
   ChevronLeft,
   ChevronRight,
   LayoutGrid,
@@ -37,7 +38,7 @@ interface CompressionInfo {
 }
 
 export default function AdminCatalogPage() {
-  const { designs, addDesign, updateDesign, deleteDesign } = useAppStore();
+  const { designs, addDesign, updateDesign, deleteDesign, refreshDesigns, isLoadingDesigns } = useAppStore();
 
   // Layout
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
@@ -60,7 +61,14 @@ export default function AdminCatalogPage() {
   const [compressionInfo, setCompressionInfo] = useState<CompressionInfo | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [modalErrorMessage, setModalErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Initial fetch from Supabase on mount
+  useEffect(() => {
+    refreshDesigns();
+  }, [refreshDesigns]);
 
   const filteredDesigns = designs.filter((d) => {
     if (filterType !== 'all' && d.print_type !== filterType) return false;
@@ -94,6 +102,7 @@ export default function AdminCatalogPage() {
     setImageUrl('');
     setIsFeatured(false);
     setCompressionInfo(null);
+    setModalErrorMessage(null);
     setIsModalOpen(true);
   };
 
@@ -105,6 +114,7 @@ export default function AdminCatalogPage() {
     setImageUrl(design.thumbnail_url || design.mockup_front_url || '');
     setIsFeatured(!!design.is_featured);
     setCompressionInfo(null);
+    setModalErrorMessage(null);
     setIsModalOpen(true);
   };
 
@@ -186,7 +196,9 @@ export default function AdminCatalogPage() {
     e.preventDefault();
     if (!title.trim() || !imageUrl) return;
     setIsSaving(true);
+    setModalErrorMessage(null);
     const tags = [category.toLowerCase(), printType === 'sublimation' ? 'sublimasi' : 'dtf', 'kustom'];
+    
     try {
       if (editingDesign) {
         const u: Design = {
@@ -199,11 +211,16 @@ export default function AdminCatalogPage() {
           tags: editingDesign.tags?.length ? editingDesign.tags : tags,
           is_featured: isFeatured,
         };
-        updateDesign(editingDesign.id, u);
-        await saveDesignDb(u);
+        const result = await saveDesignDb(u);
+        if (!result.success) {
+          setModalErrorMessage(result.message);
+          setIsSaving(false);
+          return;
+        }
+        updateDesign(editingDesign.id, result.data || u);
+        setSaveSuccessMessage(result.message || 'Rekaan berjaya dikemaskini.');
       } else {
-        const n: Design = {
-          id: `des-${Date.now()}`,
+        const n = {
           title: title.trim(),
           category,
           print_type: printType,
@@ -214,26 +231,43 @@ export default function AdminCatalogPage() {
           is_active: true,
           created_at: new Date().toISOString(),
         };
-        addDesign(n);
-        await saveDesignDb(n);
+        const result = await saveDesignDb(n);
+        if (!result.success) {
+          setModalErrorMessage(result.message);
+          setIsSaving(false);
+          return;
+        }
+        if (result.data) {
+          addDesign(result.data);
+        }
+        setSaveSuccessMessage(result.message || 'Rekaan baharu berjaya disimpan ke pangkalan data.');
       }
-      setSaveSuccessMessage('Rekaan berjaya disimpan.');
-      setTimeout(() => setSaveSuccessMessage(null), 3000);
-    } catch {
-      /* Ignore */
+      setTimeout(() => setSaveSuccessMessage(null), 4000);
+      setIsModalOpen(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ralat semasa menyimpan.';
+      setModalErrorMessage(msg);
     } finally {
       setIsSaving(false);
-      setIsModalOpen(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Padam rekaan ini?')) {
-      deleteDesign(id);
+    if (confirm('Padam rekaan ini daripada pangkalan data secara kekal?')) {
       try {
-        await deleteDesignDb(id);
-      } catch {
-        /* Ignore */
+        const result = await deleteDesignDb(id);
+        if (!result.success) {
+          setErrorMessage(result.message);
+          setTimeout(() => setErrorMessage(null), 4000);
+          return;
+        }
+        deleteDesign(id);
+        setSaveSuccessMessage('Rekaan berjaya dipadam daripada pangkalan data.');
+        setTimeout(() => setSaveSuccessMessage(null), 3000);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Ralat memadam.';
+        setErrorMessage(msg);
+        setTimeout(() => setErrorMessage(null), 4000);
       }
     }
   };
@@ -243,16 +277,24 @@ export default function AdminCatalogPage() {
 
   return (
     <div className="w-full h-full overflow-hidden bg-[#f0f4f9] dark:bg-zinc-950 flex flex-col p-4 gap-3 text-slate-900 dark:text-zinc-100 font-sans select-none">
-      {/* Toast */}
+      {/* Toast Success */}
       {saveSuccessMessage && (
         <div className="fixed top-5 right-5 z-50 bg-emerald-900 text-white px-4 py-2.5 rounded-2xl shadow-xl border border-emerald-700 flex items-center space-x-2 text-xs animate-in fade-in slide-in-from-top-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{saveSuccessMessage}</span>
         </div>
       )}
 
-      {/* Header Bar — matches Ads Generator */}
-      <div className="shrink-0 flex items-center justify-between">
+      {/* Toast Error */}
+      {errorMessage && (
+        <div className="fixed top-5 right-5 z-50 bg-rose-900 text-white px-4 py-2.5 rounded-2xl shadow-xl border border-rose-700 flex items-center space-x-2 text-xs animate-in fade-in slide-in-from-top-2">
+          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
+      {/* Header Bar */}
+      <div className="shrink-0 flex items-center justify-between gap-3">
         {/* Tab Switcher */}
         <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-zinc-800/90 backdrop-blur-md p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
           {[
@@ -277,6 +319,18 @@ export default function AdminCatalogPage() {
 
         {/* Toolbar Kanan */}
         <div className="flex items-center gap-2">
+          {/* Refresh from Supabase DB */}
+          <button
+            type="button"
+            onClick={() => refreshDesigns()}
+            disabled={isLoadingDesigns}
+            title="Segar semula daripada pangkalan data Supabase"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 text-slate-700 dark:text-zinc-200 text-xs font-medium transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingDesigns ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
+            <span className="hidden sm:inline">{isLoadingDesigns ? 'Memuatkan...' : 'Segar Semula'}</span>
+          </button>
+
           <div className="flex items-center gap-1 bg-slate-100/90 dark:bg-zinc-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
             <button
               type="button"
@@ -472,9 +526,9 @@ export default function AdminCatalogPage() {
           </div>
         </div>
 
-        {/* SISI KANAN: KARTU PANGGUNG UTAMA (The Floating Stage Card) */}
+        {/* SISI KANAN: KARTU PANGGUNG UTAMA */}
         <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out flex-1 mr-0">
-          {/* Gagang Toggle Kapsul Sisi Kiri (In the card area, exactly like ads generator!) */}
+          {/* Gagang Toggle Kapsul Sisi Kiri */}
           <button
             type="button"
             onClick={() => setIsLeftPanelCollapsed((v) => !v)}
@@ -738,6 +792,14 @@ export default function AdminCatalogPage() {
                 <X className="w-4 h-4" />
               </button>
             </div>
+
+            {modalErrorMessage && (
+              <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start space-x-2 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                <span>{modalErrorMessage}</span>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Image upload */}
               <div>
@@ -881,7 +943,7 @@ export default function AdminCatalogPage() {
                 </div>
               </div>
 
-              {/* Featured Toggle (sliding pill) */}
+              {/* Featured Toggle */}
               <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
                 <div>
                   <p className="text-xs font-semibold text-slate-800">Rekaan Pilihan Utama</p>
@@ -918,7 +980,7 @@ export default function AdminCatalogPage() {
                   {isSaving ? (
                     <>
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      <span>Menyimpan...</span>
+                      <span>Menyimpan ke Database...</span>
                     </>
                   ) : (
                     <span>{editingDesign ? 'Simpan Perubahan' : 'Simpan Rekaan'}</span>
