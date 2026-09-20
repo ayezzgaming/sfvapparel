@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS customers (
 -- 3. Catalog & Design Mockups (NO BASE PRICES AS REQUIRED)
 CREATE TABLE IF NOT EXISTS designs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code TEXT, -- e.g. 'SFV0001', 'SFV0002'
     title TEXT NOT NULL,
     category TEXT NOT NULL, -- Jersey, T-Shirt, Hoodie, Polo, Windbreaker, Banner, etc.
     print_type TEXT NOT NULL, -- 'sublimation' | 'dtf' | 'both'

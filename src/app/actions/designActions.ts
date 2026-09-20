@@ -2,21 +2,7 @@
 
 import { Design } from '@/types/database';
 import { getServiceSupabase } from '@/lib/supabase/serverClient';
-
-function isValidUuid(id: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-}
-
-function generateUuid(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
+import { isValidUuid, generateUuid, extractDesignCode } from '@/lib/design-utils';
 
 /**
  * Server Action: Fetches all catalog designs from Supabase database
@@ -46,20 +32,24 @@ export async function getDesignsDb(): Promise<{
       return { success: true, designs: [] };
     }
 
-    const designs: Design[] = data.map((row: any) => ({
-      id: String(row.id),
-      title: row.title,
-      category: row.category,
-      print_type: row.print_type,
-      thumbnail_url: row.thumbnail_url,
-      mockup_front_url: row.mockup_front_url,
-      mockup_back_url: row.mockup_back_url || undefined,
-      description: row.description || undefined,
-      tags: Array.isArray(row.tags) ? row.tags : [],
-      is_featured: Boolean(row.is_featured),
-      is_active: Boolean(row.is_active ?? true),
-      created_at: row.created_at
-    }));
+    const designs: Design[] = data.map((row: any) => {
+      const code = row.code || extractDesignCode(row.title);
+      return {
+        id: String(row.id),
+        code: code,
+        title: row.title,
+        category: row.category,
+        print_type: row.print_type,
+        thumbnail_url: row.thumbnail_url,
+        mockup_front_url: row.mockup_front_url,
+        mockup_back_url: row.mockup_back_url || undefined,
+        description: row.description || undefined,
+        tags: Array.isArray(row.tags) ? row.tags : [],
+        is_featured: Boolean(row.is_featured),
+        is_active: Boolean(row.is_active ?? true),
+        created_at: row.created_at
+      };
+    });
 
     return { success: true, designs };
   } catch (err: unknown) {
@@ -144,9 +134,22 @@ export async function saveDesignDb(
     // Ensure ID is a valid UUID so PostgreSQL UUID primary key doesn't fail
     const validId = design.id && isValidUuid(design.id) ? design.id : generateUuid();
 
+    // Standardize sequential code & title
+    const code = design.code?.trim().toUpperCase() || extractDesignCode(design.title);
+    let formattedTitle = design.title.trim();
+    if (code) {
+      if (formattedTitle.toUpperCase().startsWith(code)) {
+        const cleanSubTitle = formattedTitle.slice(code.length).replace(/^[\s\-:]+/, '').trim();
+        formattedTitle = cleanSubTitle ? `${code} - ${cleanSubTitle.toUpperCase()}` : code;
+      } else {
+        formattedTitle = `${code} - ${formattedTitle.toUpperCase()}`;
+      }
+    }
+
     const payload: Record<string, any> = {
       id: validId,
-      title: design.title.trim(),
+      code: code || null,
+      title: formattedTitle,
       category: design.category,
       print_type: design.print_type,
       thumbnail_url: processedThumbnail,
@@ -159,11 +162,23 @@ export async function saveDesignDb(
       created_at: design.created_at || new Date().toISOString()
     };
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('designs')
       .upsert(payload, { onConflict: 'id' })
       .select()
       .single();
+
+    // If 'code' column does not exist in DB schema, gracefully retry without 'code' column
+    if (error && error.message && error.message.includes('code')) {
+      delete payload.code;
+      const retry = await supabase
+        .from('designs')
+        .upsert(payload, { onConflict: 'id' })
+        .select()
+        .single();
+      data = retry.data;
+      error = retry.error;
+    }
 
     if (error) {
       console.error('Error saving design to Supabase:', error);
@@ -172,6 +187,7 @@ export async function saveDesignDb(
 
     const savedDesign: Design = {
       id: String(data.id),
+      code: data.code || code || extractDesignCode(data.title),
       title: data.title,
       category: data.category,
       print_type: data.print_type,
@@ -188,7 +204,7 @@ export async function saveDesignDb(
     return {
       success: true,
       data: savedDesign,
-      message: `Rekaan "${savedDesign.title}" berjaya disimpan ke pangkalan data Supabase.`
+      message: `Rekaan "${savedDesign.title}" berjaya disimpan ke pangkalan data.`
     };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Ralat pelayan semasa menyimpan rekaan.';

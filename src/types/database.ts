@@ -13,6 +13,7 @@ export type OrderStatus =
 
 export interface Design {
   id: string;
+  code?: string; // e.g. "SFV0001"
   title: string;
   category: string;
   print_type: PrintType;

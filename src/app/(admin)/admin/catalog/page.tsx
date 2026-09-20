@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAppStore } from '@/lib/store/app-store';
 import { Design, PrintType } from '@/types/database';
 import { saveDesignDb, deleteDesignDb } from '@/app/actions/designActions';
+import { getNextDesignCode, extractDesignCode } from '@/lib/design-utils';
 import {
   Plus,
   Search,
@@ -22,6 +23,7 @@ import {
   LayoutGrid,
   List,
   Layers,
+  Hash
 } from 'lucide-react';
 
 const CATEGORIES = ['Jersey', 'T-Shirt', 'Hoodie', 'Polo', 'Windbreaker', 'Singlet', 'Merchandise'];
@@ -51,6 +53,7 @@ export default function AdminCatalogPage() {
   // Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDesign, setEditingDesign] = useState<Design | null>(null);
+  const [designCode, setDesignCode] = useState('SFV0001');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Jersey');
   const [printType, setPrintType] = useState<PrintType>('sublimation');
@@ -75,7 +78,10 @@ export default function AdminCatalogPage() {
     if (filterCategory !== 'all' && d.category !== filterCategory) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      if (!d.title.toLowerCase().includes(q) && !d.category.toLowerCase().includes(q)) return false;
+      const matchCode = d.code?.toLowerCase().includes(q) || false;
+      const matchTitle = d.title.toLowerCase().includes(q);
+      const matchCat = d.category.toLowerCase().includes(q);
+      if (!matchCode && !matchTitle && !matchCat) return false;
     }
     return true;
   });
@@ -95,6 +101,8 @@ export default function AdminCatalogPage() {
   const handleNext = () => setActiveDesignIndex((i) => (i + 1) % filteredDesigns.length);
 
   const handleOpenAdd = () => {
+    const nextCode = getNextDesignCode(designs);
+    setDesignCode(nextCode);
     setEditingDesign(null);
     setTitle('');
     setCategory('Jersey');
@@ -107,8 +115,12 @@ export default function AdminCatalogPage() {
   };
 
   const handleOpenEdit = (design: Design) => {
+    const code = design.code || extractDesignCode(design.title) || getNextDesignCode(designs);
+    setDesignCode(code);
     setEditingDesign(design);
-    setTitle(design.title);
+    // Strip existing code prefix from title for editing
+    const cleanTitle = design.title.replace(/^(SFV\d+)\s*[-:]?\s*/i, '');
+    setTitle(cleanTitle);
     setCategory(design.category);
     setPrintType(design.print_type);
     setImageUrl(design.thumbnail_url || design.mockup_front_url || '');
@@ -199,11 +211,18 @@ export default function AdminCatalogPage() {
     setModalErrorMessage(null);
     const tags = [category.toLowerCase(), printType === 'sublimation' ? 'sublimasi' : 'dtf', 'kustom'];
     
+    // Auto-formatted full title with sequential code
+    const cleanTitleInput = title.trim().toUpperCase();
+    const fullTitle = cleanTitleInput.startsWith(designCode)
+      ? cleanTitleInput
+      : `${designCode} - ${cleanTitleInput}`;
+
     try {
       if (editingDesign) {
         const u: Design = {
           ...editingDesign,
-          title: title.trim(),
+          code: designCode,
+          title: fullTitle,
           category,
           print_type: printType,
           thumbnail_url: imageUrl,
@@ -221,7 +240,8 @@ export default function AdminCatalogPage() {
         setSaveSuccessMessage(result.message || 'Rekaan berjaya dikemaskini.');
       } else {
         const n = {
-          title: title.trim(),
+          code: designCode,
+          title: fullTitle,
           category,
           print_type: printType,
           thumbnail_url: imageUrl,
@@ -271,9 +291,6 @@ export default function AdminCatalogPage() {
       }
     }
   };
-
-  const checkerBg =
-    'bg-[linear-gradient(45deg,#f8fafc_25%,transparent_25%),linear-gradient(-45deg,#f8fafc_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#f8fafc_75%),linear-gradient(-45deg,transparent_75%,#f8fafc_75%)] bg-[size:16px_16px] bg-[position:0_0,0_8px,8px_-8px,-8px_0px] bg-slate-50 dark:bg-zinc-950';
 
   return (
     <div className="w-full h-full overflow-hidden bg-[#f0f4f9] dark:bg-zinc-950 flex flex-col p-4 gap-3 text-slate-900 dark:text-zinc-100 font-sans select-none">
@@ -386,8 +403,8 @@ export default function AdminCatalogPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari nama rekaan..."
-                className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 border border-slate-200 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-300"
+                placeholder="Cari kod (SFV0001) atau nama..."
+                className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 border border-slate-200 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-300 font-medium"
               />
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -441,6 +458,9 @@ export default function AdminCatalogPage() {
               <div className="grid grid-cols-2 gap-2.5 pt-0.5">
                 {filteredDesigns.map((item, idx) => {
                   const isActive = idx === activeDesignIndex;
+                  const itemCode = item.code || extractDesignCode(item.title);
+                  const displayTitle = item.title.replace(/^(SFV\d+)\s*[-:]?\s*/i, '');
+
                   return (
                     <button
                       key={item.id}
@@ -464,9 +484,18 @@ export default function AdminCatalogPage() {
                         />
                       </div>
                       <div className={`px-2.5 py-2 ${isActive ? 'bg-slate-900 text-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-900'}`}>
-                        <p className={`text-[11px] font-semibold truncate ${isActive ? 'text-white' : 'text-slate-800 dark:text-zinc-100'}`}>
-                          {item.title}
-                        </p>
+                        <div className="flex items-center space-x-1.5">
+                          {itemCode && (
+                            <span className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded shrink-0 ${
+                              isActive ? 'bg-blue-600 text-white' : 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400'
+                            }`}>
+                              {itemCode}
+                            </span>
+                          )}
+                          <p className={`text-[11px] font-semibold truncate ${isActive ? 'text-white' : 'text-slate-800 dark:text-zinc-100'}`}>
+                            {displayTitle}
+                          </p>
+                        </div>
                         <p className={`text-[9px] mt-0.5 ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>{item.category}</p>
                       </div>
                       {item.is_featured && (
@@ -482,6 +511,9 @@ export default function AdminCatalogPage() {
               <div className="space-y-1.5 pt-0.5">
                 {filteredDesigns.map((item, idx) => {
                   const isActive = idx === activeDesignIndex;
+                  const itemCode = item.code || extractDesignCode(item.title);
+                  const displayTitle = item.title.replace(/^(SFV\d+)\s*[-:]?\s*/i, '');
+
                   return (
                     <button
                       key={item.id}
@@ -509,9 +541,18 @@ export default function AdminCatalogPage() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-xs font-semibold truncate ${isActive ? 'text-white' : 'text-slate-900 dark:text-zinc-100'}`}>
-                          {item.title}
-                        </p>
+                        <div className="flex items-center space-x-1.5">
+                          {itemCode && (
+                            <span className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded shrink-0 ${
+                              isActive ? 'bg-blue-600 text-white' : 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400'
+                            }`}>
+                              {itemCode}
+                            </span>
+                          )}
+                          <p className={`text-xs font-semibold truncate ${isActive ? 'text-white' : 'text-slate-900 dark:text-zinc-100'}`}>
+                            {displayTitle}
+                          </p>
+                        </div>
                         <p className={`text-[10px] mt-0.5 ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>
                           {item.category} · {item.print_type === 'sublimation' ? 'Sublimasi' : 'DTF'}
                         </p>
@@ -628,7 +669,7 @@ export default function AdminCatalogPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-slate-700 dark:text-zinc-200">Katalog Masih Kosong</h3>
-                  <p className="text-xs text-slate-400 mt-1">Tambah rekaan pertama untuk dipamerkan kepada pelanggan.</p>
+                  <p className="text-xs text-slate-400 mt-1">Tambah rekaan pertama dengan kod automatik (SFV0001).</p>
                 </div>
                 <button
                   type="button"
@@ -699,10 +740,17 @@ export default function AdminCatalogPage() {
                   <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-zinc-800">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <h2 className="text-base font-bold text-slate-900 dark:text-zinc-100 truncate">
-                          {activeDesign.title}
-                        </h2>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <div className="flex items-center space-x-2">
+                          {(activeDesign.code || extractDesignCode(activeDesign.title)) && (
+                            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900 shrink-0">
+                              {activeDesign.code || extractDesignCode(activeDesign.title)}
+                            </span>
+                          )}
+                          <h2 className="text-base font-bold text-slate-900 dark:text-zinc-100 truncate">
+                            {activeDesign.title}
+                          </h2>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                           <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
                             {activeDesign.category}
                           </span>
@@ -719,7 +767,7 @@ export default function AdminCatalogPage() {
                             </div>
                           )}
                         </div>
-                        <p className="text-[10px] text-slate-400 mt-1 font-mono">ID: {activeDesign.id}</p>
+                        <p className="text-[10px] text-slate-400 mt-1.5 font-mono">ID: {activeDesign.id}</p>
                       </div>
                     </div>
 
@@ -911,19 +959,44 @@ export default function AdminCatalogPage() {
                 )}
               </div>
 
-              {/* Title */}
-              <div>
-                <label className="text-xs font-semibold text-slate-800 block mb-1.5">
-                  Tajuk Rekaan <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Contoh: Jersi Harimau Malaya 2026"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
-                />
+              {/* Sequential Code + Title */}
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                  <div className="sm:col-span-4">
+                    <label className="text-xs font-semibold text-slate-800 block mb-1">
+                      Kod Rekaan <span className="text-blue-600 text-[10px] font-normal">(Auto)</span>
+                    </label>
+                    <div className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 select-none">
+                      <Hash className="w-3.5 h-3.5 text-blue-600" />
+                      <span className="font-mono font-bold text-xs text-blue-600 dark:text-blue-400 tracking-wider">
+                        {designCode}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-8">
+                    <label className="text-xs font-semibold text-slate-800 block mb-1">
+                      Tajuk Rekaan <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Contoh: HARI SUKAN MALAYSIA"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 uppercase placeholder:normal-case font-medium"
+                    />
+                  </div>
+                </div>
+
+                {title.trim() && (
+                  <div className="px-3 py-2 rounded-xl bg-blue-50/90 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/60 text-[11px] text-blue-900 dark:text-blue-300 flex items-center space-x-2 animate-in fade-in">
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <span>
+                      Nama Lengkap: <strong className="font-mono font-bold tracking-wide">{designCode} - {title.trim().toUpperCase()}</strong>
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Category + Print Type */}
@@ -933,7 +1006,7 @@ export default function AdminCatalogPage() {
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium"
                   >
                     {CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>
@@ -947,7 +1020,7 @@ export default function AdminCatalogPage() {
                   <select
                     value={printType}
                     onChange={(e) => setPrintType(e.target.value as PrintType)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium"
                   >
                     <option value="sublimation">Sublimasi Penuh</option>
                     <option value="dtf">DTF Direct Transfer</option>
