@@ -92,7 +92,7 @@ export default function AdminLayoutShell({
           <Link
             href="/"
             target="_blank"
-            className="w-10 h-10 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-[#0052FF] transition-colors"
+            className="w-10 h-10 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-[#00BDFF] transition-colors"
             title="Buka Laman Web Awam"
           >
             <Grip className="w-5 h-5" />
@@ -100,7 +100,7 @@ export default function AdminLayoutShell({
 
           {/* User Profile Avatar */}
           <div className="pl-1">
-            <div className="w-9 h-9 rounded-full bg-[#0052FF] text-white flex items-center justify-center font-bold text-xs shadow-xs border-2 border-white ring-1 ring-slate-200">
+            <div className="w-9 h-9 rounded-full bg-[#00BDFF] text-white flex items-center justify-center font-bold text-xs shadow-xs border-2 border-white ring-1 ring-slate-200">
               A
             </div>
           </div>

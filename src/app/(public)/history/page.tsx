@@ -20,7 +20,7 @@ import { Order, OrderStatus } from '@/types/database';
 const STATUS_CONFIG: Record<OrderStatus, { label: string; stepIndex: number; color: string; bg: string; dot: string }> = {
   pending_proof: { label: 'Semakan Mockup', stepIndex: 1, color: 'text-amber-700', bg: 'bg-amber-50', dot: 'bg-amber-500' },
   proof_approved: { label: 'Diluluskan', stepIndex: 1, color: 'text-purple-700', bg: 'bg-purple-50', dot: 'bg-purple-500' },
-  in_printing: { label: 'Dalam Cetakan', stepIndex: 2, color: 'text-[#0052FF]', bg: 'bg-blue-50', dot: 'bg-[#0052FF]' },
+  in_printing: { label: 'Dalam Cetakan', stepIndex: 2, color: 'text-[#00BDFF]', bg: 'bg-blue-50', dot: 'bg-[#00BDFF]' },
   heat_press: { label: 'Proses Haba', stepIndex: 2, color: 'text-indigo-700', bg: 'bg-indigo-50', dot: 'bg-indigo-500' },
   sewing: { label: 'Jahitan', stepIndex: 3, color: 'text-sky-700', bg: 'bg-sky-50', dot: 'bg-sky-500' },
   qc_check: { label: 'Kawalan Kualiti', stepIndex: 3, color: 'text-teal-700', bg: 'bg-teal-50', dot: 'bg-teal-500' },
@@ -99,7 +99,7 @@ export default function HistoryPage() {
             </div>
             <Link
               href="/catalog"
-              className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[#0052FF] text-white text-xs font-semibold shadow-sm active:bg-blue-700 transition-colors"
+              className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[#00BDFF] text-white text-xs font-semibold shadow-sm active:bg-blue-700 transition-colors"
             >
               <span>Lihat Katalog</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -110,9 +110,9 @@ export default function HistoryPage() {
             const config = STATUS_CONFIG[order.status] || {
               label: order.status,
               stepIndex: 2,
-              color: 'text-[#0052FF]',
+              color: 'text-[#00BDFF]',
               bg: 'bg-blue-50',
-              dot: 'bg-[#0052FF]',
+              dot: 'bg-[#00BDFF]',
             };
 
             const mockupImg = order.mockup_url || 
@@ -168,7 +168,7 @@ export default function HistoryPage() {
                     <p className="text-[11px] text-slate-400 mt-0.5 truncate">
                       {order.total_quantity} helai • {order.print_type === 'sublimation' ? 'Sublimasi' : 'DTF'}
                     </p>
-                    <p className="text-xs font-bold text-[#0052FF] mt-1">
+                    <p className="text-xs font-bold text-[#00BDFF] mt-1">
                       {formatCurrency(order.total_amount)}
                     </p>
                   </div>
@@ -235,8 +235,8 @@ export default function HistoryPage() {
         <div className="bg-slate-50 rounded-2xl p-3.5 space-y-2 border border-slate-200/50">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-800">Status Terkini</span>
-            <span className={`inline-flex items-center gap-1.5 text-[10.5px] font-bold px-2.5 py-1 rounded-full ${STATUS_CONFIG[selectedOrder.status]?.bg || 'bg-blue-50'} ${STATUS_CONFIG[selectedOrder.status]?.color || 'text-[#0052FF]'}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${STATUS_CONFIG[selectedOrder.status]?.dot || 'bg-[#0052FF]'}`} />
+            <span className={`inline-flex items-center gap-1.5 text-[10.5px] font-bold px-2.5 py-1 rounded-full ${STATUS_CONFIG[selectedOrder.status]?.bg || 'bg-blue-50'} ${STATUS_CONFIG[selectedOrder.status]?.color || 'text-[#00BDFF]'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${STATUS_CONFIG[selectedOrder.status]?.dot || 'bg-[#00BDFF]'}`} />
               {STATUS_CONFIG[selectedOrder.status]?.label || selectedOrder.status}
             </span>
           </div>
@@ -249,7 +249,7 @@ export default function HistoryPage() {
               <button
                 type="button"
                 onClick={() => handleCopyTracking(selectedOrder.tracking_number || '')}
-                className="flex items-center gap-1.5 font-mono font-bold text-xs text-[#0052FF] bg-white px-2.5 py-1 rounded-lg border border-slate-200/60 shadow-2xs active:scale-95 transition-transform"
+                className="flex items-center gap-1.5 font-mono font-bold text-xs text-[#00BDFF] bg-white px-2.5 py-1 rounded-lg border border-slate-200/60 shadow-2xs active:scale-95 transition-transform"
               >
                 <span>{selectedOrder.tracking_number}</span>
                 {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
@@ -271,15 +271,15 @@ export default function HistoryPage() {
                 <div key={step.step} className="flex items-start gap-3 relative">
                   {/* Left Connecting Line */}
                   {idx < TIMELINE_STEPS.length - 1 && (
-                    <div className={`absolute left-3 top-6 bottom-0 w-0.5 -mb-3.5 ${isFinished ? 'bg-[#0052FF]' : 'bg-slate-100'}`} />
+                    <div className={`absolute left-3 top-6 bottom-0 w-0.5 -mb-3.5 ${isFinished ? 'bg-[#00BDFF]' : 'bg-slate-100'}`} />
                   )}
 
                   {/* Step Icon */}
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 z-10 text-[10px] font-bold ${
                     isFinished
-                      ? 'bg-[#0052FF] text-white'
+                      ? 'bg-[#00BDFF] text-white'
                       : isCurrent
-                      ? 'bg-blue-100 text-[#0052FF] ring-2 ring-blue-50'
+                      ? 'bg-blue-100 text-[#00BDFF] ring-2 ring-blue-50'
                       : 'bg-slate-100 text-slate-400'
                   }`}>
                     {isFinished ? (
@@ -293,7 +293,7 @@ export default function HistoryPage() {
 
                   {/* Step Content */}
                   <div className="min-w-0 flex-1 pt-0.5">
-                    <p className={`text-xs font-bold ${isCurrent ? 'text-[#0052FF]' : isFinished ? 'text-slate-900' : 'text-slate-400'}`}>
+                    <p className={`text-xs font-bold ${isCurrent ? 'text-[#00BDFF]' : isFinished ? 'text-slate-900' : 'text-slate-400'}`}>
                       {step.title}
                     </p>
                     <p className="text-[11px] text-slate-400 mt-0.5">
@@ -321,7 +321,7 @@ export default function HistoryPage() {
 
             <div className="flex justify-between items-center text-[11px] text-slate-500">
               <span>Jumlah Tempahan:</span>
-              <span className="font-bold text-[#0052FF]">
+              <span className="font-bold text-[#00BDFF]">
                 {selectedOrder.total_quantity} helai
               </span>
             </div>
@@ -349,7 +349,7 @@ export default function HistoryPage() {
                 <div className="flex flex-wrap gap-1.5">
                   {Object.entries(selectedOrder.sizing_breakdown).map(([sz, qty]) => (
                     <div key={sz} className="bg-white px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold text-slate-700 border border-slate-200/40">
-                      {sz}: <span className="text-[#0052FF] font-bold">{qty}</span>
+                      {sz}: <span className="text-[#00BDFF] font-bold">{qty}</span>
                     </div>
                   ))}
                 </div>

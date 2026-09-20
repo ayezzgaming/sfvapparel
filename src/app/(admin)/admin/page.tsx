@@ -50,7 +50,7 @@ export default function AdminDashboardPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/admin/catalog"
-            className="px-4 py-2 rounded-full bg-[#0052FF] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs"
+            className="px-4 py-2 rounded-full bg-[#00BDFF] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs"
           >
             <Plus className="w-4 h-4" />
             <span>Tambah Rekaan</span>
@@ -59,7 +59,7 @@ export default function AdminDashboardPage() {
             href="/admin/orders"
             className="px-4 py-2 rounded-full bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 flex items-center gap-1.5 transition-all shadow-xs"
           >
-            <ClipboardList className="w-4 h-4 text-[#0052FF]" />
+            <ClipboardList className="w-4 h-4 text-[#00BDFF]" />
             <span>Semak Pesanan</span>
           </Link>
         </div>
@@ -88,7 +88,7 @@ export default function AdminDashboardPage() {
         {/* Dalam Produksi */}
         <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2">
           <span className="text-xs font-medium text-slate-500 block">Dalam Barisan Produksi</span>
-          <span className="text-2xl font-bold text-[#0052FF] font-mono block">
+          <span className="text-2xl font-bold text-[#00BDFF] font-mono block">
             {inProductionCount} <span className="text-sm font-normal text-slate-500">pesanan</span>
           </span>
           <span className="text-xs text-slate-500 block">Sedang dicetak, ditekan & dijahit</span>
@@ -114,7 +114,7 @@ export default function AdminDashboardPage() {
             </h2>
             <Link
               href="/admin/orders"
-              className="text-xs font-medium text-[#0052FF] hover:underline flex items-center gap-1"
+              className="text-xs font-medium text-[#00BDFF] hover:underline flex items-center gap-1"
             >
               <span>Lihat Semua</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -135,7 +135,7 @@ export default function AdminDashboardPage() {
               <tbody className="divide-y divide-slate-100">
                 {orders.slice(0, 5).map((ord) => (
                   <tr key={ord.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-medium text-[#0052FF]">
+                    <td className="py-3.5 px-4 font-mono font-medium text-[#00BDFF]">
                       {ord.order_number}
                     </td>
                     <td className="py-3.5 px-4">
@@ -173,7 +173,7 @@ export default function AdminDashboardPage() {
                 className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-slate-100"
               >
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0052FF] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#00BDFF] flex items-center justify-center">
                     <Globe className="w-4 h-4" />
                   </div>
                   <div>

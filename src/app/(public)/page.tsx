@@ -547,7 +547,7 @@ export default function HomePage() {
             <Link
               href="/catalog"
               aria-label="Lihat Semua Servis"
-              className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-slate-700 hover:text-[#0052FF] flex items-center justify-center transition-all active:scale-90 shadow-sm border border-black/[0.04]"
+              className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-slate-700 hover:text-[#00BDFF] flex items-center justify-center transition-all active:scale-90 shadow-sm border border-black/[0.04]"
             >
               <ChevronRight className="w-4 h-4 stroke-[2.2]" />
             </Link>
@@ -585,7 +585,7 @@ export default function HomePage() {
                   {/* Baris Harga & Butang Interaktif */}
                   <div className="mt-4 pt-2.5 border-t border-slate-100 flex justify-between items-center">
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#0052FF]">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#00BDFF]">
                         {item.price_prefix || 'Bermula'}
                       </span>
                       <div className="flex items-baseline gap-1">
@@ -607,7 +607,7 @@ export default function HomePage() {
                         handleOpenProduct(item);
                       }}
                       aria-label={`Pilih ${item.title}`}
-                      className="w-9 h-9 rounded-full bg-blue-50 hover:bg-[#0052FF] text-[#0052FF] hover:text-white flex items-center justify-center transition-all active:scale-90 shadow-xs border border-blue-100"
+                      className="w-9 h-9 rounded-full bg-blue-50 hover:bg-[#00BDFF] text-[#00BDFF] hover:text-white flex items-center justify-center transition-all active:scale-90 shadow-xs border border-blue-100"
                     >
                       <Plus className="w-5 h-5 stroke-[2.2]" />
                     </button>
@@ -639,20 +639,20 @@ export default function HomePage() {
                 onClick={() => handleOpenStep(item)}
                 className="group flex items-center pl-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none"
               >
-                <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#0052FF] group-hover:text-white group-hover:scale-105 group-hover:shadow-sm group-hover:shadow-blue-500/20 flex items-center justify-center text-[#0052FF] font-bold text-xs transition-all duration-200">
+                <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#00BDFF] group-hover:text-white group-hover:scale-105 group-hover:shadow-sm group-hover:shadow-blue-500/20 flex items-center justify-center text-[#00BDFF] font-bold text-xs transition-all duration-200">
                   {item.step}
                 </div>
 
                 <div className={`flex-1 ml-3 py-3.5 pr-3.5 ${!isLast ? 'border-b border-gray-100' : ''} flex items-center justify-between min-w-0`}>
                   <div className="min-w-0 pr-2">
-                    <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#0052FF] leading-snug truncate transition-colors duration-200">
+                    <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug truncate transition-colors duration-200">
                       {item.title}
                     </h3>
                     <p className="text-[11.5px] text-slate-500 mt-0.5 line-clamp-1 leading-normal">
                       {item.desc}
                     </p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#0052FF] group-hover:translate-x-0.5 shrink-0 ml-1.5 transition-all duration-200" />
+                  <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#00BDFF] group-hover:translate-x-0.5 shrink-0 ml-1.5 transition-all duration-200" />
                 </div>
               </div>
             );
@@ -660,8 +660,8 @@ export default function HomePage() {
         </div>
 
         <div className="bg-white rounded-2xl py-2.5 px-2.5 grid grid-cols-3 gap-1.5 items-center shadow-sm shadow-blue-900/5 border border-blue-100/70">
-          <div className="flex items-center justify-center gap-1.5 text-[#0052FF] font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-blue-50/70 group cursor-default min-w-0">
-            <Clock className="w-3.5 h-3.5 text-[#0052FF] shrink-0" />
+          <div className="flex items-center justify-center gap-1.5 text-[#00BDFF] font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-blue-50/70 group cursor-default min-w-0">
+            <Clock className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
             <span className="truncate">5 - 9 Hari</span>
           </div>
           <div className="flex items-center justify-center gap-1.5 text-emerald-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-emerald-50/70 group cursor-default min-w-0">
@@ -679,7 +679,7 @@ export default function HomePage() {
           DYNAMIC SLOGAN / QUOTE CARD: ANDA BAYANGKAN, KAMI JADIKAN REALITI
          ========================================================================= */}
       <div className="w-full bg-white pt-6 pb-2 px-4">
-        <div className="relative overflow-hidden rounded-[26px] bg-gradient-to-br from-[#0052FF] via-[#0044D6] to-[#0A1847] p-5 sm:p-6 text-white shadow-lg shadow-blue-600/20 border border-blue-400/25">
+        <div className="relative overflow-hidden rounded-[26px] bg-gradient-to-br from-[#00BDFF] via-[#0044D6] to-[#0A1847] p-5 sm:p-6 text-white shadow-lg shadow-blue-600/20 border border-blue-400/25">
           <div className="absolute -top-12 -right-12 w-40 h-40 bg-blue-400/20 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-indigo-400/20 rounded-full blur-2xl pointer-events-none" />
           <Quote className="absolute top-4 right-4 w-12 h-12 text-white/10 rotate-180 pointer-events-none" />
@@ -706,7 +706,7 @@ export default function HomePage() {
                 href={`https://wa.me/${companySettings.whatsapp_number}?text=${encodeURIComponent(sloganQuote.whatsapp_message)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#0052FF] hover:bg-blue-50 font-bold text-xs shadow-md shadow-black/10 active:scale-95 transition-all"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#00BDFF] hover:bg-blue-50 font-bold text-xs shadow-md shadow-black/10 active:scale-95 transition-all"
               >
                 <FaWhatsapp className="w-4 h-4 text-[#25D366]" />
                 <span>{sloganQuote.button_text}</span>
@@ -760,13 +760,13 @@ export default function HomePage() {
 
                   {/* Play Button */}
                   <div className="absolute inset-0 flex items-center justify-center z-10">
-                    <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-white/35 group-hover:bg-[#0052FF] backdrop-blur-xl border border-white/70 shadow-[0_8px_30px_rgba(0,0,0,0.3)] flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110">
+                    <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-white/35 group-hover:bg-[#00BDFF] backdrop-blur-xl border border-white/70 shadow-[0_8px_30px_rgba(0,0,0,0.3)] flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110">
                       <Play className="w-7 h-7 sm:w-8 sm:h-8 ml-1 fill-white text-white drop-shadow-md" />
                     </div>
                   </div>
 
                   <div className="absolute inset-x-0 bottom-0 p-4 pb-5 z-10">
-                    <span className="bg-[#0052FF] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider mb-1.5 inline-block shadow-sm">
+                    <span className="bg-[#00BDFF] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider mb-1.5 inline-block shadow-sm">
                       {video.category}
                     </span>
                     <h3 className="text-white font-bold text-[15px] sm:text-[16px] leading-snug drop-shadow-md">
@@ -794,7 +794,7 @@ export default function HomePage() {
             <p className="text-xs text-slate-500 mt-0.5">Koleksi gambar sebenar tempahan jersi & pakaian siap</p>
           </div>
 
-          <span className="text-[11px] font-bold text-[#0052FF] bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100/80">
+          <span className="text-[11px] font-bold text-[#00BDFF] bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100/80">
             {activeGalleryIndex + 1} / {activeGallery.length}
           </span>
         </div>
@@ -817,7 +817,7 @@ export default function HomePage() {
                 onClick={() => scrollToGallery(idx)}
                 className={`shrink-0 w-[82vw] max-w-[320px] bg-white rounded-3xl overflow-hidden snap-center border transition-all duration-300 cursor-pointer flex flex-col justify-between ${
                   isActive 
-                    ? 'border-[#0052FF] shadow-md shadow-blue-500/10 ring-2 ring-blue-500/20' 
+                    ? 'border-[#00BDFF] shadow-md shadow-blue-500/10 ring-2 ring-blue-500/20' 
                     : 'border-slate-200/80 shadow-sm opacity-90'
                 }`}
               >
@@ -829,7 +829,7 @@ export default function HomePage() {
                     className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" 
                   />
                   <div className="absolute top-3 left-3">
-                    <span className="bg-white/95 backdrop-blur-md text-[#0052FF] font-bold text-[10px] px-2.5 py-1 rounded-full shadow-xs border border-blue-100/60">
+                    <span className="bg-white/95 backdrop-blur-md text-[#00BDFF] font-bold text-[10px] px-2.5 py-1 rounded-full shadow-xs border border-blue-100/60">
                       {item.tag}
                     </span>
                   </div>
@@ -854,7 +854,7 @@ export default function HomePage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[#0052FF] hover:text-blue-700 transition-colors"
+                      className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[#00BDFF] hover:text-blue-700 transition-colors"
                     >
                       <FaWhatsapp className="w-3.5 h-3.5 text-[#25D366]" />
                       <span>Tempah Seperti Ini</span>
@@ -877,7 +877,7 @@ export default function HomePage() {
                 aria-label={`Lihat hasil produksi ${idx + 1}`}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
                   isActive 
-                    ? 'w-6 bg-[#0052FF]' 
+                    ? 'w-6 bg-[#00BDFF]' 
                     : 'w-2 bg-slate-300 hover:bg-slate-400'
                 }`}
               />
@@ -966,7 +966,7 @@ export default function HomePage() {
                 aria-label={`Lihat testimoni ${idx + 1}`}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
                   isActive 
-                    ? 'w-6 bg-[#0052FF]' 
+                    ? 'w-6 bg-[#00BDFF]' 
                     : 'w-2 bg-slate-300 hover:bg-slate-400'
                 }`}
               />
@@ -1176,9 +1176,9 @@ export default function HomePage() {
               href={companySettings.developer_url || 'https://ayezz.com'}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-bold text-slate-800 hover:text-[#0052FF] transition-colors inline-flex items-center gap-1 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs hover:border-[#0052FF]/40"
+              className="font-bold text-slate-800 hover:text-[#00BDFF] transition-colors inline-flex items-center gap-1 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs hover:border-[#00BDFF]/40"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#0052FF]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00BDFF]" />
               <span>{companySettings.developer_name || 'AYEZZ Studio'}</span>
             </a>
           </div>
@@ -1202,7 +1202,7 @@ export default function HomePage() {
                 alt={selectedProduct.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute top-3 left-3 bg-[#0052FF] text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+              <div className="absolute top-3 left-3 bg-[#00BDFF] text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
                 {selectedProduct.category}
               </div>
             </div>
@@ -1211,7 +1211,7 @@ export default function HomePage() {
               <h3 className="text-lg font-bold text-slate-900 tracking-tight">
                 {selectedProduct.headline}
               </h3>
-              <p className="text-xs text-[#0052FF] font-semibold mt-0.5">
+              <p className="text-xs text-[#00BDFF] font-semibold mt-0.5">
                 {selectedProduct.highlight}
               </p>
             </div>
@@ -1220,7 +1220,7 @@ export default function HomePage() {
               {selectedProduct.details?.map((detail, idx) => (
                 <div key={idx} className="space-y-1">
                   <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0052FF] shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
                     <span>{detail.title}</span>
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed pl-5">
@@ -1234,7 +1234,7 @@ export default function HomePage() {
               <Link
                 href={selectedProduct.href}
                 onClick={() => setIsProductSheetOpen(false)}
-                className="w-full py-3 px-4 rounded-xl bg-[#0052FF] hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md shadow-blue-500/20 active:scale-[0.98] transition-all"
+                className="w-full py-3 px-4 rounded-xl bg-[#00BDFF] hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md shadow-blue-500/20 active:scale-[0.98] transition-all"
               >
                 <span>Lihat Templat {selectedProduct.title}</span>
                 <ChevronRight className="w-4 h-4" />
@@ -1269,7 +1269,7 @@ export default function HomePage() {
             <div className="space-y-2">
               {selectedStep.points.map((pt, i) => (
                 <div key={i} className="flex items-start gap-2.5 text-xs text-slate-700">
-                  <div className="w-4 h-4 rounded-full bg-blue-100 text-[#0052FF] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                  <div className="w-4 h-4 rounded-full bg-blue-100 text-[#00BDFF] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
                     ✓
                   </div>
                   <span className="leading-snug">{pt}</span>

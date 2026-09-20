@@ -132,7 +132,7 @@ export default function ImageUploadField({
             onClick={() => setTab('upload')}
             className={`px-2 py-0.5 rounded-md font-semibold transition-all flex items-center space-x-1 ${
               tab === 'upload'
-                ? 'bg-white text-[#0052FF] shadow-xs'
+                ? 'bg-white text-[#00BDFF] shadow-xs'
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -144,7 +144,7 @@ export default function ImageUploadField({
             onClick={() => setTab('url')}
             className={`px-2 py-0.5 rounded-md font-semibold transition-all flex items-center space-x-1 ${
               tab === 'url'
-                ? 'bg-white text-[#0052FF] shadow-xs'
+                ? 'bg-white text-[#00BDFF] shadow-xs'
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -177,7 +177,7 @@ export default function ImageUploadField({
                 }}
                 className="px-3 py-1.5 rounded-lg bg-white/95 hover:bg-white text-slate-800 font-bold text-xs shadow flex items-center space-x-1"
               >
-                <RefreshCw className="w-3.5 h-3.5 text-[#0052FF]" />
+                <RefreshCw className="w-3.5 h-3.5 text-[#00BDFF]" />
                 <span>Tukar Gambar</span>
               </button>
               <button
@@ -215,8 +215,8 @@ export default function ImageUploadField({
               onClick={() => fileInputRef.current?.click()}
               className={`w-full ${aspectClass} rounded-xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center p-4 text-center ${
                 isDragging
-                  ? 'border-[#0052FF] bg-blue-50/50'
-                  : 'border-slate-300 hover:border-[#0052FF] bg-slate-50 hover:bg-blue-50/20'
+                  ? 'border-[#00BDFF] bg-blue-50/50'
+                  : 'border-slate-300 hover:border-[#00BDFF] bg-slate-50 hover:bg-blue-50/20'
               }`}
             >
               <input
@@ -229,16 +229,16 @@ export default function ImageUploadField({
 
               {isProcessing ? (
                 <div className="flex flex-col items-center space-y-1.5 text-slate-600">
-                  <RefreshCw className="w-6 h-6 animate-spin text-[#0052FF]" />
+                  <RefreshCw className="w-6 h-6 animate-spin text-[#00BDFF]" />
                   <span className="text-xs font-semibold">Memproses fail imej...</span>
                 </div>
               ) : (
                 <div className="flex flex-col items-center space-y-1.5 text-slate-600">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 text-[#0052FF] flex items-center justify-center border border-blue-100 shadow-xs">
+                  <div className="w-10 h-10 rounded-full bg-blue-50 text-[#00BDFF] flex items-center justify-center border border-blue-100 shadow-xs">
                     <UploadCloud className="w-5 h-5" />
                   </div>
                   <div className="text-xs">
-                    <span className="font-bold text-[#0052FF] hover:underline">Klik untuk pilih fail</span> atau seret & lepas ke sini
+                    <span className="font-bold text-[#00BDFF] hover:underline">Klik untuk pilih fail</span> atau seret & lepas ke sini
                   </div>
                   <span className="text-[10px] text-slate-400">
                     PNG, JPG, WEBP, SVG (Diselaraskan secara automatik)
@@ -253,7 +253,7 @@ export default function ImageUploadField({
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder || 'https://images.unsplash.com/... atau /hero1.png'}
-                className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30 font-mono text-[11px]"
+                className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/30 font-mono text-[11px]"
               />
               <span className="text-[10px] text-slate-400 block">
                 Masukkan URL gambar terus atau pautan dari storan awan.

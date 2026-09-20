@@ -49,8 +49,8 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
   const isHeaderWhite = themeSettings?.header_style === 'frosted_white' || headerBg === '#FFFFFF' || !isHeaderSolidBlue;
   
   const bottomNavBg = themeSettings?.bottom_nav_bg || 'rgba(255, 255, 255, 0.95)';
-  const isBottomNavDark = themeSettings?.bottom_nav_style === 'solid_blue' || bottomNavBg === '#0052FF';
-  const bottomActiveColor = themeSettings?.bottom_nav_active_color || (isBottomNavDark ? '#FFFFFF' : '#0052FF');
+  const isBottomNavDark = themeSettings?.bottom_nav_style === 'solid_blue' || bottomNavBg === '#00BDFF' || bottomNavBg === '#0052FF';
+  const bottomActiveColor = themeSettings?.bottom_nav_active_color || (isBottomNavDark ? '#FFFFFF' : '#00BDFF');
   const bottomInactiveColor = themeSettings?.bottom_nav_inactive_color || (isBottomNavDark ? '#93C5FD' : '#94A3B8');
   const whatsappFabBg = themeSettings?.whatsapp_fab_bg || '#25D366';
 
@@ -58,7 +58,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
   const favoriteDesigns = designs.filter((d) => favorites.includes(d.id));
 
   return (
-    <App theme="ios" safeAreas={true} className="!bg-transparent h-full font-ios antialiased selection:bg-[#0052FF] selection:text-white overscroll-none">
+    <App theme="ios" safeAreas={true} className="!bg-transparent h-full font-ios antialiased selection:bg-[#00BDFF] selection:text-white overscroll-none">
       {/* 1. FIXED FULL-SCREEN FRAME (Locks directly to physical viewport, zero window scrolling) */}
       <div className="fixed inset-0 w-full h-full bg-gray-100 flex justify-center overflow-hidden overscroll-none">
 
@@ -80,17 +80,17 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               />
             </Link>
 
-            {/* Header Action Icons */}
-            <div className="flex items-center space-x-1.5">
+            {/* Header Action Icons (Sleek, Clean & No Heavy Base Circles) */}
+            <div className="flex items-center space-x-1">
               <button
                 type="button"
                 onClick={() => setIsFavoritesOpen(true)}
                 aria-label="Senarai Pilihan Kegemaran"
-                className="w-9 h-9 relative transition-all active:scale-90 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200/60 shadow-2xs cursor-pointer touch-manipulation"
+                className="w-8 h-8 relative transition-all active:scale-90 flex items-center justify-center text-slate-700 hover:text-[#00BDFF] cursor-pointer touch-manipulation"
               >
-                <Heart className="w-4.5 h-4.5 stroke-[2] text-slate-700" />
+                <Heart className="w-4.5 h-4.5 stroke-[2]" />
                 {favoritesCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#FF3B30] text-white text-[9.5px] font-bold flex items-center justify-center shadow-xs ring-2 ring-white leading-none pointer-events-none animate-in zoom-in-75">
+                  <span className="absolute top-0 right-0 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF3B30] text-white text-[8.5px] font-bold flex items-center justify-center shadow-xs ring-1.5 ring-white leading-none pointer-events-none animate-in zoom-in-75">
                     {favoritesCount > 99 ? '99+' : favoritesCount}
                   </span>
                 )}
@@ -100,11 +100,11 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 type="button"
                 onClick={() => setIsBagOpen(true)}
                 aria-label="Bakul Pesanan Aktif"
-                className="w-9 h-9 relative transition-all active:scale-90 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200/60 shadow-2xs cursor-pointer touch-manipulation"
+                className="w-8 h-8 relative transition-all active:scale-90 flex items-center justify-center text-slate-700 hover:text-[#00BDFF] cursor-pointer touch-manipulation"
               >
-                <ShoppingBag className="w-4.5 h-4.5 stroke-[2] text-slate-700" />
+                <ShoppingBag className="w-4.5 h-4.5 stroke-[2]" />
                 {activeOrdersCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#FF3B30] text-white text-[9.5px] font-bold flex items-center justify-center shadow-xs ring-2 ring-white leading-none pointer-events-none animate-in zoom-in-75">
+                  <span className="absolute top-0 right-0 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF3B30] text-white text-[8.5px] font-bold flex items-center justify-center shadow-xs ring-1.5 ring-white leading-none pointer-events-none animate-in zoom-in-75">
                     {activeOrdersCount > 99 ? '99+' : activeOrdersCount}
                   </span>
                 )}
@@ -240,7 +240,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             maxHeight="max-h-[85vh]"
             title={
               <div className="flex items-center gap-2">
-                <span className="bg-blue-50 text-[#0052FF] text-[10.5px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                <span className="bg-sky-50 text-[#00BDFF] text-[10.5px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-sky-100">
                   Bakul Pesanan
                 </span>
                 <span className="text-xs text-slate-500 font-medium">
@@ -252,7 +252,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               <Link
                 href="/history"
                 onClick={() => setIsBagOpen(false)}
-                className="w-full bg-[#0052FF] text-white font-semibold py-3.5 rounded-xl text-center active:bg-blue-700 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-blue-500/20 text-xs"
+                className="w-full bg-[#00BDFF] text-white font-semibold py-3.5 rounded-xl text-center active:bg-sky-600 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-sky-400/20 text-xs"
               >
                 <span>Buka Pengurusan Pesanan Penuh →</span>
               </Link>
@@ -285,7 +285,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                     </div>
                     
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] border border-blue-100 uppercase">
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-100 uppercase">
                         {order.status.replace('_', ' ')}
                       </span>
                       
@@ -337,7 +337,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               <Link
                 href="/catalog"
                 onClick={() => setIsFavoritesOpen(false)}
-                className="w-full bg-[#0052FF] text-white font-semibold py-3.5 rounded-xl text-center active:bg-blue-700 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-blue-500/20 text-xs"
+                className="w-full bg-[#00BDFF] text-white font-semibold py-3.5 rounded-xl text-center active:bg-sky-600 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-sky-400/20 text-xs"
               >
                 <span>Terokai Lebih Banyak di Katalog →</span>
               </Link>
@@ -382,7 +382,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                     <Link
                       href={`/customize/${design.id}`}
                       onClick={() => setIsFavoritesOpen(false)}
-                      className="px-3 py-1.5 rounded-xl bg-[#0052FF] text-white text-xs font-semibold active:bg-blue-700 transition-colors shadow-2xs"
+                      className="px-3 py-1.5 rounded-xl bg-[#00BDFF] text-white text-xs font-semibold active:bg-sky-600 transition-colors shadow-2xs"
                     >
                       Tempah
                     </Link>

@@ -63,7 +63,7 @@ function CatalogContent() {
     <div className="w-full min-h-full pt-3 pb-16 space-y-4 select-none font-ios bg-[#F2F2F7]">
       {/* 1. iOS Search Bar (Spacious & Clean) */}
       <div className="px-5 pt-1">
-        <div className="relative flex items-center bg-white rounded-2xl border border-slate-200/80 shadow-xs focus-within:border-[#0052FF] focus-within:ring-2 focus-within:ring-[#0052FF]/10 transition-all">
+        <div className="relative flex items-center bg-white rounded-2xl border border-slate-200/80 shadow-xs focus-within:border-[#00BDFF] focus-within:ring-2 focus-within:ring-[#00BDFF]/15 transition-all">
           <Search className="absolute left-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
           <input
             type="text"
@@ -94,7 +94,7 @@ function CatalogContent() {
                 onClick={() => setSelectedCategory(pill.id)}
                 className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-semibold tracking-tight transition-all active:scale-95 ${
                   isActive
-                    ? 'bg-[#0052FF] text-white shadow-sm shadow-blue-500/20'
+                    ? 'bg-[#00BDFF] text-white shadow-sm shadow-sky-400/20 font-bold'
                     : 'bg-white text-slate-600 border border-slate-200/60 hover:bg-slate-50'
                 }`}
               >
@@ -122,7 +122,7 @@ function CatalogContent() {
                 <div
                   key={design.id}
                   onClick={() => handleOpenDesign(design)}
-                  className="bg-white rounded-2xl overflow-hidden shadow-xs border border-slate-200/60 hover:border-blue-200 flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all group"
+                  className="bg-white rounded-2xl overflow-hidden shadow-xs border border-slate-200/60 hover:border-sky-200 flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all group"
                 >
                   {/* Clean Visual Image Area */}
                   <div className="relative w-full aspect-[4/4.5] overflow-hidden bg-slate-100">
@@ -133,7 +133,7 @@ function CatalogContent() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                     />
 
-                    {/* Minimalist Heart Button */}
+                    {/* Minimalist Clean Heart Button (No Heavy Circle Base) */}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -141,10 +141,10 @@ function CatalogContent() {
                         toggleFavorite(design.id);
                       }}
                       aria-label="Kegemaran"
-                      className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-black/25 backdrop-blur-md flex items-center justify-center text-white active:scale-75 transition-all z-10"
+                      className="absolute top-2 right-2 p-1.5 flex items-center justify-center text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)] active:scale-75 transition-all z-10 hover:scale-110"
                     >
                       <Heart 
-                        className={`w-3.5 h-3.5 transition-colors ${
+                        className={`w-4 h-4 transition-colors stroke-[2.2] ${
                           isFav ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-white'
                         }`} 
                       />
@@ -153,7 +153,7 @@ function CatalogContent() {
 
                   {/* Clean Minimal Typography (No Badges, No Clutter) */}
                   <div className="p-3">
-                    <h3 className="text-xs font-bold text-slate-900 tracking-tight truncate group-hover:text-[#0052FF] transition-colors">
+                    <h3 className="text-xs font-bold text-slate-900 tracking-tight truncate group-hover:text-[#00BDFF] transition-colors">
                       {design.title}
                     </h3>
                     <p className="text-[11px] text-slate-400 mt-0.5 capitalize truncate">
@@ -177,7 +177,7 @@ function CatalogContent() {
         title={
           selectedDesign ? (
             <div className="flex items-center gap-2">
-              <span className="bg-blue-50 text-[#0052FF] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+              <span className="bg-sky-50 text-[#00BDFF] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-sky-100">
                 {selectedDesign.category}
               </span>
               <span className="text-[10px] font-semibold text-slate-400 uppercase">
@@ -206,7 +206,7 @@ function CatalogContent() {
                 href={`https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ingin%20membuat%20tempahan%20untuk%20templat%20*${encodeURIComponent(selectedDesign.title)}*%20(Kategori:%20${encodeURIComponent(selectedDesign.category)})`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 h-12 bg-[#0052FF] hover:bg-blue-700 text-white font-semibold rounded-xl text-center active:bg-blue-800 transition-colors flex items-center justify-center space-x-1.5 shadow-md shadow-blue-500/25 text-xs"
+                className="flex-1 h-12 bg-[#00BDFF] hover:bg-sky-600 text-white font-bold rounded-xl text-center active:bg-sky-700 transition-colors flex items-center justify-center space-x-1.5 shadow-md shadow-sky-400/25 text-xs"
               >
                 <span>Tempah Rekaan Ini</span>
                 <ChevronRight className="w-4 h-4" />

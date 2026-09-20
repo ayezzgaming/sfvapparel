@@ -79,7 +79,7 @@ export default function ProfilePage() {
             className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50/80 active:bg-slate-100 transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#0052FF] flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#00BDFF] flex items-center justify-center shrink-0">
                 <MapPin className="w-4 h-4" />
               </div>
               <span className="text-[13.5px] font-medium text-slate-900">
@@ -204,7 +204,7 @@ export default function ProfilePage() {
               onClick={() => setPushEnabled(!pushEnabled)}
               aria-label="Toggle Notifikasi"
               className={`w-11 h-6 rounded-full transition-colors duration-200 p-0.5 flex items-center shrink-0 ${
-                pushEnabled ? 'bg-[#0052FF]' : 'bg-slate-300'
+                pushEnabled ? 'bg-[#00BDFF]' : 'bg-slate-300'
               }`}
             >
               <span className={`w-5 h-5 rounded-full bg-white shadow-sm block transform transition-transform duration-200 ${
@@ -253,7 +253,7 @@ export default function ProfilePage() {
           <button
             type="button"
             onClick={() => setIsAddressModalOpen(false)}
-            className="w-full bg-[#0052FF] text-white font-semibold py-3.5 rounded-xl text-center active:bg-blue-700 transition-colors text-xs"
+            className="w-full bg-[#00BDFF] text-white font-semibold py-3.5 rounded-xl text-center active:bg-blue-700 transition-colors text-xs"
           >
             Simpan Alamat
           </button>
@@ -284,7 +284,7 @@ export default function ProfilePage() {
           <button
             type="button"
             onClick={() => setIsSizeChartOpen(false)}
-            className="w-full bg-[#0052FF] text-white font-semibold py-3.5 rounded-xl text-center active:bg-blue-700 transition-colors text-xs"
+            className="w-full bg-[#00BDFF] text-white font-semibold py-3.5 rounded-xl text-center active:bg-blue-700 transition-colors text-xs"
           >
             Tutup Panduan Saiz
           </button>

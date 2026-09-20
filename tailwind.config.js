@@ -22,8 +22,8 @@ module.exports = {
         ],
       },
       colors: {
-        'brand-primary': '#0052FF',
-        primary: '#0052FF',
+        'brand-primary': '#00BDFF',
+        primary: '#00BDFF',
       },
     },
   },
