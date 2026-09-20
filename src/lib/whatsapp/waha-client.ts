@@ -99,10 +99,24 @@ export async function getWahaStatus(): Promise<WahaSessionInfo> {
  */
 export async function startWahaSession(): Promise<{ success: boolean; message?: string }> {
   try {
+    const webhookUrl = process.env.NEXT_PUBLIC_APP_URL 
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/api/whatsapp/webhook` 
+      : 'https://sfvapparel.vercel.app/api/whatsapp/webhook';
+
     const res = await fetch(`${WAHA_URL}/api/sessions/start`, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ name: DEFAULT_SESSION }),
+      body: JSON.stringify({ 
+        name: DEFAULT_SESSION,
+        config: {
+          webhooks: [
+            {
+              url: webhookUrl,
+              events: ['message', 'message.any'],
+            },
+          ],
+        },
+      }),
     });
     return { success: res.ok };
   } catch (err: unknown) {
@@ -143,12 +157,7 @@ export async function restartWahaSession(): Promise<{ success: boolean; message?
         headers: getHeaders(),
       });
       await new Promise((r) => setTimeout(r, 1500));
-      const startRes = await fetch(`${WAHA_URL}/api/sessions/start`, {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify({ name: DEFAULT_SESSION }),
-      });
-      return { success: startRes.ok };
+      return await startWahaSession();
     }
     return { success: true };
   } catch (err: unknown) {
@@ -245,7 +254,7 @@ export async function getWahaMessages(chatId: string, limit: number = 50): Promi
     const data = await res.json();
     if (!Array.isArray(data)) return [];
 
-    return data.map((m: Record<string, unknown>) => {
+    const list: WahaChatMessage[] = data.map((m: Record<string, unknown>) => {
       const msgIdObj = m.id as { _serialized?: string; id?: string } | string;
       const msgId = typeof msgIdObj === 'object' && msgIdObj !== null ? (msgIdObj._serialized || msgIdObj.id) : msgIdObj;
       const msgData = m._data as Record<string, unknown> | undefined;
@@ -270,6 +279,9 @@ export async function getWahaMessages(chatId: string, limit: number = 50): Promi
         ack: (m.ack as number) || (msgData?.ack as number),
       };
     });
+
+    // Sort chronologically: oldest at top, newest at bottom
+    return list.sort((a, b) => a.timestamp - b.timestamp);
   } catch {
     return [];
   }

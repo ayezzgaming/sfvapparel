@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { processAiCustomerReply } from '@/lib/whatsapp/ai-brain';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30; // Allow sufficient execution time for LiteLLM inference and WAHA response
 
 export async function POST(req: Request) {
   try {
@@ -11,33 +12,45 @@ export async function POST(req: Request) {
     }
 
     const event = payload.event;
-    // WAHA sends events: 'message.upsert', 'message', 'message.any'
-    if (event === 'message' || event === 'message.any' || event === 'message.upsert') {
-      const data = payload.payload || payload.data;
-      if (data && data.body) {
+    // WAHA sends events: 'message', 'message.any', 'message.upsert', 'message.create'
+    if (
+      event === 'message' || 
+      event === 'message.any' || 
+      event === 'message.upsert' || 
+      event === 'message.create' ||
+      !event // fallback if raw message payload is sent
+    ) {
+      const data = payload.payload || payload.data || payload;
+      if (data && (data.body || data.text)) {
         const from = data.from || '';
         const fromMe = !!data.fromMe;
-        const body = data.body || '';
+        const body = data.body || data.text || '';
+        const senderName = data._data?.notifyName || data.notifyName || data.pushName || '';
 
-        // Process asynchronously without blocking webhook return
-        processAiCustomerReply({
+        console.log(`[WhatsApp Webhook] Incoming message from: ${from}, fromMe: ${fromMe}, text: ${body.slice(0, 50)}`);
+
+        // Await AI response processing so Vercel Serverless Function does not freeze execution
+        const aiResult = await processAiCustomerReply({
           from,
           fromMe,
           body,
-          senderName: data._data?.notifyName || data.notifyName,
-        }).catch((err) => {
-          console.error('[AI WhatsApp Webhook Error]', err);
+          senderName,
         });
+
+        console.log(`[WhatsApp Webhook] AI processing completed:`, aiResult);
+        return NextResponse.json({ success: true, aiResult });
       }
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, message: 'Event ignored' });
   } catch (err: unknown) {
     const error = err instanceof Error ? err.message : 'Webhook error';
+    console.error('[AI WhatsApp Webhook Error]', err);
     return NextResponse.json({ success: false, error }, { status: 500 });
   }
 }
 
 export async function GET() {
-  return NextResponse.json({ status: 'WAHA AI Webhook Endpoint Active' });
+  return NextResponse.json({ status: 'WAHA AI Webhook Endpoint Active', time: new Date().toISOString() });
 }
+
