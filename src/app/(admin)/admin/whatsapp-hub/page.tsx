@@ -71,7 +71,29 @@ export default function WhatsAppHubPage() {
   const [sendingReply, setSendingReply] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [pausedChatIds, setPausedChatIds] = useState<Record<string, boolean>>({});
+  const [privateChatIds, setPrivateChatIds] = useState<Record<string, boolean>>({});
+  const [chatCategoryFilter, setChatCategoryFilter] = useState<'all' | 'customers' | 'private'>('all');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Load privateChatIds from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('sfv_wa_private_chats');
+      if (saved) {
+        setPrivateChatIds(JSON.parse(saved));
+      }
+    } catch {}
+  }, []);
+
+  const togglePrivateForChat = (chatId: string) => {
+    setPrivateChatIds((prev) => {
+      const next = { ...prev, [chatId]: !prev[chatId] };
+      try {
+        localStorage.setItem('sfv_wa_private_chats', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
 
   // Support Tickets State
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
@@ -382,10 +404,20 @@ export default function WhatsAppHubPage() {
     sec.subtitle.toLowerCase().includes(searchFilter.toLowerCase())
   );
 
-  const filteredChats = chats.filter((c) =>
-    c.name.toLowerCase().includes(chatSearch.toLowerCase()) ||
-    c.phone.includes(chatSearch)
-  );
+  const customerCount = chats.filter((c) => !privateChatIds[c.id]).length;
+  const privateCount = chats.filter((c) => !!privateChatIds[c.id]).length;
+
+  const filteredChats = chats.filter((c) => {
+    const matchesSearch =
+      c.name.toLowerCase().includes(chatSearch.toLowerCase()) ||
+      c.phone.includes(chatSearch);
+    if (!matchesSearch) return false;
+
+    const isPrivate = !!privateChatIds[c.id];
+    if (chatCategoryFilter === 'customers') return !isPrivate;
+    if (chatCategoryFilter === 'private') return isPrivate;
+    return true;
+  });
 
   return (
     <div className="h-full flex flex-col p-4 sm:p-5 lg:p-6 select-none font-sans overflow-hidden bg-slate-50/50">
@@ -506,17 +538,17 @@ export default function WhatsAppHubPage() {
             })}
           </div>
 
-          {/* VPS Info Mini Card at Left Footer */}
-          <div className="p-3 bg-white rounded-2xl border border-slate-200/80 shadow-2xs mt-auto shrink-0 space-y-1">
+          {/* VPS & Privacy Info Mini Card at Left Footer */}
+          <div className="p-3 bg-white rounded-2xl border border-slate-200/80 shadow-2xs mt-auto shrink-0 space-y-1.5">
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-700">
-              <span className="flex items-center gap-1 text-slate-500">
+              <span className="flex items-center gap-1 text-slate-700 font-bold">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                Hostinger VPS
+                Privasi Terjamin
               </span>
-              <span className="font-mono text-[10px] text-slate-400">187.127.223.53</span>
+              <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-500 font-mono">Live Stream</span>
             </div>
-            <p className="text-[10.5px] text-slate-400 leading-snug">
-              LiteLLM Router & WAHA aktif 24/7 di latar belakang.
+            <p className="text-[10px] text-slate-400 leading-snug">
+              Mesej dibaca secara live tanpa disimpan di database. Apabila anda Logout, seluruh sesi dipadam serta-merta.
             </p>
           </div>
         </div>
@@ -620,7 +652,44 @@ export default function WhatsAppHubPage() {
                 <div className="flex-1 flex overflow-hidden">
                   {/* Left Column: Contacts List */}
                   <div className="w-72 sm:w-80 border-r border-slate-200/80 flex flex-col shrink-0 bg-slate-50/40">
-                    <div className="p-3 border-b border-slate-200/80 bg-white">
+                    <div className="p-3 border-b border-slate-200/80 bg-white space-y-2">
+                      {/* Filter Category Tabs: Semua | Pelanggan | Peribadi */}
+                      <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl text-[11px] font-semibold">
+                        <button
+                          type="button"
+                          onClick={() => setChatCategoryFilter('all')}
+                          className={`flex-1 py-1 rounded-lg transition-all text-center cursor-pointer ${
+                            chatCategoryFilter === 'all'
+                              ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                              : 'text-slate-500 hover:text-slate-900'
+                          }`}
+                        >
+                          Semua ({chats.length})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setChatCategoryFilter('customers')}
+                          className={`flex-1 py-1 rounded-lg transition-all text-center cursor-pointer ${
+                            chatCategoryFilter === 'customers'
+                              ? 'bg-white text-[#00BDFF] shadow-2xs font-bold'
+                              : 'text-slate-500 hover:text-slate-900'
+                          }`}
+                        >
+                          Pelanggan ({customerCount})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setChatCategoryFilter('private')}
+                          className={`flex-1 py-1 rounded-lg transition-all text-center cursor-pointer ${
+                            chatCategoryFilter === 'private'
+                              ? 'bg-white text-slate-800 shadow-2xs font-bold'
+                              : 'text-slate-500 hover:text-slate-900'
+                          }`}
+                        >
+                          🔒 Peribadi ({privateCount})
+                        </button>
+                      </div>
+
                       <div className="relative">
                         <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <input
@@ -637,12 +706,18 @@ export default function WhatsAppHubPage() {
                       {filteredChats.length === 0 ? (
                         <div className="p-8 text-center space-y-2">
                           <MessageSquare className="w-6 h-6 text-slate-300 mx-auto" />
-                          <p className="text-xs text-slate-400">Tiada perbualan aktif.</p>
+                          <p className="text-xs text-slate-400">
+                            {chatCategoryFilter === 'private'
+                              ? 'Tiada perbualan ditandakan sebagai peribadi.'
+                              : 'Tiada perbualan aktif.'}
+                          </p>
                         </div>
                       ) : (
                         filteredChats.map((chat) => {
                           const isSelected = selectedChat?.id === chat.id;
                           const isBotPaused = pausedChatIds[chat.id];
+                          const isPrivate = !!privateChatIds[chat.id];
+
                           return (
                             <div
                               key={chat.id}
@@ -653,7 +728,11 @@ export default function WhatsAppHubPage() {
                                   : 'hover:bg-slate-100/70 bg-white'
                               }`}
                             >
-                              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-slate-700 to-slate-800 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                              <div className={`w-10 h-10 rounded-xl text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs ${
+                                isPrivate 
+                                  ? 'bg-gradient-to-tr from-slate-600 to-slate-700' 
+                                  : 'bg-gradient-to-tr from-slate-800 to-slate-900'
+                              }`}>
                                 {chat.name.charAt(0).toUpperCase()}
                               </div>
                               <div className="flex-1 min-w-0">
@@ -671,7 +750,11 @@ export default function WhatsAppHubPage() {
                                   <p className="text-[11px] text-slate-400 font-mono truncate">
                                     +{chat.phone}
                                   </p>
-                                  {isBotPaused ? (
+                                  {isPrivate ? (
+                                    <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-0.5">
+                                      🔒 Peribadi
+                                    </span>
+                                  ) : isBotPaused ? (
                                     <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200">
                                       Staf CS
                                     </span>
@@ -701,7 +784,9 @@ export default function WhatsAppHubPage() {
                       {/* Active Chat Bar with Bot Pause Toggle */}
                       <div className="p-3 px-5 bg-white border-b border-slate-200/80 flex items-center justify-between shrink-0">
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-xl bg-slate-800 text-white font-bold text-xs flex items-center justify-center">
+                          <div className={`w-8 h-8 rounded-xl text-white font-bold text-xs flex items-center justify-center ${
+                            privateChatIds[selectedChat.id] ? 'bg-slate-600' : 'bg-slate-800'
+                          }`}>
                             {selectedChat.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
@@ -709,7 +794,11 @@ export default function WhatsAppHubPage() {
                               <h3 className="text-xs font-bold text-slate-900">
                                 {selectedChat.name}
                               </h3>
-                              {pausedChatIds[selectedChat.id] ? (
+                              {privateChatIds[selectedChat.id] ? (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1">
+                                  🔒 Perbualan Peribadi (Bot Dimatikan)
+                                </span>
+                              ) : pausedChatIds[selectedChat.id] ? (
                                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
                                   <PauseCircle className="w-3 h-3" />
                                   Bot Dijeda (Staf Manusia)
@@ -730,21 +819,46 @@ export default function WhatsAppHubPage() {
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
-                            onClick={() => toggleBotForChat(selectedChat.id)}
-                            className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                            onClick={() => togglePrivateForChat(selectedChat.id)}
+                            title={privateChatIds[selectedChat.id] ? "Tukar kepada Pelanggan" : "Tandakan Sebagai Peribadi / Teman"}
+                            className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                              privateChatIds[selectedChat.id]
+                                ? 'bg-slate-100 text-slate-700 border-slate-300'
+                                : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200/80'
+                            }`}
                           >
-                            {pausedChatIds[selectedChat.id] ? (
+                            {privateChatIds[selectedChat.id] ? (
                               <>
-                                <PlayCircle className="w-3.5 h-3.5 text-emerald-600" />
-                                <span>Aktifkan Semula Bot</span>
+                                <UserCheck className="w-3.5 h-3.5 text-slate-600" />
+                                <span>Tukar ke Pelanggan</span>
                               </>
                             ) : (
                               <>
-                                <PauseCircle className="w-3.5 h-3.5 text-amber-600" />
-                                <span>Jeda Bot (Ambil Alih)</span>
+                                <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
+                                <span>Tanda Peribadi</span>
                               </>
                             )}
                           </button>
+
+                          {!privateChatIds[selectedChat.id] && (
+                            <button
+                              type="button"
+                              onClick={() => toggleBotForChat(selectedChat.id)}
+                              className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              {pausedChatIds[selectedChat.id] ? (
+                                <>
+                                  <PlayCircle className="w-3.5 h-3.5 text-emerald-600" />
+                                  <span>Aktifkan Semula Bot</span>
+                                </>
+                              ) : (
+                                <>
+                                  <PauseCircle className="w-3.5 h-3.5 text-amber-600" />
+                                  <span>Jeda Bot (Ambil Alih)</span>
+                                </>
+                              )}
+                            </button>
+                          )}
 
                           <a
                             href={`https://wa.me/${selectedChat.phone}`}
@@ -757,6 +871,15 @@ export default function WhatsAppHubPage() {
                           </a>
                         </div>
                       </div>
+
+                      {privateChatIds[selectedChat.id] && (
+                        <div className="mx-4 mt-3 p-2.5 rounded-xl bg-amber-50/90 border border-amber-200/80 text-[11.5px] text-amber-800 flex items-center gap-2">
+                          <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                          <span>
+                            <strong>Perbualan Peribadi:</strong> Bot AI dinyahaktifkan secara mutlak untuk nombor ini bagi menjaga privasi keluarga/rakan anda.
+                          </span>
+                        </div>
+                      )}
 
                       {/* Chat Messages List */}
                       <div className="flex-1 overflow-y-auto p-4 space-y-2.5 sparkle-scroll">

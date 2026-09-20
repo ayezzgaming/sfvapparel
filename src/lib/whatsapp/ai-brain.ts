@@ -12,6 +12,8 @@ const LITELLM_KEY = process.env.LITELLM_API_KEY || 'sfv_litellm_master_2026';
 
 // Store paused contacts (contactId -> timestamp when pause expires)
 const PAUSED_CONTACTS = new Map<string, number>();
+// Store private/personal contacts (friends, family) that AI must NEVER touch
+const PRIVATE_CONTACTS = new Set<string>();
 
 export function isContactPaused(chatId: string): boolean {
   const clean = formatChatId(chatId);
@@ -32,6 +34,20 @@ export function pauseContact(chatId: string, durationMinutes: number = 30) {
 export function resumeContact(chatId: string) {
   const clean = formatChatId(chatId);
   PAUSED_CONTACTS.delete(clean);
+}
+
+export function tagContactAsPrivate(chatId: string, isPrivate: boolean) {
+  const clean = formatChatId(chatId);
+  if (isPrivate) {
+    PRIVATE_CONTACTS.add(clean);
+  } else {
+    PRIVATE_CONTACTS.delete(clean);
+  }
+}
+
+export function isContactPrivate(chatId: string): boolean {
+  const clean = formatChatId(chatId);
+  return PRIVATE_CONTACTS.has(clean);
 }
 
 export interface IncomingWahaMessage {
@@ -56,7 +72,12 @@ export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<
     return { success: true, replied: false, reason: 'ignored_group_or_broadcast' };
   }
 
-  // 3. Check if contact is currently paused by human
+  // 3. Strictly ignore private contacts (friends/family/marked personal)
+  if (isContactPrivate(msg.from)) {
+    return { success: true, replied: false, reason: 'contact_marked_as_private' };
+  }
+
+  // 4. Check if contact is currently paused by human
   if (isContactPaused(msg.from)) {
     return { success: true, replied: false, reason: 'bot_paused_for_contact' };
   }
