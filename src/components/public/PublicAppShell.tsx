@@ -61,7 +61,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
   return (
     <App theme="ios" safeAreas={true} className="!bg-transparent h-full font-ios antialiased selection:bg-[#00BDFF] selection:text-white overscroll-none">
       {/* 1. FIXED FULL-SCREEN FRAME (Locks directly to physical viewport, zero window scrolling) */}
-      <div className="fixed inset-0 w-full h-full bg-gray-100 flex justify-center overflow-hidden overscroll-none">
+      <div className="fixed inset-0 w-full h-full bg-white sm:bg-slate-100 flex justify-center overflow-hidden overscroll-none">
 
         {/* 2. MASTER CONTAINER APLIKASI (Fixed 100% height of the pinned frame) */}
         <div className="w-full max-w-md h-full bg-white shadow-2xl flex flex-col overflow-hidden relative overscroll-none touch-pan-y select-none">
