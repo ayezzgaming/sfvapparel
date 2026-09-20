@@ -1,202 +1,128 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  X, 
-  Share, 
-  PlusSquare, 
-  Sparkles, 
-  CheckCircle2, 
-  Smartphone,
-  ChevronRight
-} from 'lucide-react';
+import { X } from 'lucide-react';
 
-const STORAGE_KEY = 'sfv_ios_install_prompt_dismissed_v1';
+const STORAGE_KEY = 'sfv_ios_pwa_prompt_v2';
 
 export default function IosInstallPromptModal() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
 
-    // 1. Check if running in browser
     if (typeof window === 'undefined') return;
 
-    // 2. Check if already installed as standalone PWA
+    // 1. Check if already running in standalone PWA mode (iOS or Android)
     const isStandalone = 
       window.matchMedia('(display-mode: standalone)').matches ||
+      window.matchMedia('(display-mode: fullscreen)').matches ||
       (window.navigator as unknown as { standalone?: boolean }).standalone === true ||
       document.referrer.includes('android-app://');
 
-    if (isStandalone) return;
-
-    // 3. Check if user previously dismissed
-    try {
-      const isDismissed = localStorage.getItem(STORAGE_KEY);
-      if (isDismissed) return;
-    } catch {
-      // Ignore localStorage error
+    if (isStandalone) {
+      // Mark permanently so it never checks or triggers
+      try {
+        localStorage.setItem(STORAGE_KEY, 'installed');
+      } catch {}
+      return;
     }
 
-    // 4. Detect iOS device or Safari environment
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    const isIos = /iphone|ipad|ipod/.test(userAgent);
-    const isSafari = /safari/.test(userAgent) && !/chrome|crios|fxios|android/.test(userAgent);
+    // 2. Check if user already saw or dismissed this prompt
+    try {
+      const seen = localStorage.getItem(STORAGE_KEY);
+      if (seen) return;
+    } catch {
+      return;
+    }
 
-    // If on iOS or mobile browser, schedule polite presentation
+    // 3. Detect iOS Safari
+    const ua = window.navigator.userAgent.toLowerCase();
+    const isIos = /iphone|ipad|ipod/.test(ua);
+    const isSafari = /safari/.test(ua) && !/chrome|crios|fxios|android|edgios/.test(ua);
+
     if (isIos || isSafari) {
+      // Polite delay after initial load
       const timer = setTimeout(() => {
-        setIsOpen(true);
-      }, 2500);
+        setIsVisible(true);
+        // Automatically mark as seen once shown so it will NEVER prompt again
+        try {
+          localStorage.setItem(STORAGE_KEY, 'seen');
+        } catch {}
+      }, 2000);
 
       return () => clearTimeout(timer);
     }
   }, []);
 
-  const handleDismiss = (permanent: boolean = false) => {
-    setIsOpen(false);
-    if (permanent) {
-      try {
-        localStorage.setItem(STORAGE_KEY, 'true');
-      } catch {
-        // Ignore
-      }
-    }
+  const handleDismiss = () => {
+    setIsVisible(false);
+    try {
+      localStorage.setItem(STORAGE_KEY, 'dismissed');
+    } catch {}
   };
 
-  if (!mounted || !isOpen) return null;
+  if (!mounted || !isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-      {/* Backdrop click to dismiss */}
-      <div 
-        className="absolute inset-0" 
-        onClick={() => handleDismiss(false)} 
-        aria-hidden="true"
-      />
-
-      {/* Sheet / Modal Container */}
-      <div 
-        className="relative w-full max-w-md bg-white dark:bg-zinc-900 rounded-t-[32px] sm:rounded-3xl shadow-2xl border border-slate-200/80 dark:border-zinc-800 p-6 space-y-5 animate-in slide-in-from-bottom-6 duration-400 select-none font-ios"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="pwa-install-title"
-      >
-        {/* Top Handle on Mobile */}
-        <div className="flex justify-center -mt-2 pb-1 sm:hidden">
-          <div className="w-10 h-1 bg-slate-300 dark:bg-zinc-700 rounded-full" />
+    <aside 
+      aria-label="Panduan Pasang ke Skrin Utama"
+      className="fixed bottom-[4.8rem] inset-x-3 max-w-sm mx-auto z-50 animate-in fade-in slide-in-from-bottom-3 duration-300 pointer-events-auto select-none font-ios"
+    >
+      {/* Apple Frosted Glass Floating Capsule */}
+      <div className="relative bg-[#1C1C1E]/95 backdrop-blur-2xl text-white rounded-2xl p-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] border border-white/10 flex items-center gap-3">
+        {/* App Icon */}
+        <div className="w-10 h-10 rounded-xl bg-black/40 border border-white/10 overflow-hidden shrink-0 flex items-center justify-center p-1 shadow-xs">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src="/logo/svf-icon.svg" 
+            alt="SFV Apparel" 
+            className="w-full h-full object-contain rounded-lg"
+            onError={(e) => {
+              e.currentTarget.src = '/logo/svf-icon-01.svg';
+            }}
+          />
         </div>
 
-        {/* Header: App Icon & Name */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center space-x-3.5">
-            <div className="w-14 h-14 rounded-2xl bg-white p-1.5 shadow-md border border-slate-200/80 dark:border-zinc-700 shrink-0 flex items-center justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src="/logo/svf-icon.svg" 
-                alt="SFV Apparel" 
-                className="w-full h-full object-contain rounded-xl"
-                onError={(e) => {
-                  e.currentTarget.src = '/logo/svf-icon-01.svg';
-                }}
-              />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h3 id="pwa-install-title" className="text-base font-bold text-slate-900 dark:text-zinc-100 leading-tight">
-                  SFV Apparel
-                </h3>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#00BDFF]/10 text-[#00BDFF] border border-[#00BDFF]/20">
-                  PWA Web App
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
-                Pasang ke Skrin Utama untuk akses pantas skrin penuh
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => handleDismiss(false)}
-            className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
-            aria-label="Tutup panduan"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Step-by-step Apple Guidance Box */}
-        <div className="bg-slate-50 dark:bg-zinc-800/60 rounded-2xl p-4 border border-slate-200/70 dark:border-zinc-700 space-y-3.5">
-          {/* Step 1 */}
-          <div className="flex items-start space-x-3">
-            <div className="w-8 h-8 rounded-xl bg-white dark:bg-zinc-700 text-[#00BDFF] shadow-xs border border-slate-200/80 dark:border-zinc-600 flex items-center justify-center shrink-0">
-              <Share className="w-4 h-4 stroke-[2.2]" />
-            </div>
-            <div className="flex-1 min-w-0 pt-0.5">
-              <p className="text-xs font-bold text-slate-900 dark:text-zinc-100 leading-snug">
-                1. Ketuk butang Kongsi (Share)
-              </p>
-              <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-normal">
-                Terletak di bahagian bar menu bawah pelayar Safari iPhone anda.
-              </p>
-            </div>
-          </div>
-
-          {/* Step 2 */}
-          <div className="flex items-start space-x-3">
-            <div className="w-8 h-8 rounded-xl bg-white dark:bg-zinc-700 text-indigo-600 shadow-xs border border-slate-200/80 dark:border-zinc-600 flex items-center justify-center shrink-0">
-              <PlusSquare className="w-4 h-4 stroke-[2.2]" />
-            </div>
-            <div className="flex-1 min-w-0 pt-0.5">
-              <p className="text-xs font-bold text-slate-900 dark:text-zinc-100 leading-snug">
-                2. Pilih &ldquo;Tambah ke Skrin Utama&rdquo;
-              </p>
-              <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-normal">
-                Tatal ke bawah menu pilihan dan ketuk <span className="font-semibold text-slate-700 dark:text-zinc-300">&ldquo;Add to Home Screen&rdquo;</span>.
-              </p>
-            </div>
-          </div>
-
-          {/* Step 3 */}
-          <div className="flex items-start space-x-3">
-            <div className="w-8 h-8 rounded-xl bg-white dark:bg-zinc-700 text-emerald-600 shadow-xs border border-slate-200/80 dark:border-zinc-600 flex items-center justify-center shrink-0">
-              <Sparkles className="w-4 h-4 stroke-[2.2]" />
-            </div>
-            <div className="flex-1 min-w-0 pt-0.5">
-              <p className="text-xs font-bold text-slate-900 dark:text-zinc-100 leading-snug">
-                3. Ketuk &ldquo;Tambah&rdquo; (Add)
-              </p>
-              <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-normal">
-                Ikon aplikasi akan muncul di skrin utama iPhone anda seperti aplikasi native.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="space-y-2 pt-1">
-          <button
-            type="button"
-            onClick={() => handleDismiss(true)}
-            className="w-full py-3 px-4 rounded-full bg-[#00BDFF] hover:bg-sky-500 active:scale-[0.98] text-white font-bold text-xs shadow-md shadow-sky-400/20 transition-all cursor-pointer flex items-center justify-center space-x-1.5"
-          >
-            <span>Faham & Pasang Nanti</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-
-          <div className="text-center pt-1">
-            <button
-              type="button"
-              onClick={() => handleDismiss(true)}
-              className="text-[11px] text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 font-medium transition-colors cursor-pointer"
+        {/* Concise Apple Instruction */}
+        <div className="flex-1 min-w-0 pr-1">
+          <p className="text-[12px] font-semibold text-white tracking-tight leading-tight">
+            Pasang SFV Apparel
+          </p>
+          <p className="text-[11px] text-zinc-300 leading-snug mt-0.5">
+            Ketuk{' '}
+            <svg 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2.2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              className="w-3.5 h-3.5 inline-block -mt-0.5 text-[#00BDFF]"
+              aria-label="Ikon Kongsi iOS"
             >
-              Jangan tunjukkan lagi pada peranti ini
-            </button>
-          </div>
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+            {' '}lalu pilih <span className="font-semibold text-white">&ldquo;Add to Home Screen&rdquo;</span>
+          </p>
         </div>
+
+        {/* Minimalist Close Button */}
+        <button
+          type="button"
+          onClick={handleDismiss}
+          aria-label="Tutup"
+          className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 active:scale-90 text-zinc-400 hover:text-white flex items-center justify-center transition-all shrink-0 cursor-pointer"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+
+        {/* Downward Pointer indicator towards Safari Share Button */}
+        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#1C1C1E] border-r border-b border-white/10 rotate-45" />
       </div>
-    </div>
+    </aside>
   );
 }
