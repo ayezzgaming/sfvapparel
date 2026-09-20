@@ -27,6 +27,75 @@ import {
   CmsPolicy
 } from '@/types/database';
 
+interface TrustBadgeItem {
+  id: string;
+  title: string;
+  desc: string;
+  pill: string;
+  icon: React.ElementType;
+  gradient: string;
+  border: string;
+  iconBg: string;
+  iconColor: string;
+  pillStyle: string;
+  dotActive: string;
+}
+
+const TRUST_BADGES: TrustBadgeItem[] = [
+  {
+    id: 'direct-kilang',
+    title: 'Harga Direct Kilang',
+    desc: 'Tanpa orang tengah · Lebih jimat & telus',
+    pill: 'Direct Kilang',
+    icon: Building2,
+    gradient: 'from-blue-50/90 via-sky-50/70 to-indigo-50/40',
+    border: 'border-blue-100',
+    iconBg: 'bg-blue-100/80 text-blue-600',
+    iconColor: 'text-blue-600',
+    pillStyle: 'bg-blue-100/70 text-blue-700 border-blue-200/60',
+    dotActive: 'bg-blue-600',
+  },
+  {
+    id: 'no-moq',
+    title: 'Tiada Minimum Order',
+    desc: 'Kustom & DTF · 1 helai pun kami buat',
+    pill: 'Bebas MOQ',
+    icon: PackageCheck,
+    gradient: 'from-violet-50/90 via-purple-50/70 to-fuchsia-50/40',
+    border: 'border-violet-100',
+    iconBg: 'bg-violet-100/80 text-violet-600',
+    iconColor: 'text-violet-600',
+    pillStyle: 'bg-violet-100/70 text-violet-700 border-violet-200/60',
+    dotActive: 'bg-violet-600',
+  },
+  {
+    id: 'siap-pantas',
+    title: 'Siap Pantas 5-7 Hari',
+    desc: 'Produksi pantas · Penghantaran tepat masa',
+    pill: 'Express Siap',
+    icon: Clock,
+    gradient: 'from-emerald-50/90 via-teal-50/70 to-cyan-50/40',
+    border: 'border-emerald-100',
+    iconBg: 'bg-emerald-100/80 text-emerald-600',
+    iconColor: 'text-emerald-600',
+    pillStyle: 'bg-emerald-100/70 text-emerald-700 border-emerald-200/60',
+    dotActive: 'bg-emerald-600',
+  },
+  {
+    id: 'qc-guarantee',
+    title: 'Jaminan 1-to-1 QC',
+    desc: 'Pemeriksaan kualiti rapi · Ganti jika rosak',
+    pill: '100% QC Pass',
+    icon: ShieldCheck,
+    gradient: 'from-amber-50/90 via-orange-50/70 to-yellow-50/40',
+    border: 'border-amber-100',
+    iconBg: 'bg-amber-100/80 text-amber-600',
+    iconColor: 'text-amber-600',
+    pillStyle: 'bg-amber-100/70 text-amber-700 border-amber-200/60',
+    dotActive: 'bg-amber-600',
+  },
+];
+
 interface StepDetail {
   step: string;
   title: string;
@@ -306,6 +375,23 @@ export default function HomePage() {
     setIsPolicySheetOpen(true);
   };
 
+  // -------------------------------------------------------------
+  // TRUST BADGES AUTO-SLIDE CARD SWAP STATE & TIMER
+  // -------------------------------------------------------------
+  const [activeTrustIndex, setActiveTrustIndex] = useState(0);
+  const [isTrustPaused, setIsTrustPaused] = useState(false);
+
+  useEffect(() => {
+    if (isTrustPaused) return;
+    const interval = setInterval(() => {
+      setActiveTrustIndex((prev) => (prev + 1) % TRUST_BADGES.length);
+    }, 3200);
+    return () => clearInterval(interval);
+  }, [isTrustPaused]);
+
+  const currentTrust = TRUST_BADGES[activeTrustIndex];
+  const TrustIcon = currentTrust.icon;
+
   const currentBanner = activeBanners[activeBannerIndex] || activeBanners[0] || {
     id: 'default',
     image_url: '/hero1.png',
@@ -385,47 +471,63 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* 1.5 VALUE PROPOSITION / JAMINAN KILANG (Clean, Minimalist & Unified) */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-          <div className="grid grid-cols-2 divide-x divide-y divide-slate-100">
-            <div className="p-3 flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-                <Building2 className="w-4 h-4" />
+        {/* 1.5 VALUE PROPOSITION / TRUST CARD SWAP (Compact, Soft Color & Auto-Slide) */}
+        <div 
+          className={`relative overflow-hidden rounded-2xl border ${currentTrust.border} bg-gradient-to-r ${currentTrust.gradient} p-3 sm:p-3.5 shadow-xs transition-all duration-500 cursor-pointer select-none group`}
+          onMouseEnter={() => setIsTrustPaused(true)}
+          onMouseLeave={() => setIsTrustPaused(false)}
+          onClick={() => setActiveTrustIndex((prev) => (prev + 1) % TRUST_BADGES.length)}
+          role="button"
+          tabIndex={0}
+          aria-label={`Jaminan: ${currentTrust.title}`}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              {/* Soft Animated Icon */}
+              <div 
+                key={`icon-${currentTrust.id}`}
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${currentTrust.iconBg} flex items-center justify-center shrink-0 shadow-xs transition-transform duration-300 group-hover:scale-105`}
+              >
+                <TrustIcon className="w-5 h-5 stroke-[2.2]" />
               </div>
-              <div className="min-w-0">
-                <span className="text-[11.5px] font-bold text-slate-900 block leading-tight truncate">Harga Direct Kilang</span>
-                <span className="text-[9.5px] text-slate-500 block mt-0.5 truncate">Tanpa orang tengah</span>
+
+              {/* Text content with soft typography & tag */}
+              <div key={`text-${currentTrust.id}`} className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[12px] sm:text-[13px] font-bold text-slate-900 tracking-tight leading-tight">
+                    {currentTrust.title}
+                  </span>
+                  <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md border ${currentTrust.pillStyle} tracking-wide`}>
+                    {currentTrust.pill}
+                  </span>
+                </div>
+                <p className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium mt-0.5 truncate">
+                  {currentTrust.desc}
+                </p>
               </div>
             </div>
 
-            <div className="p-3 flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-                <PackageCheck className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[11.5px] font-bold text-slate-900 block leading-tight truncate">Tiada Minimum Order</span>
-                <span className="text-[9.5px] text-slate-500 block mt-0.5 truncate">Kustom & DTF</span>
-              </div>
-            </div>
-
-            <div className="p-3 flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-                <Clock className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[11.5px] font-bold text-slate-900 block leading-tight truncate">Siap 5-7 Hari</span>
-                <span className="text-[9.5px] text-slate-500 block mt-0.5 truncate">Produksi pantas</span>
-              </div>
-            </div>
-
-            <div className="p-3 flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[11.5px] font-bold text-slate-900 block leading-tight truncate">Jaminan 1-to-1 QC</span>
-                <span className="text-[9.5px] text-slate-500 block mt-0.5 truncate">Pemeriksaan kualiti</span>
-              </div>
+            {/* Slide Navigation & Mini Soft Indicator Dots */}
+            <div className="flex items-center gap-1 shrink-0 pl-1">
+              {TRUST_BADGES.map((badge, idx) => {
+                const isActive = idx === activeTrustIndex;
+                return (
+                  <button
+                    key={badge.id}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveTrustIndex(idx);
+                    }}
+                    aria-label={`Slide ke ${badge.title}`}
+                    className={`transition-all duration-300 rounded-full ${
+                      isActive 
+                        ? `w-4 h-1.5 ${badge.dotActive} shadow-xs` 
+                        : 'w-1.5 h-1.5 bg-slate-300/80 hover:bg-slate-400'
+                    }`}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>
