@@ -611,9 +611,10 @@ async function callGroqApi(
 ): Promise<{ success: boolean; variations?: AiVariation[]; adSettings?: DynamicAdSettings; error?: string }> {
   const candidateModels = [
     'llama-3.3-70b-versatile',
-    'openai/gpt-oss-120b',
-    'qwen/qwen3.8-27b',
     'llama-3.1-8b-instant',
+    'deepseek-r1-distill-llama-70b',
+    'gemma2-9b-it',
+    'mixtral-8x7b-32768',
   ];
 
   const { systemPrompt, userContent } = buildAiPromptInstructions(params);
@@ -633,13 +634,16 @@ async function callGroqApi(
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userContent },
           ],
-          temperature: 0.82,
+          response_format: { type: 'json_object' },
+          temperature: 0.8,
         }),
       });
 
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
-        lastError = errJson.error?.message || `HTTP ${res.status}`;
+        const msg = errJson.error?.message || `HTTP ${res.status}`;
+        console.warn(`Groq model ${model} returned error:`, msg);
+        lastError = msg;
         continue;
       }
 
