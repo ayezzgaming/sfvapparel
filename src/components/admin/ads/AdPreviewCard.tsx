@@ -262,13 +262,13 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
 
       {/* ================= 2. FACEBOOK ADS ================= */}
       {(platform === 'facebook' || platform === 'meta') && (
-        <div className="w-full max-w-[460px] mx-auto">
+        <div className="w-full max-w-[370px] sm:max-w-[390px] mx-auto">
           {activeFormat === 'feed' && (
             <div className="bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm font-sans text-left">
               {/* Authentic Facebook Header */}
-              <div className="p-3 sm:p-3.5 flex items-center justify-between">
-                <div className="flex items-center space-x-2.5">
-                  <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs tracking-wider shrink-0 border border-slate-200 shadow-2xs overflow-hidden">
+              <div className="p-2.5 sm:p-3 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs tracking-wider shrink-0 border border-slate-200 shadow-2xs overflow-hidden">
                     {livePicUrl ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
@@ -285,38 +285,38 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center space-x-1">
-                      <span className="text-[14px] font-semibold text-slate-900 truncate hover:underline cursor-pointer">
+                      <span className="text-[13px] font-semibold text-slate-900 truncate hover:underline cursor-pointer">
                         {displayName}
                       </span>
                     </div>
-                    <div className="flex items-center space-x-1 text-[12px] text-slate-500">
+                    <div className="flex items-center space-x-1 text-[11px] text-slate-500">
                       <span>Tajaan</span>
                       <span>·</span>
-                      <Globe className="w-3.5 h-3.5 text-slate-400" />
+                      <Globe className="w-3 h-3 text-slate-400" />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-1 text-slate-500">
+                <div className="flex items-center space-x-0.5 text-slate-500">
                   <button type="button" className="p-1 hover:bg-slate-100 rounded-full transition-colors">
-                    <MoreHorizontal className="w-5 h-5 text-slate-500" />
+                    <MoreHorizontal className="w-4 h-4 text-slate-500" />
                   </button>
                   <button type="button" className="p-1 hover:bg-slate-100 rounded-full transition-colors">
-                    <X className="w-4 h-4 text-slate-500" />
+                    <X className="w-3.5 h-3.5 text-slate-500" />
                   </button>
                 </div>
               </div>
 
               {/* Primary Text with Clean Native Expand/Collapse */}
-              <div className="px-3.5 sm:px-4 pb-3 text-[13px] sm:text-[14px] text-slate-900 leading-[1.4] whitespace-pre-line">
-                {isFbExpanded || (creative.primaryText?.length || 0) <= 150 ? (
+              <div className="px-3 pb-2 text-[12.5px] text-slate-900 leading-[1.35] whitespace-pre-line">
+                {isFbExpanded || (creative.primaryText?.length || 0) <= 130 ? (
                   <>
                     {creative.primaryText}
-                    {(creative.primaryText?.length || 0) > 150 && (
+                    {(creative.primaryText?.length || 0) > 130 && (
                       <button
                         type="button"
                         onClick={() => setIsFbExpanded(false)}
-                        className="ml-1.5 text-slate-500 hover:text-slate-800 font-medium hover:underline inline"
+                        className="ml-1 text-slate-500 hover:text-slate-800 font-medium hover:underline inline"
                       >
                         Ringkaskan
                       </button>
@@ -324,7 +324,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
                   </>
                 ) : (
                   <>
-                    {creative.primaryText?.slice(0, 140)}...
+                    {creative.primaryText?.slice(0, 120)}...
                     <button
                       type="button"
                       onClick={() => setIsFbExpanded(true)}
@@ -336,8 +336,8 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
                 )}
               </div>
 
-              {/* Creative Photo (Full Width Standard 1:1 or 4:3 Feed) */}
-              <div className="relative aspect-square sm:aspect-[4/3] w-full bg-slate-100 overflow-hidden border-y border-slate-100">
+              {/* Creative Photo (Aspect 4:3 Feed) */}
+              <div className="relative aspect-[4/3] w-full bg-slate-100 overflow-hidden border-y border-slate-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={creative.imageUrl || '/images/prod_sportswear.jpg'}
@@ -347,69 +347,69 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
               </div>
 
               {/* Authentic Facebook CTA Strip */}
-              <div className="p-3 sm:p-3.5 bg-[#F0F2F5] flex items-center justify-between gap-3 border-t border-slate-200/50">
+              <div className="p-2.5 bg-[#F0F2F5] flex items-center justify-between gap-2.5 border-t border-slate-200/50">
                 <div className="min-w-0 flex-1">
-                  <span className="text-[11px] text-slate-500 uppercase tracking-wide block font-sans truncate">
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wide block font-sans truncate">
                     {rawDomain.toUpperCase()}
                   </span>
-                  <h5 className="text-[14px] sm:text-[15px] font-bold text-slate-900 leading-snug line-clamp-2 pt-0.5">
+                  <h5 className="text-[13px] font-bold text-slate-900 leading-snug line-clamp-1 pt-0.5">
                     {creative.headline}
                   </h5>
                   {creative.secondaryHeadline && (
-                    <span className="text-[12px] text-slate-500 line-clamp-1 block pt-0.5">
+                    <span className="text-[11px] text-slate-500 line-clamp-1 block pt-0.5">
                       {creative.secondaryHeadline}
                     </span>
                   )}
                 </div>
                 <button
                   type="button"
-                  className="px-4 py-2 rounded-md bg-[#E4E6EB] hover:bg-[#D8DADF] text-slate-900 text-xs font-semibold transition-colors shrink-0 border border-slate-300/60 shadow-2xs"
+                  className="px-3 py-1.5 rounded-md bg-[#E4E6EB] hover:bg-[#D8DADF] text-slate-900 text-xs font-semibold transition-colors shrink-0 border border-slate-300/60 shadow-2xs"
                 >
                   {creative.callToAction || 'Dapatkan Sebut Harga'}
                 </button>
               </div>
 
               {/* Engagement Stats Bar */}
-              <div className="px-3.5 sm:px-4 py-2.5 flex items-center justify-between text-[12px] text-slate-500 border-t border-slate-200/50">
-                <div className="flex items-center space-x-1.5">
+              <div className="px-3 py-1.5 flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-200/50">
+                <div className="flex items-center space-x-1">
                   <div className="flex items-center -space-x-1">
-                    <div className="w-4 h-4 rounded-full bg-[#0866FF] flex items-center justify-center z-10">
-                      <ThumbsUp className="w-2.5 h-2.5 text-white fill-white" />
+                    <div className="w-3.5 h-3.5 rounded-full bg-[#0866FF] flex items-center justify-center z-10">
+                      <ThumbsUp className="w-2 h-2 text-white fill-white" />
                     </div>
-                    <div className="w-4 h-4 rounded-full bg-[#F3425F] flex items-center justify-center">
-                      <Heart className="w-2.5 h-2.5 text-white fill-white" />
+                    <div className="w-3.5 h-3.5 rounded-full bg-[#F3425F] flex items-center justify-center">
+                      <Heart className="w-2 h-2 text-white fill-white" />
                     </div>
                   </div>
-                  <span className="text-slate-600 font-medium text-[12px]">348</span>
+                  <span className="text-slate-600 font-medium text-[11px]">348</span>
                 </div>
-                <div className="flex items-center space-x-3 text-slate-500 text-[12px]">
+                <div className="flex items-center space-x-2 text-slate-500 text-[11px]">
                   <span className="hover:underline cursor-pointer">52 komen</span>
                   <span>·</span>
-                  <span className="hover:underline cursor-pointer">24 perkongsian</span>
+                  <span className="hover:underline cursor-pointer">24 kongsi</span>
                 </div>
               </div>
 
               {/* Facebook 3-Action Interactive Row (Suka, Komen, Kongsi) */}
-              <div className="px-2 py-1 grid grid-cols-3 gap-1 border-t border-slate-200/60 text-slate-600 text-[13px] font-medium select-none">
+              <div className="px-1.5 py-0.5 grid grid-cols-3 gap-1 border-t border-slate-200/60 text-slate-600 text-[12px] font-medium select-none">
                 <button
                   type="button"
-                  className="py-1.5 rounded-lg hover:bg-slate-100 flex items-center justify-center space-x-2 transition-colors"
+                  className="py-1 rounded-lg hover:bg-slate-100 flex items-center justify-center space-x-1.5 transition-colors"
                 >
-                  <ThumbsUp className="w-4 h-4" />
+                  <ThumbsUp className="w-3.5 h-3.5" />
                   <span>Suka</span>
                 </button>
                 <button
                   type="button"
-                  className="py-1.5 rounded-lg hover:bg-slate-100 flex items-center justify-center space-x-2 transition-colors"
+                  className="py-1 rounded-lg hover:bg-slate-100 flex items-center justify-center space-x-1.5 transition-colors"
                 >
-                  <MessageSquare className="w-4 h-4" />
+                  <MessageSquare className="w-3.5 h-3.5" />
                   <span>Komen</span>
                 </button>
                 <button
                   type="button"
-                  className="py-1.5 rounded-lg hover:bg-slate-100 flex items-center justify-center space-x-2 transition-colors"
+                  className="py-1 rounded-lg hover:bg-slate-100 flex items-center justify-center space-x-1.5 transition-colors"
                 >
-                  <Share2 className="w-4 h-4" />
+                  <Share2 className="w-3.5 h-3.5" />
                   <span>Kongsi</span>
                 </button>
               </div>
@@ -488,13 +488,13 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
 
       {/* ================= 3. INSTAGRAM ADS ================= */}
       {platform === 'instagram' && (
-        <div className="w-full max-w-[420px] mx-auto">
+        <div className="w-full max-w-[350px] sm:max-w-[370px] mx-auto">
           {activeFormat === 'feed' && (
             <div className="bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm font-sans text-left">
-              <div className="p-3 flex items-center justify-between border-b border-slate-100">
-                <div className="flex items-center space-x-2.5">
-                  <div className="w-8 h-8 rounded-full p-0.5 bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shrink-0">
-                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center font-bold text-[9px] text-slate-900 overflow-hidden">
+              <div className="p-2.5 flex items-center justify-between border-b border-slate-100">
+                <div className="flex items-center space-x-2">
+                  <div className="w-7 h-7 rounded-full p-0.5 bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shrink-0">
+                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center font-bold text-[8.5px] text-slate-900 overflow-hidden">
                       {livePicUrl ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img
@@ -518,7 +518,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
                 <MoreHorizontal className="w-4 h-4 text-slate-400" />
               </div>
 
-              <div className="relative aspect-square w-full bg-slate-100 overflow-hidden">
+              <div className="relative aspect-[4/3] w-full bg-slate-100 overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={creative.imageUrl || '/images/prod_sportswear.jpg'}
@@ -527,13 +527,13 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
                 />
               </div>
 
-              <div className="px-3.5 py-2.5 bg-slate-900 hover:bg-black text-white flex items-center justify-between cursor-pointer transition-colors">
+              <div className="px-3 py-2 bg-slate-200/90 hover:bg-slate-300 text-slate-800 dark:bg-zinc-800 dark:text-zinc-100 flex items-center justify-between cursor-pointer transition-colors border-y border-slate-200/60 dark:border-zinc-700">
                 <span className="text-xs font-semibold">{creative.callToAction || 'Ketahui Lebih Lanjut'}</span>
-                <ChevronRight className="w-4 h-4 text-slate-300" />
+                <ChevronRight className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-300" />
               </div>
 
-              <div className="px-3.5 pt-2.5 pb-1 flex items-center justify-between text-slate-800">
-                <div className="flex items-center space-x-3.5">
+              <div className="px-3 pt-2 pb-0.5 flex items-center justify-between text-slate-800">
+                <div className="flex items-center space-x-3">
                   <Heart className="w-4 h-4 hover:text-rose-600 transition-colors cursor-pointer" />
                   <MessageCircle className="w-4 h-4 hover:text-slate-900 transition-colors cursor-pointer" />
                   <Send className="w-4 h-4 hover:text-slate-900 transition-colors cursor-pointer" />
@@ -541,13 +541,13 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
                 <Bookmark className="w-4 h-4 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer" />
               </div>
 
-              <div className="px-3.5 pb-3.5 pt-1 text-xs text-slate-800 leading-relaxed space-y-1">
+              <div className="px-3 pb-2.5 pt-0.5 text-xs text-slate-800 leading-relaxed space-y-0.5">
                 <p className="leading-snug">
                   <span className="font-semibold text-slate-900 mr-1.5">{socialHandle}</span>
-                  {isIgExpanded || (creative.primaryText?.length || 0) <= 120 ? (
+                  {isIgExpanded || (creative.primaryText?.length || 0) <= 110 ? (
                     <>
                       {creative.primaryText}
-                      {(creative.primaryText?.length || 0) > 120 && (
+                      {(creative.primaryText?.length || 0) > 110 && (
                         <button
                           type="button"
                           onClick={() => setIsIgExpanded(false)}
@@ -559,7 +559,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
                     </>
                   ) : (
                     <>
-                      {creative.primaryText?.slice(0, 110)}...
+                      {creative.primaryText?.slice(0, 100)}...
                       <button
                         type="button"
                         onClick={() => setIsIgExpanded(true)}
@@ -570,7 +570,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
                     </>
                   )}
                 </p>
-                <span className="text-[10px] text-slate-400 block pt-0.5">Lihat semua 48 komen</span>
+                <span className="text-[10px] text-slate-400 block">Lihat semua 48 komen</span>
               </div>
             </div>
           )}

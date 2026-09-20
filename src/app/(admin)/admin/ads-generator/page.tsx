@@ -108,6 +108,7 @@ export default function AdminAdsGeneratorPage() {
   const [apiKey, setApiKey] = useState('');
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
+  const [previewScale, setPreviewScale] = useState<'fit' | '85' | '100'>('fit');
 
   // Attachments State (+ button)
   const [showAttachMenu, setShowAttachMenu] = useState(false);
@@ -1218,10 +1219,33 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                     ))}
                   </div>
 
-                  {/* Sisi Kanan: Quick Platform Switcher & Salin Teks */}
-                  <div className="flex items-center gap-3">
-                    {/* Quick Platform Switcher: Ikon Bersih Tanpa Wadah Lingkaran Tebal */}
-                    <div className="flex items-center gap-2">
+                  {/* Sisi Kanan: Skala Pratinjau, Platform Switcher & Salin Teks */}
+                  <div className="flex items-center gap-2.5">
+                    {/* Zoom / Scale Switcher */}
+                    <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-slate-200/60 dark:border-zinc-700/60">
+                      {[
+                        { id: 'fit', label: 'Fit' },
+                        { id: '85', label: '85%' },
+                        { id: '100', label: '100%' },
+                      ].map((scale) => (
+                        <button
+                          key={scale.id}
+                          type="button"
+                          onClick={() => setPreviewScale(scale.id as 'fit' | '85' | '100')}
+                          title={`Skala Pratinjau: ${scale.label}`}
+                          className={`px-2 py-0.5 text-[11px] font-medium rounded-md transition-all ${
+                            previewScale === scale.id
+                              ? 'bg-white dark:bg-zinc-700 text-slate-800 dark:text-zinc-100 shadow-2xs font-semibold'
+                              : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400'
+                          }`}
+                        >
+                          {scale.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Quick Platform Switcher: Ikon Bersih */}
+                    <div className="flex items-center gap-1.5 pl-1.5 border-l border-slate-200/70 dark:border-zinc-800">
                       {[
                         { id: 'facebook', name: 'Facebook', Icon: FacebookLogo },
                         { id: 'instagram', name: 'Instagram', Icon: InstagramLogo },
@@ -1277,8 +1301,8 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
               )}
             </div>
 
-            {/* Area Kanvas Bersih */}
-            <div className="flex-1 overflow-y-auto p-6 flex items-center justify-center">
+            {/* Area Kanvas Bersih dengan Skala Pas Layar (Zero-Scroll Auto Fit) */}
+            <div className="flex-1 p-2 sm:p-3.5 flex items-center justify-center overflow-hidden">
               {studioStep === 'prompt' ? (
                 <div className="text-center space-y-2 max-w-sm">
                   <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center mx-auto text-slate-400">
@@ -1292,13 +1316,23 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                   </p>
                 </div>
               ) : (
-                <div className="w-full max-w-xl mx-auto flex flex-col items-center justify-center py-2">
-                  <AdPreviewCard
-                    platform={selectedPlatform}
-                    creative={currentCreative}
-                    connectedAccount={platforms.find((p) => p.id === selectedPlatform)}
-                    format={adFormat}
-                  />
+                <div className="w-full h-full flex items-center justify-center overflow-hidden">
+                  <div
+                    className={`w-full flex flex-col items-center justify-center transition-all duration-200 origin-center ${
+                      previewScale === 'fit'
+                        ? 'scale-[0.74] sm:scale-[0.78] md:scale-[0.80] lg:scale-[0.83] xl:scale-[0.86] 2xl:scale-[0.90]'
+                        : previewScale === '85'
+                        ? 'scale-[0.85]'
+                        : 'scale-100 overflow-y-auto max-h-full py-2'
+                    }`}
+                  >
+                    <AdPreviewCard
+                      platform={selectedPlatform}
+                      creative={currentCreative}
+                      connectedAccount={platforms.find((p) => p.id === selectedPlatform)}
+                      format={adFormat}
+                    />
+                  </div>
                 </div>
               )}
             </div>
