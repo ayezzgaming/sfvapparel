@@ -16,6 +16,7 @@ import {
   PackageCheck
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
+import { formatWhatsAppLink } from '@/lib/whatsapp/dynamic-link';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { useAppStore } from '@/lib/store/app-store';
 import { 
@@ -708,7 +709,7 @@ export default function HomePage() {
 
             <div className="pt-1.5">
               <a
-                href={`https://wa.me/${companySettings.whatsapp_number}?text=${encodeURIComponent(sloganQuote.whatsapp_message)}`}
+                href={formatWhatsAppLink(companySettings?.whatsapp_number, sloganQuote.whatsapp_message)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold text-xs shadow-md shadow-sky-400/20 active:scale-95 transition-all"
@@ -849,7 +850,7 @@ export default function HomePage() {
                       {item.client}
                     </span>
                     <a
-                      href={`https://wa.me/${companySettings.whatsapp_number}?text=Hai%20SFV%20Apparel,%20saya%20berminat%20dengan%20hasil%20produksi%20*${encodeURIComponent(item.title)}*`}
+                      href={formatWhatsAppLink(companySettings?.whatsapp_number, `Hai SFV Apparel, saya berminat dengan hasil produksi *${item.title}*`)}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
@@ -1001,7 +1002,7 @@ export default function HomePage() {
               <a href={companySettings.telegram_catalog_url} target="_blank" rel="noopener noreferrer" aria-label="Telegram" className="w-7 h-7 rounded-full bg-white shadow-xs border border-gray-200/60 flex items-center justify-center text-slate-600 hover:text-sky-500 transition-colors active:scale-90">
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.458c.538-.196 1.006.128.832.943z"/></svg>
               </a>
-              <a href={`https://wa.me/${companySettings.whatsapp_number}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="w-7 h-7 rounded-full bg-white shadow-xs border border-gray-200/60 flex items-center justify-center text-slate-600 hover:text-emerald-600 transition-colors active:scale-90">
+              <a href={formatWhatsAppLink(companySettings?.whatsapp_number)} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="w-7 h-7 rounded-full bg-white shadow-xs border border-gray-200/60 flex items-center justify-center text-slate-600 hover:text-emerald-600 transition-colors active:scale-90">
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.122.553 4.179 1.603 5.996L0 24l6.167-1.617a12.01 12.01 0 0 0 5.864 1.516h.005c6.645 0 12.03-5.385 12.03-12.031A12.03 12.03 0 0 0 12.031 0zm0 22.028h-.004a9.99 9.99 0 0 1-5.093-1.392l-.365-.217-3.784.992 1.01-3.69-.237-.378a9.97 9.97 0 0 1-1.529-5.312C2.029 6.502 6.506 2.025 12.031 2.025c2.671 0 5.182 1.04 7.07 2.928a9.94 9.94 0 0 1 2.93 7.078c0 5.526-4.477 9.997-10 9.997zm5.485-7.496c-.3-.15-1.776-.877-2.051-.977-.276-.1-.476-.15-.676.15-.2.3-.776.977-.951 1.177-.175.2-.35.226-.651.075s-1.27-.468-2.42-1.493c-.895-.798-1.5-1.784-1.675-2.084-.175-.3-.019-.463.131-.612.135-.135.3-.35.45-.526.15-.175.2-.3.3-.5.1-.2.05-.375-.025-.525-.075-.15-.676-1.63-.926-2.232-.244-.587-.492-.507-.676-.516l-.576-.01c-.2 0-.525.075-.8.375s-1.05 1.026-1.05 2.502 1.076 2.903 1.226 3.103c.15.2 2.117 3.232 5.13 4.533.717.31 1.277.495 1.713.633.72.229 1.375.197 1.894.119.579-.087 1.776-.726 2.026-1.427.25-.701.25-1.302.175-1.427-.075-.125-.275-.2-.575-.35z"/></svg>
               </a>
             </div>

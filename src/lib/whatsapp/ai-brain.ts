@@ -147,7 +147,7 @@ NO PENDAFTARAN: ${companySettings.registration_number || '202301048821'}
 ALAMAT KILANG: ${companySettings.address || 'No. 12, Jalan Industri 3/1, Kawasan Perindustrian Rawang Perdana, 48000 Rawang, Selangor'}
 WAKTU OPERASI: ${companySettings.working_hours || 'Isnin - Jumaat: 8:30 AM - 6:00 PM | Sabtu: 8:30 AM - 1:00 PM'}
 LAMAN WEB RASMI: ${companySettings.website_url || 'https://sfvapparel.vercel.app'}
-WHATSAPP KILANG: +${companySettings.whatsapp_number || '6281260066616'}
+WHATSAPP KILANG: ${companySettings.whatsapp_number ? `+${companySettings.whatsapp_number}` : 'Rujuk laman web rasmi'}
 `.trim();
 
   const servicesInfo = services.filter(s => s.is_active).map(s => 

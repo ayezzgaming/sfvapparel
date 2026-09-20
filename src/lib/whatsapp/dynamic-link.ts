@@ -16,10 +16,32 @@ export interface WhatsAppInquiryParams {
   customNote?: string;
 }
 
+/**
+ * Clean any raw phone string into pure international digits (e.g. '014-859 9138' -> '60148599138')
+ */
+export function cleanWhatsAppPhone(phone?: string): string {
+  if (!phone) return '';
+  let cleaned = phone.replace(/[^0-9]/g, '');
+  if (cleaned.startsWith('0')) {
+    cleaned = '60' + cleaned.slice(1);
+  }
+  return cleaned;
+}
+
+/**
+ * Build dynamic WhatsApp click-to-chat URL
+ */
+export function formatWhatsAppLink(phone?: string, text?: string): string {
+  const clean = cleanWhatsAppPhone(phone);
+  if (!clean) return '#';
+  if (!text) return `https://wa.me/${clean}`;
+  return `https://wa.me/${clean}?text=${encodeURIComponent(text)}`;
+}
+
 export function buildWhatsAppInquiryUrl(params: WhatsAppInquiryParams): string {
-  let cleanPhone = (params.phone || '6281260066616').replace(/[\s\-\+\(\)]/g, '');
-  if (cleanPhone.startsWith('0')) {
-    cleanPhone = '60' + cleanPhone.slice(1);
+  const cleanPhone = cleanWhatsAppPhone(params.phone);
+  if (!cleanPhone) {
+    return '#';
   }
 
   let text = '';
@@ -67,3 +89,4 @@ Mohon maklumkan servis dan sebut harga terkini yang disediakan. Terima kasih.`;
 
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
 }
+

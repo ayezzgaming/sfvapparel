@@ -29,6 +29,7 @@ import {
   Phone
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
+import { useAppStore } from '@/lib/store/app-store';
 import { WahaChatSummary, WahaChatMessage } from '@/lib/whatsapp/waha-client';
 import { SupportTicket } from '@/app/api/whatsapp/tickets/route';
 
@@ -73,6 +74,8 @@ function parseVCard(body: string): { name: string; phone: string } | null {
 }
 
 export default function WhatsAppHubPage() {
+  const { companySettings } = useAppStore();
+
   // Navigation & Panel states
   const [activeTab, setActiveTab] = useState<HubSectionKey>('inbox');
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
@@ -123,7 +126,7 @@ export default function WhatsAppHubPage() {
   const [loadingTickets, setLoadingTickets] = useState(false);
 
   // Test Message State
-  const [testPhone, setTestPhone] = useState('60148599138');
+  const [testPhone, setTestPhone] = useState('');
   const [testMessage, setTestMessage] = useState('Hai! Ini adalah ujian integrasi automasi WhatsApp SFV Apparel.');
   const [sendResult, setSendResult] = useState<{ success: boolean; message: string } | null>(null);
   const [sending, setSending] = useState(false);
@@ -1121,7 +1124,7 @@ export default function WhatsAppHubPage() {
                             {statusData.me?.pushName || 'SFV Apparel Official'}
                           </h3>
                           <p className="text-xs text-slate-600 font-mono mt-0.5">
-                            +{statusData.me?.id?.split('@')[0] || '6281260066616'}
+                            +{statusData.me?.id?.split('@')[0] || companySettings?.whatsapp_number || ''}
                           </p>
                           <p className="text-[11px] text-emerald-700 mt-1 flex items-center gap-1">
                             <CheckCircle2 className="w-3.5 h-3.5" />
