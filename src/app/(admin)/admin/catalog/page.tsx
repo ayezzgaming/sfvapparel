@@ -15,7 +15,6 @@ import {
   X,
   RefreshCw,
   ImageIcon,
-  Sparkles,
   CheckCircle2,
   AlertCircle,
   ChevronLeft,
@@ -23,7 +22,6 @@ import {
   LayoutGrid,
   List,
   Layers,
-  Hash
 } from 'lucide-react';
 
 const CATEGORIES = ['Jersey', 'T-Shirt', 'Hoodie', 'Polo', 'Windbreaker', 'Singlet', 'Merchandise'];
@@ -59,6 +57,7 @@ export default function AdminCatalogPage() {
   const [printType, setPrintType] = useState<PrintType>('sublimation');
   const [imageUrl, setImageUrl] = useState('');
   const [isFeatured, setIsFeatured] = useState(false);
+  const [tagsInput, setTagsInput] = useState('');
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState<CompressionInfo | null>(null);
@@ -107,6 +106,7 @@ export default function AdminCatalogPage() {
     setTitle('');
     setCategory('Jersey');
     setPrintType('sublimation');
+    setTagsInput('');
     setImageUrl('');
     setIsFeatured(false);
     setCompressionInfo(null);
@@ -123,6 +123,7 @@ export default function AdminCatalogPage() {
     setTitle(cleanTitle);
     setCategory(design.category);
     setPrintType(design.print_type);
+    setTagsInput(design.tags && Array.isArray(design.tags) ? design.tags.join(', ') : '');
     setImageUrl(design.thumbnail_url || design.mockup_front_url || '');
     setIsFeatured(!!design.is_featured);
     setCompressionInfo(null);
@@ -209,7 +210,14 @@ export default function AdminCatalogPage() {
     if (!title.trim() || !imageUrl) return;
     setIsSaving(true);
     setModalErrorMessage(null);
-    const tags = [category.toLowerCase(), printType === 'sublimation' ? 'sublimasi' : 'dtf', 'kustom'];
+    
+    // Parse manual tags from user input
+    const parsedTags = tagsInput
+      ? tagsInput
+          .split(',')
+          .map((t) => t.trim().replace(/^#/, ''))
+          .filter((t) => t.length > 0)
+      : [];
     
     // Auto-formatted full title with sequential code
     const cleanTitleInput = title.trim().toUpperCase();
@@ -227,7 +235,7 @@ export default function AdminCatalogPage() {
           print_type: printType,
           thumbnail_url: imageUrl,
           mockup_front_url: imageUrl,
-          tags: editingDesign.tags?.length ? editingDesign.tags : tags,
+          tags: parsedTags,
           is_featured: isFeatured,
         };
         const result = await saveDesignDb(u);
@@ -246,7 +254,7 @@ export default function AdminCatalogPage() {
           print_type: printType,
           thumbnail_url: imageUrl,
           mockup_front_url: imageUrl,
-          tags,
+          tags: parsedTags,
           is_featured: isFeatured,
           is_active: true,
           created_at: new Date().toISOString(),
@@ -869,7 +877,7 @@ export default function AdminCatalogPage() {
                   </label>
                   {compressionInfo && (
                     <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-mono font-medium border border-emerald-100">
-                      <Sparkles className="w-2.5 h-2.5 text-emerald-500" />
+                      <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" />
                       <span>
                         {compressionInfo.compressedKb} KB (-{compressionInfo.percentSaved}%)
                       </span>
@@ -960,43 +968,33 @@ export default function AdminCatalogPage() {
               </div>
 
               {/* Sequential Code + Title */}
-              <div className="space-y-2">
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-                  <div className="sm:col-span-4">
-                    <label className="text-xs font-semibold text-slate-800 block mb-1">
-                      Kod Rekaan <span className="text-blue-600 text-[10px] font-normal">(Auto)</span>
-                    </label>
-                    <div className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 select-none">
-                      <Hash className="w-3.5 h-3.5 text-blue-600" />
-                      <span className="font-mono font-bold text-xs text-blue-600 dark:text-blue-400 tracking-wider">
-                        {designCode}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="sm:col-span-8">
-                    <label className="text-xs font-semibold text-slate-800 block mb-1">
-                      Tajuk Rekaan <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Contoh: HARI SUKAN MALAYSIA"
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 uppercase placeholder:normal-case font-medium"
-                    />
-                  </div>
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                <div className="sm:col-span-4">
+                  <label className="text-xs font-semibold text-slate-800 block mb-1">
+                    Kod Rekaan <span className="text-slate-400 text-[10px] font-normal">(Auto)</span>
+                  </label>
+                  <input
+                    type="text"
+                    disabled
+                    readOnly
+                    value={designCode}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-700 dark:text-zinc-300 font-mono font-bold cursor-not-allowed select-none"
+                  />
                 </div>
 
-                {title.trim() && (
-                  <div className="px-3 py-2 rounded-xl bg-blue-50/90 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/60 text-[11px] text-blue-900 dark:text-blue-300 flex items-center space-x-2 animate-in fade-in">
-                    <Sparkles className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                    <span>
-                      Nama Lengkap: <strong className="font-mono font-bold tracking-wide">{designCode} - {title.trim().toUpperCase()}</strong>
-                    </span>
-                  </div>
-                )}
+                <div className="sm:col-span-8">
+                  <label className="text-xs font-semibold text-slate-800 block mb-1">
+                    Tajuk Rekaan <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Contoh: HARI SUKAN MALAYSIA"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 uppercase placeholder:normal-case font-medium"
+                  />
+                </div>
               </div>
 
               {/* Category + Print Type */}
@@ -1026,6 +1024,20 @@ export default function AdminCatalogPage() {
                     <option value="dtf">DTF Direct Transfer</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Tags / Hashtags */}
+              <div>
+                <label className="text-xs font-semibold text-slate-800 block mb-1">
+                  Tag / Hashtag <span className="text-slate-400 text-[10px] font-normal">(Pilihan, dipisahkan dengan koma)</span>
+                </label>
+                <input
+                  type="text"
+                  value={tagsInput}
+                  onChange={(e) => setTagsInput(e.target.value)}
+                  placeholder="Contoh: sukan, jersi, futsal, hari sukan"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 placeholder:normal-case font-medium"
+                />
               </div>
 
               {/* Featured Toggle */}
