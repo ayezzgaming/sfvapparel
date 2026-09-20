@@ -609,43 +609,13 @@ async function callGroqApi(
     activeAdsList?: any[];
   }
 ): Promise<{ success: boolean; variations?: AiVariation[]; adSettings?: DynamicAdSettings; error?: string }> {
-  // Stable Groq models - only include models that reliably support chat completions
-  // Note: response_format json_object is NOT used as it causes empty responses on some models
-  let candidateModels = [
+  // Use a fixed curated list of known-stable Groq models ONLY.
+  // Dynamic discovery was pulling decommissioned models (e.g. 'llx/b-1z/b1') causing failures.
+  const candidateModels = [
     'llama-3.3-70b-versatile',
-    'llama3-70b-8192',
     'llama-3.1-8b-instant',
     'gemma2-9b-it',
-    'mixtral-8x7b-32768',
   ];
-
-  try {
-    const modelsRes = await fetch('https://api.groq.com/openai/v1/models', {
-      headers: { Authorization: `Bearer ${apiKey}` },
-      cache: 'no-store',
-    });
-    if (modelsRes.ok) {
-      const modelsData = await modelsRes.json();
-      if (Array.isArray(modelsData?.data) && modelsData.data.length > 0) {
-        const liveIds: string[] = modelsData.data.map((m: any) => m.id);
-        // Preferred models that are stable and support text output
-        const preferred = [
-          'llama-3.3-70b-versatile',
-          'llama3-70b-8192',
-          'llama-3.1-70b-versatile',
-          'llama-3.1-8b-instant',
-          'gemma2-9b-it',
-          'mixtral-8x7b-32768',
-        ];
-        const matched = preferred.filter((p) => liveIds.includes(p));
-        if (matched.length > 0) {
-          candidateModels = matched;
-        }
-      }
-    }
-  } catch {
-    // Use fallback list
-  }
 
   const { systemPrompt, userContent } = buildAiPromptInstructions(params);
   let lastError = '';
