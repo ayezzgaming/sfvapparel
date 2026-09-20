@@ -385,45 +385,47 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* 1.5 VALUE PROPOSITION / TRUST PILLARS (Ad Relevance & High Quality Score) */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-          <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#0052FF] flex items-center justify-center shrink-0 border border-blue-100">
-              <Building2 className="w-4 h-4" />
+        {/* 1.5 VALUE PROPOSITION / JAMINAN KILANG (Clean, Minimalist & Unified) */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div className="grid grid-cols-2 divide-x divide-y divide-slate-100">
+            <div className="p-3 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+                <Building2 className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11.5px] font-bold text-slate-900 block leading-tight truncate">Harga Direct Kilang</span>
+                <span className="text-[9.5px] text-slate-500 block mt-0.5 truncate">Tanpa orang tengah</span>
+              </div>
             </div>
-            <div>
-              <span className="text-[11px] font-bold text-slate-900 block leading-tight">Harga Direct Kilang</span>
-              <span className="text-[9.5px] text-slate-500 block mt-0.5">Jimat Tanpa Orang Tengah</span>
-            </div>
-          </div>
 
-          <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
-              <PackageCheck className="w-4 h-4" />
+            <div className="p-3 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+                <PackageCheck className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11.5px] font-bold text-slate-900 block leading-tight truncate">Tiada Minimum Order</span>
+                <span className="text-[9.5px] text-slate-500 block mt-0.5 truncate">Kustom & DTF</span>
+              </div>
             </div>
-            <div>
-              <span className="text-[11px] font-bold text-slate-900 block leading-tight">Tiada Minimum Order</span>
-              <span className="text-[9.5px] text-slate-500 block mt-0.5">Untuk Cetakan DTF & Kustom</span>
-            </div>
-          </div>
 
-          <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-              <Zap className="w-4 h-4" />
+            <div className="p-3 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+                <Clock className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11.5px] font-bold text-slate-900 block leading-tight truncate">Siap 5-7 Hari</span>
+                <span className="text-[9.5px] text-slate-500 block mt-0.5 truncate">Produksi pantas</span>
+              </div>
             </div>
-            <div>
-              <span className="text-[11px] font-bold text-slate-900 block leading-tight">Siap Pantas 5-7 Hari</span>
-              <span className="text-[9.5px] text-slate-500 block mt-0.5">Produksi Teknologi Jepun</span>
-            </div>
-          </div>
 
-          <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-[11px] font-bold text-slate-900 block leading-tight">Jaminan 1-to-1 QC</span>
-              <span className="text-[9.5px] text-slate-500 block mt-0.5">Pemeriksaan Kualiti Rapi</span>
+            <div className="p-3 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11.5px] font-bold text-slate-900 block leading-tight truncate">Jaminan 1-to-1 QC</span>
+                <span className="text-[9.5px] text-slate-500 block mt-0.5 truncate">Pemeriksaan kualiti</span>
+              </div>
             </div>
           </div>
         </div>
@@ -670,7 +672,7 @@ export default function HomePage() {
                     </h3>
                     <p className="text-white/80 text-[11px] font-medium mt-1 flex items-center gap-1 group-hover:text-white transition-colors">
                       <span>Tonton rakaman</span>
-                      <span className="text-[12px] group-hover:translate-x-0.5 transition-transform">→</span>
+                      <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                     </p>
                   </div>
                 </div>

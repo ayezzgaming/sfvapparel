@@ -868,7 +868,7 @@ export const THEME_PRESETS = {
   },
 };
 
-export const INITIAL_CMS_THEME_SETTINGS = THEME_PRESETS.hybrid;
+export const INITIAL_CMS_THEME_SETTINGS = THEME_PRESETS.clean_white;
 
 
 

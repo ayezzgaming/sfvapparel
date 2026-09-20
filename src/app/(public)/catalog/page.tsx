@@ -6,7 +6,8 @@ import {
   Search, 
   X, 
   Heart, 
-  Layers
+  Layers,
+  ChevronRight
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
@@ -201,9 +202,10 @@ function CatalogContent() {
                 href={`https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ingin%20membuat%20tempahan%20untuk%20templat%20*${encodeURIComponent(selectedDesign.title)}*%20(Kategori:%20${encodeURIComponent(selectedDesign.category)})`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 h-12 bg-[#0052FF] hover:bg-blue-700 text-white font-semibold rounded-xl text-center active:bg-blue-800 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-blue-500/25 text-xs"
+                className="flex-1 h-12 bg-[#0052FF] hover:bg-blue-700 text-white font-semibold rounded-xl text-center active:bg-blue-800 transition-colors flex items-center justify-center space-x-1.5 shadow-md shadow-blue-500/25 text-xs"
               >
-                <span>Tempah Rekaan Ini →</span>
+                <span>Tempah Rekaan Ini</span>
+                <ChevronRight className="w-4 h-4" />
               </a>
             </div>
           ) : undefined

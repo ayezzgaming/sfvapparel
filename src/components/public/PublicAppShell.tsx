@@ -43,10 +43,10 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
   const shouldHideBottomNav = isBottomSheetOpen;
 
   // Theme computations
-  const headerBg = themeSettings?.header_bg || '#0052FF';
-  const isHeaderSolidBlue = themeSettings?.header_style === 'solid_blue' || headerBg === '#0052FF';
+  const headerBg = themeSettings?.header_bg || '#FFFFFF';
+  const isHeaderSolidBlue = themeSettings?.header_style === 'solid_blue';
   const logoMode = themeSettings?.header_logo_mode || (isHeaderSolidBlue ? 'inverted_white' : 'original_blue');
-  const isHeaderWhite = themeSettings?.header_style === 'frosted_white' || headerBg === '#FFFFFF';
+  const isHeaderWhite = themeSettings?.header_style === 'frosted_white' || headerBg === '#FFFFFF' || !isHeaderSolidBlue;
   
   const bottomNavBg = themeSettings?.bottom_nav_bg || 'rgba(255, 255, 255, 0.95)';
   const isBottomNavDark = themeSettings?.bottom_nav_style === 'solid_blue' || bottomNavBg === '#0052FF';
