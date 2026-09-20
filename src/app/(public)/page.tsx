@@ -645,10 +645,10 @@ export default function HomePage() {
 
                 <div className={`flex-1 ml-3 py-3.5 pr-3.5 ${!isLast ? 'border-b border-gray-100' : ''} flex items-center justify-between min-w-0`}>
                   <div className="min-w-0 pr-2">
-                    <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug truncate transition-colors duration-200">
+                    <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors duration-200">
                       {item.title}
                     </h3>
-                    <p className="text-[11.5px] text-slate-500 mt-0.5 line-clamp-1 leading-normal">
+                    <p className="text-[11.5px] text-slate-500 mt-0.5 line-clamp-2 leading-relaxed">
                       {item.desc}
                     </p>
                   </div>
@@ -659,44 +659,49 @@ export default function HomePage() {
           })}
         </div>
 
-        <div className="bg-white rounded-2xl py-2.5 px-2.5 grid grid-cols-3 gap-1.5 items-center shadow-sm shadow-blue-900/5 border border-blue-100/70">
-          <div className="flex items-center justify-center gap-1.5 text-[#00BDFF] font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-blue-50/70 group cursor-default min-w-0">
+        <div className="bg-white rounded-2xl py-2 px-2.5 grid grid-cols-3 gap-2 items-center shadow-xs border border-slate-200/80">
+          <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-50/90 border border-slate-100/90 min-w-0">
             <Clock className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
             <span className="truncate">5 - 9 Hari</span>
           </div>
-          <div className="flex items-center justify-center gap-1.5 text-emerald-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-emerald-50/70 group cursor-default min-w-0">
+          <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-50/90 border border-slate-100/90 min-w-0">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
             <span className="truncate">Jaminan Kilang</span>
           </div>
-          <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-100/80 group cursor-default min-w-0">
-            <Truck className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+          <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-50/90 border border-slate-100/90 min-w-0">
+            <Truck className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
             <span className="truncate">Pos Seluruh MY</span>
           </div>
         </div>
       </div>
 
       {/* =========================================================================
-          DYNAMIC SLOGAN / QUOTE CARD: ANDA BAYANGKAN, KAMI JADIKAN REALITI
+          DYNAMIC SLOGAN / QUOTE CARD (Apple-Grade Clean Frosted Glass Hero)
          ========================================================================= */}
       <div className="w-full bg-white pt-6 pb-2 px-4">
-        <div className="relative overflow-hidden rounded-[26px] bg-gradient-to-br from-[#00BDFF] via-[#0044D6] to-[#0A1847] p-5 sm:p-6 text-white shadow-lg shadow-blue-600/20 border border-blue-400/25">
-          <div className="absolute -top-12 -right-12 w-40 h-40 bg-blue-400/20 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-indigo-400/20 rounded-full blur-2xl pointer-events-none" />
-          <Quote className="absolute top-4 right-4 w-12 h-12 text-white/10 rotate-180 pointer-events-none" />
+        <div className="relative overflow-hidden rounded-[26px] bg-gradient-to-br from-white via-sky-50/40 to-blue-50/60 p-5 sm:p-6 text-slate-900 shadow-[0_4px_24px_rgba(0,189,255,0.06)] border border-blue-100/90">
+          <div className="absolute -top-12 -right-12 w-36 h-36 bg-[#00BDFF]/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-indigo-400/10 rounded-full blur-2xl pointer-events-none" />
+          <Quote className="absolute top-4 right-4 w-12 h-12 text-[#00BDFF]/10 rotate-180 pointer-events-none" />
 
           <div className="relative z-10 space-y-3">
-            <h3 className="text-[19px] sm:text-[21px] font-extrabold text-white tracking-tight leading-snug">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00BDFF]/10 text-[#00BDFF] text-[10.5px] font-bold tracking-wide">
+              <span>★</span>
+              <span>Kualiti & Servis Kilang</span>
+            </div>
+
+            <h3 className="text-[19px] sm:text-[21px] font-extrabold text-slate-900 tracking-tight leading-snug">
               {sloganQuote.headline} <br />
-              <span className="text-blue-200 underline decoration-blue-300/40 underline-offset-4">
+              <span className="text-[#00BDFF]">
                 {sloganQuote.highlight_text}
               </span>
             </h3>
 
-            <div className="space-y-1.5 pt-1.5 border-t border-white/15">
-              <p className="text-xs sm:text-[13px] font-bold text-white/95 tracking-tight">
+            <div className="space-y-1.5 pt-1.5 border-t border-slate-200/60">
+              <p className="text-xs sm:text-[13px] font-bold text-slate-800 tracking-tight">
                 {sloganQuote.question_text}
               </p>
-              <p className="text-[11.5px] sm:text-xs text-blue-100/90 leading-relaxed font-normal">
+              <p className="text-[11.5px] sm:text-xs text-slate-500 leading-relaxed font-normal">
                 {sloganQuote.description_text}
               </p>
             </div>
@@ -706,9 +711,9 @@ export default function HomePage() {
                 href={`https://wa.me/${companySettings.whatsapp_number}?text=${encodeURIComponent(sloganQuote.whatsapp_message)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#00BDFF] hover:bg-blue-50 font-bold text-xs shadow-md shadow-black/10 active:scale-95 transition-all"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold text-xs shadow-md shadow-sky-400/20 active:scale-95 transition-all"
               >
-                <FaWhatsapp className="w-4 h-4 text-[#25D366]" />
+                <FaWhatsapp className="w-4 h-4 text-white" />
                 <span>{sloganQuote.button_text}</span>
               </a>
             </div>
@@ -788,15 +793,9 @@ export default function HomePage() {
           SECTION 3.5: HASIL PRODUKSI KILANG (DYNAMIC SHOWCASE CAROUSEL)
          ========================================================================= */}
       <div className="w-full bg-[#F8FAFC] pt-10 pb-12 px-4 border-t border-slate-200/70">
-        <div className="mb-5 flex justify-between items-end">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Hasil Produksi Kilang</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Koleksi gambar sebenar tempahan jersi & pakaian siap</p>
-          </div>
-
-          <span className="text-[11px] font-bold text-[#00BDFF] bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100/80">
-            {activeGalleryIndex + 1} / {activeGallery.length}
-          </span>
+        <div className="mb-5">
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Hasil Produksi Kilang</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Koleksi gambar sebenar tempahan jersi & pakaian siap</p>
         </div>
 
         <div 
@@ -890,15 +889,9 @@ export default function HomePage() {
           SECTION 4: TESTIMONI / REVIEWS (DYNAMIC FROM CMS STORE)
          ========================================================================= */}
       <div className="w-full bg-[#F2F2F7] pt-10 pb-14 px-4 border-t border-gray-200/60">
-        <div className="mb-5 flex justify-between items-end">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Apa Kata Mereka</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Ribuan pelanggan telah mempercayai kualiti jersi kami</p>
-          </div>
-
-          <span className="text-[11px] font-bold text-slate-400 bg-white px-2.5 py-1 rounded-full shadow-xs border border-black/[0.04]">
-            {activeTestiIndex + 1} / {activeTestimonials.length}
-          </span>
+        <div className="mb-5">
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Apa Kata Mereka</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Ribuan pelanggan telah mempercayai kualiti jersi kami</p>
         </div>
 
         <div 
@@ -978,7 +971,7 @@ export default function HomePage() {
       {/* =========================================================================
           SECTION 5: FOOTER (DYNAMIC COMPANY SETTINGS FROM CMS STORE)
          ========================================================================= */}
-      <footer className="w-full bg-[#F4F4F7] pt-10 pb-12 px-5 border-t border-gray-200/80 select-none space-y-7">
+      <footer className="w-full bg-[#F4F4F7] pt-10 pb-36 px-5 border-t border-gray-200/80 select-none space-y-7">
         <div className="flex flex-col space-y-3.5">
           <div className="flex justify-between items-start">
             <div className="space-y-1.5 max-w-[240px]">

@@ -599,7 +599,7 @@ export const INITIAL_CMS_PRODUCTION_GALLERY = [
     title: 'Jersi Bola Sepak Harimau FC',
     category: 'Sublimasi Penuh',
     fabric: 'Drifit Milano 165 GSM • Kolar V-Pro',
-    image_url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1000&auto=format&fit=crop&q=80',
+    image_url: '/images/prod_sportswear.jpg',
     client: '50 helai • FC Harimau Selangor',
     tag: 'Full Sublimation',
     sort_order: 1,
