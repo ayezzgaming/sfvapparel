@@ -64,41 +64,30 @@ import {
   THEME_PRESETS,
 } from './seed-data';
 
-const STORAGE_KEYS = {
-  FABRICS: 'svf_fabrics_v3',
-  CUTS: 'svf_cuts_v3',
-  DTF_DIMS: 'svf_dtf_dims_v3',
-  TIERS: 'svf_tiers_v3',
-  CUSTOMERS: 'svf_customers_v3',
-  ORDERS: 'svf_orders_v3',
-  FAVORITES: 'svf_favorites_v3',
-  HERO_BANNERS: 'svf_cms_hero_v3',
-  SERVICES: 'svf_cms_services_v3',
-  VIDEOS: 'svf_cms_videos_v3',
-  GALLERY: 'svf_cms_gallery_v3',
-  TESTIMONIALS: 'svf_cms_testi_v3',
-  SLOGAN: 'svf_cms_slogan_v3',
-  COMPANY: 'svf_cms_company_v3',
-  POLICIES: 'svf_cms_policies_v3',
-  THEME: 'svf_cms_theme_v3',
-};
-
-function getLocalData<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback;
-  try {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function setLocalData<T>(key: string, value: T): void {
+// Purge legacy CMS localStorage keys once so old client caches are erased
+function purgeLegacyLocalCmsKeys(): void {
   if (typeof window === 'undefined') return;
+  const legacyKeys = [
+    'svf_cms_hero_v3',
+    'svf_cms_services_v3',
+    'svf_cms_videos_v3',
+    'svf_cms_gallery_v3',
+    'svf_cms_testi_v3',
+    'svf_cms_slogan_v3',
+    'svf_cms_company_v3',
+    'svf_cms_policies_v3',
+    'svf_cms_theme_v3',
+    'svf_fabrics_v3',
+    'svf_cuts_v3',
+    'svf_dtf_dims_v3',
+    'svf_tiers_v3',
+  ];
   try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch (err) {
-    console.error('Failed to save to localStorage:', err);
+    for (const key of legacyKeys) {
+      localStorage.removeItem(key);
+    }
+  } catch {
+    // Ignore error
   }
 }
 
@@ -155,62 +144,66 @@ function notify() {
 }
 
 /**
- * Fetch and sync all Cloud DB items (Designs, CMS, Pricing)
+ * Fetch and sync all Cloud DB items directly from Supabase (Pure Database)
  */
 async function fetchAndSyncAllDb() {
   storeState = { ...storeState, isLoadingDesigns: true, isLoadingCms: true };
   notify();
 
   try {
-    // 1. Fetch Designs
-    const designsPromise = getDesignsDb().then((res) => {
-      if (res.success && Array.isArray(res.designs)) {
-        storeState = { ...storeState, designs: res.designs };
-      }
-    }).catch((e) => console.error('Error fetching designs:', e));
+    // 1. Fetch Designs directly from Database
+    const designsPromise = getDesignsDb()
+      .then((res) => {
+        if (res.success && Array.isArray(res.designs)) {
+          storeState = { ...storeState, designs: res.designs };
+        }
+      })
+      .catch((e) => console.error('Error fetching designs from DB:', e));
 
-    // 2. Fetch CMS Data
-    const cmsPromise = getCmsDataDb().then((res) => {
-      if (res.success && res.data) {
-        const { heroBanners, services, productionVideos, productionGallery, testimonials, sloganQuote, companySettings, policies } = res.data;
-        storeState = {
-          ...storeState,
-          heroBanners: heroBanners.length > 0 ? heroBanners : storeState.heroBanners,
-          services: services.length > 0 ? services : storeState.services,
-          productionVideos: productionVideos.length > 0 ? productionVideos : storeState.productionVideos,
-          productionGallery: productionGallery.length > 0 ? productionGallery : storeState.productionGallery,
-          testimonials: testimonials.length > 0 ? testimonials : storeState.testimonials,
-          sloganQuote: sloganQuote || storeState.sloganQuote,
-          companySettings: companySettings || storeState.companySettings,
-          policies: policies || storeState.policies,
-        };
-        // Update local cache
-        setLocalData(STORAGE_KEYS.HERO_BANNERS, storeState.heroBanners);
-        setLocalData(STORAGE_KEYS.SERVICES, storeState.services);
-        setLocalData(STORAGE_KEYS.VIDEOS, storeState.productionVideos);
-        setLocalData(STORAGE_KEYS.GALLERY, storeState.productionGallery);
-        setLocalData(STORAGE_KEYS.TESTIMONIALS, storeState.testimonials);
-        setLocalData(STORAGE_KEYS.SLOGAN, storeState.sloganQuote);
-        setLocalData(STORAGE_KEYS.COMPANY, storeState.companySettings);
-        setLocalData(STORAGE_KEYS.POLICIES, storeState.policies);
-      }
-    }).catch((e) => console.error('Error fetching CMS data:', e));
+    // 2. Fetch CMS Data directly from Database
+    const cmsPromise = getCmsDataDb()
+      .then((res) => {
+        if (res.success && res.data) {
+          const {
+            heroBanners,
+            services,
+            productionVideos,
+            productionGallery,
+            testimonials,
+            sloganQuote,
+            companySettings,
+            policies,
+          } = res.data;
 
-    // 3. Fetch Master Pricing
-    const pricingPromise = getMasterPricingDb().then((res) => {
-      if (res.success && res.data) {
-        const { fabrics, cuts, dtfDimensions } = res.data;
-        storeState = {
-          ...storeState,
-          fabrics: fabrics.length > 0 ? fabrics : storeState.fabrics,
-          cuts: cuts.length > 0 ? cuts : storeState.cuts,
-          dtfDimensions: dtfDimensions.length > 0 ? dtfDimensions : storeState.dtfDimensions,
-        };
-        setLocalData(STORAGE_KEYS.FABRICS, storeState.fabrics);
-        setLocalData(STORAGE_KEYS.CUTS, storeState.cuts);
-        setLocalData(STORAGE_KEYS.DTF_DIMS, storeState.dtfDimensions);
-      }
-    }).catch((e) => console.error('Error fetching pricing data:', e));
+          storeState = {
+            ...storeState,
+            heroBanners: heroBanners.length > 0 ? heroBanners : storeState.heroBanners,
+            services: services.length > 0 ? services : storeState.services,
+            productionVideos: productionVideos.length > 0 ? productionVideos : storeState.productionVideos,
+            productionGallery: productionGallery.length > 0 ? productionGallery : storeState.productionGallery,
+            testimonials: testimonials.length > 0 ? testimonials : storeState.testimonials,
+            sloganQuote: sloganQuote || storeState.sloganQuote,
+            companySettings: companySettings || storeState.companySettings,
+            policies: policies || storeState.policies,
+          };
+        }
+      })
+      .catch((e) => console.error('Error fetching CMS data from DB:', e));
+
+    // 3. Fetch Master Pricing directly from Database
+    const pricingPromise = getMasterPricingDb()
+      .then((res) => {
+        if (res.success && res.data) {
+          const { fabrics, cuts, dtfDimensions } = res.data;
+          storeState = {
+            ...storeState,
+            fabrics: fabrics.length > 0 ? fabrics : storeState.fabrics,
+            cuts: cuts.length > 0 ? cuts : storeState.cuts,
+            dtfDimensions: dtfDimensions.length > 0 ? dtfDimensions : storeState.dtfDimensions,
+          };
+        }
+      })
+      .catch((e) => console.error('Error fetching pricing data from DB:', e));
 
     await Promise.all([designsPromise, cmsPromise, pricingPromise]);
   } finally {
@@ -221,74 +214,18 @@ async function fetchAndSyncAllDb() {
 
 function initStoreIfNeeded() {
   if (typeof window === 'undefined' || storeState.isInitialized) return;
+  purgeLegacyLocalCmsKeys();
+
   storeState = {
-    designs: [],
-    fabrics: getLocalData(STORAGE_KEYS.FABRICS, INITIAL_FABRIC_MATERIALS),
-    cuts: getLocalData(STORAGE_KEYS.CUTS, INITIAL_APPAREL_CUTS),
-    dtfDimensions: getLocalData(STORAGE_KEYS.DTF_DIMS, INITIAL_DTF_DIMENSIONS),
-    tiers: getLocalData(STORAGE_KEYS.TIERS, INITIAL_QUANTITY_TIERS),
-    customers: getLocalData(STORAGE_KEYS.CUSTOMERS, INITIAL_CUSTOMERS),
-    orders: getLocalData(STORAGE_KEYS.ORDERS, INITIAL_ORDERS),
-    favorites: getLocalData(STORAGE_KEYS.FAVORITES, []),
-    heroBanners: getLocalData(STORAGE_KEYS.HERO_BANNERS, INITIAL_CMS_HERO_BANNERS),
-    services: getLocalData(STORAGE_KEYS.SERVICES, INITIAL_CMS_SERVICES),
-    productionVideos: getLocalData(STORAGE_KEYS.VIDEOS, INITIAL_CMS_PRODUCTION_VIDEOS),
-    productionGallery: getLocalData(STORAGE_KEYS.GALLERY, INITIAL_CMS_PRODUCTION_GALLERY),
-    testimonials: getLocalData(STORAGE_KEYS.TESTIMONIALS, INITIAL_CMS_TESTIMONIALS),
-    sloganQuote: getLocalData(STORAGE_KEYS.SLOGAN, INITIAL_CMS_SLOGAN_QUOTE),
-    companySettings: getLocalData(STORAGE_KEYS.COMPANY, INITIAL_CMS_COMPANY_SETTINGS),
-    policies: getLocalData(STORAGE_KEYS.POLICIES, INITIAL_CMS_POLICIES),
-    themeSettings: (() => {
-      const saved = getLocalData<CmsThemeSettings>(STORAGE_KEYS.THEME, INITIAL_CMS_THEME_SETTINGS);
-      if (saved && (saved.header_bg === '#0052FF' || saved.header_style === 'solid_blue')) {
-        const reset: CmsThemeSettings = {
-          ...INITIAL_CMS_THEME_SETTINGS,
-          ...saved,
-          preset: 'clean_white',
-          header_bg: '#FFFFFF',
-          header_style: 'frosted_white',
-          header_logo_mode: 'original_blue',
-        };
-        setLocalData(STORAGE_KEYS.THEME, reset);
-        return reset;
-      }
-      return saved || INITIAL_CMS_THEME_SETTINGS;
-    })(),
+    ...storeState,
     isInitialized: true,
     isLoadingDesigns: true,
     isLoadingCms: true,
   };
   notify();
 
-  // Async load fresh shared designs & CMS data from Cloud DB
+  // Load fresh live data directly from Cloud Supabase DB
   fetchAndSyncAllDb();
-}
-
-if (typeof window !== 'undefined') {
-  window.addEventListener('storage', (e: StorageEvent) => {
-    if (!e.newValue) return;
-    try {
-      if (e.key === STORAGE_KEYS.FABRICS) storeState.fabrics = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.CUTS) storeState.cuts = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.DTF_DIMS) storeState.dtfDimensions = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.TIERS) storeState.tiers = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.ORDERS) storeState.orders = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.CUSTOMERS) storeState.customers = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.FAVORITES) storeState.favorites = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.HERO_BANNERS) storeState.heroBanners = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.SERVICES) storeState.services = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.VIDEOS) storeState.productionVideos = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.GALLERY) storeState.productionGallery = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.TESTIMONIALS) storeState.testimonials = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.SLOGAN) storeState.sloganQuote = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.COMPANY) storeState.companySettings = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.POLICIES) storeState.policies = JSON.parse(e.newValue);
-      if (e.key === STORAGE_KEYS.THEME) storeState.themeSettings = JSON.parse(e.newValue);
-      notify();
-    } catch {
-      // Ignore parse error
-    }
-  });
 }
 
 function subscribe(callback: () => void) {
@@ -352,7 +289,6 @@ export function useAppStore() {
     const exists = current.includes(designId);
     const next = exists ? current.filter((id) => id !== designId) : [...current, designId];
     storeState = { ...storeState, favorites: next };
-    setLocalData(STORAGE_KEYS.FAVORITES, next);
     notify();
   }, []);
 
@@ -375,7 +311,6 @@ export function useAppStore() {
 
     const next = [newOrder, ...storeState.orders];
     storeState = { ...storeState, orders: next };
-    setLocalData(STORAGE_KEYS.ORDERS, next);
     notify();
     return newOrder;
   }, []);
@@ -384,7 +319,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = storeState.orders.filter((o) => o.id !== orderId);
     storeState = { ...storeState, orders: next };
-    setLocalData(STORAGE_KEYS.ORDERS, next);
     notify();
   }, []);
 
@@ -403,13 +337,12 @@ export function useAppStore() {
           : o
       );
       storeState = { ...storeState, orders: next };
-      setLocalData(STORAGE_KEYS.ORDERS, next);
       notify();
     },
     []
   );
 
-  // Design CRUD with Cloud DB
+  // Design CRUD with Pure Cloud DB
   const addDesign = useCallback(async (design: Omit<Design, 'id'>) => {
     initStoreIfNeeded();
     const tempId = `temp-${Date.now()}`;
@@ -429,7 +362,7 @@ export function useAppStore() {
       }
       return localNewDesign;
     } catch (err) {
-      console.error('Failed to add design to Supabase:', err);
+      console.error('Failed to add design to DB:', err);
       return localNewDesign;
     }
   }, []);
@@ -448,7 +381,7 @@ export function useAppStore() {
     try {
       await saveDesignDb(merged);
     } catch (err) {
-      console.error('Failed to update design in Supabase:', err);
+      console.error('Failed to update design in DB:', err);
     }
   }, []);
 
@@ -463,16 +396,15 @@ export function useAppStore() {
     try {
       await deleteDesignDb(id);
     } catch (err) {
-      console.error('Failed to delete design from Supabase:', err);
+      console.error('Failed to delete design from DB:', err);
     }
   }, []);
 
-  // Pricing Rules CRUD with Cloud DB
+  // Master Pricing Mutators (Pure Cloud DB)
   const updateFabric = useCallback(async (id: string, updates: Partial<FabricMaterial>) => {
     initStoreIfNeeded();
     const next = storeState.fabrics.map((f) => (f.id === id ? { ...f, ...updates } : f));
     storeState = { ...storeState, fabrics: next };
-    setLocalData(STORAGE_KEYS.FABRICS, next);
     notify();
 
     const target = next.find((f) => f.id === id);
@@ -485,7 +417,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = storeState.cuts.map((c) => (c.id === id ? { ...c, ...updates } : c));
     storeState = { ...storeState, cuts: next };
-    setLocalData(STORAGE_KEYS.CUTS, next);
     notify();
 
     const target = next.find((c) => c.id === id);
@@ -498,7 +429,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = storeState.dtfDimensions.map((d) => (d.id === id ? { ...d, ...updates } : d));
     storeState = { ...storeState, dtfDimensions: next };
-    setLocalData(STORAGE_KEYS.DTF_DIMS, next);
     notify();
 
     const target = next.find((d) => d.id === id);
@@ -511,12 +441,11 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = storeState.tiers.map((t) => (t.id === id ? { ...t, ...updates } : t));
     storeState = { ...storeState, tiers: next };
-    setLocalData(STORAGE_KEYS.TIERS, next);
     notify();
   }, []);
 
   // ==========================================
-  // CMS MUTATORS (HERO, SERVICES, VIDEOS, GALLERY, TESTIMONIALS, SETTINGS, POLICIES)
+  // CMS MUTATORS (Pure Cloud Database - No LocalStorage)
   // ==========================================
 
   // Hero Banners
@@ -526,7 +455,6 @@ export function useAppStore() {
     const newBanner: CmsHeroBanner = { ...banner, id: tempId };
     const next = [...storeState.heroBanners, newBanner];
     storeState = { ...storeState, heroBanners: next };
-    setLocalData(STORAGE_KEYS.HERO_BANNERS, next);
     notify();
 
     try {
@@ -534,7 +462,6 @@ export function useAppStore() {
       if (res.success && res.banner) {
         const updated = storeState.heroBanners.map((b) => (b.id === tempId ? res.banner! : b));
         storeState = { ...storeState, heroBanners: updated };
-        setLocalData(STORAGE_KEYS.HERO_BANNERS, updated);
         notify();
         return res.banner;
       }
@@ -548,7 +475,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = storeState.heroBanners.map((b) => (b.id === id ? { ...b, ...updates } : b));
     storeState = { ...storeState, heroBanners: next };
-    setLocalData(STORAGE_KEYS.HERO_BANNERS, next);
     notify();
 
     try {
@@ -558,7 +484,6 @@ export function useAppStore() {
         if (res.success && res.banner) {
           const synced = storeState.heroBanners.map((b) => (b.id === id ? res.banner! : b));
           storeState = { ...storeState, heroBanners: synced };
-          setLocalData(STORAGE_KEYS.HERO_BANNERS, synced);
           notify();
         }
       }
@@ -571,7 +496,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = storeState.heroBanners.filter((b) => b.id !== id);
     storeState = { ...storeState, heroBanners: next };
-    setLocalData(STORAGE_KEYS.HERO_BANNERS, next);
     notify();
 
     try {
@@ -588,7 +512,6 @@ export function useAppStore() {
     const newService: CmsService = { ...service, id: tempId };
     const next = [...storeState.services, newService];
     storeState = { ...storeState, services: next };
-    setLocalData(STORAGE_KEYS.SERVICES, next);
     notify();
 
     try {
@@ -596,7 +519,6 @@ export function useAppStore() {
       if (res.success && res.service) {
         const updated = storeState.services.map((s) => (s.id === tempId ? res.service! : s));
         storeState = { ...storeState, services: updated };
-        setLocalData(STORAGE_KEYS.SERVICES, updated);
         notify();
         return res.service;
       }
@@ -610,7 +532,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = storeState.services.map((s) => (s.id === id ? { ...s, ...updates } : s));
     storeState = { ...storeState, services: next };
-    setLocalData(STORAGE_KEYS.SERVICES, next);
     notify();
 
     try {
@@ -627,7 +548,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = storeState.services.filter((s) => s.id !== id);
     storeState = { ...storeState, services: next };
-    setLocalData(STORAGE_KEYS.SERVICES, next);
     notify();
 
     try {
@@ -644,7 +564,6 @@ export function useAppStore() {
     const newVid: CmsProductionVideo = { ...video, id: tempId };
     const next = [...storeState.productionVideos, newVid];
     storeState = { ...storeState, productionVideos: next };
-    setLocalData(STORAGE_KEYS.VIDEOS, next);
     notify();
 
     try {
@@ -652,7 +571,6 @@ export function useAppStore() {
       if (res.success && res.video) {
         const updated = storeState.productionVideos.map((v) => (v.id === tempId ? res.video! : v));
         storeState = { ...storeState, productionVideos: updated };
-        setLocalData(STORAGE_KEYS.VIDEOS, updated);
         notify();
         return res.video;
       }
@@ -666,7 +584,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = storeState.productionVideos.map((v) => (v.id === id ? { ...v, ...updates } : v));
     storeState = { ...storeState, productionVideos: next };
-    setLocalData(STORAGE_KEYS.VIDEOS, next);
     notify();
 
     try {
@@ -683,7 +600,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = storeState.productionVideos.filter((v) => v.id !== id);
     storeState = { ...storeState, productionVideos: next };
-    setLocalData(STORAGE_KEYS.VIDEOS, next);
     notify();
 
     try {
@@ -700,7 +616,6 @@ export function useAppStore() {
     const newItem: CmsProductionGalleryItem = { ...item, id: tempId };
     const next = [...storeState.productionGallery, newItem];
     storeState = { ...storeState, productionGallery: next };
-    setLocalData(STORAGE_KEYS.GALLERY, next);
     notify();
 
     try {
@@ -708,7 +623,6 @@ export function useAppStore() {
       if (res.success && res.item) {
         const updated = storeState.productionGallery.map((g) => (g.id === tempId ? res.item! : g));
         storeState = { ...storeState, productionGallery: updated };
-        setLocalData(STORAGE_KEYS.GALLERY, updated);
         notify();
         return res.item;
       }
@@ -722,7 +636,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = storeState.productionGallery.map((g) => (g.id === id ? { ...g, ...updates } : g));
     storeState = { ...storeState, productionGallery: next };
-    setLocalData(STORAGE_KEYS.GALLERY, next);
     notify();
 
     try {
@@ -739,7 +652,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = storeState.productionGallery.filter((g) => g.id !== id);
     storeState = { ...storeState, productionGallery: next };
-    setLocalData(STORAGE_KEYS.GALLERY, next);
     notify();
 
     try {
@@ -756,7 +668,6 @@ export function useAppStore() {
     const newTesti: CmsTestimonial = { ...testi, id: tempId };
     const next = [...storeState.testimonials, newTesti];
     storeState = { ...storeState, testimonials: next };
-    setLocalData(STORAGE_KEYS.TESTIMONIALS, next);
     notify();
 
     try {
@@ -764,7 +675,6 @@ export function useAppStore() {
       if (res.success && res.testimonial) {
         const updated = storeState.testimonials.map((t) => (t.id === tempId ? res.testimonial! : t));
         storeState = { ...storeState, testimonials: updated };
-        setLocalData(STORAGE_KEYS.TESTIMONIALS, updated);
         notify();
         return res.testimonial;
       }
@@ -778,7 +688,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = storeState.testimonials.map((t) => (t.id === id ? { ...t, ...updates } : t));
     storeState = { ...storeState, testimonials: next };
-    setLocalData(STORAGE_KEYS.TESTIMONIALS, next);
     notify();
 
     try {
@@ -795,7 +704,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = storeState.testimonials.filter((t) => t.id !== id);
     storeState = { ...storeState, testimonials: next };
-    setLocalData(STORAGE_KEYS.TESTIMONIALS, next);
     notify();
 
     try {
@@ -810,7 +718,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = { ...storeState.sloganQuote, ...updates };
     storeState = { ...storeState, sloganQuote: next };
-    setLocalData(STORAGE_KEYS.SLOGAN, next);
     notify();
 
     try {
@@ -825,7 +732,6 @@ export function useAppStore() {
     initStoreIfNeeded();
     const next = { ...storeState.companySettings, ...updates };
     storeState = { ...storeState, companySettings: next };
-    setLocalData(STORAGE_KEYS.COMPANY, next);
     notify();
 
     try {
@@ -845,7 +751,6 @@ export function useAppStore() {
       [key]: updatedPolicy,
     };
     storeState = { ...storeState, policies: next };
-    setLocalData(STORAGE_KEYS.POLICIES, next);
     notify();
 
     try {
@@ -863,7 +768,6 @@ export function useAppStore() {
       ...updates,
     };
     storeState = { ...storeState, themeSettings: next };
-    setLocalData(STORAGE_KEYS.THEME, next);
     notify();
   }, []);
 
@@ -877,7 +781,6 @@ export function useAppStore() {
       preset: presetKey,
     };
     storeState = { ...storeState, themeSettings: next };
-    setLocalData(STORAGE_KEYS.THEME, next);
     notify();
   }, []);
 
@@ -905,22 +808,6 @@ export function useAppStore() {
       isLoadingDesigns: false,
       isLoadingCms: false,
     };
-    setLocalData(STORAGE_KEYS.FABRICS, INITIAL_FABRIC_MATERIALS);
-    setLocalData(STORAGE_KEYS.CUTS, INITIAL_APPAREL_CUTS);
-    setLocalData(STORAGE_KEYS.DTF_DIMS, INITIAL_DTF_DIMENSIONS);
-    setLocalData(STORAGE_KEYS.TIERS, INITIAL_QUANTITY_TIERS);
-    setLocalData(STORAGE_KEYS.CUSTOMERS, INITIAL_CUSTOMERS);
-    setLocalData(STORAGE_KEYS.ORDERS, INITIAL_ORDERS);
-    setLocalData(STORAGE_KEYS.FAVORITES, []);
-    setLocalData(STORAGE_KEYS.HERO_BANNERS, INITIAL_CMS_HERO_BANNERS);
-    setLocalData(STORAGE_KEYS.SERVICES, INITIAL_CMS_SERVICES);
-    setLocalData(STORAGE_KEYS.VIDEOS, INITIAL_CMS_PRODUCTION_VIDEOS);
-    setLocalData(STORAGE_KEYS.GALLERY, INITIAL_CMS_PRODUCTION_GALLERY);
-    setLocalData(STORAGE_KEYS.TESTIMONIALS, INITIAL_CMS_TESTIMONIALS);
-    setLocalData(STORAGE_KEYS.SLOGAN, INITIAL_CMS_SLOGAN_QUOTE);
-    setLocalData(STORAGE_KEYS.COMPANY, INITIAL_CMS_COMPANY_SETTINGS);
-    setLocalData(STORAGE_KEYS.POLICIES, INITIAL_CMS_POLICIES);
-    setLocalData(STORAGE_KEYS.THEME, INITIAL_CMS_THEME_SETTINGS);
     notify();
 
     try {
