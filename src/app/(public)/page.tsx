@@ -1004,37 +1004,49 @@ export default function HomePage() {
             <span className="text-[10px] text-slate-400">Enkripsi 256-Bit SSL • Transaksi Disahkan</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 pt-0.5">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 pt-1">
             {/* FPX */}
-            <div className="h-7 px-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[10px] font-extrabold text-[#0052FF] tracking-wider">
-              FPX
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/payments/logobaru/FPX Logo Vector.svg"
+              alt="FPX Online Banking"
+              className="h-5 w-auto object-contain shrink-0"
+            />
             {/* DuitNow */}
-            <div className="h-7 px-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[10px] font-extrabold text-pink-600 tracking-wider">
-              DuitNow QR
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/payments/logobaru/duitnow.svg"
+              alt="DuitNow QR"
+              className="h-5 w-auto object-contain shrink-0"
+            />
             {/* Touch 'n Go */}
-            <div className="h-7 px-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[10px] font-extrabold text-blue-600">
-              TNG eWallet
-            </div>
-            {/* Boost */}
-            <div className="h-7 px-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[10px] font-extrabold text-red-600">
-              Boost
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/payments/logobaru/Touch_'n_Go_eWallet_logo.svg"
+              alt="Touch 'n Go eWallet"
+              className="h-5.5 w-auto object-contain shrink-0"
+            />
+            {/* Maybank */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/payments/logobaru/maybank-vector-logo.svg"
+              alt="Maybank"
+              className="h-4.5 w-auto object-contain shrink-0"
+            />
             {/* Visa */}
-            <div className="h-7 px-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[10px] font-extrabold text-blue-800 italic">
-              VISA
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/payments/logobaru/Visa_Inc._logo_(2021–present).svg"
+              alt="Visa"
+              className="h-3.5 w-auto object-contain shrink-0"
+            />
             {/* Mastercard */}
-            <div className="h-7 px-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex items-center justify-center gap-0.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block opacity-90" />
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block -ml-1.5 opacity-90" />
-              <span className="text-[10px] font-bold text-slate-700 ml-1">Mastercard</span>
-            </div>
-            {/* Bank Transfer */}
-            <div className="h-7 px-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex items-center justify-center text-[10px] font-bold text-slate-600">
-              Pindahan Bank / CDM
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/payments/logobaru/Mastercard-logo.svg"
+              alt="Mastercard"
+              className="h-5 w-auto object-contain shrink-0"
+            />
           </div>
         </div>
 
