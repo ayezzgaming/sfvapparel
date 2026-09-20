@@ -427,7 +427,12 @@ export default function AdminCatalogPage() {
 
           {/* Scrollable list */}
           <div className="flex-1 min-h-0 overflow-y-auto pr-1 pb-2">
-            {filteredDesigns.length === 0 ? (
+            {isLoadingDesigns && designs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-48 text-center space-y-3 text-slate-400 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/60 dark:border-zinc-800 p-6 animate-pulse">
+                <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
+                <p className="text-xs font-medium text-slate-600 dark:text-zinc-300">Menyegerak dengan database...</p>
+              </div>
+            ) : filteredDesigns.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 text-center space-y-2 text-slate-400 bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800 p-4">
                 <ImageIcon className="w-7 h-7 text-slate-300" />
                 <p className="text-xs">Tiada rekaan dijumpai</p>
@@ -606,7 +611,17 @@ export default function AdminCatalogPage() {
 
           {/* Stage Area */}
           <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 flex flex-col items-center justify-center relative bg-[#fafbfc] dark:bg-zinc-950/40">
-            {filteredDesigns.length === 0 ? (
+            {isLoadingDesigns && designs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center space-y-3 text-center max-w-sm animate-pulse">
+                <div className="w-16 h-16 rounded-3xl bg-white dark:bg-zinc-900 shadow-md flex items-center justify-center border border-slate-100 dark:border-zinc-800">
+                  <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-700 dark:text-zinc-200">Menyegerak Katalog</h3>
+                  <p className="text-xs text-slate-400 mt-1">Mengambil rekaan terkini dari pangkalan data Supabase...</p>
+                </div>
+              </div>
+            ) : filteredDesigns.length === 0 ? (
               <div className="flex flex-col items-center justify-center space-y-4 text-center max-w-sm">
                 <div className="w-16 h-16 rounded-3xl bg-white dark:bg-zinc-900 shadow-md flex items-center justify-center border border-slate-100 dark:border-zinc-800">
                   <ImageIcon className="w-8 h-8 text-slate-300" />

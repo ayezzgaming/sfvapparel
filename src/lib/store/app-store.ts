@@ -25,7 +25,6 @@ import { getDesignsDb, saveDesignDb, deleteDesignDb } from '@/app/actions/design
 import {
   INITIAL_APPAREL_CUTS,
   INITIAL_CUSTOMERS,
-  INITIAL_DESIGNS,
   INITIAL_DTF_DIMENSIONS,
   INITIAL_FABRIC_MATERIALS,
   INITIAL_ORDERS,
@@ -103,7 +102,7 @@ interface AppStoreState {
 }
 
 let storeState: AppStoreState = {
-  designs: INITIAL_DESIGNS,
+  designs: [], // Pure Supabase DB data only, NO mock dummy items
   fabrics: INITIAL_FABRIC_MATERIALS,
   cuts: INITIAL_APPAREL_CUTS,
   dtfDimensions: INITIAL_DTF_DIMENSIONS,
@@ -135,7 +134,7 @@ async function fetchAndSyncDesigns() {
   notify();
   try {
     const res = await getDesignsDb();
-    if (res.success && res.designs && res.designs.length > 0) {
+    if (res.success && Array.isArray(res.designs)) {
       storeState = {
         ...storeState,
         designs: res.designs,
@@ -156,7 +155,7 @@ async function fetchAndSyncDesigns() {
 function initStoreIfNeeded() {
   if (typeof window === 'undefined' || storeState.isInitialized) return;
   storeState = {
-    designs: INITIAL_DESIGNS, // Designs are in-memory only, no localStorage!
+    designs: [], // Pure database-driven only
     fabrics: getLocalData(STORAGE_KEYS.FABRICS, INITIAL_FABRIC_MATERIALS),
     cuts: getLocalData(STORAGE_KEYS.CUTS, INITIAL_APPAREL_CUTS),
     dtfDimensions: getLocalData(STORAGE_KEYS.DTF_DIMS, INITIAL_DTF_DIMENSIONS),
@@ -189,7 +188,7 @@ function initStoreIfNeeded() {
       return saved || INITIAL_CMS_THEME_SETTINGS;
     })(),
     isInitialized: true,
-    isLoadingDesigns: false,
+    isLoadingDesigns: true,
   };
   notify();
 
@@ -236,7 +235,7 @@ function getSnapshot() {
 }
 
 const serverSnapshot: AppStoreState = {
-  designs: INITIAL_DESIGNS,
+  designs: [],
   fabrics: INITIAL_FABRIC_MATERIALS,
   cuts: INITIAL_APPAREL_CUTS,
   dtfDimensions: INITIAL_DTF_DIMENSIONS,
@@ -600,7 +599,7 @@ export function useAppStore() {
   // Reset to seed data
   const resetToSeedData = useCallback(() => {
     storeState = {
-      designs: INITIAL_DESIGNS,
+      designs: [],
       fabrics: INITIAL_FABRIC_MATERIALS,
       cuts: INITIAL_APPAREL_CUTS,
       dtfDimensions: INITIAL_DTF_DIMENSIONS,
