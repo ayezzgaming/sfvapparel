@@ -56,10 +56,15 @@ export const metadata: Metadata = {
     images: ['/hero1.png'],
   },
   manifest: '/manifest.json',
+  icons: {
+    icon: '/logo/svf-icon.svg',
+    shortcut: '/logo/svf-icon.svg',
+    apple: '/logo/svf-icon.svg',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'SFV APPAREL',
+    title: 'SFV Apparel',
   },
 };
 

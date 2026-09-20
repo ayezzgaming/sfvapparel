@@ -1,21 +1,29 @@
 {
-  "name": "SVF APPAREL | Custom Sublimation & DTF Printing",
-  "short_name": "SVF APPAREL",
-  "description": "Custom apparel sublimation jersey & DTF print platform",
+  "name": "SFV Apparel",
+  "short_name": "SFV Apparel",
+  "description": "Platform Tempahan Jersi Sublimasi & Baju DTF Terus Dari Kilang",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f2f2f7",
-  "theme_color": "#007aff",
+  "background_color": "#FFFFFF",
+  "theme_color": "#00BDFF",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=192&auto=format&fit=crop&q=80",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "/logo/svf-icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=512&auto=format&fit=crop&q=80",
+      "src": "/logo/svf-icon.svg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/svf-icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
     }
   ]
 }

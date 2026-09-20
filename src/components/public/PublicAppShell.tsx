@@ -20,6 +20,7 @@ import { useAppStore } from '@/lib/store/app-store';
 import { useUI } from '@/lib/store/ui-context';
 import { formatCurrency } from '@/lib/pricing-calculator';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
+import IosInstallPromptModal from '@/components/pwa/IosInstallPromptModal';
 
 interface PublicAppShellProps {
   children: React.ReactNode;
@@ -400,6 +401,9 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               ))
             )}
           </SwipeableBottomSheet>
+
+          {/* iOS Safari "Add to Home Screen" Guidance Modal */}
+          <IosInstallPromptModal />
 
         </div>
       </div>
