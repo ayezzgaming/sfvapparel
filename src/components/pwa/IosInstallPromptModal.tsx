@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-const STORAGE_KEY = 'sfv_ios_pwa_prompt_v2';
+const STORAGE_KEY = 'sfv_ios_pwa_prompt_v3';
 
 export default function IosInstallPromptModal() {
   const [isVisible, setIsVisible] = useState(false);
@@ -14,7 +14,25 @@ export default function IosInstallPromptModal() {
 
     if (typeof window === 'undefined') return;
 
-    // 1. Check if already running in standalone PWA mode (iOS or Android)
+    const ua = (window.navigator.userAgent || window.navigator.vendor || '').toLowerCase();
+
+    // 1. STRICT EXCLUSION: If Android, Windows, Linux, or non-iOS, NEVER show this iOS banner!
+    if (/android|windows|linux|cros|crkey|tizen|webos/.test(ua)) {
+      return;
+    }
+
+    // 2. STRICT iOS IDENTIFICATION: Only genuine iPhone, iPad, or iPod
+    const isIos = /iphone|ipad|ipod/.test(ua);
+    const isIpadOs = 
+      window.navigator.platform === 'MacIntel' && 
+      window.navigator.maxTouchPoints > 1 && 
+      !ua.includes('android');
+
+    if (!isIos && !isIpadOs) {
+      return;
+    }
+
+    // 3. Standalone mode check (Already installed as PWA)
     const isStandalone = 
       window.matchMedia('(display-mode: standalone)').matches ||
       window.matchMedia('(display-mode: fullscreen)').matches ||
@@ -22,14 +40,13 @@ export default function IosInstallPromptModal() {
       document.referrer.includes('android-app://');
 
     if (isStandalone) {
-      // Mark permanently so it never checks or triggers
       try {
         localStorage.setItem(STORAGE_KEY, 'installed');
       } catch {}
       return;
     }
 
-    // 2. Check if user already saw or dismissed this prompt
+    // 4. Persistence check: Has the user already seen or dismissed this?
     try {
       const seen = localStorage.getItem(STORAGE_KEY);
       if (seen) return;
@@ -37,23 +54,16 @@ export default function IosInstallPromptModal() {
       return;
     }
 
-    // 3. Detect iOS Safari
-    const ua = window.navigator.userAgent.toLowerCase();
-    const isIos = /iphone|ipad|ipod/.test(ua);
-    const isSafari = /safari/.test(ua) && !/chrome|crios|fxios|android|edgios/.test(ua);
+    // 5. Polite delay for genuine iOS Safari visitors
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+      // Auto-save so it only appears once ever per device
+      try {
+        localStorage.setItem(STORAGE_KEY, 'seen');
+      } catch {}
+    }, 2000);
 
-    if (isIos || isSafari) {
-      // Polite delay after initial load
-      const timer = setTimeout(() => {
-        setIsVisible(true);
-        // Automatically mark as seen once shown so it will NEVER prompt again
-        try {
-          localStorage.setItem(STORAGE_KEY, 'seen');
-        } catch {}
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    }
+    return () => clearTimeout(timer);
   }, []);
 
   const handleDismiss = () => {
