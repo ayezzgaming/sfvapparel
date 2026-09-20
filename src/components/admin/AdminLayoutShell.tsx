@@ -59,13 +59,13 @@ export default function AdminLayoutShell({
           </button>
 
           {/* Logo & Brand Name */}
-          <Link href="/admin" className="flex items-center space-x-2.5 hover:opacity-90 transition-opacity">
-            <div className="w-9 h-9 rounded-lg bg-[#0052FF] flex items-center justify-center text-white font-extrabold text-xs shadow-xs">
-              SFV
-            </div>
-            <span className="font-normal text-lg tracking-normal text-slate-800 hidden sm:inline">
-              SFV APPAREL
-            </span>
+          <Link href="/admin" className="flex items-center hover:opacity-90 transition-opacity">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo/SVFapparel-logo.svg"
+              alt="SVF Apparel"
+              className="h-7.5 sm:h-8 w-auto object-contain shrink-0"
+            />
           </Link>
 
           {/* Breadcrumb if inside child page */}

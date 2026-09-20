@@ -70,22 +70,14 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             className="shrink-0 z-40 px-4 py-3 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] flex items-center justify-between border-b border-slate-200/80 bg-white/95 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.03)] select-none touch-none transition-colors"
             style={{ touchAction: 'none' }}
           >
-            {/* Brand Logo & Wordmark */}
-            <Link href="/" draggable={false} className="inline-flex items-center gap-2.5 select-none active:opacity-75 transition-opacity group">
+            {/* Brand Logo */}
+            <Link href="/" draggable={false} className="inline-flex items-center select-none active:opacity-75 transition-opacity group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/logo.svg"
-                alt="SFV Apparel Logo"
-                className="h-7 w-7 object-contain shrink-0 pointer-events-none group-active:scale-95 transition-transform"
+                src="/logo/SVFapparel-logo.svg"
+                alt="SVF Apparel"
+                className="h-7 sm:h-8 w-auto object-contain shrink-0 pointer-events-none group-active:scale-95 transition-transform"
               />
-              <div className="flex items-baseline">
-                <span className="font-black text-[20px] sm:text-[21px] tracking-tight leading-none text-[#0052FF]">
-                  SFV
-                </span>
-                <span className="font-extrabold text-[13.5px] sm:text-[14px] tracking-[0.22em] ml-1.5 uppercase leading-none text-slate-900">
-                  APPAREL
-                </span>
-              </div>
             </Link>
 
             {/* Header Action Icons */}
