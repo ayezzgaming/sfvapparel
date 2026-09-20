@@ -16,8 +16,10 @@ import {
   MapPin,
   Package,
   Clock,
-  Truck
+  Truck,
+  Send
 } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa6';
 
 const STATUS_LIST: { status: OrderStatus; label: string; color: string }[] = [
   { status: 'pending_proof', label: 'Menunggu Proof', color: 'bg-amber-50 text-amber-800 border-amber-200' },
@@ -45,6 +47,49 @@ export default function AdminOrdersPage() {
   const [newTracking, setNewTracking] = useState('');
   const [newNotes, setNewNotes] = useState('');
   const [updateSaved, setUpdateSaved] = useState(false);
+  const [isSendingWa, setIsSendingWa] = useState(false);
+  const [waToast, setWaToast] = useState<{ success: boolean; message: string } | null>(null);
+
+  const handleSendWhatsAppNotification = async () => {
+    if (!activeOrder || !activeOrder.customer_phone) {
+      alert('Nombor telefon pelanggan tidak ditemui.');
+      return;
+    }
+
+    setIsSendingWa(true);
+    setWaToast(null);
+
+    const statusLabel = STATUS_LIST.find((s) => s.status === newStatus)?.label || newStatus;
+    let message = `Hai *${activeOrder.customer_name}*, pesanan jersi anda (*${activeOrder.order_number}* - ${activeOrder.design_title}) kini telah dikemaskini kepada: *${statusLabel}*.`;
+    
+    if (newTracking.trim()) {
+      message += `\n\n📦 *Nombor Penjejakan Pos*: ${newTracking.trim()}`;
+    }
+    message += `\n\nTerima kasih kerana menempah dengan SFV Apparel! ✨`;
+
+    try {
+      const res = await fetch('/api/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: activeOrder.customer_phone,
+          message,
+        }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setWaToast({ success: true, message: 'Notifikasi WhatsApp berjaya dihantar ke pelanggan!' });
+      } else {
+        setWaToast({ success: false, message: data.error || 'Gagal menghantar WhatsApp.' });
+      }
+    } catch {
+      setWaToast({ success: false, message: 'Ralat sambungan API WhatsApp' });
+    } finally {
+      setIsSendingWa(false);
+      setTimeout(() => setWaToast(null), 4000);
+    }
+  };
 
   const filteredOrders = useMemo(() => {
     return orders.filter((ord) => {
@@ -513,27 +558,52 @@ export default function AdminOrdersPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+              {waToast && (
+                <div className={`p-2.5 rounded-xl text-xs flex items-center gap-2 ${
+                  waToast.success 
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                    : 'bg-rose-50 text-rose-800 border border-rose-200'
+                }`}>
+                  <FaWhatsapp className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
+                  <span>{waToast.message}</span>
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-slate-100">
+                {/* 1-Click WhatsApp Notification Trigger */}
                 <button
                   type="button"
-                  onClick={() => setActiveOrder(null)}
-                  className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all"
+                  onClick={handleSendWhatsAppNotification}
+                  disabled={isSendingWa || !activeOrder.customer_phone}
+                  title="Hantar status terkini terus ke WhatsApp pelanggan"
+                  className="px-4 py-2 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
                 >
-                  Tutup
+                  <FaWhatsapp className={`w-3.5 h-3.5 text-emerald-600 ${isSendingWa ? 'animate-spin' : ''}`} />
+                  <span>{isSendingWa ? 'Menghantar WA...' : 'Hantar Status ke WhatsApp'}</span>
                 </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white font-medium text-xs shadow-xs transition-all flex items-center space-x-1.5"
-                >
-                  {updateSaved ? (
-                    <>
-                      <Check className="w-3.5 h-3.5" />
-                      <span>Tersimpan</span>
-                    </>
-                  ) : (
-                    <span>Simpan Perubahan</span>
-                  )}
-                </button>
+
+                <div className="flex items-center justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveOrder(null)}
+                    className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
+                  >
+                    Tutup
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white font-medium text-xs shadow-xs transition-all flex items-center space-x-1.5 cursor-pointer"
+                  >
+                    {updateSaved ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Tersimpan</span>
+                      </>
+                    ) : (
+                      <span>Simpan Perubahan</span>
+                    )}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
