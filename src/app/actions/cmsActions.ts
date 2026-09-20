@@ -28,9 +28,39 @@ function isValidUuid(id?: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
 }
 
-// Generate consistent or random UUID
+const SEED_UUID_MAP: Record<string, string> = {
+  'hero-1': '00000000-0000-0000-0001-000000000001',
+  'hero-2': '00000000-0000-0000-0001-000000000002',
+  'hero-3': '00000000-0000-0000-0001-000000000003',
+  'sublimation': '00000000-0000-0000-0002-000000000001',
+  'tshirt': '00000000-0000-0000-0002-000000000002',
+  'merchandise': '00000000-0000-0000-0002-000000000003',
+  'embroidery': '00000000-0000-0000-0002-000000000004',
+  'vid-sublimation': '00000000-0000-0000-0003-000000000001',
+  'vid-dtf': '00000000-0000-0000-0003-000000000002',
+  'vid-embroidery': '00000000-0000-0000-0003-000000000003',
+  'vid-merchandise': '00000000-0000-0000-0003-000000000004',
+  'gal-1': '00000000-0000-0000-0004-000000000001',
+  'gal-2': '00000000-0000-0000-0004-000000000002',
+  'gal-3': '00000000-0000-0000-0004-000000000003',
+  'gal-4': '00000000-0000-0000-0004-000000000004',
+  'gal-5': '00000000-0000-0000-0004-000000000005',
+  'gal-6': '00000000-0000-0000-0004-000000000006',
+  'testi-1': '00000000-0000-0000-0005-000000000001',
+  'testi-2': '00000000-0000-0000-0005-000000000002',
+  'testi-3': '00000000-0000-0000-0005-000000000003',
+  'testi-4': '00000000-0000-0000-0005-000000000004',
+  'privacy': '00000000-0000-0000-0006-000000000001',
+  'terms': '00000000-0000-0000-0006-000000000002',
+  'warranty': '00000000-0000-0000-0006-000000000003',
+  'shipping': '00000000-0000-0000-0006-000000000004',
+};
+
+// Generate consistent deterministic or random UUID
 function toUuid(id?: string): string {
-  if (id && isValidUuid(id)) return id;
+  if (!id) return crypto.randomUUID();
+  if (isValidUuid(id)) return id;
+  if (SEED_UUID_MAP[id]) return SEED_UUID_MAP[id];
   return crypto.randomUUID();
 }
 
@@ -453,7 +483,7 @@ export async function saveHeroBannerDb(banner: Partial<CmsHeroBanner> & { id?: s
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    const targetId = banner.id && isValidUuid(banner.id) ? banner.id : crypto.randomUUID();
+    const targetId = toUuid(banner.id);
     let imageUrl = banner.image_url || '';
     if (imageUrl.startsWith('data:image/')) {
       imageUrl = await uploadCmsImageToStorage(imageUrl, 'hero-banner');
@@ -531,7 +561,7 @@ export async function saveServiceDb(service: Partial<CmsService> & { id?: string
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    const targetId = service.id && isValidUuid(service.id) ? service.id : crypto.randomUUID();
+    const targetId = toUuid(service.id);
     let imageUrl = service.image_url || '';
     if (imageUrl.startsWith('data:image/')) {
       imageUrl = await uploadCmsImageToStorage(imageUrl, 'service');
@@ -596,7 +626,7 @@ export async function saveProductionVideoDb(video: Partial<CmsProductionVideo> &
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    const targetId = video.id && isValidUuid(video.id) ? video.id : crypto.randomUUID();
+    const targetId = toUuid(video.id);
     let thumbUrl = video.thumbnail_url || '';
     if (thumbUrl.startsWith('data:image/')) {
       thumbUrl = await uploadCmsImageToStorage(thumbUrl, 'video-thumb');
@@ -655,7 +685,7 @@ export async function saveProductionGalleryDb(item: Partial<CmsProductionGallery
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    const targetId = item.id && isValidUuid(item.id) ? item.id : crypto.randomUUID();
+    const targetId = toUuid(item.id);
     let imgUrl = item.image_url || '';
     if (imgUrl.startsWith('data:image/')) {
       imgUrl = await uploadCmsImageToStorage(imgUrl, 'gallery');
@@ -716,7 +746,7 @@ export async function saveTestimonialDb(testimonial: Partial<CmsTestimonial> & {
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    const targetId = testimonial.id && isValidUuid(testimonial.id) ? testimonial.id : crypto.randomUUID();
+    const targetId = toUuid(testimonial.id);
 
     const payload = {
       id: targetId,
@@ -880,6 +910,12 @@ export async function syncLinkedPhoneToCompanySettings(activePhone: string): Pro
           })
           .eq('id', existing[0].id);
       }
+    } else {
+      await supabase.from('cms_company_settings').upsert({
+        id: '00000000-0000-0000-0007-000000000001',
+        ...INITIAL_CMS_COMPANY_SETTINGS,
+        whatsapp_number: cleanPhone,
+      });
     }
     return true;
   } catch (err) {
