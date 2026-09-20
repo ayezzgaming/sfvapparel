@@ -7,7 +7,15 @@ export async function GET() {
   try {
     const status = await getWahaStatus();
 
-    // If session is stopped or not working, initiate start
+    if (status.status === 'WORKING') {
+      return NextResponse.json({
+        status: status.status,
+        qr: null,
+        me: status.me,
+      });
+    }
+
+    // If session is stopped or unknown, initiate start
     if (status.status === 'STOPPED' || status.status === 'UNKNOWN') {
       await startWahaSession();
       // Wait a moment for engine to initialize QR

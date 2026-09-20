@@ -9,15 +9,29 @@ function getHeaders() {
   };
 }
 
+export function extractChatId(rawId: unknown): string {
+  if (!rawId) return '';
+  if (typeof rawId === 'string') return rawId;
+  if (typeof rawId === 'object' && rawId !== null) {
+    const obj = rawId as { _serialized?: string; user?: string; server?: string };
+    return obj._serialized || (obj.user && obj.server ? `${obj.user}@${obj.server}` : '') || '';
+  }
+  return String(rawId);
+}
+
 export function formatChatId(phone: string): string {
+  if (!phone) return '';
+  if (typeof phone !== 'string') {
+    return extractChatId(phone);
+  }
+  if (phone.includes('@')) {
+    return phone;
+  }
   let cleaned = phone.replace(/[\s\-\+\(\)]/g, '');
   if (cleaned.startsWith('0')) {
     cleaned = '60' + cleaned.slice(1);
   }
-  if (!cleaned.includes('@')) {
-    cleaned = `${cleaned}@c.us`;
-  }
-  return cleaned;
+  return `${cleaned}@c.us`;
 }
 
 export interface WahaSessionInfo {
@@ -136,7 +150,7 @@ export async function getWahaQrCode(): Promise<string | null> {
 /**
  * Fetch list of active chats for Omnichannel Inbox
  */
-export async function getWahaChats(limit: number = 30): Promise<WahaChatSummary[]> {
+export async function getWahaChats(limit: number = 50): Promise<WahaChatSummary[]> {
   try {
     const res = await fetch(`${WAHA_URL}/api/${DEFAULT_SESSION}/chats?limit=${limit}`, {
       headers: getHeaders(),
@@ -148,25 +162,38 @@ export async function getWahaChats(limit: number = 30): Promise<WahaChatSummary[
     const data = await res.json();
     if (!Array.isArray(data)) return [];
 
-    return data
-      .filter((c) => !c.id?.includes('@g.us') && !c.id?.includes('status@broadcast')) // Filter out groups/status for clean 1-on-1 CRM
-      .map((c) => {
-        const phone = c.id ? c.id.split('@')[0] : '';
-        return {
-          id: c.id,
-          name: c.name || phone || 'Pelanggan',
-          phone,
-          unreadCount: c.unreadCount || 0,
-          isGroup: false,
-          lastMessage: c.lastMessage
-            ? {
-                body: c.lastMessage.body || (c.lastMessage.hasMedia ? '[Media Gambar/Dokumen]' : ''),
-                timestamp: c.lastMessage.timestamp ? c.lastMessage.timestamp * 1000 : Date.now(),
-                fromMe: !!c.lastMessage.fromMe,
-              }
-            : undefined,
-        };
-      });
+    const mapped: (WahaChatSummary | null)[] = data.map((c: Record<string, unknown>) => {
+      const chatId = extractChatId(c.id);
+      if (!chatId || chatId.includes('status@broadcast')) return null;
+
+      const isGroup = !!c.isGroup || chatId.includes('@g.us');
+      const phone = chatId.split('@')[0] || '';
+      
+      const lastMsgObj = c.lastMessage as Record<string, unknown> | undefined;
+      const lastMsgData = lastMsgObj?._data as Record<string, unknown> | undefined;
+      const lastMsgBody = (lastMsgData?.body as string) || (lastMsgObj?.body as string) || (lastMsgObj?.hasMedia ? '[Media / Gambar]' : '');
+      const rawTime = (lastMsgObj?.timestamp as number) || (lastMsgData?.t as number) || (c.timestamp as number) || Date.now() / 1000;
+      const lastMsgTime = rawTime > 10000000000 ? rawTime : rawTime * 1000;
+      const lastMsgFromMe = !!(lastMsgObj?.fromMe || (lastMsgData?.id as Record<string, unknown>)?.fromMe);
+
+      return {
+        id: chatId,
+        name: (c.name as string) || phone || 'Pelanggan WhatsApp',
+        phone,
+        unreadCount: Number(c.unreadCount) || 0,
+        isGroup,
+        lastMessage: lastMsgBody || rawTime
+          ? {
+              body: lastMsgBody,
+              timestamp: lastMsgTime,
+              fromMe: lastMsgFromMe,
+            }
+          : undefined,
+      };
+    });
+
+    const validChats: WahaChatSummary[] = mapped.filter((item): item is WahaChatSummary => item !== null);
+    return validChats.sort((a, b) => (b.lastMessage?.timestamp || 0) - (a.lastMessage?.timestamp || 0));
   } catch {
     return [];
   }
@@ -175,10 +202,10 @@ export async function getWahaChats(limit: number = 30): Promise<WahaChatSummary[
 /**
  * Fetch message history for a specific conversation
  */
-export async function getWahaMessages(chatId: string, limit: number = 40): Promise<WahaChatMessage[]> {
+export async function getWahaMessages(chatId: string, limit: number = 50): Promise<WahaChatMessage[]> {
   try {
     const formattedId = formatChatId(chatId);
-    const res = await fetch(`${WAHA_URL}/api/${DEFAULT_SESSION}/chats/${formattedId}/messages?limit=${limit}`, {
+    const res = await fetch(`${WAHA_URL}/api/${DEFAULT_SESSION}/chats/${encodeURIComponent(formattedId)}/messages?limit=${limit}`, {
       headers: getHeaders(),
       cache: 'no-store',
     });
@@ -188,17 +215,31 @@ export async function getWahaMessages(chatId: string, limit: number = 40): Promi
     const data = await res.json();
     if (!Array.isArray(data)) return [];
 
-    return data.map((m) => ({
-      id: m.id || String(Math.random()),
-      timestamp: m.timestamp ? m.timestamp * 1000 : Date.now(),
-      from: m.from || '',
-      fromMe: !!m.fromMe,
-      to: m.to,
-      body: m.body || '',
-      hasMedia: !!m.hasMedia,
-      mediaUrl: m.media?.url,
-      ack: m.ack,
-    }));
+    return data.map((m: Record<string, unknown>) => {
+      const msgIdObj = m.id as { _serialized?: string; id?: string } | string;
+      const msgId = typeof msgIdObj === 'object' && msgIdObj !== null ? (msgIdObj._serialized || msgIdObj.id) : msgIdObj;
+      const msgData = m._data as Record<string, unknown> | undefined;
+      const rawTime = (m.timestamp as number) || (msgData?.t as number) || Date.now() / 1000;
+      const timestamp = rawTime > 10000000000 ? rawTime : rawTime * 1000;
+      
+      const from = extractChatId(m.from);
+      const to = extractChatId(m.to);
+      const fromMe = !!(m.fromMe || (msgData?.id as Record<string, unknown>)?.fromMe);
+      const body = (m.body as string) || (msgData?.body as string) || (m.hasMedia ? '[Media / Gambar]' : '');
+      const media = m.media as { url?: string } | undefined;
+
+      return {
+        id: (msgId as string) || String(Math.random()),
+        timestamp,
+        from: from || '',
+        fromMe,
+        to: to || '',
+        body: body || '',
+        hasMedia: !!m.hasMedia,
+        mediaUrl: media?.url,
+        ack: (m.ack as number) || (msgData?.ack as number),
+      };
+    });
   } catch {
     return [];
   }
