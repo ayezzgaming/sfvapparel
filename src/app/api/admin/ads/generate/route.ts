@@ -279,11 +279,11 @@ async function buildBusinessGroundingContext(selectedProduct?: string, selectedC
       id: c.id,
       name: c.name,
       status: c.status,
-      headline: c.headline || 'Dapatkan Jersi Sublimasi Kustom',
-      primaryText: c.primaryText || 'Pakar pembuatan jersi sukan berkualiti tinggi dengan cetakan sublimasi HD.',
-      imageUrl: c.imageUrl || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80',
-      callToAction: c.callToAction || 'Dapatkan Sebut Harga',
-    })),
+      headline: c.headline,
+      primaryText: c.primaryText,
+      imageUrl: c.imageUrl,
+      callToAction: c.callToAction,
+    })).filter((c) => c.headline || c.primaryText),
   ];
 
   const activeAdsSummaries = activeAdsList.length > 0
@@ -297,13 +297,7 @@ async function buildBusinessGroundingContext(selectedProduct?: string, selectedC
 - Pautan Imej Kreatif: "${ad.imageUrl || ''}"
 - Butang Tindakan (CTA): "${ad.callToAction || 'Dapatkan Sebut Harga'}"`)
         .join('\n\n')
-    : `[Iklan Lalai Aktif Semasa di Facebook & IG]
-- Nama Kempen: "Jersey Printing Sublimation - Kempen Utama"
-- Status: ACTIVE
-- Tajuk Iklan (Headline): "Dapatkan Jersi Sublimasi Kustom Kualiti HD"
-- Teks Copywriting (Primary Text): "Tempah jersi sukan berkualiti tinggi dengan cetakan sublimasi HD yang tidak luntur dan kain Drifit sejuk. Percuma rekaan grafik logo, nama dan nombor pasukan. Hubungi kami melalui WhatsApp untuk sebut harga segera."
-- Pautan Imej Kreatif: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80"
-- Butang Tindakan (CTA): "Dapatkan Sebut Harga"`;
+    : `- Status Sambungan: Sedia untuk kempen baharu. Tiada iklan aktif terdahulu dikesan dalam pangkalan data. Gunakan inspirasi produk dan kelebihan kilang secara segar.`;
 
   return {
     groundingText: `
@@ -317,21 +311,21 @@ MAKLUMAT PERNIAGAAN & PENGKALAN DATA KILANG:
 - Tagline & Misi Jenama: ${company.tagline || 'Pakar pembuatan jersi sublimasi penuh, cetakan DTF & sulaman pakaian kustom berkualiti tinggi di Malaysia.'}
 
 ASET PLATFORM META & SALURAN RASMI YANG SEDANG AKTIF & TERSAMBUNG (PENTING):
-${pagesSummaries || '- Tiada Page tambahan (Gunakan lalai SFV Apparel Official)'}
+${pagesSummaries || '- Facebook Page: SFV Apparel Official'}
 ${igSummaries || '- Instagram: @sfvapparel.my'}
 ${waSummaries || '- WhatsApp: +60148599138'}
 ${pixelSummaries || '- Pixel: SFV Apparel Web Pixel'}
 
-IKLAN & KEMPEN AKTIF SEMASA DI META FACEBOOK (LIVE REAL AD DATA):
+REKOD IKLAN & KEMPEN TERDAHULU DI META / PANGKALAN DATA:
 ${activeAdsSummaries}
 
 KELEBIHAN TEKNOLOGI KILANG & SPESIFIKASI (USP DARI DATABASE):
 1. Cetakan Sublimasi HD Penuh: Dakwat meresap terus ke serat benang, tidak luntur, tidak merekah, warna ultra-tajam.
-2. Fabrik Sukan Premium (Database):
+2. Fabrik Sukan Premium:
 ${fabricSummaries}
-3. Pilihan Potongan & Kolar (Database):
+3. Pilihan Potongan & Kolar:
 ${cutSummaries}
-4. Penjimatan Harga Kilang & Diskaun Kuantiti (Database):
+4. Penjimatan Harga Kilang & Diskaun Kuantiti:
 ${tierSummaries}
 5. Jaminan & Servis: Percuma rekaan grafik kustom (nama, nombor, logo pasukan), jaminan siap pantas 7-10 hari bekerja, penghantaran ke seluruh Malaysia.
 
@@ -487,7 +481,7 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * System prompt generator with autonomous media buyer intelligence, active Meta ads cloning, and strict budget leakage prevention
+ * System prompt generator with autonomous media buyer intelligence, non-anchored dynamic copywriting diversity, and strict budget isolation
  */
 function buildAiPromptInstructions(params: {
   prompt: string;
@@ -505,50 +499,48 @@ function buildAiPromptInstructions(params: {
   const defaultPix = params.metaAssets?.pixels?.[0]?.id || 'pix-847291048291039';
   const sampleActiveAd = params.activeAdsList?.[0] || null;
 
-  const systemPrompt = `Anda ialah Ketua Pakar Media Buyer (Senior Meta Ads Strategist) dan Direct-Response Copywriter berautonomi untuk jenama pakaian & kilang jersi sukan Malaysia (SFV APPAREL).
-Gunakan maklumat pangkalan data kilang, data aset platform Meta, dan data iklan aktif di bawah untuk menghasilkan kempen pengiklanan yang paling berkesan dan menguntungkan:
+  const systemPrompt = `Anda ialah Ketua Pakar Strategi Media Buyer (Senior Meta Ads Strategist) & Direct-Response Copywriter bertaraf dunia untuk jenama pakaian & kilang jersi sukan Malaysia (SFV APPAREL).
+Tugasan anda adalah menjana iklan berkualiti tinggi yang asli, persuasif, dan dinamik berasaskan konteks perniagaan di bawah:
 
 ${params.dbGroundingContext}
 
-PANDUAN PENAAKULAN KONTEKSTUAL & PERATURAN MUTLAK AI:
+PANDUAN STRATEGI & PERATURAN MUTLAK PENULISAN:
 
-1. PERATURAN KRITIKAL: PENGASINGAN KETAT ANTARA BAJET MEDIA BUYER & COPYWRITING JUALAN (DILARANG BOCOR BAJET):
-   - Nilai bajet harian (contoh: RM10 sehari, RM 10, RM30, "buged 10 perhari", "modal 10 ringgit") adalah BAJET KOS PENGIKLANAN MEDIA BUYER di Meta Ads Manager. Nilai ini HANYA untuk medan 'dailyBudget' di dalam objek 'adSettings'.
-   - DILARANG SAMA SEKALI / STRICTLY FORBIDDEN meletakkan ayat seperti "Hanya RM10 sehari untuk leads", "modal RM10 sehari", "bajet RM10" atau sebarang angka bajet ads ke dalam teks copywriting jualan (primaryText, headline, secondaryHeadline, tagline, whatsappMessage)!
-   - Pelanggan dan pembeli jersi membaca iklan untuk membeli JERSI SUKAN, CETAKAN SUBLIMASI HD, PAKET PASUKAN (SQUAD PACK), KAIN DRIFIT, REKAAN PERCUMA, DAN DISKAUN PUKAL KILANG. Mereka BUKAN membeli leads atau kos pengiklanan RM10!
-   - Teks copywriting mestilah 100% fokus kepada nilai produk jersi, kelebihan cetakan sublimasi HD kilang, fabrik sukan sejuk, pakej jersi pasukan, dan pautan WhatsApp sebut harga.
+1. KEPELBAGAIAN KERANGKA COPYWRITING (DILARANG MENGULANG AYAT TEMPLAT SAMA):
+   Hasilkan tepat 5 variasi iklan yang berbeza nada dan struktur dengan mengaplikasikan 5 formula psikologi jualan berikut:
+   * VARIASI 1 - FORMULA PAS (Problem - Agitate - Solve):
+     - Kenalpasti masalah jersi sukan biasa (kain panas melekit, cetakan mudah merekah/luntur, tempahan lambat siap sebelum hari perlawanan).
+     - Huraikan kekecewaan pasukan jika jersi bermasalah.
+     - Tawarkan penyelesaian muktamad cetakan sublimasi HD kilang SFV APPAREL dengan fabrik Drifit sejuk bernafas.
+   * VARIASI 2 - FORMULA AIDA (Attention - Interest - Desire - Action):
+     - Tarik perhatian dengan tajuk eksklusif.
+     - Bina minat dengan spesifikasi fabrik gred kejohanan & ketajaman warna sublimasi.
+     - Bangkitkan keinginan melalui pakej squad pack lengkap percuma rekaan logo, nama dan nombor.
+     - Dorong tindakan sebut harga pantas di WhatsApp.
+   * VARIASI 3 - FORMULA SOCIAL PROOF & IDENTITI PASUKAN (Squad Pride & E-Sports/Sports Club):
+     - Sentuh semangat kejuaraan, imej profesional pasukan, dan keyakinan melangkah masuk ke padang/gelanggang.
+     - Fokus kepada sentuhan kustom rekaan 100% unik mengikut identiti kelab anda.
+   * VARIASI 4 - FORMULA DIRECT URGENCY & SLOT KILANG (Pantas Siap 7 Hari / FOMO):
+     - Tekankan kejohanan atau perlawanan yang semakin dekat.
+     - Tawarkan jaminan tempahan siap pantas 7-10 hari bekerja terus dari barisan pengeluaran kilang tanpa orang tengah.
+   * VARIASI 5 - FORMULA PUKAL & KORPORAT (B2B Value Proposition & Invois Rasmi):
+     - Fokus kepada penjimatan kos pesanan kuantiti berperingkat (diskaun sehingga 25%).
+     - Sesuai untuk syarikat, kelab rekreasi, sekolah, dan agensi yang memerlukan invois perniagaan rasmi dan kualiti jahitan tahan lasak.
 
-2. REPLIKASI & ADAPTASI IKLAN AKTIF DI META (APABILA DIMINTA USER):
-   - Jika arahan pengguna menyatakan "gunakan iklan yang sama seperti iklan yang aktif saat ini di meta facebook", "tirukan ads aktif", "guna iklan aktif", atau seumpamanya:
-     * Rujuk bahagian 'IKLAN & KEMPEN AKTIF SEMASA DI META FACEBOOK' di atas.
-     * Ambil tema produk, gaya headline, dan struktur teks copywriting daripada iklan aktif tersebut.
-     * Gandakan formula iklan aktif tersebut kepada 5 variasi sudut berbeza (contoh: Sudut Replikasi Kempen Utama, Sudut Squad Pack Pasukan, Sudut Sublimasi HD Terus Kilang, Sudut Siap Pantas 7 Hari, Sudut Diskaun Kuantiti Pukal).
-     * Sertakan pautan imej kreatif iklan aktif tersebut ke dalam medan 'imageUrl' pada setiap variasi.
-     * Tetapkan 'dailyBudget' mengikut bajet yang diminta oleh pengguna (contoh: 10 jika pengguna minta bajet 10).
+2. PENGASINGAN KETAT ANTARA BAJET MEDIA BUYER & COPYWRITING PELANGGAN:
+   - Nilai bajet harian (contoh: RM10, RM30, "buged 10 perhari") adalah bajet media buyer untuk 'dailyBudget' di dalam 'adSettings'.
+   - DILARANG SAMA SEKALI menyebut atau membocorkan perkataan seperti "Hanya RM10 sehari untuk leads", "bajet RM10", atau sebarang angka bajet iklan ke dalam teks promosi copywriting jualan pelanggan!
 
-3. PEMAHAMAN BAJET SEMANTIK PENUH:
-   - Fahami arahan bajet pengguna daripada teks prompt tanpa mengira cara ejaan (contoh: "buged 10 perhari" -> 10, "RM.10" -> 10, "bajet RM15" -> 15, "spend 50 per day" -> 50).
-   - Isikan nilai nombor bulat pada medan 'dailyBudget'. Jika tiada bajet dinyatakan, gunakan nilai optimum 30.
+3. REPLIKASI & ADAPTASI IKLAN AKTIF (APABILA DIMINTA PENGGUNA):
+   - Jika pengguna meminta "gunakan iklan yang sama seperti iklan yang aktif saat ini di meta facebook" / "tirukan kempen aktif":
+     * Fahami gaya, tema produk, dan nada iklan aktif yang tersenarai dalam pangkalan data di atas.
+     * Cipta variasi kreatif segar yang memperluas tema tersebut ke dalam 5 sudut berbeza di atas.
+     * Pasangkan pautan 'imageUrl' yang relevan pada variasi.
+     * Tetapkan 'dailyBudget' mengikut bajet harian yang diminta pengguna.
 
-4. PENYELARASAN ASET PLATFORM META YANG TEPAT (SALURAN & AKAUN):
-   - selectedPageId: ID Facebook Page aktif (cth: "${defaultPage}").
-   - selectedInstagramAccountId: ID Akaun Instagram terpaut (cth: "${defaultIg}").
-   - selectedWhatsappNumber: Nombor WhatsApp aktif rasmi (cth: "${defaultWa}").
-   - selectedPixelId: ID Meta Pixel aktif (cth: "${defaultPix}").
-   - destination: 'whatsapp' (untuk leads sebut harga WhatsApp), 'instagram', atau 'website'.
+4. SIFAR EMOJI & EMOTIKON: Dilarang sama sekali meletakkan sebarang simbol emoji atau emotikon dalam seluruh teks output.
 
-5. PENALAAN SASARAN & MINAT PINTAR (SMART TARGETING):
-   - ageMin (18) & ageMax (35-45) bersesuaian dengan peminat sukan & tempahan pasukan.
-   - locationName: "Malaysia (Seluruh Negara)".
-   - interests: 3-5 minat Meta Ads rasmi yang relevan (seperti Futsal, Sports clothing, Jersey (clothing), Association football, dsb).
-   - engagedShoppers: true (tingkatkan conversion pembeli aktif).
-   - placementType: 'feed_reels' (FB & IG Feed, Stories, Reels).
-   - scheduleType: 'peak_hours' atau 'all_day'.
-   - aiTargetingReason: Penjelasan strategi media buyer (1-2 ayat) mengapa aset dan sasaran ini dipilih.
-
-6. SIFAR EMOJI & EMOTIKON: Dilarang sama sekali meletakkan sebarang simbol emoji atau emotikon dalam seluruh output.
-
-7. FORMATKAN OUTPUT HANYA DALAM JSON SAH TANPA MARKDOWN LAIN:
+5. FORMAT OUTPUT MESTILAH JSON SAH DENGAN STRUKTUR BERIKUT:
 {
   "adSettings": {
     "destination": "whatsapp",
@@ -567,37 +559,42 @@ PANDUAN PENAAKULAN KONTEKSTUAL & PERATURAN MUTLAK AI:
     ],
     "engagedShoppers": true,
     "placementType": "feed_reels",
-    "dailyBudget": 10,
+    "dailyBudget": 30,
     "scheduleType": "peak_hours",
     "durationDays": 7,
-    "aiTargetingReason": "Strategi kempen diselaraskan mengikut bajet harian RM10 dan aset Meta yang aktif."
+    "aiTargetingReason": "Penjelasan ringkas strategi sasaran media buyer"
   },
   "variations": [
     {
       "id": "var-1",
-      "angleName": "Sudut Replikasi Kempen Utama",
-      "tagline": "Cetakan Sublimasi HD Tidak Luntur",
-      "headline": "Dapatkan Jersi Sublimasi Kustom Kualiti HD",
-      "secondaryHeadline": "Pakej Squad Pasukan | Percuma Rekaan Grafik",
-      "primaryText": "Jangan lepaskan peluang untuk memesan jersi sukan berkualiti tinggi dengan cetakan sublimasi HD yang tidak luntur dan fabrik Drifit yang sejuk. Dapatkan tawaran squad pack bersama rekaan logo, nama dan nombor pasukan percuma. Hubungi kami melalui WhatsApp untuk sebut harga segera.",
+      "angleName": "Nama Sudut Mengikut Formula (cth: Sudut PAS - Solusi Kain Sejuk)",
+      "tagline": "Frasa Nilai Tambah Ringkas",
+      "headline": "Tajuk Iklan Berimpak Tinggi",
+      "secondaryHeadline": "Sub-tajuk Penegasan Nilai",
+      "primaryText": "Teks copywriting persuasif penuh yang ditulis secara asli mengikut formula sudut tanpa sebarang emoji",
       "callToAction": "Dapatkan Sebut Harga",
-      "whatsappMessage": "Salam SFV APPAREL, saya berminat untuk membuat tempahan jersi kustom sublimasi untuk pasukan kami.",
+      "whatsappMessage": "Mesej sapaan WhatsApp ringkas dan relevan untuk pelanggan",
       "imageUrl": "${sampleActiveAd?.imageUrl || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80'}"
     }
   ]
 }`;
 
   const userContent = `ARAHAN PENGGUNA: "${params.prompt}"
-PRODUK: ${params.productName} (${params.category})
-PLATFORM: ${params.platform}
+PRODUK SASARAN: ${params.productName} (${params.category})
+SALURAN UTAMA: ${params.platform}
 OBJEKTIF: ${params.objective}
-Tugasan Media Buyer: Laksanakan penaakulan pintar. Jika pengguna minta tiru/gunakan iklan aktif di Meta, ambil konteks iklan aktif tersebut. Ekstrak bajet pengguna secara tepat ke adSettings.dailyBudget. DILARANG SAMA SEKALI memasukkan angka bajet harian media buyer (cth: RM10) ke dalam ayat copywriting jualan pelanggan. Hasilkan 5 variasi mantap bersama adSettings lengkap dalam format JSON tanpa sebarang emoji.`;
+
+Tugasan:
+1. Hasilkan 5 variasi copywriting yang ASLI, DINAMIK, dan MEMUKAU menggunakan 5 formula berbeza (PAS, AIDA, Squad Pride, Urgency/Slot Kilang, dan Pukal/B2B). Elakkan ayat yang klise atau berulang-ulang.
+2. Selaraskan setelan adSettings (termasuk dailyBudget daripada arahan bajet pengguna, umur sasaran, minat Meta, dan saluran Page/WA).
+3. Pastikan tiada sebarang kebocoran angka bajet iklan ke dalam teks promosi pelanggan.
+4. Outputkan 100% JSON sah tanpa teks pembungkus markdown lain.`;
 
   return { systemPrompt, userContent };
 }
 
 /**
- * Groq Cloud Engine with Deep Database Grounding
+ * Groq Cloud Engine with Deep Database Grounding & High Creativity
  */
 async function callGroqApi(
   apiKey: string,
@@ -636,7 +633,7 @@ async function callGroqApi(
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userContent },
           ],
-          temperature: 0.7,
+          temperature: 0.82,
         }),
       });
 
@@ -663,7 +660,7 @@ async function callGroqApi(
 }
 
 /**
- * OpenRouter Cloud Engine with Deep Database Grounding
+ * OpenRouter Cloud Engine with Deep Database Grounding & High Creativity
  */
 async function callOpenRouterApi(
   apiKey: string,
@@ -693,7 +690,7 @@ async function callOpenRouterApi(
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
         ],
-        temperature: 0.7,
+        temperature: 0.82,
       }),
     });
 
@@ -717,7 +714,7 @@ async function callOpenRouterApi(
 }
 
 /**
- * Google Gemini Cloud Engine with Deep Database Grounding
+ * Google Gemini Cloud Engine with Deep Database Grounding & High Creativity
  */
 async function callGeminiApi(
   apiKey: string,
@@ -755,7 +752,7 @@ async function callGeminiApi(
             },
           ],
           generationConfig: {
-            temperature: 0.7,
+            temperature: 0.82,
             responseMimeType: 'application/json',
           },
         }),
