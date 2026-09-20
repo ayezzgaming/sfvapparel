@@ -17,7 +17,7 @@ export interface WhatsAppInquiryParams {
 }
 
 export function buildWhatsAppInquiryUrl(params: WhatsAppInquiryParams): string {
-  let cleanPhone = (params.phone || '60148599138').replace(/[\s\-\+\(\)]/g, '');
+  let cleanPhone = (params.phone || '6281260066616').replace(/[\s\-\+\(\)]/g, '');
   if (cleanPhone.startsWith('0')) {
     cleanPhone = '60' + cleanPhone.slice(1);
   }

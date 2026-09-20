@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getWahaQrCode, startWahaSession, restartWahaSession, getWahaStatus } from '@/lib/whatsapp/waha-client';
+import { syncLinkedPhoneToCompanySettings } from '@/app/actions/cmsActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +9,13 @@ export async function GET() {
     let status = await getWahaStatus();
 
     if (status.status === 'WORKING') {
+      if (status.me?.id) {
+        const pairedPhone = status.me.id.split('@')[0].split(':')[0];
+        if (pairedPhone) {
+          syncLinkedPhoneToCompanySettings(pairedPhone).catch(() => {});
+        }
+      }
+
       return NextResponse.json({
         status: status.status,
         qr: null,

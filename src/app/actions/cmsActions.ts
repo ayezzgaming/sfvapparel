@@ -858,6 +858,37 @@ export async function saveCompanySettingsDb(settings: Partial<CmsCompanySettings
 }
 
 /**
+ * Automatically sync linked WhatsApp phone to company settings in Supabase
+ */
+export async function syncLinkedPhoneToCompanySettings(activePhone: string): Promise<boolean> {
+  if (!activePhone) return false;
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) return false;
+
+    const cleanPhone = activePhone.replace(/[\s\-\+\(\)]/g, '').split('@')[0].split(':')[0];
+    if (!cleanPhone) return false;
+
+    const { data: existing } = await supabase.from('cms_company_settings').select('id, whatsapp_number').limit(1);
+    if (existing && existing.length > 0) {
+      if (existing[0].whatsapp_number !== cleanPhone) {
+        await supabase
+          .from('cms_company_settings')
+          .update({
+            whatsapp_number: cleanPhone,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existing[0].id);
+      }
+    }
+    return true;
+  } catch (err) {
+    console.error('Failed to sync linked phone to company settings:', err);
+    return false;
+  }
+}
+
+/**
  * Save / Update Policy
  */
 export async function savePolicyDb(policy: CmsPolicy): Promise<{

@@ -24,7 +24,9 @@ import {
   Ticket,
   UserCheck,
   PauseCircle,
-  PlayCircle
+  PlayCircle,
+  User,
+  Phone
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { WahaChatSummary, WahaChatMessage } from '@/lib/whatsapp/waha-client';
@@ -43,11 +45,32 @@ interface WahaStatusData {
 }
 
 const QUICK_TEMPLATES = [
-  'Hai! Terima kasih kerana menghubungi SFV Apparel. Ada apa yang boleh kami bantu?',
-  'Pesanan jersi anda telah diterima dan sedang diproses di bahagian rekaan & cetakan.',
-  'Tempahan anda telah siap sepenuhnya! Kami akan menghantar nombor penjejakan pos sebentar lagi.',
-  'Deposit tempahan telah disahkan. Kami akan memulakan proses pembuatan hari ini.',
+  'Hai! Terima kasih kerana menghubungi SFV Apparel. Ada apa-apa yang boleh kami bantu?',
+  'Pesanan jersi anda telah diterima dan sedang diproses di bahagian cetakan.',
+  'Tempahan anda telah siap sepenuhnya! Kami akan menghantar nombor penjejakan kurier sebentar lagi.',
+  'Deposit tempahan telah disahkan. Kami akan memulakan proses rekaan grafik segera.',
 ];
+
+function parseVCard(body: string): { name: string; phone: string } | null {
+  if (!body || !body.includes('BEGIN:VCARD')) return null;
+  let name = 'Kenalan';
+  let phone = '';
+
+  const fnMatch = body.match(/FN:(.+)/i);
+  if (fnMatch && fnMatch[1]) {
+    name = fnMatch[1].trim();
+  } else {
+    const nMatch = body.match(/N:([^;]+)/i);
+    if (nMatch && nMatch[1]) name = nMatch[1].replace(/;/g, ' ').trim();
+  }
+
+  const telMatch = body.match(/waid=(\d+)/i) || body.match(/TEL[^:]*:(.+)/i);
+  if (telMatch && telMatch[1]) {
+    phone = telMatch[1].replace(/[\s\-\+\(\)]/g, '').trim();
+  }
+
+  return { name, phone };
+}
 
 export default function WhatsAppHubPage() {
   // Navigation & Panel states
@@ -885,81 +908,128 @@ export default function WhatsAppHubPage() {
                       )}
 
                       {/* Chat Messages List */}
-                      <div className="flex-1 overflow-y-auto p-4 space-y-2.5 sparkle-scroll">
-                        {loadingMessages ? (
-                          <div className="py-12 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-                            <RefreshCw className="w-4 h-4 animate-spin text-[#00BDFF]" />
-                            <span>Memuatkan mesej...</span>
-                          </div>
-                        ) : messages.length === 0 ? (
-                          <div className="py-12 text-center text-xs text-slate-400">
-                            Tiada rekod mesej.
-                          </div>
-                        ) : (
-                          messages.map((msg) => (
-                            <div
-                              key={msg.id}
-                              className={`flex ${msg.fromMe ? 'justify-end' : 'justify-start'}`}
-                            >
-                              <div
-                                className={`max-w-md rounded-2xl px-3.5 py-2 text-xs shadow-2xs space-y-1 ${
-                                  msg.fromMe
-                                    ? 'bg-[#00BDFF] text-white rounded-tr-xs'
-                                    : 'bg-white text-slate-800 border border-slate-200/70 rounded-tl-xs'
-                                }`}
-                              >
-                                <p className="leading-relaxed whitespace-pre-wrap">{msg.body}</p>
-                                <div className={`flex items-center justify-end gap-1 text-[9.5px] ${
-                                  msg.fromMe ? 'text-sky-100' : 'text-slate-400'
-                                }`}>
-                                  <span>
-                                    {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                  </span>
-                                  {msg.fromMe && <CheckCheck className="w-3 h-3" />}
-                                </div>
-                              </div>
+                      <div className="flex-1 overflow-y-auto p-4 sm:p-6 sparkle-scroll bg-slate-50/50">
+                        <div className="max-w-3xl mx-auto w-full space-y-3">
+                          {loadingMessages ? (
+                            <div className="py-16 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
+                              <RefreshCw className="w-5 h-5 animate-spin text-[#00BDFF]" />
+                              <span>Memuatkan mesej perbualan...</span>
                             </div>
-                          ))
-                        )}
-                        <div ref={messagesEndRef} />
+                          ) : messages.length === 0 ? (
+                            <div className="py-16 text-center text-xs text-slate-400 bg-white/60 rounded-2xl border border-dashed border-slate-200">
+                              Tiada rekod mesej lagi dalam sesi ini.
+                            </div>
+                          ) : (
+                            messages.map((msg) => {
+                              const vcard = parseVCard(msg.body);
+                              return (
+                                <div
+                                  key={msg.id}
+                                  className={`flex ${msg.fromMe ? 'justify-end' : 'justify-start'}`}
+                                >
+                                  <div
+                                    className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-2.5 text-xs shadow-xs space-y-1.5 transition-all ${
+                                      msg.fromMe
+                                        ? 'bg-[#00BDFF] text-white rounded-tr-xs'
+                                        : 'bg-white text-slate-800 border border-slate-200/80 rounded-tl-xs'
+                                    }`}
+                                  >
+                                    {vcard ? (
+                                      <div className={`p-2.5 rounded-xl border space-y-2 ${
+                                        msg.fromMe 
+                                          ? 'bg-sky-600/30 border-sky-400/40 text-white' 
+                                          : 'bg-slate-50 border-slate-200 text-slate-800'
+                                      }`}>
+                                        <div className="flex items-center gap-2.5">
+                                          <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
+                                            msg.fromMe ? 'bg-white/20 text-white' : 'bg-[#00BDFF]/10 text-[#00BDFF]'
+                                          }`}>
+                                            <User className="w-4 h-4" />
+                                          </div>
+                                          <div className="min-w-0 flex-1">
+                                            <p className="font-bold text-xs truncate">{vcard.name}</p>
+                                            <p className={`text-[10px] font-mono truncate ${msg.fromMe ? 'text-sky-100' : 'text-slate-500'}`}>
+                                              {vcard.phone ? `+${vcard.phone}` : 'Kad Kenalan'}
+                                            </p>
+                                          </div>
+                                        </div>
+                                        {vcard.phone && (
+                                          <a
+                                            href={`https://wa.me/${vcard.phone}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={`inline-flex items-center justify-center gap-1.5 w-full py-1.5 rounded-lg font-semibold text-[11px] transition-colors ${
+                                              msg.fromMe 
+                                                ? 'bg-white text-[#00BDFF] hover:bg-sky-50' 
+                                                : 'bg-[#00BDFF] text-white hover:bg-sky-600'
+                                            }`}
+                                          >
+                                            <Phone className="w-3 h-3" />
+                                            <span>Mesej Nombor Ini</span>
+                                          </a>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <p className="leading-relaxed whitespace-pre-wrap break-words">{msg.body}</p>
+                                    )}
+
+                                    <div className={`flex items-center justify-end gap-1 text-[9.5px] ${
+                                      msg.fromMe ? 'text-sky-100' : 'text-slate-400'
+                                    }`}>
+                                      <span>
+                                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                      </span>
+                                      {msg.fromMe && <CheckCheck className="w-3 h-3" />}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          )}
+                          <div ref={messagesEndRef} />
+                        </div>
                       </div>
 
                       {/* Quick Templates Bar */}
-                      <div className="px-4 py-2 bg-white/90 border-t border-slate-200/70 overflow-x-auto flex items-center gap-2 scrollbar-none">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-[#00BDFF]" />
-                          Templat:
-                        </span>
-                        {QUICK_TEMPLATES.map((tmpl, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => setReplyText(tmpl)}
-                            className="px-2.5 py-1 rounded-full bg-slate-50 hover:bg-sky-50 hover:text-[#00BDFF] hover:border-sky-200 border border-slate-200/70 text-[11px] text-slate-600 truncate max-w-xs shrink-0 transition-colors cursor-pointer"
-                          >
-                            {tmpl}
-                          </button>
-                        ))}
+                      <div className="px-4 py-2 bg-white/95 border-t border-slate-200/70 overflow-x-auto flex items-center gap-2 scrollbar-none">
+                        <div className="max-w-3xl mx-auto w-full flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-[#00BDFF]" />
+                            Templat:
+                          </span>
+                          {QUICK_TEMPLATES.map((tmpl, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => setReplyText(tmpl)}
+                              className="px-2.5 py-1 rounded-full bg-slate-50 hover:bg-sky-50 hover:text-[#00BDFF] hover:border-sky-200 border border-slate-200/70 text-[11px] text-slate-600 truncate max-w-xs shrink-0 transition-colors cursor-pointer"
+                            >
+                              {tmpl}
+                            </button>
+                          ))}
+                        </div>
                       </div>
 
                       {/* Reply Form */}
-                      <form onSubmit={handleSendReply} className="p-3 bg-white border-t border-slate-200/80 flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={replyText}
-                          onChange={(e) => setReplyText(e.target.value)}
-                          placeholder="Tulis mesej balasan (staf mengambil alih perbualan)..."
-                          className="flex-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-400"
-                        />
-                        <button
-                          type="submit"
-                          disabled={sendingReply || !replyText.trim()}
-                          className="px-4 py-2 rounded-xl bg-[#00BDFF] hover:bg-sky-500 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
-                        >
-                          <SendHorizontal className={`w-3.5 h-3.5 ${sendingReply ? 'animate-spin' : ''}`} />
-                          <span>Hantar</span>
-                        </button>
-                      </form>
+                      <div className="p-3 bg-white border-t border-slate-200/80">
+                        <form onSubmit={handleSendReply} className="max-w-3xl mx-auto w-full flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            placeholder="Tulis mesej balasan (staf mengambil alih perbualan)..."
+                            className="flex-1 px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-400"
+                          />
+                          <button
+                            type="submit"
+                            disabled={sendingReply || !replyText.trim()}
+                            className="px-4 py-2.5 rounded-xl bg-[#00BDFF] hover:bg-sky-500 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                          >
+                            <SendHorizontal className={`w-3.5 h-3.5 ${sendingReply ? 'animate-spin' : ''}`} />
+                            <span>Hantar</span>
+                          </button>
+                        </form>
+                      </div>
                     </div>
                   ) : (
                     <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400 space-y-2">
@@ -1051,7 +1121,7 @@ export default function WhatsAppHubPage() {
                             {statusData.me?.pushName || 'SFV Apparel Official'}
                           </h3>
                           <p className="text-xs text-slate-600 font-mono mt-0.5">
-                            +{statusData.me?.id?.split('@')[0] || '60148599138'}
+                            +{statusData.me?.id?.split('@')[0] || '6281260066616'}
                           </p>
                           <p className="text-[11px] text-emerald-700 mt-1 flex items-center gap-1">
                             <CheckCircle2 className="w-3.5 h-3.5" />
