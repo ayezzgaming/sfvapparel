@@ -285,12 +285,15 @@ export default function WhatsAppHubPage() {
   // Restart / Fresh QR
   const handleRestartSession = async () => {
     setActionLoading(true);
+    setQrCode(null);
     try {
       await fetch('/api/whatsapp/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'start' }),
+        body: JSON.stringify({ action: 'restart' }),
       });
+      // Allow 2 seconds for engine restart
+      await new Promise((r) => setTimeout(r, 2000));
       await fetchStatus(true);
     } catch {
       alert('Gagal memulakan sesi WhatsApp');

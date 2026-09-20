@@ -128,6 +128,36 @@ export async function logoutWahaSession(): Promise<{ success: boolean }> {
 }
 
 /**
+ * Restart session or recover stuck session
+ */
+export async function restartWahaSession(): Promise<{ success: boolean; message?: string }> {
+  try {
+    const res = await fetch(`${WAHA_URL}/api/sessions/${DEFAULT_SESSION}/restart`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+    if (!res.ok) {
+      // Fallback: Stop then start
+      await fetch(`${WAHA_URL}/api/sessions/${DEFAULT_SESSION}/stop`, {
+        method: 'POST',
+        headers: getHeaders(),
+      });
+      await new Promise((r) => setTimeout(r, 1500));
+      const startRes = await fetch(`${WAHA_URL}/api/sessions/start`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ name: DEFAULT_SESSION }),
+      });
+      return { success: startRes.ok };
+    }
+    return { success: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Gagal memulakan semula sesi WhatsApp';
+    return { success: false, message };
+  }
+}
+
+/**
  * Get QR code data url
  */
 export async function getWahaQrCode(): Promise<string | null> {

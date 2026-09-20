@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { startWahaSession, logoutWahaSession } from '@/lib/whatsapp/waha-client';
+import { startWahaSession, logoutWahaSession, restartWahaSession } from '@/lib/whatsapp/waha-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +9,11 @@ export async function POST(req: Request) {
 
     if (action === 'logout') {
       const res = await logoutWahaSession();
+      return NextResponse.json(res);
+    }
+
+    if (action === 'restart') {
+      const res = await restartWahaSession();
       return NextResponse.json(res);
     }
 
