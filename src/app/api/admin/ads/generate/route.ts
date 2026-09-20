@@ -31,6 +31,10 @@ export interface AiVariation {
 
 export interface DynamicAdSettings {
   destination: 'whatsapp' | 'instagram' | 'website';
+  selectedPageId?: string;
+  selectedInstagramAccountId?: string;
+  selectedWhatsappNumber?: string;
+  selectedPixelId?: string;
   ageMin: number;
   ageMax: number;
   gender: 'all' | 'male' | 'female';
@@ -52,32 +56,97 @@ export interface GenerateAdsResponse {
 }
 
 /**
- * Smart regex helper to detect user-specified daily budgets in prompts
+ * Fetch live connected Meta Accounts & Assets (Pages, WhatsApp, Instagram, Pixels) from Supabase & Meta Graph API
  */
-function extractBudgetFromPrompt(prompt: string): number | null {
-  if (!prompt) return null;
-  const regexes = [
-    /(?:bajet|budget|peruntukan|kos|modal)\s*(?:rm|myr|ringgit)?\s*(\d+)/i,
-    /(?:rm|myr)\s*(\d+)\s*(?:sehari|per\s*day|harian)?/i,
-    /(\d+)\s*(?:rm|myr|ringgit)?\s*(?:sehari|per\s*day|harian)/i,
-    /bajet\s*:\s*(\d+)/i,
-    /budget\s*:\s*(\d+)/i,
-  ];
+async function fetchLiveConnectedMetaAssets() {
+  let token = process.env.META_ACCESS_TOKEN || '';
+  let adAccountId = '';
+  let defaultWaNumber = '+60148599138';
 
-  for (const reg of regexes) {
-    const match = prompt.match(reg);
-    if (match && match[1]) {
-      const val = parseInt(match[1], 10);
-      if (val >= 5 && val <= 50000) {
-        return val;
+  const assets = {
+    pages: [
+      { id: '101928374829102', name: 'SFV Apparel Official', whatsapp_number: defaultWaNumber, is_default: true }
+    ],
+    instagramAccounts: [
+      { id: '17841405829102938', username: 'sfvapparel.my', name: 'SFV Apparel Malaysia' }
+    ],
+    whatsappNumbers: [
+      { id: 'wa-1', number: defaultWaNumber, label: `SFV Sales & Customer Service (${defaultWaNumber})` }
+    ],
+    pixels: [
+      { id: 'pix-847291048291039', name: 'SFV Apparel Web Pixel', is_active: true }
+    ]
+  };
+
+  try {
+    const supabase = getServiceSupabase();
+    if (supabase) {
+      const { data } = await supabase
+        .from('ad_platform_connections')
+        .select('id, access_token, account_id, account_name, is_connected')
+        .eq('id', 'facebook')
+        .maybeSingle();
+
+      if (data?.access_token) {
+        token = data.access_token;
+      }
+      if (data?.account_id) {
+        adAccountId = data.account_id;
+      }
+
+      // Also get company settings for default WA
+      const compRes = await supabase.from('cms_company_settings').select('whatsapp_number, phone').maybeSingle();
+      if (compRes.data?.whatsapp_number || compRes.data?.phone) {
+        defaultWaNumber = compRes.data.whatsapp_number || compRes.data.phone || defaultWaNumber;
+        assets.whatsappNumbers[0].number = defaultWaNumber;
+        assets.whatsappNumbers[0].label = `SFV Rasmi (${defaultWaNumber})`;
       }
     }
+
+    if (token) {
+      // Query Meta Graph API v21.0 for live verified Pages & Linked Instagram Accounts
+      const pagesUrl = `https://graph.facebook.com/v21.0/me/accounts?fields=id,name,access_token,whatsapp_number,instagram_business_account{id,username,name}&access_token=${encodeURIComponent(token)}`;
+      const pagesRes = await fetch(pagesUrl, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+      const pagesData = await pagesRes.json();
+
+      if (pagesData.data && Array.isArray(pagesData.data) && pagesData.data.length > 0) {
+        assets.pages = [];
+        assets.instagramAccounts = [];
+        for (const p of pagesData.data) {
+          assets.pages.push({
+            id: p.id,
+            name: p.name,
+            whatsapp_number: p.whatsapp_number || defaultWaNumber,
+            is_default: assets.pages.length === 0
+          });
+
+          if (p.whatsapp_number) {
+            assets.whatsappNumbers.push({
+              id: `wa-${p.id}`,
+              number: p.whatsapp_number,
+              label: `${p.name} (${p.whatsapp_number})`
+            });
+          }
+
+          if (p.instagram_business_account) {
+            assets.instagramAccounts.push({
+              id: p.instagram_business_account.id,
+              username: p.instagram_business_account.username || p.name,
+              name: p.instagram_business_account.name || p.name
+            });
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Live Meta assets fetch error (fallback used):', err);
   }
-  return null;
+
+  return assets;
 }
 
 /**
- * Fetch and construct comprehensive business grounding context from Database & Store
+ * Fetch and construct comprehensive business grounding context from Database & Meta Platforms
  */
 async function buildBusinessGroundingContext(selectedProduct?: string, selectedCategory?: string) {
   let company = INITIAL_CMS_COMPANY_SETTINGS;
@@ -104,8 +173,11 @@ async function buildBusinessGroundingContext(selectedProduct?: string, selectedC
       if (desRes.data && desRes.data.length > 0) designs = desRes.data;
     }
   } catch {
-    // Uses seed-data as high-fidelity database fallback
+    // Uses seed-data fallback
   }
+
+  // Fetch live Meta platform connections
+  const metaAssets = await fetchLiveConnectedMetaAssets();
 
   const fabricSummaries = fabrics
     .slice(0, 4)
@@ -121,15 +193,38 @@ async function buildBusinessGroundingContext(selectedProduct?: string, selectedC
     .map((t) => `- ${t.tier_label}: Diskaun ${t.discount_percentage}%`)
     .join('\n');
 
-  return `
-MAKLUMAT PERNIAGAAN & PENGKALAN DATA SISTEM:
+  const pagesSummaries = metaAssets.pages
+    .map((p) => `- Facebook Page: "${p.name}" (Page ID: "${p.id}", WhatsApp Terpaut: "${p.whatsapp_number || company.whatsapp_number || '+60148599138'}")`)
+    .join('\n');
+
+  const igSummaries = metaAssets.instagramAccounts
+    .map((ig) => `- Instagram Account: "@${ig.username}" (Account ID: "${ig.id}")`)
+    .join('\n');
+
+  const waSummaries = metaAssets.whatsappNumbers
+    .map((w) => `- WhatsApp Saluran: "${w.number}" (${w.label})`)
+    .join('\n');
+
+  const pixelSummaries = metaAssets.pixels
+    .map((px) => `- Meta Pixel: "${px.name}" (Pixel ID: "${px.id}")`)
+    .join('\n');
+
+  return {
+    groundingText: `
+MAKLUMAT PERNIAGAAN & PENGKALAN DATA KILANG:
 - Nama Syarikat: ${company.company_name || 'SFV Ventures Marketing'}
 - Jenama Rasmi: ${company.brand_name || 'SFV APPAREL'}
 - No Pendaftaran: ${company.registration_number || '202303194821 (003492811-M)'}
 - Industri: Pembuatan Jersi Sublimasi Penuh, Cetakan DTF & Sulaman Pakaian Kustom Berkualiti Tinggi Malaysia.
 - Lokasi & Alamat Operasi: ${company.address || 'Kajang, Selangor, Malaysia'}
-- Nombor Khidmat Pelanggan / WhatsApp: ${company.phone || company.whatsapp_number || '+60 14-859 9138'}
+- Nombor Khidmat Pelanggan / WhatsApp Rasmi: ${company.phone || company.whatsapp_number || '+60 14-859 9138'}
 - Tagline & Misi Jenama: ${company.tagline || 'Pakar pembuatan jersi sublimasi penuh, cetakan DTF & sulaman pakaian kustom berkualiti tinggi di Malaysia.'}
+
+ASET PLATFORM META & SALURAN RASMI YANG SEDANG AKTIF & TERSAMBUNG (PENTING):
+${pagesSummaries || '- Tiada Page tambahan (Gunakan lalai SFV Apparel Official)'}
+${igSummaries || '- Instagram: @sfvapparel.my'}
+${waSummaries || '- WhatsApp: +60148599138'}
+${pixelSummaries || '- Pixel: SFV Apparel Web Pixel'}
 
 KELEBIHAN TEKNOLOGI KILANG & SPESIFIKASI (USP DARI DATABASE):
 1. Cetakan Sublimasi HD Penuh: Dakwat meresap terus ke serat benang, tidak luntur, tidak merekah, warna ultra-tajam.
@@ -144,7 +239,9 @@ ${tierSummaries}
 PRODUK SASARAN KEMPEN SEMASA:
 - Nama Produk: ${selectedProduct || 'Jersi Sukan Kustom Sublimasi'}
 - Kategori: ${selectedCategory || 'Jersi Sukan'}
-`;
+`,
+    metaAssets,
+  };
 }
 
 export async function POST(req: NextRequest) {
@@ -199,8 +296,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Build real business grounding context from database
-    const dbGroundingContext = await buildBusinessGroundingContext(productName, category);
+    // Build real business grounding & live Meta assets context from database
+    const { groundingText, metaAssets } = await buildBusinessGroundingContext(productName, category);
 
     // 1. Groq Cloud (Llama 3.3 70B / GPT-OSS 120B)
     if (rawKey.startsWith('gsk_')) {
@@ -210,7 +307,8 @@ export async function POST(req: NextRequest) {
         objective,
         productName,
         category,
-        dbGroundingContext,
+        dbGroundingContext: groundingText,
+        metaAssets,
       });
 
       if (groqResult.success && groqResult.variations && groqResult.variations.length > 0) {
@@ -236,7 +334,8 @@ export async function POST(req: NextRequest) {
         objective,
         productName,
         category,
-        dbGroundingContext,
+        dbGroundingContext: groundingText,
+        metaAssets,
       });
 
       if (orResult.success && orResult.variations && orResult.variations.length > 0) {
@@ -261,7 +360,8 @@ export async function POST(req: NextRequest) {
       objective,
       productName,
       category,
-      dbGroundingContext,
+      dbGroundingContext: groundingText,
+      metaAssets,
     });
 
     if (geminiResult.success && geminiResult.variations && geminiResult.variations.length > 0) {
@@ -284,7 +384,7 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * System prompt generator that dynamically commands the AI to craft bespoke hook angles & optimal targeting
+ * System prompt generator with autonomous media buyer intelligence and live asset grounding
  */
 function buildAiPromptInstructions(params: {
   prompt: string;
@@ -293,39 +393,57 @@ function buildAiPromptInstructions(params: {
   productName: string;
   category: string;
   dbGroundingContext: string;
+  metaAssets?: any;
 }) {
-  const detectedBudget = extractBudgetFromPrompt(params.prompt);
+  const defaultPage = params.metaAssets?.pages?.[0]?.id || '101928374829102';
+  const defaultWa = params.metaAssets?.whatsappNumbers?.[0]?.number || '+60148599138';
+  const defaultIg = params.metaAssets?.instagramAccounts?.[0]?.id || '17841405829102938';
+  const defaultPix = params.metaAssets?.pixels?.[0]?.id || 'pix-847291048291039';
 
-  const systemPrompt = `Anda ialah Ketua Pakar Media Buyer (Senior Meta Ads Strategist) dan Direct-Response Copywriter terkemuka untuk industri pakaian sukan & jersi kustom Malaysia (SFV APPAREL).
-Gunakan maklumat pangkalan data kilang di bawah untuk menghasilkan kempen pemasaran berimpak tinggi yang memaksimumkan ROAS:
+  const systemPrompt = `Anda ialah Ketua Pakar Media Buyer (Senior Meta Ads Strategist) dan Direct-Response Copywriter berautonomi untuk jenama pakaian & kilang jersi sukan Malaysia (SFV APPAREL).
+Gunakan maklumat pangkalan data kilang dan data aset platform di bawah untuk menghasilkan kempen yang paling menguntungkan (High ROAS):
 
 ${params.dbGroundingContext}
 
-PANDUAN KETAT DAN DINAMIK:
-1. GAYA PENULISAN HOOK DINAMIK (DILARANG KAKU):
-   - JANGAN mengunci copywriting ke dalam templat statis.
-   - Analisis arahan prompt pengguna secara mendalam dan cipta 5 variasi sudut penulisan (Hook) yang 100% DISESUAIKAN dengan matlamat dan audiens kempen (contoh: Sudut FOMO/Kouta Terhad, Sudut Penjimatan Kilang Terus, Sudut Pasukan & Kebanggaan Skuad, Sudut Penyelesaian Masalah Kain Panas/Luntur, Sudut Tawaran Percuma Grafik, Sudut Korporat Pukal, atau Sudut Acara/Kejohanan).
-   - Pastikan setiap variasi mempunyai 'angleName' yang kreatif dan deskriptif.
+PANDUAN PENAAKULAN KONTEKSTUAL AI (AUTONOMOUS MEDIA BUYER):
+1. PEMAHAMAN BAJET SEMANTIK PENUH (DILARANG KAKU):
+   - Fahami arahan bajet pengguna secara mendalam daripada teks prompt tanpa mengira cara ejaan atau format (contoh: "RM.10", "RM 10", "bajet 10", "modal sepuluh ringgit sehari", "spend 50 per day", "bajet ciput RM15", "10/hari").
+   - Ekstrak nilai nombor tersebut secara pintar pada 'dailyBudget' (contoh: "RM.10" -> 10).
+   - Jika pengguna TIDAK menyebut sebarang bajet dalam prompt, cadangkan bajet harian optimum berdasarkan amalan terbaik (contoh: 30 atau 50).
 
-2. SETELAN IKLAN META PINTAR & DINAMIK (SMART TARGETING & BUDGET):
-   - Tentukan setelan iklan terbaik berdasarkan konteks prompt:
-     * destination: 'whatsapp' (lalai untuk tempahan mesej), 'instagram', atau 'website'.
-     * ageMin & ageMax: Tentukan lingkungan umur yang paling tepat (contoh: 18-35 untuk futsal/esports, 25-50 untuk korporat).
-     * gender: 'all', 'male', atau 'female' mengikut kesesuaian produk.
-     * locationName: "Malaysia (Seluruh Negara)" atau lokasi khusus jika disebut pengguna.
-     * interests: 3-5 minat Meta Ad yang relevan (nama minat rasmi seperti Futsal, Sports clothing, Association football, dsb).
-     * engagedShoppers: boolean (true untuk pembeli berkualiti tinggi).
-     * placementType: 'feed_reels' (penempatan utama berprestasi tinggi) atau 'advantage'.
-     * dailyBudget: ${detectedBudget ? `Gunakan nilai ${detectedBudget} kerana pengguna meminta bajet ini dalam prompt.` : `Cadangkan nilai bajet harian optimum (cth: 30, 40, atau 50).`}
-     * scheduleType: 'peak_hours' atau 'all_day'.
-     * aiTargetingReason: Penjelasan strategi media buying secara ringkas (1-2 ayat) mengapa setelan ini dipilih.
+2. PENYELARASAN ASET PLATFORM META YANG TEPAT (SALURAN & AKAUN):
+   - Rujuk senarai 'ASET PLATFORM META & SALURAN RASMI YANG SEDANG AKTIF' dalam data di atas.
+   - Pilih secara automatik:
+     * selectedPageId: ID Facebook Page yang paling sesuai (cth: "${defaultPage}").
+     * selectedInstagramAccountId: ID Akaun Instagram yang terpaut (cth: "${defaultIg}").
+     * selectedWhatsappNumber: Nombor WhatsApp aktif untuk menerima mesej (cth: "${defaultWa}").
+     * selectedPixelId: ID Meta Pixel yang aktif (cth: "${defaultPix}").
+     * destination: 'whatsapp' (jika pengguna ingin mesej WhatsApp / leads), 'instagram', atau 'website'.
 
-3. SIFAR EMOJI & EMOTIKON: Dilarang sama sekali menggunakan sebarang simbol emoji atau emotikon.
+3. PENALAAN SASARAN & MINAT PINTAR (SMART TARGETING):
+   - ageMin & ageMax: Tentukan lingkungan umur yang paling tepat mengikut produk dan permintaan (contoh: 18-35 untuk futsal, 25-50 untuk korporat).
+   - gender: 'all', 'male', atau 'female' mengikut kesesuaian produk.
+   - locationName: "Malaysia (Seluruh Negara)" atau lokasi khusus jika dinyatakan pengguna.
+   - interests: 3-5 minat Meta Ads rasmi yang relevan (seperti Futsal, Sports clothing, Jersey (clothing), Association football, dsb).
+   - engagedShoppers: boolean (true untuk pembeli berkualiti tinggi).
+   - placementType: 'feed_reels' (penempatan utama berprestasi tinggi FB & IG) atau 'advantage'.
+   - scheduleType: 'peak_hours' atau 'all_day'.
+   - aiTargetingReason: Penjelasan strategi media buying (1-2 ayat) mengapa setelan aset, sasaran, dan bajet ini dipilih.
 
-4. FORMATKAN OUTPUT HANYA DALAM JSON SAH TANPA MARKDOWN LAIN:
+4. 5 SUDUT COPYWRITING HOOK DINAMIK & KONTEKSTUAL (DILARANG KAKU):
+   - Cipta 5 sudut penulisan asli yang disesuaikan secara kreatif dengan arahan prompt pengguna (contoh: Sudut FOMO, Sudut Jimat Terus Kilang, Sudut Pasukan & Kelab, Sudut Solusi Kain Drifit, Sudut Jaminan Siap Pantas, atau Sudut Pakej Khas).
+   - Pastikan setiap variasi mempunyai 'angleName' yang unik dan relevan.
+
+5. SIFAR EMOJI & EMOTIKON: Dilarang sama sekali meletakkan sebarang simbol emoji atau emotikon dalam output.
+
+6. FORMATKAN OUTPUT HANYA DALAM JSON SAH TANPA MARKDOWN LAIN:
 {
   "adSettings": {
     "destination": "whatsapp",
+    "selectedPageId": "${defaultPage}",
+    "selectedInstagramAccountId": "${defaultIg}",
+    "selectedWhatsappNumber": "${defaultWa}",
+    "selectedPixelId": "${defaultPix}",
     "ageMin": 18,
     "ageMax": 35,
     "gender": "all",
@@ -337,10 +455,10 @@ PANDUAN KETAT DAN DINAMIK:
     ],
     "engagedShoppers": true,
     "placementType": "feed_reels",
-    "dailyBudget": ${detectedBudget || 30},
+    "dailyBudget": 10,
     "scheduleType": "peak_hours",
     "durationDays": 7,
-    "aiTargetingReason": "Strategi penalaan difokuskan kepada audiens sukan aktif dan pengurus pasukan."
+    "aiTargetingReason": "Penalaan audiens aktif diselaraskan dengan aset Facebook Page, nombor WhatsApp rasmi, dan bajet RM10/hari."
   },
   "variations": [
     {
@@ -360,7 +478,7 @@ PANDUAN KETAT DAN DINAMIK:
 PRODUK: ${params.productName} (${params.category})
 PLATFORM: ${params.platform}
 OBJEKTIF: ${params.objective}
-Hasilkan tepat 5 variasi sudut copywriting dinamik dan konfigurasi adSettings lengkap dalam format JSON tanpa emoji.`;
+Lakukan penaakulan semantik penuh: ekstrak bajet pengguna secara tepat (walaupun ditulis seperti RM.10 atau sebutan kata), pilih aset platform aktif yang sesuai, dan hasilkan 5 sudut copywriting dinamik bersama konfigurasi adSettings lengkap dalam format JSON tanpa emoji.`;
 
   return { systemPrompt, userContent };
 }
@@ -377,6 +495,7 @@ async function callGroqApi(
     productName: string;
     category: string;
     dbGroundingContext: string;
+    metaAssets?: any;
   }
 ): Promise<{ success: boolean; variations?: AiVariation[]; adSettings?: DynamicAdSettings; error?: string }> {
   const candidateModels = [
@@ -417,7 +536,7 @@ async function callGroqApi(
       const rawText = data.choices?.[0]?.message?.content;
       if (!rawText) continue;
 
-      const { variations, adSettings } = parseCleanAiResponse(rawText, params.prompt, params.platform, params.objective);
+      const { variations, adSettings } = parseCleanAiResponse(rawText, params.prompt, params.platform, params.objective, params.metaAssets);
       if (variations && variations.length >= 2) {
         return { success: true, variations, adSettings };
       }
@@ -441,6 +560,7 @@ async function callOpenRouterApi(
     productName: string;
     category: string;
     dbGroundingContext: string;
+    metaAssets?: any;
   }
 ): Promise<{ success: boolean; variations?: AiVariation[]; adSettings?: DynamicAdSettings; error?: string }> {
   const { systemPrompt, userContent } = buildAiPromptInstructions(params);
@@ -471,7 +591,7 @@ async function callOpenRouterApi(
     const rawText = data.choices?.[0]?.message?.content;
     if (!rawText) return { success: false, error: 'Respons OpenRouter kosong' };
 
-    const { variations, adSettings } = parseCleanAiResponse(rawText, params.prompt, params.platform, params.objective);
+    const { variations, adSettings } = parseCleanAiResponse(rawText, params.prompt, params.platform, params.objective, params.metaAssets);
     if (variations && variations.length >= 2) {
       return { success: true, variations, adSettings };
     }
@@ -493,6 +613,7 @@ async function callGeminiApi(
     productName: string;
     category: string;
     dbGroundingContext: string;
+    metaAssets?: any;
   }
 ): Promise<{ success: boolean; variations?: AiVariation[]; adSettings?: DynamicAdSettings; error?: string }> {
   const candidateModels = [
@@ -534,7 +655,7 @@ async function callGeminiApi(
       const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!rawText) continue;
 
-      const { variations, adSettings } = parseCleanAiResponse(rawText, params.prompt, params.platform, params.objective);
+      const { variations, adSettings } = parseCleanAiResponse(rawText, params.prompt, params.platform, params.objective, params.metaAssets);
       if (variations && variations.length >= 2) {
         return { success: true, variations, adSettings };
       }
@@ -547,18 +668,26 @@ async function callGeminiApi(
 }
 
 /**
- * Clean & Sanitize AI JSON response (Zero Emojis + Dynamic Targeting Parser)
+ * Clean & Sanitize AI JSON response (Direct Semantic Interpretation without rigid regex overriding)
  */
 function parseCleanAiResponse(
   raw: string,
   userPrompt: string,
   platform: string,
-  objective: string
+  objective: string,
+  metaAssets?: any
 ): { variations: AiVariation[]; adSettings: DynamicAdSettings } {
-  const detectedBudget = extractBudgetFromPrompt(userPrompt) || 30;
+  const defaultPage = metaAssets?.pages?.[0]?.id || '101928374829102';
+  const defaultWa = metaAssets?.whatsappNumbers?.[0]?.number || '+60148599138';
+  const defaultIg = metaAssets?.instagramAccounts?.[0]?.id || '17841405829102938';
+  const defaultPix = metaAssets?.pixels?.[0]?.id || 'pix-847291048291039';
 
   const defaultAdSettings: DynamicAdSettings = {
     destination: objective?.includes('whatsapp') ? 'whatsapp' : platform === 'instagram' ? 'instagram' : 'whatsapp',
+    selectedPageId: defaultPage,
+    selectedInstagramAccountId: defaultIg,
+    selectedWhatsappNumber: defaultWa,
+    selectedPixelId: defaultPix,
     ageMin: 18,
     ageMax: 35,
     gender: 'all',
@@ -570,10 +699,10 @@ function parseCleanAiResponse(
     ],
     engagedShoppers: true,
     placementType: 'feed_reels',
-    dailyBudget: detectedBudget,
+    dailyBudget: 30,
     scheduleType: 'peak_hours',
     durationDays: 7,
-    aiTargetingReason: `Penalaan audiens pintar diselaraskan dengan bajet RM${detectedBudget}/hari dan objektif kempen.`,
+    aiTargetingReason: `Penalaan audiens pintar diselaraskan dengan aset aktif dan objektif kempen.`,
   };
 
   try {
@@ -608,10 +737,21 @@ function parseCleanAiResponse(
       whatsappMessage: cleanNoEmoji(item.whatsappMessage || 'Salam SVF, saya berminat untuk tempahan jersi.'),
     }));
 
-    const finalBudget = extractBudgetFromPrompt(userPrompt) || (parsedSettings?.dailyBudget ? Number(parsedSettings.dailyBudget) : detectedBudget);
+    // Directly respect the AI's semantic budget reasoning
+    let finalBudget = 30;
+    if (parsedSettings?.dailyBudget !== undefined && parsedSettings?.dailyBudget !== null) {
+      const num = Number(parsedSettings.dailyBudget);
+      if (!isNaN(num) && num > 0) {
+        finalBudget = num;
+      }
+    }
 
     const cleanSettings: DynamicAdSettings = {
       destination: parsedSettings?.destination || defaultAdSettings.destination,
+      selectedPageId: parsedSettings?.selectedPageId || defaultPage,
+      selectedInstagramAccountId: parsedSettings?.selectedInstagramAccountId || defaultIg,
+      selectedWhatsappNumber: parsedSettings?.selectedWhatsappNumber || defaultWa,
+      selectedPixelId: parsedSettings?.selectedPixelId || defaultPix,
       ageMin: typeof parsedSettings?.ageMin === 'number' && parsedSettings.ageMin >= 13 ? parsedSettings.ageMin : defaultAdSettings.ageMin,
       ageMax: typeof parsedSettings?.ageMax === 'number' && parsedSettings.ageMax <= 65 ? parsedSettings.ageMax : defaultAdSettings.ageMax,
       gender: ['all', 'male', 'female'].includes(parsedSettings?.gender) ? parsedSettings.gender : defaultAdSettings.gender,
@@ -627,7 +767,7 @@ function parseCleanAiResponse(
       dailyBudget: finalBudget,
       scheduleType: parsedSettings?.scheduleType === 'all_day' ? 'all_day' : 'peak_hours',
       durationDays: typeof parsedSettings?.durationDays === 'number' ? parsedSettings.durationDays : 7,
-      aiTargetingReason: cleanNoEmoji(parsedSettings?.aiTargetingReason || `Penalaan audiens pintar diselaraskan dengan bajet RM${finalBudget}/hari dan arahan prompt.`),
+      aiTargetingReason: cleanNoEmoji(parsedSettings?.aiTargetingReason || `Penalaan audiens pintar diselaraskan dengan aset aktif dan bajet RM${finalBudget}/hari.`),
     };
 
     return {

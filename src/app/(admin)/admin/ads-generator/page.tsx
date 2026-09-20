@@ -661,6 +661,10 @@ export default function AdminAdsGeneratorPage() {
           setMetaConfig((prev) => ({
             ...prev,
             destination: s.destination || prev.destination,
+            selectedPageId: s.selectedPageId || prev.selectedPageId,
+            selectedInstagramAccountId: s.selectedInstagramAccountId || prev.selectedInstagramAccountId,
+            selectedWhatsappNumber: s.selectedWhatsappNumber || prev.selectedWhatsappNumber,
+            selectedPixelId: s.selectedPixelId || prev.selectedPixelId,
             ageMin: typeof s.ageMin === 'number' ? s.ageMin : prev.ageMin,
             ageMax: typeof s.ageMax === 'number' ? s.ageMax : prev.ageMax,
             gender: s.gender || prev.gender,
