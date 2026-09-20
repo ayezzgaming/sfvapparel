@@ -267,6 +267,7 @@ export async function getCmsDataDb(): Promise<{
     let { data: sloganList } = await supabase
       .from('cms_slogan_quote')
       .select('*')
+      .order('updated_at', { ascending: false })
       .limit(1);
 
     let sloganQuote: CmsSloganQuote = INITIAL_CMS_SLOGAN_QUOTE;
@@ -282,7 +283,7 @@ export async function getCmsDataDb(): Promise<{
       };
     } else {
       const sloganPayload = {
-        id: crypto.randomUUID(),
+        id: '00000000-0000-0000-0008-000000000001',
         ...INITIAL_CMS_SLOGAN_QUOTE,
       };
       await supabase.from('cms_slogan_quote').upsert(sloganPayload);
@@ -292,6 +293,7 @@ export async function getCmsDataDb(): Promise<{
     let { data: companyList } = await supabase
       .from('cms_company_settings')
       .select('*')
+      .order('updated_at', { ascending: false })
       .limit(1);
 
     let companySettings: CmsCompanySettings = INITIAL_CMS_COMPANY_SETTINGS;
@@ -318,7 +320,7 @@ export async function getCmsDataDb(): Promise<{
       };
     } else {
       const companyPayload = {
-        id: crypto.randomUUID(),
+        id: '00000000-0000-0000-0007-000000000001',
         company_name: INITIAL_CMS_COMPANY_SETTINGS.company_name,
         brand_name: INITIAL_CMS_COMPANY_SETTINGS.brand_name,
         registration_number: INITIAL_CMS_COMPANY_SETTINGS.registration_number,
@@ -484,21 +486,27 @@ export async function saveHeroBannerDb(banner: Partial<CmsHeroBanner> & { id?: s
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
     const targetId = toUuid(banner.id);
-    let imageUrl = banner.image_url || '';
-    if (imageUrl.startsWith('data:image/')) {
+    let existingRow: any = null;
+    if (targetId) {
+      const { data: ex } = await supabase.from('cms_hero_banners').select('*').eq('id', targetId).maybeSingle();
+      existingRow = ex;
+    }
+
+    let imageUrl = banner.image_url ?? existingRow?.image_url ?? '/hero1.png';
+    if (imageUrl && imageUrl.startsWith('data:image/')) {
       imageUrl = await uploadCmsImageToStorage(imageUrl, 'hero-banner');
     }
 
     const payload = {
       id: targetId,
       image_url: imageUrl,
-      status_pill: banner.status_pill || 'Kilang Beroperasi',
-      tag_text: banner.tag_text || 'Koleksi Rasmi 2026',
-      title: banner.title || 'Studio Jersi & DTF',
-      button_text: banner.button_text || 'Katalog',
-      button_link: banner.button_link || '/catalog',
-      sort_order: banner.sort_order ?? 0,
-      is_active: banner.is_active ?? true,
+      status_pill: banner.status_pill ?? existingRow?.status_pill ?? 'Kilang Beroperasi',
+      tag_text: banner.tag_text ?? existingRow?.tag_text ?? 'Koleksi Rasmi 2026',
+      title: banner.title ?? existingRow?.title ?? 'Studio Jersi & DTF',
+      button_text: banner.button_text ?? existingRow?.button_text ?? 'Katalog',
+      button_link: banner.button_link ?? existingRow?.button_link ?? '/catalog',
+      sort_order: banner.sort_order ?? existingRow?.sort_order ?? 0,
+      is_active: banner.is_active ?? existingRow?.is_active ?? true,
     };
 
     const { data, error } = await supabase
@@ -562,25 +570,31 @@ export async function saveServiceDb(service: Partial<CmsService> & { id?: string
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
     const targetId = toUuid(service.id);
-    let imageUrl = service.image_url || '';
-    if (imageUrl.startsWith('data:image/')) {
+    let existingRow: any = null;
+    if (targetId) {
+      const { data: ex } = await supabase.from('cms_services').select('*').eq('id', targetId).maybeSingle();
+      existingRow = ex;
+    }
+
+    let imageUrl = service.image_url ?? existingRow?.image_url ?? '/images/prod_sublimation.jpg';
+    if (imageUrl && imageUrl.startsWith('data:image/')) {
       imageUrl = await uploadCmsImageToStorage(imageUrl, 'service');
     }
 
     const payload = {
       id: targetId,
-      category: service.category || 'Servis',
-      title: service.title || 'Servis Cetakan',
-      headline: service.headline || '',
-      highlight: service.highlight || '',
-      price_prefix: service.price_prefix || 'Bermula',
-      price_amount: service.price_amount || 'RM 25.00',
-      price_unit: service.price_unit || '/ helai',
+      category: service.category ?? existingRow?.category ?? 'Servis',
+      title: service.title ?? existingRow?.title ?? 'Servis Cetakan',
+      headline: service.headline ?? existingRow?.headline ?? '',
+      highlight: service.highlight ?? existingRow?.highlight ?? '',
+      price_prefix: service.price_prefix ?? existingRow?.price_prefix ?? 'Bermula',
+      price_amount: service.price_amount ?? existingRow?.price_amount ?? 'RM28',
+      price_unit: service.price_unit ?? existingRow?.price_unit ?? '/ helai',
       image_url: imageUrl,
-      href: service.href || '/catalog',
-      details: service.details || [],
-      sort_order: service.sort_order ?? 0,
-      is_active: service.is_active ?? true,
+      href: service.href ?? existingRow?.href ?? '/catalog',
+      details: service.details ?? existingRow?.details ?? [],
+      sort_order: service.sort_order ?? existingRow?.sort_order ?? 0,
+      is_active: service.is_active ?? existingRow?.is_active ?? true,
     };
 
     const { data, error } = await supabase
@@ -627,19 +641,25 @@ export async function saveProductionVideoDb(video: Partial<CmsProductionVideo> &
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
     const targetId = toUuid(video.id);
-    let thumbUrl = video.thumbnail_url || '';
-    if (thumbUrl.startsWith('data:image/')) {
+    let existingRow: any = null;
+    if (targetId) {
+      const { data: ex } = await supabase.from('cms_production_videos').select('*').eq('id', targetId).maybeSingle();
+      existingRow = ex;
+    }
+
+    let thumbUrl = video.thumbnail_url ?? existingRow?.thumbnail_url ?? '';
+    if (thumbUrl && thumbUrl.startsWith('data:image/')) {
       thumbUrl = await uploadCmsImageToStorage(thumbUrl, 'video-thumb');
     }
 
     const payload = {
       id: targetId,
-      category: video.category || 'Produksi',
-      title: video.title || 'Video Produksi',
+      category: video.category ?? existingRow?.category ?? 'Produksi',
+      title: video.title ?? existingRow?.title ?? 'Video Produksi',
       thumbnail_url: thumbUrl,
-      youtube_id: video.youtube_id || '',
-      sort_order: video.sort_order ?? 0,
-      is_active: video.is_active ?? true,
+      youtube_id: video.youtube_id ?? existingRow?.youtube_id ?? '',
+      sort_order: video.sort_order ?? existingRow?.sort_order ?? 0,
+      is_active: video.is_active ?? existingRow?.is_active ?? true,
     };
 
     const { data, error } = await supabase
@@ -686,21 +706,27 @@ export async function saveProductionGalleryDb(item: Partial<CmsProductionGallery
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
     const targetId = toUuid(item.id);
-    let imgUrl = item.image_url || '';
-    if (imgUrl.startsWith('data:image/')) {
+    let existingRow: any = null;
+    if (targetId) {
+      const { data: ex } = await supabase.from('cms_production_gallery').select('*').eq('id', targetId).maybeSingle();
+      existingRow = ex;
+    }
+
+    let imgUrl = item.image_url ?? existingRow?.image_url ?? '/images/prod_sportswear.jpg';
+    if (imgUrl && imgUrl.startsWith('data:image/')) {
       imgUrl = await uploadCmsImageToStorage(imgUrl, 'gallery');
     }
 
     const payload = {
       id: targetId,
-      title: item.title || 'Koleksi Galeri',
-      category: item.category || 'Jersi',
-      fabric: item.fabric || 'Microfiber',
+      title: item.title ?? existingRow?.title ?? 'Koleksi Galeri',
+      category: item.category ?? existingRow?.category ?? 'Jersi',
+      fabric: item.fabric ?? existingRow?.fabric ?? 'Microfiber',
       image_url: imgUrl,
-      client: item.client || 'Pelanggan',
-      tag: item.tag || 'Terlaris',
-      sort_order: item.sort_order ?? 0,
-      is_active: item.is_active ?? true,
+      client: item.client ?? existingRow?.client ?? 'Pelanggan',
+      tag: item.tag ?? existingRow?.tag ?? 'Terlaris',
+      sort_order: item.sort_order ?? existingRow?.sort_order ?? 0,
+      is_active: item.is_active ?? existingRow?.is_active ?? true,
     };
 
     const { data, error } = await supabase
@@ -747,18 +773,23 @@ export async function saveTestimonialDb(testimonial: Partial<CmsTestimonial> & {
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
     const targetId = toUuid(testimonial.id);
+    let existingRow: any = null;
+    if (targetId) {
+      const { data: ex } = await supabase.from('cms_testimonials').select('*').eq('id', targetId).maybeSingle();
+      existingRow = ex;
+    }
 
     const payload = {
       id: targetId,
-      name: testimonial.name || 'Pelanggan',
-      location: testimonial.location || 'Malaysia',
-      initial: testimonial.initial || (testimonial.name ? testimonial.name.substring(0, 2).toUpperCase() : 'PL'),
-      avatar_bg: testimonial.avatar_bg || 'bg-blue-100',
-      avatar_text: testimonial.avatar_text || 'text-blue-600',
-      platform: testimonial.platform || 'google',
-      rating: testimonial.rating ?? 5,
-      review: testimonial.review || '',
-      is_active: testimonial.is_active ?? true,
+      name: testimonial.name ?? existingRow?.name ?? 'Pelanggan',
+      location: testimonial.location ?? existingRow?.location ?? 'Malaysia',
+      initial: testimonial.initial ?? existingRow?.initial ?? (testimonial.name ? testimonial.name.substring(0, 2).toUpperCase() : 'PL'),
+      avatar_bg: testimonial.avatar_bg ?? existingRow?.avatar_bg ?? 'bg-blue-100',
+      avatar_text: testimonial.avatar_text ?? existingRow?.avatar_text ?? 'text-blue-600',
+      platform: testimonial.platform ?? existingRow?.platform ?? 'google',
+      rating: testimonial.rating ?? existingRow?.rating ?? 5,
+      review: testimonial.review ?? existingRow?.review ?? '',
+      is_active: testimonial.is_active ?? existingRow?.is_active ?? true,
     };
 
     const { data, error } = await supabase
@@ -804,8 +835,7 @@ export async function saveSloganQuoteDb(slogan: Partial<CmsSloganQuote>): Promis
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    const { data: existing } = await supabase.from('cms_slogan_quote').select('id').limit(1);
-    const targetId = existing && existing.length > 0 ? existing[0].id : crypto.randomUUID();
+    const targetId = '00000000-0000-0000-0008-000000000001';
 
     const payload = {
       id: targetId,
@@ -844,25 +874,25 @@ export async function saveCompanySettingsDb(settings: Partial<CmsCompanySettings
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    const { data: existing } = await supabase.from('cms_company_settings').select('id').limit(1);
-    const targetId = existing && existing.length > 0 ? existing[0].id : crypto.randomUUID();
+    const targetId = '00000000-0000-0000-0007-000000000001';
 
     const payload = {
       id: targetId,
       company_name: settings.company_name || INITIAL_CMS_COMPANY_SETTINGS.company_name,
       brand_name: settings.brand_name || INITIAL_CMS_COMPANY_SETTINGS.brand_name,
       registration_number: settings.registration_number || INITIAL_CMS_COMPANY_SETTINGS.registration_number,
-      tagline: settings.tagline || INITIAL_CMS_COMPANY_SETTINGS.tagline,
+      tagline: settings.tagline || '',
       phone: settings.phone || INITIAL_CMS_COMPANY_SETTINGS.phone,
       whatsapp_number: settings.whatsapp_number || INITIAL_CMS_COMPANY_SETTINGS.whatsapp_number,
-      whatsapp_default_message: settings.whatsapp_default_message || INITIAL_CMS_COMPANY_SETTINGS.whatsapp_default_message,
+      whatsapp_default_message: settings.whatsapp_default_message || '',
       email: settings.email || INITIAL_CMS_COMPANY_SETTINGS.email,
       address: settings.address || INITIAL_CMS_COMPANY_SETTINGS.address,
-      working_hours: settings.working_hours || INITIAL_CMS_COMPANY_SETTINGS.working_hours,
-      telegram_catalog_url: settings.telegram_catalog_url || INITIAL_CMS_COMPANY_SETTINGS.telegram_catalog_url,
-      facebook_url: settings.facebook_url || INITIAL_CMS_COMPANY_SETTINGS.facebook_url,
-      instagram_url: settings.instagram_url || INITIAL_CMS_COMPANY_SETTINGS.instagram_url,
-      tiktok_url: settings.tiktok_url || INITIAL_CMS_COMPANY_SETTINGS.tiktok_url,
+      working_hours: settings.working_hours || '',
+      website_url: settings.website_url || undefined,
+      telegram_catalog_url: settings.telegram_catalog_url || '',
+      facebook_url: settings.facebook_url || '',
+      instagram_url: settings.instagram_url || '',
+      tiktok_url: settings.tiktok_url || '',
       updated_at: new Date().toISOString(),
     };
 
@@ -899,24 +929,15 @@ export async function syncLinkedPhoneToCompanySettings(activePhone: string): Pro
     const cleanPhone = activePhone.replace(/[\s\-\+\(\)]/g, '').split('@')[0].split(':')[0];
     if (!cleanPhone) return false;
 
-    const { data: existing } = await supabase.from('cms_company_settings').select('id, whatsapp_number').limit(1);
-    if (existing && existing.length > 0) {
-      if (existing[0].whatsapp_number !== cleanPhone) {
-        await supabase
-          .from('cms_company_settings')
-          .update({
-            whatsapp_number: cleanPhone,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', existing[0].id);
-      }
-    } else {
-      await supabase.from('cms_company_settings').upsert({
-        id: '00000000-0000-0000-0007-000000000001',
-        ...INITIAL_CMS_COMPANY_SETTINGS,
+    const targetId = '00000000-0000-0000-0007-000000000001';
+    await supabase
+      .from('cms_company_settings')
+      .update({
         whatsapp_number: cleanPhone,
-      });
-    }
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', targetId);
+
     return true;
   } catch (err) {
     console.error('Failed to sync linked phone to company settings:', err);
