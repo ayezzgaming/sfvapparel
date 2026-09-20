@@ -83,6 +83,10 @@ export default function WhatsAppHubPage() {
   const [sendResult, setSendResult] = useState<{ success: boolean; message: string } | null>(null);
   const [sending, setSending] = useState(false);
 
+  // References for tracking changes without triggering re-render loops
+  const messagesCountRef = useRef<number>(0);
+  const lastMsgIdRef = useRef<string>('');
+
   // Fetch status & QR
   const fetchStatus = useCallback(async (isManual: boolean = false) => {
     if (isManual) setRefreshing(true);
@@ -109,20 +113,25 @@ export default function WhatsAppHubPage() {
     }
   }, []);
 
-  // Fetch chats
+  // Fetch chats (silently in background without causing parent re-render loops)
   const fetchChats = useCallback(async () => {
-    if (statusData.status !== 'WORKING') return;
     try {
       const res = await fetch('/api/whatsapp/chats', { cache: 'no-store' });
       const data = await res.json();
       if (data.connected && Array.isArray(data.chats)) {
         setChats(data.chats);
-        if (!selectedChat && data.chats.length > 0) {
-          setSelectedChat(data.chats[0]);
-        }
+        // If nothing is selected, select the first chat
+        setSelectedChat((prev) => {
+          if (!prev && data.chats.length > 0) return data.chats[0];
+          if (prev) {
+            const updated = data.chats.find((c: WahaChatSummary) => c.id === prev.id);
+            return updated || prev;
+          }
+          return prev;
+        });
       }
     } catch {}
-  }, [statusData.status, selectedChat]);
+  }, []);
 
   // Fetch tickets
   const fetchTickets = useCallback(async () => {
@@ -139,54 +148,69 @@ export default function WhatsAppHubPage() {
     }
   }, []);
 
-  // Fetch messages
-  const fetchMessages = useCallback(async (chatId: string) => {
-    setLoadingMessages(true);
+  // Fetch messages for active chat
+  const fetchMessages = useCallback(async (chatId: string, isInitial: boolean = false) => {
+    if (isInitial) setLoadingMessages(true);
     try {
       const res = await fetch(`/api/whatsapp/messages?chatId=${encodeURIComponent(chatId)}`, { cache: 'no-store' });
       const data = await res.json();
       if (Array.isArray(data.messages)) {
-        setMessages(data.messages);
+        const newMsgs = data.messages as WahaChatMessage[];
+        const latestId = newMsgs.length > 0 ? newMsgs[newMsgs.length - 1].id : '';
+        
+        // Only update state if message array changed
+        if (isInitial || newMsgs.length !== messagesCountRef.current || latestId !== lastMsgIdRef.current) {
+          messagesCountRef.current = newMsgs.length;
+          lastMsgIdRef.current = latestId;
+          setMessages(newMsgs);
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: isInitial ? 'auto' : 'smooth' });
+          }, 60);
+        }
       }
     } catch {
-      setMessages([]);
+      if (isInitial) setMessages([]);
     } finally {
-      setLoadingMessages(false);
+      if (isInitial) setLoadingMessages(false);
     }
   }, []);
 
+  // Polling Status & Tickets every 10s
   useEffect(() => {
     fetchStatus();
     fetchTickets();
     const interval = setInterval(() => {
       fetchStatus();
-    }, 5000);
+    }, 10000);
     return () => clearInterval(interval);
   }, [fetchStatus, fetchTickets]);
 
+  // Polling Chats list every 6s
   useEffect(() => {
     if (statusData.status === 'WORKING') {
       fetchChats();
       const chatInterval = setInterval(() => {
         fetchChats();
-      }, 7000);
+      }, 6000);
       return () => clearInterval(chatInterval);
     }
   }, [statusData.status, fetchChats]);
 
+  // When selectedChat changes, load initial messages
   useEffect(() => {
-    if (selectedChat) {
-      fetchMessages(selectedChat.id);
-      const msgInterval = setInterval(() => {
-        fetchMessages(selectedChat.id);
-      }, 5000);
-      return () => clearInterval(msgInterval);
-    }
-  }, [selectedChat, fetchMessages]);
+    if (selectedChat?.id) {
+      messagesCountRef.current = 0;
+      lastMsgIdRef.current = '';
+      fetchMessages(selectedChat.id, true);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+      const msgInterval = setInterval(() => {
+        fetchMessages(selectedChat.id, false);
+      }, 4000);
+      return () => clearInterval(msgInterval);
+    } else {
+      setMessages([]);
+    }
+  }, [selectedChat?.id, fetchMessages]);
 
   // Send Reply (also pauses bot for 30m)
   const handleSendReply = async (e: React.FormEvent) => {

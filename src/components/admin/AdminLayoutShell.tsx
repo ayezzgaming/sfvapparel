@@ -183,7 +183,7 @@ export default function AdminLayoutShell({
         </aside>
 
         {/* ----------------- MAIN VIEW CONTENT AREA ----------------- */}
-        {pathname === '/admin/ads-generator' || pathname === '/admin/catalog' || pathname === '/admin/cms' ? (
+        {pathname === '/admin/ads-generator' || pathname === '/admin/catalog' || pathname === '/admin/cms' || pathname === '/admin/whatsapp-hub' ? (
           <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white relative">
             <main className="flex-1 h-full overflow-hidden p-0">
               {children}
