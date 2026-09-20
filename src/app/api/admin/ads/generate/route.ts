@@ -609,12 +609,13 @@ async function callGroqApi(
     activeAdsList?: any[];
   }
 ): Promise<{ success: boolean; variations?: AiVariation[]; adSettings?: DynamicAdSettings; error?: string }> {
-  // Use a fixed curated list of known-stable Groq models ONLY.
-  // Dynamic discovery was pulling decommissioned models (e.g. 'llx/b-1z/b1') causing failures.
+  // VERIFIED ACTIVE models on this Groq account (confirmed via GET /models on 2026-09-20):
+  // openai/gpt-oss-120b, openai/gpt-oss-20b, qwen/qwen3.8-27b
+  // llama-3.3-70b, llama-3.1-8b, gemma2-9b are NOT in this account's model list
   const candidateModels = [
-    'llama-3.3-70b-versatile',
-    'llama-3.1-8b-instant',
-    'gemma2-9b-it',
+    'openai/gpt-oss-120b',
+    'qwen/qwen3.8-27b',
+    'openai/gpt-oss-20b',
   ];
 
   const { systemPrompt, userContent } = buildAiPromptInstructions(params);
