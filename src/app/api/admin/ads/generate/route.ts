@@ -18,7 +18,7 @@ interface GenerateAdsRequest {
   apiKey?: string;
 }
 
-interface AiVariation {
+export interface AiVariation {
   id: string;
   angleName: string;
   tagline: string;
@@ -27,6 +27,53 @@ interface AiVariation {
   primaryText: string;
   callToAction: string;
   whatsappMessage: string;
+}
+
+export interface DynamicAdSettings {
+  destination: 'whatsapp' | 'instagram' | 'website';
+  ageMin: number;
+  ageMax: number;
+  gender: 'all' | 'male' | 'female';
+  locationName: string;
+  interests: { id?: string; name: string }[];
+  engagedShoppers: boolean;
+  placementType: 'advantage' | 'feed_reels';
+  dailyBudget: number;
+  scheduleType: 'peak_hours' | 'all_day';
+  durationDays: number;
+  aiTargetingReason: string;
+}
+
+export interface GenerateAdsResponse {
+  success: boolean;
+  source: string;
+  variations: AiVariation[];
+  adSettings: DynamicAdSettings;
+}
+
+/**
+ * Smart regex helper to detect user-specified daily budgets in prompts
+ */
+function extractBudgetFromPrompt(prompt: string): number | null {
+  if (!prompt) return null;
+  const regexes = [
+    /(?:bajet|budget|peruntukan|kos|modal)\s*(?:rm|myr|ringgit)?\s*(\d+)/i,
+    /(?:rm|myr)\s*(\d+)\s*(?:sehari|per\s*day|harian)?/i,
+    /(\d+)\s*(?:rm|myr|ringgit)?\s*(?:sehari|per\s*day|harian)/i,
+    /bajet\s*:\s*(\d+)/i,
+    /budget\s*:\s*(\d+)/i,
+  ];
+
+  for (const reg of regexes) {
+    const match = prompt.match(reg);
+    if (match && match[1]) {
+      const val = parseInt(match[1], 10);
+      if (val >= 5 && val <= 50000) {
+        return val;
+      }
+    }
+  }
+  return null;
 }
 
 /**
@@ -39,7 +86,6 @@ async function buildBusinessGroundingContext(selectedProduct?: string, selectedC
   let tiers = INITIAL_QUANTITY_TIERS;
   let designs = INITIAL_DESIGNS;
 
-  // Try fetching live Supabase data if connected
   try {
     const supabase = createClient();
     if (supabase) {
@@ -135,7 +181,7 @@ export async function POST(req: NextRequest) {
           }
         }
       } catch {
-        // Fallback to env or default
+        // Fallback to env
       }
     }
 
@@ -144,11 +190,10 @@ export async function POST(req: NextRequest) {
       rawKey = process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY || process.env.GEMINI_API_KEY || '';
     }
 
-    // Validation: Credentials check
     if (!rawKey) {
       return NextResponse.json(
         {
-          error: 'Kunci API AI (Groq / Gemini / OpenRouter) diperlukan. Sila tekan ikon model AI pada bar input untuk memasukkan API key anda.',
+          error: 'Kunci API AI (Groq / Gemini / OpenRouter) diperlukan. Sila masukkan kunci API anda.',
         },
         { status: 401 }
       );
@@ -168,11 +213,12 @@ export async function POST(req: NextRequest) {
         dbGroundingContext,
       });
 
-      if (groqResult.success && groqResult.variations) {
+      if (groqResult.success && groqResult.variations && groqResult.variations.length > 0) {
         return NextResponse.json({
           success: true,
           source: 'groq-llama-3.3-70b',
           variations: groqResult.variations,
+          adSettings: groqResult.adSettings,
         });
       } else {
         return NextResponse.json(
@@ -193,11 +239,12 @@ export async function POST(req: NextRequest) {
         dbGroundingContext,
       });
 
-      if (orResult.success && orResult.variations) {
+      if (orResult.success && orResult.variations && orResult.variations.length > 0) {
         return NextResponse.json({
           success: true,
           source: 'openrouter-free',
           variations: orResult.variations,
+          adSettings: orResult.adSettings,
         });
       } else {
         return NextResponse.json(
@@ -217,11 +264,12 @@ export async function POST(req: NextRequest) {
       dbGroundingContext,
     });
 
-    if (geminiResult.success && geminiResult.variations) {
+    if (geminiResult.success && geminiResult.variations && geminiResult.variations.length > 0) {
       return NextResponse.json({
         success: true,
         source: 'gemini-cloud',
         variations: geminiResult.variations,
+        adSettings: geminiResult.adSettings,
       });
     } else {
       return NextResponse.json(
@@ -233,6 +281,88 @@ export async function POST(req: NextRequest) {
     console.error('Error in ads generation:', error);
     return NextResponse.json({ error: error.message || 'Ralat memproses penjanaan iklan AI' }, { status: 500 });
   }
+}
+
+/**
+ * System prompt generator that dynamically commands the AI to craft bespoke hook angles & optimal targeting
+ */
+function buildAiPromptInstructions(params: {
+  prompt: string;
+  platform: string;
+  objective: string;
+  productName: string;
+  category: string;
+  dbGroundingContext: string;
+}) {
+  const detectedBudget = extractBudgetFromPrompt(params.prompt);
+
+  const systemPrompt = `Anda ialah Ketua Pakar Media Buyer (Senior Meta Ads Strategist) dan Direct-Response Copywriter terkemuka untuk industri pakaian sukan & jersi kustom Malaysia (SFV APPAREL).
+Gunakan maklumat pangkalan data kilang di bawah untuk menghasilkan kempen pemasaran berimpak tinggi yang memaksimumkan ROAS:
+
+${params.dbGroundingContext}
+
+PANDUAN KETAT DAN DINAMIK:
+1. GAYA PENULISAN HOOK DINAMIK (DILARANG KAKU):
+   - JANGAN mengunci copywriting ke dalam templat statis.
+   - Analisis arahan prompt pengguna secara mendalam dan cipta 5 variasi sudut penulisan (Hook) yang 100% DISESUAIKAN dengan matlamat dan audiens kempen (contoh: Sudut FOMO/Kouta Terhad, Sudut Penjimatan Kilang Terus, Sudut Pasukan & Kebanggaan Skuad, Sudut Penyelesaian Masalah Kain Panas/Luntur, Sudut Tawaran Percuma Grafik, Sudut Korporat Pukal, atau Sudut Acara/Kejohanan).
+   - Pastikan setiap variasi mempunyai 'angleName' yang kreatif dan deskriptif.
+
+2. SETELAN IKLAN META PINTAR & DINAMIK (SMART TARGETING & BUDGET):
+   - Tentukan setelan iklan terbaik berdasarkan konteks prompt:
+     * destination: 'whatsapp' (lalai untuk tempahan mesej), 'instagram', atau 'website'.
+     * ageMin & ageMax: Tentukan lingkungan umur yang paling tepat (contoh: 18-35 untuk futsal/esports, 25-50 untuk korporat).
+     * gender: 'all', 'male', atau 'female' mengikut kesesuaian produk.
+     * locationName: "Malaysia (Seluruh Negara)" atau lokasi khusus jika disebut pengguna.
+     * interests: 3-5 minat Meta Ad yang relevan (nama minat rasmi seperti Futsal, Sports clothing, Association football, dsb).
+     * engagedShoppers: boolean (true untuk pembeli berkualiti tinggi).
+     * placementType: 'feed_reels' (penempatan utama berprestasi tinggi) atau 'advantage'.
+     * dailyBudget: ${detectedBudget ? `Gunakan nilai ${detectedBudget} kerana pengguna meminta bajet ini dalam prompt.` : `Cadangkan nilai bajet harian optimum (cth: 30, 40, atau 50).`}
+     * scheduleType: 'peak_hours' atau 'all_day'.
+     * aiTargetingReason: Penjelasan strategi media buying secara ringkas (1-2 ayat) mengapa setelan ini dipilih.
+
+3. SIFAR EMOJI & EMOTIKON: Dilarang sama sekali menggunakan sebarang simbol emoji atau emotikon.
+
+4. FORMATKAN OUTPUT HANYA DALAM JSON SAH TANPA MARKDOWN LAIN:
+{
+  "adSettings": {
+    "destination": "whatsapp",
+    "ageMin": 18,
+    "ageMax": 35,
+    "gender": "all",
+    "locationName": "Malaysia (Seluruh Negara)",
+    "interests": [
+      { "name": "Futsal" },
+      { "name": "Sports clothing" },
+      { "name": "Jersey (clothing)" }
+    ],
+    "engagedShoppers": true,
+    "placementType": "feed_reels",
+    "dailyBudget": ${detectedBudget || 30},
+    "scheduleType": "peak_hours",
+    "durationDays": 7,
+    "aiTargetingReason": "Strategi penalaan difokuskan kepada audiens sukan aktif dan pengurus pasukan."
+  },
+  "variations": [
+    {
+      "id": "var-1",
+      "angleName": "Nama Sudut Strategi Kontekstual 1",
+      "tagline": "Tagline Nilai Tambah",
+      "headline": "Tajuk Iklan Berimpak Tinggi",
+      "secondaryHeadline": "Sub-tajuk penegasan nilai",
+      "primaryText": "Teks copywriting persuasif yang mendalam tanpa emoji.",
+      "callToAction": "Dapatkan Sebut Harga",
+      "whatsappMessage": "Salam, saya berminat untuk membuat tempahan..."
+    }
+  ]
+}`;
+
+  const userContent = `ARAHAN PENGGUNA: "${params.prompt}"
+PRODUK: ${params.productName} (${params.category})
+PLATFORM: ${params.platform}
+OBJEKTIF: ${params.objective}
+Hasilkan tepat 5 variasi sudut copywriting dinamik dan konfigurasi adSettings lengkap dalam format JSON tanpa emoji.`;
+
+  return { systemPrompt, userContent };
 }
 
 /**
@@ -248,52 +378,15 @@ async function callGroqApi(
     category: string;
     dbGroundingContext: string;
   }
-): Promise<{ success: boolean; variations?: AiVariation[]; error?: string }> {
+): Promise<{ success: boolean; variations?: AiVariation[]; adSettings?: DynamicAdSettings; error?: string }> {
   const candidateModels = [
+    'llama-3.3-70b-versatile',
     'openai/gpt-oss-120b',
     'qwen/qwen3.8-27b',
-    'llama-3.3-70b-versatile',
     'llama-3.1-8b-instant',
   ];
 
-  const systemPrompt = `Anda ialah Ketua Pakar Strategi Pemasaran Digital & Penulis Copywriting Berprestasi Tinggi untuk jenama pakaian sukan dan kilang cetak.
-Gunakan maklumat pangkalan data kilang di bawah untuk menghasilkan 5 variasi sudut iklan yang sangat persuasif, tepat dari segi fakta teknikal fabrik dan harga:
-
-${params.dbGroundingContext}
-
-PERATURAN KETAT:
-1. SIFAR EMOJI & EMOTIKON. Dilarang sama sekali meletakkan emoji dalam sebarang teks output.
-2. Gunakan Bahasa Melayu profesional dan meyakinkan (fokus kepada pasaran sukan, kelab, sekolah, korporat Malaysia).
-3. Hasilkan tepat 5 sudut strategi jualan yang berbeza:
-   - Variasi 1: Sudut Penjimatan & Harga Kilang Tanpa Perantara
-   - Variasi 2: Sudut Kualiti Fabrik Drifit Milano & Kemasan HD
-   - Variasi 3: Sudut Kelajuan & Jaminan Siap Pantas 7 Hari
-   - Variasi 4: Sudut Identiti Pasukan & Percuma Rekaan Grafik
-   - Variasi 5: Sudut Korporat & Pukal Borong
-4. Sesuaikan mengikut platform "${params.platform}":
-   - Format Facebook / Instagram: Tajuk padu, kepsyen penerangan manfaat mendalam, CTA jelas.
-   - Format Google Search: Tajuk SEO padat (< 30 aksara), huraian SEO (< 90 aksara).
-   - Format WhatsApp: Teks kepsyen promosi + mesej autofill WhatsApp untuk pembeli.
-5. Formatkan jawapan HANYA dalam JSON array sah (tanpa sebarang teks ulasan di luar JSON):
-[
-  {
-    "id": "var-1",
-    "angleName": "Sudut Harga Kilang & Penjimatan",
-    "tagline": "Diskaun Kuantiti Terus Dari Kilang",
-    "headline": "Tajuk Iklan Padat dan Berimpak Tinggi",
-    "secondaryHeadline": "Sub-tajuk penegasan nilai USP",
-    "primaryText": "Perenggan copywriting 2-4 ayat yang persuasif berasaskan konteks produk dan prompt.",
-    "callToAction": "Dapatkan Sebut Harga",
-    "whatsappMessage": "Salam, saya ingin bertanyakan tentang sebut harga..."
-  }
-]`;
-
-  const userContent = `ARAHAN PENGGUNA: "${params.prompt}"
-PRODUK: ${params.productName} (${params.category})
-PLATFORM: ${params.platform}
-OBJEKTIF: ${params.objective}
-Hasilkan 5 variasi JSON array tanpa emoji.`;
-
+  const { systemPrompt, userContent } = buildAiPromptInstructions(params);
   let lastError = '';
 
   for (const model of candidateModels) {
@@ -324,9 +417,9 @@ Hasilkan 5 variasi JSON array tanpa emoji.`;
       const rawText = data.choices?.[0]?.message?.content;
       if (!rawText) continue;
 
-      const parsed = parseCleanAiVariations(rawText);
-      if (parsed && parsed.length >= 2) {
-        return { success: true, variations: parsed };
+      const { variations, adSettings } = parseCleanAiResponse(rawText, params.prompt, params.platform, params.objective);
+      if (variations && variations.length >= 2) {
+        return { success: true, variations, adSettings };
       }
     } catch (e: any) {
       lastError = e?.message || 'Ralat sambungan API';
@@ -349,14 +442,8 @@ async function callOpenRouterApi(
     category: string;
     dbGroundingContext: string;
   }
-): Promise<{ success: boolean; variations?: AiVariation[]; error?: string }> {
-  const systemPrompt = `Anda ialah Pakar Copywriting Pemasaran Iklan Pakaian & Jersi Malaysia.
-Gunakan maklumat database berikut:
-${params.dbGroundingContext}
-
-ARAHAN: Sifar emoji. Jana 5 sudut copywriting iklan JSON mengikut tema pengguna untuk platform ${params.platform}.`;
-
-  const userContent = `Arahan: "${params.prompt}", Produk: ${params.productName}, Platform: ${params.platform}. Output HANYA JSON array tepat 5 objek: id, angleName, tagline, headline, secondaryHeadline, primaryText, callToAction, whatsappMessage.`;
+): Promise<{ success: boolean; variations?: AiVariation[]; adSettings?: DynamicAdSettings; error?: string }> {
+  const { systemPrompt, userContent } = buildAiPromptInstructions(params);
 
   try {
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -384,9 +471,9 @@ ARAHAN: Sifar emoji. Jana 5 sudut copywriting iklan JSON mengikut tema pengguna 
     const rawText = data.choices?.[0]?.message?.content;
     if (!rawText) return { success: false, error: 'Respons OpenRouter kosong' };
 
-    const parsed = parseCleanAiVariations(rawText);
-    if (parsed && parsed.length >= 2) {
-      return { success: true, variations: parsed };
+    const { variations, adSettings } = parseCleanAiResponse(rawText, params.prompt, params.platform, params.objective);
+    if (variations && variations.length >= 2) {
+      return { success: true, variations, adSettings };
     }
     return { success: false, error: 'Struktur JSON tidak sah' };
   } catch (err: any) {
@@ -407,27 +494,14 @@ async function callGeminiApi(
     category: string;
     dbGroundingContext: string;
   }
-): Promise<{ success: boolean; variations?: AiVariation[]; error?: string }> {
+): Promise<{ success: boolean; variations?: AiVariation[]; adSettings?: DynamicAdSettings; error?: string }> {
   const candidateModels = [
     'gemini-2.0-flash',
     'gemini-1.5-flash',
     'gemini-1.5-pro',
   ];
 
-  const systemInstruction = `Anda ialah Pakar Copywriting Iklan Sukan & Pakaian.
-Gunakan maklumat database berikut:
-${params.dbGroundingContext}
-
-ARAHAN KETAT:
-1. SIFAR EMOJI & EMOTIKON. Dilarang sama sekali meletakkan sebarang simbol emoji.
-2. Hasilkan tepat 5 variasi sudut iklan berprestasi tinggi dalam Bahasa Melayu.
-3. Hasilkan output HANYA JSON array 5 objek (id, angleName, tagline, headline, secondaryHeadline, primaryText, callToAction, whatsappMessage).`;
-
-  const promptText = `TEMA IKLAN: "${params.prompt}"
-PRODUK: ${params.productName} (${params.category})
-PLATFORM: ${params.platform}
-OBJEKTIF: ${params.objective}`;
-
+  const { systemPrompt, userContent } = buildAiPromptInstructions(params);
   let lastError = '';
 
   for (const model of candidateModels) {
@@ -440,7 +514,7 @@ OBJEKTIF: ${params.objective}`;
           contents: [
             {
               role: 'user',
-              parts: [{ text: `${systemInstruction}\n\n${promptText}` }],
+              parts: [{ text: `${systemPrompt}\n\n${userContent}` }],
             },
           ],
           generationConfig: {
@@ -460,9 +534,9 @@ OBJEKTIF: ${params.objective}`;
       const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!rawText) continue;
 
-      const parsed = parseCleanAiVariations(rawText);
-      if (parsed && parsed.length >= 3) {
-        return { success: true, variations: parsed };
+      const { variations, adSettings } = parseCleanAiResponse(rawText, params.prompt, params.platform, params.objective);
+      if (variations && variations.length >= 2) {
+        return { success: true, variations, adSettings };
       }
     } catch (e: any) {
       lastError = e?.message || 'Ralat sambungan Gemini';
@@ -473,33 +547,99 @@ OBJEKTIF: ${params.objective}`;
 }
 
 /**
- * Clean & Sanitize AI JSON response (Strictly Zero Emojis)
+ * Clean & Sanitize AI JSON response (Zero Emojis + Dynamic Targeting Parser)
  */
-function parseCleanAiVariations(raw: string): AiVariation[] | null {
+function parseCleanAiResponse(
+  raw: string,
+  userPrompt: string,
+  platform: string,
+  objective: string
+): { variations: AiVariation[]; adSettings: DynamicAdSettings } {
+  const detectedBudget = extractBudgetFromPrompt(userPrompt) || 30;
+
+  const defaultAdSettings: DynamicAdSettings = {
+    destination: objective?.includes('whatsapp') ? 'whatsapp' : platform === 'instagram' ? 'instagram' : 'whatsapp',
+    ageMin: 18,
+    ageMax: 35,
+    gender: 'all',
+    locationName: 'Malaysia (Seluruh Negara)',
+    interests: [
+      { id: '6003139266472', name: 'Futsal' },
+      { id: '6003384218943', name: 'Jersey (clothing)' },
+      { id: '6003102379373', name: 'Sports clothing' },
+    ],
+    engagedShoppers: true,
+    placementType: 'feed_reels',
+    dailyBudget: detectedBudget,
+    scheduleType: 'peak_hours',
+    durationDays: 7,
+    aiTargetingReason: `Penalaan audiens pintar diselaraskan dengan bajet RM${detectedBudget}/hari dan objektif kempen.`,
+  };
+
   try {
     const cleanJson = raw
       .replace(/```json/gi, '')
       .replace(/```/g, '')
       .trim();
     const parsed = JSON.parse(cleanJson);
-    const arr = Array.isArray(parsed) ? parsed : parsed.variations || Object.values(parsed).find(Array.isArray);
 
-    if (Array.isArray(arr) && arr.length >= 3) {
-      return arr.slice(0, 3).map((item: any, idx: number) => ({
-        id: item.id || `var-${idx + 1}`,
-        angleName: cleanNoEmoji(item.angleName || `Sudut Strategi ${idx + 1}`),
-        tagline: cleanNoEmoji(item.tagline || 'Pilihan Khas'),
-        headline: cleanNoEmoji(item.headline || 'Kilang Cetak Jersi Sublimasi & DTF'),
-        secondaryHeadline: cleanNoEmoji(item.secondaryHeadline || 'Kualiti Terjamin Dari SVF APPAREL'),
-        primaryText: cleanNoEmoji(item.primaryText || ''),
-        callToAction: cleanNoEmoji(item.callToAction || 'Hubungi Kami'),
-        whatsappMessage: cleanNoEmoji(item.whatsappMessage || 'Salam SVF, saya berminat untuk sebut harga.'),
-      }));
+    let variationsArr: any[] = [];
+    let parsedSettings: any = null;
+
+    if (Array.isArray(parsed)) {
+      variationsArr = parsed;
+    } else if (parsed && typeof parsed === 'object') {
+      if (Array.isArray(parsed.variations)) {
+        variationsArr = parsed.variations;
+      }
+      if (parsed.adSettings && typeof parsed.adSettings === 'object') {
+        parsedSettings = parsed.adSettings;
+      }
     }
+
+    const cleanVariations: AiVariation[] = variationsArr.map((item: any, idx: number) => ({
+      id: item.id || `var-${idx + 1}`,
+      angleName: cleanNoEmoji(item.angleName || `Sudut Strategi Dinamik ${idx + 1}`),
+      tagline: cleanNoEmoji(item.tagline || 'Pilihan Khas'),
+      headline: cleanNoEmoji(item.headline || 'Kilang Cetak Jersi Sublimasi & DTF'),
+      secondaryHeadline: cleanNoEmoji(item.secondaryHeadline || 'Kualiti Terjamin Dari SVF APPAREL'),
+      primaryText: cleanNoEmoji(item.primaryText || ''),
+      callToAction: cleanNoEmoji(item.callToAction || 'Dapatkan Sebut Harga'),
+      whatsappMessage: cleanNoEmoji(item.whatsappMessage || 'Salam SVF, saya berminat untuk tempahan jersi.'),
+    }));
+
+    const finalBudget = extractBudgetFromPrompt(userPrompt) || (parsedSettings?.dailyBudget ? Number(parsedSettings.dailyBudget) : detectedBudget);
+
+    const cleanSettings: DynamicAdSettings = {
+      destination: parsedSettings?.destination || defaultAdSettings.destination,
+      ageMin: typeof parsedSettings?.ageMin === 'number' && parsedSettings.ageMin >= 13 ? parsedSettings.ageMin : defaultAdSettings.ageMin,
+      ageMax: typeof parsedSettings?.ageMax === 'number' && parsedSettings.ageMax <= 65 ? parsedSettings.ageMax : defaultAdSettings.ageMax,
+      gender: ['all', 'male', 'female'].includes(parsedSettings?.gender) ? parsedSettings.gender : defaultAdSettings.gender,
+      locationName: cleanNoEmoji(parsedSettings?.locationName || defaultAdSettings.locationName),
+      interests: Array.isArray(parsedSettings?.interests) && parsedSettings.interests.length > 0
+        ? parsedSettings.interests.map((it: any) => ({
+            id: it.id || String(Math.floor(Math.random() * 1000000000)),
+            name: cleanNoEmoji(typeof it === 'string' ? it : it.name || 'Sukan'),
+          }))
+        : defaultAdSettings.interests,
+      engagedShoppers: parsedSettings?.engagedShoppers !== undefined ? Boolean(parsedSettings.engagedShoppers) : true,
+      placementType: parsedSettings?.placementType === 'advantage' ? 'advantage' : 'feed_reels',
+      dailyBudget: finalBudget,
+      scheduleType: parsedSettings?.scheduleType === 'all_day' ? 'all_day' : 'peak_hours',
+      durationDays: typeof parsedSettings?.durationDays === 'number' ? parsedSettings.durationDays : 7,
+      aiTargetingReason: cleanNoEmoji(parsedSettings?.aiTargetingReason || `Penalaan audiens pintar diselaraskan dengan bajet RM${finalBudget}/hari dan arahan prompt.`),
+    };
+
+    return {
+      variations: cleanVariations.length >= 2 ? cleanVariations : variationsArr,
+      adSettings: cleanSettings,
+    };
   } catch {
-    // Parsing error
+    return {
+      variations: [],
+      adSettings: defaultAdSettings,
+    };
   }
-  return null;
 }
 
 function cleanNoEmoji(str: string): string {

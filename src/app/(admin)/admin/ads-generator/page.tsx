@@ -274,6 +274,7 @@ export default function AdminAdsGeneratorPage() {
   // 5 Clean AI Generated Variations Grounded on Database
   const [selectedVariationIndex, setSelectedVariationIndex] = useState(0);
   const [selectedHookStyle, setSelectedHookStyle] = useState<string>('diskon');
+  const [aiTargetingNote, setAiTargetingNote] = useState<string>('');
   const [isAudienceModalOpen, setIsAudienceModalOpen] = useState(false);
   const [isStudioModalOpen, setIsStudioModalOpen] = useState(false);
   const [studioTab, setStudioTab] = useState<'targeting' | 'assets' | 'budget'>('targeting');
@@ -653,6 +654,38 @@ export default function AdminAdsGeneratorPage() {
       if (data.variations && Array.isArray(data.variations) && data.variations.length > 0) {
         setAiVariations(data.variations);
         setSelectedVariationIndex(0);
+
+        // Dynamically configure Meta Ads Studio from intelligent AI recommendations
+        if (data.adSettings) {
+          const s = data.adSettings;
+          setMetaConfig((prev) => ({
+            ...prev,
+            destination: s.destination || prev.destination,
+            ageMin: typeof s.ageMin === 'number' ? s.ageMin : prev.ageMin,
+            ageMax: typeof s.ageMax === 'number' ? s.ageMax : prev.ageMax,
+            gender: s.gender || prev.gender,
+            locationName: s.locationName || prev.locationName,
+            interests: Array.isArray(s.interests) && s.interests.length > 0
+              ? s.interests.map((it: any) => ({
+                  id: it.id || String(Math.floor(Math.random() * 1000000000)),
+                  name: typeof it === 'string' ? it : it.name || 'Sukan',
+                }))
+              : prev.interests,
+            engagedShoppers: s.engagedShoppers !== undefined ? Boolean(s.engagedShoppers) : prev.engagedShoppers,
+            placementType: s.placementType || prev.placementType,
+            scheduleType: s.scheduleType || prev.scheduleType,
+            durationDays: s.durationDays || prev.durationDays,
+            dailyBudget: typeof s.dailyBudget === 'number' && s.dailyBudget > 0 ? s.dailyBudget : prev.dailyBudget,
+          }));
+
+          if (typeof s.dailyBudget === 'number' && s.dailyBudget > 0) {
+            setDailyBudget(s.dailyBudget);
+          }
+          if (s.aiTargetingReason) {
+            setAiTargetingNote(s.aiTargetingReason);
+          }
+        }
+
         if (data.source?.includes('groq')) setAiSource('groq');
         else if (data.source?.includes('gemini')) setAiSource('gemini');
         else if (data.source?.includes('openrouter')) setAiSource('openrouter');
@@ -1404,20 +1437,39 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                 {/* ================= TAB 1: SASARAN & MINAT ================= */}
                 {studioTab === 'targeting' && (
                   <div className="space-y-3.5 animate-in fade-in duration-150">
-                    {/* 1. Gaya Copywriting (Hook) */}
+                    {/* AI Targeting Rationale Badge (Smart Strategy Note) */}
+                    {aiTargetingNote && (
+                      <div className="p-2.5 rounded-xl bg-slate-100/90 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 space-y-1">
+                        <div className="flex items-center gap-1.5 text-slate-800 dark:text-zinc-200 font-semibold text-[11px]">
+                          <Sparkles className="w-3.5 h-3.5 text-slate-500" />
+                          <span>Strategi Sasaran AI (Dinamik)</span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 dark:text-zinc-400 leading-relaxed">
+                          {aiTargetingNote}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* 1. Gaya Copywriting (Hook AI Dinamik) */}
                     <div className="space-y-1">
-                      <label className="text-xs font-medium text-slate-600 dark:text-zinc-400 block">
-                        Gaya Penulisan (Hook AI)
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium text-slate-600 dark:text-zinc-400 block">
+                          Sudut Penulisan (Hook AI Dinamik)
+                        </label>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          {selectedVariationIndex + 1} / {Math.max(1, aiVariations.length)}
+                        </span>
+                      </div>
                       <select
-                        value={selectedHookStyle}
-                        onChange={(e) => handleSelectHookStyle(e.target.value)}
-                        className="w-full h-8.5 px-2.5 text-xs text-slate-800 dark:text-zinc-200 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl outline-none cursor-pointer"
+                        value={selectedVariationIndex}
+                        onChange={(e) => setSelectedVariationIndex(Number(e.target.value))}
+                        className="w-full h-8.5 px-2.5 text-xs text-slate-800 dark:text-zinc-200 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl outline-none cursor-pointer font-medium truncate"
                       >
-                        <option value="diskon">Tawaran & Diskaun Langsung</option>
-                        <option value="fomo">Urgensi & Kouta Terhad (FOMO)</option>
-                        <option value="story">Komuniti & Pasukan</option>
-                        <option value="solusi">Kualiti Material & Ketahanan</option>
+                        {aiVariations.map((v, idx) => (
+                          <option key={v.id || idx} value={idx}>
+                            {v.angleName || `Sudut ${idx + 1}`}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
