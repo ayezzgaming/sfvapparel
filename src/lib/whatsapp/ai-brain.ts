@@ -211,25 +211,48 @@ DATA PESANAN DITEMUI DALAM SISTEM:
     }
   }
 
-  // 7. Build Master System Prompt
+  // 7. Format clean WhatsApp message
+  function cleanWhatsAppChat(text: string): string {
+    if (!text) return '';
+    let cleaned = text;
+
+    // Remove markdown tables
+    cleaned = cleaned.replace(/\|[^\n]+\|/g, '');
+
+    // Convert markdown double bold **word** to WhatsApp single bold *word*
+    cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '*$1*');
+
+    // Remove raw UUIDs or internal system tokens
+    cleaned = cleaned.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '');
+    cleaned = cleaned.replace(/\[ID TIKET:[^\]]+\]/gi, '');
+    cleaned = cleaned.replace(/ID SISTEM:[^\n]+/gi, '');
+
+    // Strip all emojis and emoticons
+    try {
+      cleaned = cleaned.replace(new RegExp('[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+|[\\u2600-\\u27BF]', 'g'), '');
+    } catch {}
+
+    // Clean multiple blank lines and dashes
+    cleaned = cleaned.replace(/---+/g, '');
+    cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+
+    return cleaned;
+  }
+
+  // 8. Build Master System Prompt (Concise, Natural, Human-like CS)
   const systemPrompt = `
-Anda adalah Pegawai Khidmat Pelanggan & Jualan Rasmi Kilang Pembuatan Pakaian SFV APPAREL (Malaysia).
-Tugas anda adalah melayani pertanyaan pelanggan WhatsApp dengan nada pertuturan manusia yang santun, profesional, mesra, jelas, dan berwibawa dalam Bahasa Melayu.
+Anda adalah Pegawai Khidmat Pelanggan Kilang Pakaian SFV APPAREL (Malaysia) yang sedang membalas perbualan WhatsApp pelanggan.
+Bercakaplah seperti staf manusia sebenar di WhatsApp: ringkas, mesra, sopan, bersahaja, dan terus menjawab soalan dalam 2 hingga 4 ayat sahaja.
 
-=== PERATURAN MUTLAK (ANTI-HALUSINASI, SIFAR EMOJI & SIFAR HARDCODE) ===
-1. Jawab HANYA berdasarkan DATA PANGKALAN DATA RASMI KILANG di bawah.
-2. JANGAN MENEBAK atau mereka-reka maklumat harga atau servis yang tiada dalam data.
-3. HINDARI PENGGUNAAN SEBARANG EMOJI ATAU EMOTICON DALAM SETIAP JAWAPAN. Gunakan teks bersih, kemas, dan matang.
-4. Jangan sesekali berkata bahawa anda adalah model AI, bot, atau program komputer. Bertindaklah sepenuhnya sebagai pegawai syarikat SFV Apparel.
-5. Jika pelanggan bertanyakan produk/rekaan (cth: ada ID Produk):
-   - Nyatakan anda telah mengesahkan rekaan tersebut di dalam sistem katalog kilang.
-   - Terangkan pilihan jenis material kain yang sesuai dan jenis cetakan.
-   - Tanyakan anggaran kuantiti helai yang ingin ditempah untuk semakan potongan harga pukal.
-6. Jika pelanggan bertanyakan semakan pesanan (cth: ada No Pesanan ORD-XXXX):
-   - Nyatakan status terkini tempahan mereka secara tepat berdasarkan data.
-7. Jika ada isu rumit di luar maklumat data, nyatakan anda boleh mendaftarkan ID TIKET sokongan untuk tindakan pegawai teknikal kilang.
+=== PANDUAN KETAT KOMUNIKASI WHATSAPP ===
+1. JAWAPAN RINGKAS & PADAT: Jawab HANYA apa yang ditanya oleh pelanggan. Jangan buat karangan panjang, jangan buat jadual markdown (|---|), dan jangan beri maklumat yang tidak ditanya.
+2. NADA MANUSIAWI: Gunakan Bahasa Melayu yang santun dan natural seperti staf kilang sebenar (contoh: "Salam sejahtera...", "Boleh, untuk...").
+3. SIFAR EMOJI: Dilarang sama sekali meletakkan emoji atau emotikon.
+4. FORMAT WHATSAPP: Untuk tulisan tebal, gunakan 1 tanda bintang sahaja seperti *teks* atau *RM25.20*. Jangan guna **.
+5. JANGAN SEBUT ID SISTEM: Jangan sebut kod UUID, ID sistem dalaman, atau istilah bot/AI.
+6. Berpandukan data kilang di bawah untuk harga dan maklumat tepat:
 
-=== DATA PANGKALAN DATA RASMI KILANG SFV APPAREL ===
+DATA KILANG SFV APPAREL:
 ${companyInfo}
 
 SERVIS KILANG:
@@ -238,14 +261,14 @@ ${servicesInfo}
 STRUKTUR DISKAUN KUANTITI:
 ${pricingTiersInfo}
 
-REKAAN / PRODUK YANG DITANYAKAN:
+REKAAN / PRODUK DITANYA:
 ${liveDesignContext}
 
 SEMAKAN STATUS PESANAN:
 ${liveOrderContext}
 `.trim();
 
-  // 8. Request LiteLLM Router
+  // 9. Request LiteLLM Router
   try {
     const res = await fetch(`${LITELLM_URL}/v1/chat/completions`, {
       method: 'POST',
@@ -259,8 +282,8 @@ ${liveOrderContext}
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userText },
         ],
-        temperature: 0.6,
-        max_tokens: 350,
+        temperature: 0.4,
+        max_tokens: 600, // headroom for reasoning tokens + concise reply
       }),
     });
 
@@ -270,24 +293,22 @@ ${liveOrderContext}
     }
 
     const data = await res.json();
-    let replyContent = data.choices?.[0]?.message?.content?.trim();
+    const rawReply = data.choices?.[0]?.message?.content?.trim();
 
-    if (!replyContent) {
+    if (!rawReply) {
       return { success: false, replied: false, reason: 'no_content_from_llm' };
     }
 
-    // Strip any residual emojis just in case LLM slipped one in
-    try {
-      replyContent = replyContent.replace(new RegExp('[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+|[\\u2600-\\u27BF]', 'g'), '').trim();
-    } catch {
-      // Fallback
+    const replyContent = cleanWhatsAppChat(rawReply);
+
+    if (!replyContent) {
+      return { success: false, replied: false, reason: 'empty_after_formatting' };
     }
 
-    // 9. Deliver WhatsApp Reply to Customer
-    // If target design has a valid image mockup, send the image first or text
+    // 10. Deliver WhatsApp Reply to Customer
+    // If target design has a valid image mockup, send the image first
     if (targetDesignImage) {
       await sendWahaImage(msg.from, targetDesignImage, `Rekaan: ${targetDesignTitle || 'Katalog SFV Apparel'}`);
-      // Small pause before delivering text
       await new Promise(r => setTimeout(r, 600));
     }
 
