@@ -1004,70 +1004,64 @@ export default function HomePage() {
             <span className="text-[10px] text-slate-400">Enkripsi 256-Bit SSL • Transaksi Disahkan</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5 pt-1">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-0.5">
             {/* FPX */}
-            <div className="h-5 flex items-center shrink-0">
+            <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/payments/logobaru/FPX Logo Vector.svg"
                 alt="FPX Online Banking"
-                style={{ height: '16px', width: 'auto', maxHeight: '16px', maxWidth: '50px' }}
-                className="object-contain block"
+                className="h-3.5 sm:h-4 w-auto max-w-[48px] object-contain block"
               />
             </div>
 
             {/* DuitNow */}
-            <div className="h-5 flex items-center shrink-0">
+            <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/payments/logobaru/duitnow.svg"
                 alt="DuitNow QR"
-                style={{ height: '18px', width: 'auto', maxHeight: '18px', maxWidth: '50px' }}
-                className="object-contain block"
+                className="h-3.5 sm:h-4 w-auto max-w-[36px] object-contain block"
               />
             </div>
 
             {/* Touch 'n Go */}
-            <div className="h-5 flex items-center shrink-0">
+            <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/payments/logobaru/Touch_'n_Go_eWallet_logo.svg"
                 alt="Touch 'n Go eWallet"
-                style={{ height: '18px', width: 'auto', maxHeight: '18px', maxWidth: '50px' }}
-                className="object-contain block"
+                className="h-3.5 sm:h-4 w-auto max-w-[36px] object-contain block"
               />
             </div>
 
             {/* Maybank */}
-            <div className="h-5 flex items-center shrink-0">
+            <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/payments/logobaru/maybank-vector-logo.svg"
                 alt="Maybank"
-                style={{ height: '15px', width: 'auto', maxHeight: '15px', maxWidth: '50px' }}
-                className="object-contain block"
+                className="h-3.5 sm:h-4 w-auto max-w-[46px] object-contain block"
               />
             </div>
 
             {/* Visa */}
-            <div className="h-5 flex items-center shrink-0">
+            <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/payments/logobaru/Visa_Inc._logo_(2021–present).svg"
                 alt="Visa"
-                style={{ height: '12px', width: 'auto', maxHeight: '12px', maxWidth: '42px' }}
-                className="object-contain block"
+                className="h-2.5 sm:h-3 w-auto max-w-[38px] object-contain block"
               />
             </div>
 
             {/* Mastercard */}
-            <div className="h-5 flex items-center shrink-0">
+            <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/payments/logobaru/Mastercard-logo.svg"
                 alt="Mastercard"
-                style={{ height: '16px', width: 'auto', maxHeight: '16px', maxWidth: '42px' }}
-                className="object-contain block"
+                className="h-3.5 sm:h-4 w-auto max-w-[34px] object-contain block"
               />
             </div>
           </div>
