@@ -333,8 +333,8 @@ export default function AdminCatalogPage() {
               onClick={() => setFilterType(tab.id)}
               className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                 filterType === tab.id
-                  ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 font-semibold shadow-xs'
-                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
+                  ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                  : 'text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-zinc-200'
               }`}
             >
               {tab.label}
@@ -363,7 +363,7 @@ export default function AdminCatalogPage() {
               title="Grid"
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                 activeView === 'grid'
-                  ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 shadow-xs'
+                  ? 'bg-white text-blue-600 shadow-xs'
                   : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400'
               }`}
             >
@@ -375,7 +375,7 @@ export default function AdminCatalogPage() {
               title="Senarai"
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                 activeView === 'list'
-                  ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 shadow-xs'
+                  ? 'bg-white text-blue-600 shadow-xs'
                   : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400'
               }`}
             >
@@ -385,7 +385,7 @@ export default function AdminCatalogPage() {
           <button
             type="button"
             onClick={handleOpenAdd}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white text-xs font-medium shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Tambah Rekaan</span>
@@ -400,7 +400,7 @@ export default function AdminCatalogPage() {
           className={`flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out select-none ${
             isLeftPanelCollapsed
               ? 'w-0 opacity-0 overflow-hidden pointer-events-none'
-              : 'w-[380px] xl:w-[420px] opacity-100'
+              : 'w-[360px] xl:w-[400px] opacity-100'
           }`}
         >
           {/* Search + Category chips */}
@@ -412,7 +412,7 @@ export default function AdminCatalogPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari kod (SFV0001) atau nama..."
-                className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 border border-slate-200 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-slate-300 font-medium"
+                className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 border border-slate-200 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-blue-400 font-medium"
               />
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -421,8 +421,8 @@ export default function AdminCatalogPage() {
                 onClick={() => setFilterCategory('all')}
                 className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-all border cursor-pointer ${
                   filterCategory === 'all'
-                    ? 'bg-slate-900 text-white border-slate-900 dark:bg-zinc-100 dark:text-zinc-900'
-                    : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-slate-400'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-xs font-semibold'
+                    : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-blue-300 hover:text-blue-600'
                 }`}
               >
                 Semua
@@ -434,8 +434,8 @@ export default function AdminCatalogPage() {
                   onClick={() => setFilterCategory(cat)}
                   className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-all border cursor-pointer ${
                     filterCategory === cat
-                      ? 'bg-slate-900 text-white border-slate-900 dark:bg-zinc-100 dark:text-zinc-900'
-                      : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-slate-400'
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-xs font-semibold'
+                      : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-blue-300 hover:text-blue-600'
                   }`}
                 >
                   {cat}
@@ -476,8 +476,8 @@ export default function AdminCatalogPage() {
                       onClick={() => setActiveDesignIndex(idx)}
                       className={`group relative rounded-2xl overflow-hidden border transition-all text-left cursor-pointer ${
                         isActive
-                          ? 'border-slate-900 dark:border-zinc-100 ring-2 ring-slate-900/10 shadow-md bg-white dark:bg-zinc-800'
-                          : 'border-slate-200/80 dark:border-zinc-800 hover:border-slate-400 bg-white dark:bg-zinc-900'
+                          ? 'border-2 border-blue-600 ring-2 ring-blue-500/20 shadow-md bg-white dark:bg-zinc-800'
+                          : 'border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 bg-white dark:bg-zinc-900'
                       }`}
                     >
                       <div className="aspect-square w-full bg-slate-50 dark:bg-zinc-950 flex items-center justify-center overflow-hidden">
@@ -491,20 +491,20 @@ export default function AdminCatalogPage() {
                           className={`w-full h-full object-cover transition-transform duration-200 ${isActive ? 'scale-105' : 'group-hover:scale-105'}`}
                         />
                       </div>
-                      <div className={`px-2.5 py-2 ${isActive ? 'bg-slate-900 text-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-900'}`}>
+                      <div className={`px-2.5 py-2 transition-colors ${isActive ? 'bg-blue-50/50 dark:bg-blue-950/30 border-t border-blue-100 dark:border-blue-900/50' : 'bg-white dark:bg-zinc-900 border-t border-slate-100 dark:border-zinc-800'}`}>
                         <div className="flex items-center space-x-1.5">
                           {itemCode && (
-                            <span className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded shrink-0 ${
-                              isActive ? 'bg-blue-600 text-white' : 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400'
+                            <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                              isActive ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
                             }`}>
                               {itemCode}
                             </span>
                           )}
-                          <p className={`text-[11px] font-semibold truncate ${isActive ? 'text-white' : 'text-slate-800 dark:text-zinc-100'}`}>
+                          <p className={`text-[11px] truncate ${isActive ? 'font-bold text-blue-950 dark:text-blue-200' : 'font-semibold text-slate-800 dark:text-zinc-100'}`}>
                             {displayTitle}
                           </p>
                         </div>
-                        <p className={`text-[9px] mt-0.5 ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>{item.category}</p>
+                        <p className={`text-[9px] mt-0.5 ${isActive ? 'text-blue-700/80 dark:text-blue-300/80 font-medium' : 'text-slate-400'}`}>{item.category}</p>
                       </div>
                       {item.is_featured && (
                         <span className="absolute top-2 left-2 w-4 h-4 rounded-full bg-amber-400 flex items-center justify-center shadow">
@@ -529,13 +529,13 @@ export default function AdminCatalogPage() {
                       onClick={() => setActiveDesignIndex(idx)}
                       className={`w-full flex items-center gap-2.5 p-2 rounded-2xl border transition-all text-left cursor-pointer ${
                         isActive
-                          ? 'bg-slate-900 text-white border-slate-900 shadow-sm dark:bg-zinc-800 dark:border-zinc-700'
+                          ? 'bg-blue-50/70 dark:bg-blue-950/40 border-blue-500 ring-1 ring-blue-500/20 shadow-xs'
                           : 'bg-white dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 hover:border-slate-300'
                       }`}
                     >
                       <div
                         className={`w-12 h-12 rounded-xl overflow-hidden shrink-0 border flex items-center justify-center bg-slate-100 dark:bg-zinc-950 ${
-                          isActive ? 'border-slate-700' : 'border-slate-200 dark:border-zinc-800'
+                          isActive ? 'border-blue-300' : 'border-slate-200 dark:border-zinc-800'
                         }`}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -551,24 +551,24 @@ export default function AdminCatalogPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-1.5">
                           {itemCode && (
-                            <span className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded shrink-0 ${
-                              isActive ? 'bg-blue-600 text-white' : 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400'
+                            <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                              isActive ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
                             }`}>
                               {itemCode}
                             </span>
                           )}
-                          <p className={`text-xs font-semibold truncate ${isActive ? 'text-white' : 'text-slate-900 dark:text-zinc-100'}`}>
+                          <p className={`text-xs truncate ${isActive ? 'font-bold text-blue-950 dark:text-blue-200' : 'font-semibold text-slate-900 dark:text-zinc-100'}`}>
                             {displayTitle}
                           </p>
                         </div>
-                        <p className={`text-[10px] mt-0.5 ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>
+                        <p className={`text-[10px] mt-0.5 ${isActive ? 'text-blue-700/80 dark:text-blue-300/80 font-medium' : 'text-slate-400'}`}>
                           {item.category} · {item.print_type === 'sublimation' ? 'Sublimasi' : 'DTF'}
                         </p>
                       </div>
                       {item.is_featured && (
                         <Star
                           className={`w-3.5 h-3.5 shrink-0 ${
-                            isActive ? 'fill-amber-300 text-amber-300' : 'fill-amber-400 text-amber-400'
+                            isActive ? 'fill-amber-400 text-amber-400' : 'fill-amber-400 text-amber-400'
                           }`}
                         />
                       )}
@@ -580,7 +580,7 @@ export default function AdminCatalogPage() {
           </div>
         </div>
 
-        {/* SISI KANAN: KARTU PANGGUNG UTAMA */}
+        {/* SISI KANAN: INSPEKTOR PRATONTON REKAAN */}
         <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out flex-1 mr-0">
           {/* Gagang Toggle Kapsul Sisi Kiri */}
           <button
@@ -603,53 +603,37 @@ export default function AdminCatalogPage() {
           </button>
 
           {/* Header Kanvas */}
-          <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 dark:border-zinc-800 min-h-[56px] shrink-0 gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-slate-400" />
-                <span className="text-xs font-medium text-slate-500">
-                  Rekaan{' '}
-                  <span className="text-slate-900 dark:text-zinc-100 font-bold">
-                    {filteredDesigns.length > 0 ? activeDesignIndex + 1 : 0}
-                  </span>{' '}
-                  / {filteredDesigns.length}
-                </span>
-              </div>
-              {filteredDesigns.length > 1 && (
-                <div className="hidden sm:flex items-center gap-1 pl-2 border-l border-slate-200 dark:border-zinc-700">
-                  {filteredDesigns.slice(0, 7).map((_, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setActiveDesignIndex(idx)}
-                      className={`rounded-full transition-all cursor-pointer ${
-                        idx === activeDesignIndex
-                          ? 'w-5 h-2 bg-slate-800 dark:bg-zinc-200'
-                          : 'w-2 h-2 bg-slate-300 dark:bg-zinc-600 hover:bg-slate-500'
-                      }`}
-                    />
-                  ))}
-                  {filteredDesigns.length > 7 && (
-                    <span className="text-[9px] text-slate-400 ml-1">+{filteredDesigns.length - 7}</span>
-                  )}
-                </div>
+          <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 dark:border-zinc-800 min-h-[52px] shrink-0 gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              {activeDesign && (
+                <>
+                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 border border-blue-100 shrink-0">
+                    {activeDesign.code || extractDesignCode(activeDesign.title) || 'SFV0001'}
+                  </span>
+                  <h2 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-100 truncate">
+                    {activeDesign.title.replace(/^(SFV\d+)\s*[-:]?\s*/i, '')}
+                  </h2>
+                  <span className="text-[11px] text-slate-400 font-medium shrink-0">
+                    · {activeDesign.category}
+                  </span>
+                </>
               )}
             </div>
 
             {activeDesign && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => handleOpenEdit(activeDesign)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-medium transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors cursor-pointer"
                 >
-                  <Edit className="w-3.5 h-3.5" />
+                  <Edit className="w-3.5 h-3.5 text-slate-500" />
                   <span>Kemaskini</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDelete(activeDesign.id)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-medium transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-medium transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Padam</span>
@@ -662,8 +646,8 @@ export default function AdminCatalogPage() {
           <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 flex flex-col items-center justify-center relative bg-[#fafbfc] dark:bg-zinc-950/40">
             {isLoadingDesigns && designs.length === 0 ? (
               <div className="flex flex-col items-center justify-center space-y-3 text-center max-w-sm animate-pulse">
-                <div className="w-16 h-16 rounded-3xl bg-white dark:bg-zinc-900 shadow-md flex items-center justify-center border border-slate-100 dark:border-zinc-800">
-                  <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
+                <div className="w-14 h-14 rounded-2xl bg-white dark:bg-zinc-900 shadow-md flex items-center justify-center border border-slate-100 dark:border-zinc-800">
+                  <RefreshCw className="w-7 h-7 text-blue-600 animate-spin" />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-slate-700 dark:text-zinc-200">Menyegerak Katalog</h3>
@@ -672,8 +656,8 @@ export default function AdminCatalogPage() {
               </div>
             ) : filteredDesigns.length === 0 ? (
               <div className="flex flex-col items-center justify-center space-y-4 text-center max-w-sm">
-                <div className="w-16 h-16 rounded-3xl bg-white dark:bg-zinc-900 shadow-md flex items-center justify-center border border-slate-100 dark:border-zinc-800">
-                  <ImageIcon className="w-8 h-8 text-slate-300" />
+                <div className="w-14 h-14 rounded-2xl bg-white dark:bg-zinc-900 shadow-md flex items-center justify-center border border-slate-100 dark:border-zinc-800">
+                  <ImageIcon className="w-7 h-7 text-slate-300" />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-slate-700 dark:text-zinc-200">Katalog Masih Kosong</h3>
@@ -682,157 +666,78 @@ export default function AdminCatalogPage() {
                 <button
                   type="button"
                   onClick={handleOpenAdd}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-medium transition-all shadow-md cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all shadow-md cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Tambah Rekaan Baharu</span>
                 </button>
               </div>
             ) : activeDesign ? (
-              <div className="w-full max-w-[420px] sm:max-w-[460px] mx-auto flex flex-col items-center my-auto">
-                {/* Main Design Preview Frame - 1:1 Aspect Fit without empty borders */}
-                <div className="w-full bg-white dark:bg-zinc-900 rounded-3xl shadow-lg border border-slate-200/80 dark:border-zinc-800 overflow-hidden">
-                  {/* Mockup Canvas - 1:1 Square Ratio */}
-                  <div className="relative group w-full aspect-square bg-slate-100 dark:bg-zinc-950 flex items-center justify-center overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={activeDesign.thumbnail_url || activeDesign.mockup_front_url || '/images/prod_sportswear.jpg'}
-                      alt={activeDesign.title}
-                      onError={(e) => {
-                        e.currentTarget.src = '/images/prod_sportswear.jpg';
-                      }}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 drop-shadow-sm"
-                    />
+              <div className="w-full max-w-sm sm:max-w-[420px] flex flex-col items-center gap-3 my-auto">
+                {/* Main 1:1 Square Mockup Canvas */}
+                <div className="relative group w-full aspect-square bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/90 dark:border-zinc-800 shadow-lg overflow-hidden flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={activeDesign.thumbnail_url || activeDesign.mockup_front_url || '/images/prod_sportswear.jpg'}
+                    alt={activeDesign.title}
+                    onError={(e) => {
+                      e.currentTarget.src = '/images/prod_sportswear.jpg';
+                    }}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
+                  />
 
-                    {/* Badges */}
-                    <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
-                      {activeDesign.is_featured && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500 text-white text-[10px] font-semibold shadow-sm backdrop-blur-sm">
-                          <Star className="w-3 h-3 fill-white" />
-                          <span>Pilihan Utama</span>
-                        </span>
-                      )}
-                    </div>
-                    <div className="absolute top-4 right-4 z-10">
-                      {typeInfo && (
-                        <span
-                          className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-semibold border backdrop-blur-sm bg-white/90 dark:bg-zinc-800/90 ${typeInfo.color}`}
-                        >
-                          {typeInfo.label}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Prev/Next hover arrows */}
-                    {filteredDesigns.length > 1 && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={handlePrev}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm shadow-md border border-slate-200/60 dark:border-zinc-700 flex items-center justify-center text-slate-600 dark:text-zinc-200 hover:text-slate-900 hover:bg-white transition-all opacity-0 group-hover:opacity-100 cursor-pointer z-10"
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleNext}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm shadow-md border border-slate-200/60 dark:border-zinc-700 flex items-center justify-center text-slate-600 dark:text-zinc-200 hover:text-slate-900 hover:bg-white transition-all opacity-0 group-hover:opacity-100 cursor-pointer z-10"
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </>
+                  {/* Badges on preview */}
+                  <div className="absolute top-3.5 left-3.5 flex items-center gap-1.5 z-10">
+                    {activeDesign.is_featured && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500 text-white text-[10px] font-semibold shadow-xs">
+                        <Star className="w-3 h-3 fill-white" />
+                        <span>Pilihan Utama</span>
+                      </span>
                     )}
                   </div>
-
-                  {/* Info Row & Navigation */}
-                  <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-zinc-800">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2">
-                          {(activeDesign.code || extractDesignCode(activeDesign.title)) && (
-                            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900 shrink-0">
-                              {activeDesign.code || extractDesignCode(activeDesign.title)}
-                            </span>
-                          )}
-                          <h2 className="text-base font-bold text-slate-900 dark:text-zinc-100 truncate">
-                            {activeDesign.title}
-                          </h2>
-                        </div>
-                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                          <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
-                            {activeDesign.category}
-                          </span>
-                          {activeDesign.tags && activeDesign.tags.length > 0 && (
-                            <div className="flex gap-1 flex-wrap">
-                              {activeDesign.tags.slice(0, 3).map((tag) => (
-                                <span
-                                  key={tag}
-                                  className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 text-[9px] font-medium"
-                                >
-                                  #{tag}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-slate-400 mt-1.5 font-mono">ID: {activeDesign.id}</p>
-                      </div>
-                    </div>
-
-                    {/* Prev / Next controls */}
-                    {filteredDesigns.length > 1 && (
-                      <div className="flex items-center justify-between mt-3.5 pt-3.5 border-t border-slate-100 dark:border-zinc-800/80">
-                        <button
-                          type="button"
-                          onClick={handlePrev}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 text-xs font-medium transition-all cursor-pointer"
-                        >
-                          <ChevronLeft className="w-3.5 h-3.5" />
-                          <span>Sebelum</span>
-                        </button>
-                        <span className="text-[11px] text-slate-400 font-medium">
-                          {activeDesignIndex + 1} / {filteredDesigns.length}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={handleNext}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white text-xs font-medium transition-all cursor-pointer"
-                        >
-                          <span>Seterusnya</span>
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                  <div className="absolute top-3.5 right-3.5 z-10">
+                    {typeInfo && (
+                      <span
+                        className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-semibold border backdrop-blur-sm bg-white/95 dark:bg-zinc-800/95 ${typeInfo.color}`}
+                      >
+                        {typeInfo.label}
+                      </span>
                     )}
                   </div>
                 </div>
 
-                {/* Filmstrip Thumbnails */}
-                {filteredDesigns.length > 1 && (
-                  <div className="flex gap-2 mt-3.5 max-w-full overflow-x-auto pb-1 px-1">
-                    {filteredDesigns.map((item, idx) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => setActiveDesignIndex(idx)}
-                        className={`shrink-0 w-13 h-13 rounded-2xl overflow-hidden border-2 transition-all cursor-pointer bg-white dark:bg-zinc-800 flex items-center justify-center ${
-                          idx === activeDesignIndex
-                            ? 'border-slate-900 dark:border-zinc-100 shadow-md scale-105 ring-2 ring-slate-900/10'
-                            : 'border-transparent hover:border-slate-300 opacity-60 hover:opacity-100'
-                        }`}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={item.thumbnail_url || item.mockup_front_url || '/images/prod_sportswear.jpg'}
-                          alt={item.title}
-                          onError={(e) => {
-                            e.currentTarget.src = '/images/prod_sportswear.jpg';
-                          }}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    ))}
+                {/* Details Info Strip */}
+                <div className="w-full bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-3.5 shadow-2xs space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100 shrink-0">
+                          {activeDesign.code || extractDesignCode(activeDesign.title) || 'SFV0001'}
+                        </span>
+                        <p className="text-xs font-bold text-slate-800 dark:text-zinc-100 truncate">
+                          {activeDesign.title}
+                        </p>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1">
+                        Kategori: <strong className="text-slate-700 dark:text-zinc-200 font-semibold">{activeDesign.category}</strong> · Teknik: <strong className="text-slate-700 dark:text-zinc-200 font-semibold">{activeDesign.print_type === 'sublimation' ? 'Sublimasi Penuh' : 'DTF Direct Transfer'}</strong>
+                      </p>
+                    </div>
                   </div>
-                )}
+
+                  {activeDesign.tags && activeDesign.tags.length > 0 && (
+                    <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-slate-100 dark:border-zinc-800">
+                      <span className="text-[10px] text-slate-400">Tag:</span>
+                      {activeDesign.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 text-[10px] font-medium"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             ) : null}
           </div>
@@ -841,14 +746,14 @@ export default function AdminCatalogPage() {
 
       {/* MODAL — Add / Edit */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="w-full max-w-md bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 space-y-5 shadow-2xl animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center shadow-xs">
-                  <ImageIcon className="w-4 h-4 text-amber-400" />
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-xs">
+                  <ImageIcon className="w-4 h-4 text-blue-600" />
                 </div>
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-bold text-slate-800">
                   {editingDesign ? 'Kemaskini Rekaan' : 'Tambah Rekaan Baharu'}
                 </h3>
               </div>
@@ -945,19 +850,19 @@ export default function AdminCatalogPage() {
                     onClick={() => fileInputRef.current?.click()}
                     className={`w-full h-44 rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center p-4 text-center ${
                       isDragging
-                        ? 'border-slate-800 bg-slate-100/80'
-                        : 'border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-50'
+                        ? 'border-blue-500 bg-blue-50/50'
+                        : 'border-slate-200 hover:border-blue-300 bg-slate-50/50 hover:bg-slate-50'
                     }`}
                   >
                     {isProcessingImage ? (
                       <div className="flex flex-col items-center space-y-2 animate-in fade-in">
-                        <RefreshCw className="w-6 h-6 animate-spin text-slate-800" />
+                        <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
                         <span className="text-xs font-semibold text-slate-800">Mengoptimumkan imej...</span>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center space-y-1.5">
-                        <div className="w-11 h-11 rounded-2xl bg-slate-100 flex items-center justify-center mb-1 shadow-xs">
-                          <UploadCloud className="w-5 h-5 text-slate-600" />
+                        <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-1 shadow-xs border border-blue-100">
+                          <UploadCloud className="w-5 h-5" />
                         </div>
                         <p className="text-xs font-semibold text-slate-800">Pilih fail gambar rekaan</p>
                         <p className="text-[11px] text-slate-400">PNG / JPG / WebP — auto-compressed</p>
@@ -992,7 +897,7 @@ export default function AdminCatalogPage() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Contoh: HARI SUKAN MALAYSIA"
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 uppercase placeholder:normal-case font-medium"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-400 uppercase placeholder:normal-case font-medium"
                   />
                 </div>
               </div>
@@ -1004,7 +909,7 @@ export default function AdminCatalogPage() {
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-400 font-medium"
                   >
                     {CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>
@@ -1018,7 +923,7 @@ export default function AdminCatalogPage() {
                   <select
                     value={printType}
                     onChange={(e) => setPrintType(e.target.value as PrintType)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 font-medium"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-400 font-medium"
                   >
                     <option value="sublimation">Sublimasi Penuh</option>
                     <option value="dtf">DTF Direct Transfer</option>
@@ -1036,7 +941,7 @@ export default function AdminCatalogPage() {
                   value={tagsInput}
                   onChange={(e) => setTagsInput(e.target.value)}
                   placeholder="Contoh: sukan, jersi, futsal, hari sukan"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-400 placeholder:normal-case font-medium"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-400 placeholder:normal-case font-medium"
                 />
               </div>
 
@@ -1072,7 +977,7 @@ export default function AdminCatalogPage() {
                 <button
                   type="submit"
                   disabled={isSaving || !title.trim() || !imageUrl}
-                  className="px-5 py-2 rounded-full bg-slate-900 hover:bg-black disabled:opacity-40 text-white font-medium text-xs shadow-xs transition-all flex items-center space-x-1.5 cursor-pointer"
+                  className="px-5 py-2 rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-semibold text-xs shadow-sm transition-all flex items-center space-x-1.5 cursor-pointer"
                 >
                   {isSaving ? (
                     <>
