@@ -18,6 +18,7 @@ import {
   Eye,
   Save,
   RotateCcw,
+  RefreshCw,
   CheckCircle2,
   LayoutGrid,
   List,
@@ -47,6 +48,7 @@ type CmsTabKey = 'hero' | 'services' | 'slogan' | 'videos' | 'gallery' | 'testim
 
 export default function AdminCmsPage() {
   const {
+    isLoadingCms,
     heroBanners,
     services,
     productionVideos,
@@ -55,6 +57,7 @@ export default function AdminCmsPage() {
     sloganQuote,
     companySettings,
     policies,
+    refreshAllDb,
     addHeroBanner,
     updateHeroBanner,
     deleteHeroBanner,
@@ -506,17 +509,31 @@ export default function AdminCmsPage() {
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
-            onClick={() => {
-              if (confirm('Kembalikan semua tetapan CMS ke nilai lalai asal?')) {
-                resetToSeedData();
-                triggerToast('Semua tetapan dikembalikan ke nilai asal.');
+            onClick={async () => {
+              await refreshAllDb();
+              triggerToast('Data CMS disegerakkan dari Cloud Database!');
+            }}
+            disabled={isLoadingCms}
+            title="Muat semula data terus dari Cloud Database"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 text-slate-700 dark:text-zinc-200 text-xs font-medium transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-blue-500 ${isLoadingCms ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">{isLoadingCms ? 'Menyegerak...' : 'Segar Semula DB'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              if (confirm('Kembalikan semua tetapan CMS ke nilai lalai asal dan simpan ke Cloud Database?')) {
+                await resetToSeedData();
+                triggerToast('Semua tetapan dikembalikan ke nilai asal di Cloud DB.');
               }
             }}
-            title="Set semula data ke nilai asal"
+            title="Set semula data ke nilai asal di Cloud DB"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 text-slate-700 dark:text-zinc-200 text-xs font-medium transition-all shadow-2xs cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-            <span className="hidden sm:inline">Reset Lalai</span>
+            <span className="hidden sm:inline">Reset Cloud DB</span>
           </button>
 
           <Link

@@ -23,6 +23,29 @@ import {
 } from '@/types/database';
 import { getDesignsDb, saveDesignDb, deleteDesignDb } from '@/app/actions/designActions';
 import {
+  getCmsDataDb,
+  saveHeroBannerDb,
+  deleteHeroBannerDb,
+  saveServiceDb,
+  deleteServiceDb,
+  saveProductionVideoDb,
+  deleteProductionVideoDb,
+  saveProductionGalleryDb,
+  deleteProductionGalleryDb,
+  saveTestimonialDb,
+  deleteTestimonialDb,
+  saveSloganQuoteDb,
+  saveCompanySettingsDb,
+  savePolicyDb,
+  seedAllCmsToDb,
+} from '@/app/actions/cmsActions';
+import {
+  getMasterPricingDb,
+  saveFabricDb,
+  saveCutDb,
+  saveDtfDimensionDb,
+} from '@/app/actions/pricingActions';
+import {
   INITIAL_APPAREL_CUTS,
   INITIAL_CUSTOMERS,
   INITIAL_DTF_DIMENSIONS,
@@ -99,10 +122,11 @@ interface AppStoreState {
   themeSettings: CmsThemeSettings;
   isInitialized: boolean;
   isLoadingDesigns: boolean;
+  isLoadingCms: boolean;
 }
 
 let storeState: AppStoreState = {
-  designs: [], // Pure Supabase DB data only, NO mock dummy items
+  designs: [], // Pure Supabase DB data only
   fabrics: INITIAL_FABRIC_MATERIALS,
   cuts: INITIAL_APPAREL_CUTS,
   dtfDimensions: INITIAL_DTF_DIMENSIONS,
@@ -121,6 +145,7 @@ let storeState: AppStoreState = {
   themeSettings: INITIAL_CMS_THEME_SETTINGS,
   isInitialized: false,
   isLoadingDesigns: false,
+  isLoadingCms: false,
 };
 
 const listeners = new Set<() => void>();
@@ -129,25 +154,67 @@ function notify() {
   listeners.forEach((listener) => listener());
 }
 
-async function fetchAndSyncDesigns() {
-  storeState = { ...storeState, isLoadingDesigns: true };
+/**
+ * Fetch and sync all Cloud DB items (Designs, CMS, Pricing)
+ */
+async function fetchAndSyncAllDb() {
+  storeState = { ...storeState, isLoadingDesigns: true, isLoadingCms: true };
   notify();
+
   try {
-    const res = await getDesignsDb();
-    if (res.success && Array.isArray(res.designs)) {
-      storeState = {
-        ...storeState,
-        designs: res.designs,
-        isLoadingDesigns: false,
-      };
-      notify();
-    } else {
-      storeState = { ...storeState, isLoadingDesigns: false };
-      notify();
-    }
-  } catch (err) {
-    console.error('Error fetching designs from Supabase:', err);
-    storeState = { ...storeState, isLoadingDesigns: false };
+    // 1. Fetch Designs
+    const designsPromise = getDesignsDb().then((res) => {
+      if (res.success && Array.isArray(res.designs)) {
+        storeState = { ...storeState, designs: res.designs };
+      }
+    }).catch((e) => console.error('Error fetching designs:', e));
+
+    // 2. Fetch CMS Data
+    const cmsPromise = getCmsDataDb().then((res) => {
+      if (res.success && res.data) {
+        const { heroBanners, services, productionVideos, productionGallery, testimonials, sloganQuote, companySettings, policies } = res.data;
+        storeState = {
+          ...storeState,
+          heroBanners: heroBanners.length > 0 ? heroBanners : storeState.heroBanners,
+          services: services.length > 0 ? services : storeState.services,
+          productionVideos: productionVideos.length > 0 ? productionVideos : storeState.productionVideos,
+          productionGallery: productionGallery.length > 0 ? productionGallery : storeState.productionGallery,
+          testimonials: testimonials.length > 0 ? testimonials : storeState.testimonials,
+          sloganQuote: sloganQuote || storeState.sloganQuote,
+          companySettings: companySettings || storeState.companySettings,
+          policies: policies || storeState.policies,
+        };
+        // Update local cache
+        setLocalData(STORAGE_KEYS.HERO_BANNERS, storeState.heroBanners);
+        setLocalData(STORAGE_KEYS.SERVICES, storeState.services);
+        setLocalData(STORAGE_KEYS.VIDEOS, storeState.productionVideos);
+        setLocalData(STORAGE_KEYS.GALLERY, storeState.productionGallery);
+        setLocalData(STORAGE_KEYS.TESTIMONIALS, storeState.testimonials);
+        setLocalData(STORAGE_KEYS.SLOGAN, storeState.sloganQuote);
+        setLocalData(STORAGE_KEYS.COMPANY, storeState.companySettings);
+        setLocalData(STORAGE_KEYS.POLICIES, storeState.policies);
+      }
+    }).catch((e) => console.error('Error fetching CMS data:', e));
+
+    // 3. Fetch Master Pricing
+    const pricingPromise = getMasterPricingDb().then((res) => {
+      if (res.success && res.data) {
+        const { fabrics, cuts, dtfDimensions } = res.data;
+        storeState = {
+          ...storeState,
+          fabrics: fabrics.length > 0 ? fabrics : storeState.fabrics,
+          cuts: cuts.length > 0 ? cuts : storeState.cuts,
+          dtfDimensions: dtfDimensions.length > 0 ? dtfDimensions : storeState.dtfDimensions,
+        };
+        setLocalData(STORAGE_KEYS.FABRICS, storeState.fabrics);
+        setLocalData(STORAGE_KEYS.CUTS, storeState.cuts);
+        setLocalData(STORAGE_KEYS.DTF_DIMS, storeState.dtfDimensions);
+      }
+    }).catch((e) => console.error('Error fetching pricing data:', e));
+
+    await Promise.all([designsPromise, cmsPromise, pricingPromise]);
+  } finally {
+    storeState = { ...storeState, isLoadingDesigns: false, isLoadingCms: false };
     notify();
   }
 }
@@ -155,7 +222,7 @@ async function fetchAndSyncDesigns() {
 function initStoreIfNeeded() {
   if (typeof window === 'undefined' || storeState.isInitialized) return;
   storeState = {
-    designs: [], // Pure database-driven only
+    designs: [],
     fabrics: getLocalData(STORAGE_KEYS.FABRICS, INITIAL_FABRIC_MATERIALS),
     cuts: getLocalData(STORAGE_KEYS.CUTS, INITIAL_APPAREL_CUTS),
     dtfDimensions: getLocalData(STORAGE_KEYS.DTF_DIMS, INITIAL_DTF_DIMENSIONS),
@@ -189,11 +256,12 @@ function initStoreIfNeeded() {
     })(),
     isInitialized: true,
     isLoadingDesigns: true,
+    isLoadingCms: true,
   };
   notify();
 
-  // Async load fresh shared designs directly from Supabase DB
-  fetchAndSyncDesigns();
+  // Async load fresh shared designs & CMS data from Cloud DB
+  fetchAndSyncAllDb();
 }
 
 if (typeof window !== 'undefined') {
@@ -254,143 +322,189 @@ const serverSnapshot: AppStoreState = {
   themeSettings: INITIAL_CMS_THEME_SETTINGS,
   isInitialized: false,
   isLoadingDesigns: false,
+  isLoadingCms: false,
 };
 
-function getServerSnapshot() {
-  return serverSnapshot;
-}
-
 export function useAppStore() {
+  const state = useSyncExternalStore(subscribe, getSnapshot, () => serverSnapshot);
+
   useEffect(() => {
     initStoreIfNeeded();
   }, []);
 
-  const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-
-  // Re-fetch designs from Supabase on-demand
-  const refreshDesigns = useCallback(async () => {
-    await fetchAndSyncDesigns();
+  const refreshAllDb = useCallback(async () => {
+    await fetchAndSyncAllDb();
   }, []);
 
-  const setDesigns = useCallback((designsList: Design[]) => {
-    storeState = { ...storeState, designs: designsList };
+  const refreshDesigns = useCallback(async () => {
+    await fetchAndSyncAllDb();
+  }, []);
+
+  const setDesigns = useCallback((designs: Design[]) => {
+    initStoreIfNeeded();
+    storeState = { ...storeState, designs };
     notify();
   }, []);
 
-  // Favorites
   const toggleFavorite = useCallback((designId: string) => {
     initStoreIfNeeded();
-    const nextFavorites = storeState.favorites.includes(designId)
-      ? storeState.favorites.filter((id) => id !== designId)
-      : [...storeState.favorites, designId];
-    storeState = { ...storeState, favorites: nextFavorites };
-    setLocalData(STORAGE_KEYS.FAVORITES, nextFavorites);
+    const current = storeState.favorites;
+    const exists = current.includes(designId);
+    const next = exists ? current.filter((id) => id !== designId) : [...current, designId];
+    storeState = { ...storeState, favorites: next };
+    setLocalData(STORAGE_KEYS.FAVORITES, next);
     notify();
   }, []);
 
-  const isFavorite = useCallback((designId: string) => {
-    return state.favorites.includes(designId);
-  }, [state.favorites]);
+  const isFavorite = useCallback(
+    (designId: string) => state.favorites.includes(designId),
+    [state.favorites]
+  );
 
-  // Orders
-  const addOrder = useCallback((newOrderData: Omit<Order, 'id' | 'order_number' | 'created_at' | 'updated_at'>) => {
+  const addOrder = useCallback((orderData: Omit<Order, 'id' | 'order_number' | 'created_at' | 'updated_at'>) => {
     initStoreIfNeeded();
-    const nextOrderNum = `SFV-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000))}`;
+    const timestamp = Date.now();
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const newOrder: Order = {
-      ...newOrderData,
-      id: `ord-${Date.now()}`,
-      order_number: nextOrderNum,
+      ...orderData,
+      id: `ord-${timestamp}`,
+      order_number: `ORD-${randomSuffix}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
-    const nextOrders = [newOrder, ...storeState.orders];
-    storeState = { ...storeState, orders: nextOrders };
-    setLocalData(STORAGE_KEYS.ORDERS, nextOrders);
+
+    const next = [newOrder, ...storeState.orders];
+    storeState = { ...storeState, orders: next };
+    setLocalData(STORAGE_KEYS.ORDERS, next);
     notify();
     return newOrder;
   }, []);
 
-  const updateOrderStatus = useCallback((orderId: string, status: OrderStatus, trackingNumber?: string, notes?: string) => {
-    initStoreIfNeeded();
-    const nextOrders = storeState.orders.map((ord) => {
-      if (ord.id === orderId || ord.order_number === orderId) {
-        return {
-          ...ord,
-          status,
-          tracking_number: trackingNumber !== undefined ? trackingNumber : ord.tracking_number,
-          production_notes: notes !== undefined ? notes : ord.production_notes,
-          updated_at: new Date().toISOString(),
-        };
-      }
-      return ord;
-    });
-    storeState = { ...storeState, orders: nextOrders };
-    setLocalData(STORAGE_KEYS.ORDERS, nextOrders);
-    notify();
-  }, []);
-
   const deleteOrder = useCallback((orderId: string) => {
     initStoreIfNeeded();
-    const nextOrders = storeState.orders.filter((ord) => ord.id !== orderId && ord.order_number !== orderId);
-    storeState = { ...storeState, orders: nextOrders };
-    setLocalData(STORAGE_KEYS.ORDERS, nextOrders);
+    const next = storeState.orders.filter((o) => o.id !== orderId);
+    storeState = { ...storeState, orders: next };
+    setLocalData(STORAGE_KEYS.ORDERS, next);
     notify();
   }, []);
 
-  // Catalog Designs (Supabase database as single source of truth, NO localStorage)
-  const addDesign = useCallback((design: Design) => {
-    initStoreIfNeeded();
-    const exists = storeState.designs.some((d) => d.id === design.id);
-    const nextDesigns = exists
-      ? storeState.designs.map((d) => (d.id === design.id ? design : d))
-      : [design, ...storeState.designs];
-    storeState = { ...storeState, designs: nextDesigns };
-    notify();
-    return design;
-  }, []);
+  const updateOrderStatus = useCallback(
+    (orderId: string, status: OrderStatus, trackingNumber?: string, notes?: string) => {
+      initStoreIfNeeded();
+      const next = storeState.orders.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              status,
+              ...(trackingNumber !== undefined ? { tracking_number: trackingNumber } : {}),
+              ...(notes !== undefined ? { admin_notes: notes } : {}),
+              updated_at: new Date().toISOString(),
+            }
+          : o
+      );
+      storeState = { ...storeState, orders: next };
+      setLocalData(STORAGE_KEYS.ORDERS, next);
+      notify();
+    },
+    []
+  );
 
-  const updateDesign = useCallback((id: string, updates: Partial<Design>) => {
+  // Design CRUD with Cloud DB
+  const addDesign = useCallback(async (design: Omit<Design, 'id'>) => {
     initStoreIfNeeded();
-    const nextDesigns = storeState.designs.map((d) => {
-      if (d.id === id) {
-        return { ...d, ...updates };
+    const tempId = `temp-${Date.now()}`;
+    const localNewDesign: Design = { ...design, id: tempId };
+    storeState = { ...storeState, designs: [localNewDesign, ...storeState.designs] };
+    notify();
+
+    try {
+      const res = await saveDesignDb(design);
+      if (res.success && res.data) {
+        storeState = {
+          ...storeState,
+          designs: storeState.designs.map((d) => (d.id === tempId ? res.data! : d)),
+        };
+        notify();
+        return res.data;
       }
-      return d;
-    });
-    storeState = { ...storeState, designs: nextDesigns };
-    notify();
+      return localNewDesign;
+    } catch (err) {
+      console.error('Failed to add design to Supabase:', err);
+      return localNewDesign;
+    }
   }, []);
 
-  const deleteDesign = useCallback((id: string) => {
+  const updateDesign = useCallback(async (id: string, updates: Partial<Design>) => {
     initStoreIfNeeded();
-    const nextDesigns = storeState.designs.filter((d) => d.id !== id);
-    storeState = { ...storeState, designs: nextDesigns };
+    const target = storeState.designs.find((d) => d.id === id);
+    if (!target) return;
+    const merged = { ...target, ...updates };
+    storeState = {
+      ...storeState,
+      designs: storeState.designs.map((d) => (d.id === id ? merged : d)),
+    };
     notify();
+
+    try {
+      await saveDesignDb(merged);
+    } catch (err) {
+      console.error('Failed to update design in Supabase:', err);
+    }
   }, []);
 
-  // Pricing Rules
-  const updateFabric = useCallback((id: string, updates: Partial<FabricMaterial>) => {
+  const deleteDesign = useCallback(async (id: string) => {
+    initStoreIfNeeded();
+    storeState = {
+      ...storeState,
+      designs: storeState.designs.filter((d) => d.id !== id),
+    };
+    notify();
+
+    try {
+      await deleteDesignDb(id);
+    } catch (err) {
+      console.error('Failed to delete design from Supabase:', err);
+    }
+  }, []);
+
+  // Pricing Rules CRUD with Cloud DB
+  const updateFabric = useCallback(async (id: string, updates: Partial<FabricMaterial>) => {
     initStoreIfNeeded();
     const next = storeState.fabrics.map((f) => (f.id === id ? { ...f, ...updates } : f));
     storeState = { ...storeState, fabrics: next };
     setLocalData(STORAGE_KEYS.FABRICS, next);
     notify();
+
+    const target = next.find((f) => f.id === id);
+    if (target) {
+      saveFabricDb(target).catch((e) => console.error('Error saving fabric to DB:', e));
+    }
   }, []);
 
-  const updateCut = useCallback((id: string, updates: Partial<ApparelCut>) => {
+  const updateCut = useCallback(async (id: string, updates: Partial<ApparelCut>) => {
     initStoreIfNeeded();
     const next = storeState.cuts.map((c) => (c.id === id ? { ...c, ...updates } : c));
     storeState = { ...storeState, cuts: next };
     setLocalData(STORAGE_KEYS.CUTS, next);
     notify();
+
+    const target = next.find((c) => c.id === id);
+    if (target) {
+      saveCutDb(target).catch((e) => console.error('Error saving cut to DB:', e));
+    }
   }, []);
 
-  const updateDtfDimension = useCallback((id: string, updates: Partial<DtfDimension>) => {
+  const updateDtfDimension = useCallback(async (id: string, updates: Partial<DtfDimension>) => {
     initStoreIfNeeded();
     const next = storeState.dtfDimensions.map((d) => (d.id === id ? { ...d, ...updates } : d));
     storeState = { ...storeState, dtfDimensions: next };
     setLocalData(STORAGE_KEYS.DTF_DIMS, next);
     notify();
+
+    const target = next.find((d) => d.id === id);
+    if (target) {
+      saveDtfDimensionDb(target).catch((e) => console.error('Error saving DTF dim to DB:', e));
+    }
   }, []);
 
   const updateQuantityTier = useCallback((id: string, updates: Partial<QuantityTierDiscount>) => {
@@ -406,168 +520,339 @@ export function useAppStore() {
   // ==========================================
 
   // Hero Banners
-  const addHeroBanner = useCallback((banner: Omit<CmsHeroBanner, 'id'>) => {
+  const addHeroBanner = useCallback(async (banner: Omit<CmsHeroBanner, 'id'>) => {
     initStoreIfNeeded();
-    const newBanner: CmsHeroBanner = { ...banner, id: `hero-${Date.now()}` };
+    const tempId = `temp-${Date.now()}`;
+    const newBanner: CmsHeroBanner = { ...banner, id: tempId };
     const next = [...storeState.heroBanners, newBanner];
     storeState = { ...storeState, heroBanners: next };
     setLocalData(STORAGE_KEYS.HERO_BANNERS, next);
     notify();
+
+    try {
+      const res = await saveHeroBannerDb(banner);
+      if (res.success && res.banner) {
+        const updated = storeState.heroBanners.map((b) => (b.id === tempId ? res.banner! : b));
+        storeState = { ...storeState, heroBanners: updated };
+        setLocalData(STORAGE_KEYS.HERO_BANNERS, updated);
+        notify();
+        return res.banner;
+      }
+    } catch (e) {
+      console.error('Failed to save Hero Banner to DB:', e);
+    }
     return newBanner;
   }, []);
 
-  const updateHeroBanner = useCallback((id: string, updates: Partial<CmsHeroBanner>) => {
+  const updateHeroBanner = useCallback(async (id: string, updates: Partial<CmsHeroBanner>) => {
     initStoreIfNeeded();
     const next = storeState.heroBanners.map((b) => (b.id === id ? { ...b, ...updates } : b));
     storeState = { ...storeState, heroBanners: next };
     setLocalData(STORAGE_KEYS.HERO_BANNERS, next);
     notify();
+
+    try {
+      const target = next.find((b) => b.id === id);
+      if (target) {
+        const res = await saveHeroBannerDb({ ...target, ...updates, id });
+        if (res.success && res.banner) {
+          const synced = storeState.heroBanners.map((b) => (b.id === id ? res.banner! : b));
+          storeState = { ...storeState, heroBanners: synced };
+          setLocalData(STORAGE_KEYS.HERO_BANNERS, synced);
+          notify();
+        }
+      }
+    } catch (e) {
+      console.error('Failed to update Hero Banner in DB:', e);
+    }
   }, []);
 
-  const deleteHeroBanner = useCallback((id: string) => {
+  const deleteHeroBanner = useCallback(async (id: string) => {
     initStoreIfNeeded();
     const next = storeState.heroBanners.filter((b) => b.id !== id);
     storeState = { ...storeState, heroBanners: next };
     setLocalData(STORAGE_KEYS.HERO_BANNERS, next);
     notify();
+
+    try {
+      await deleteHeroBannerDb(id);
+    } catch (e) {
+      console.error('Failed to delete Hero Banner from DB:', e);
+    }
   }, []);
 
   // Services
-  const addService = useCallback((service: Omit<CmsService, 'id'>) => {
+  const addService = useCallback(async (service: Omit<CmsService, 'id'>) => {
     initStoreIfNeeded();
-    const newService: CmsService = { ...service, id: `srv-${Date.now()}` };
+    const tempId = `temp-${Date.now()}`;
+    const newService: CmsService = { ...service, id: tempId };
     const next = [...storeState.services, newService];
     storeState = { ...storeState, services: next };
     setLocalData(STORAGE_KEYS.SERVICES, next);
     notify();
+
+    try {
+      const res = await saveServiceDb(service);
+      if (res.success && res.service) {
+        const updated = storeState.services.map((s) => (s.id === tempId ? res.service! : s));
+        storeState = { ...storeState, services: updated };
+        setLocalData(STORAGE_KEYS.SERVICES, updated);
+        notify();
+        return res.service;
+      }
+    } catch (e) {
+      console.error('Failed to save Service to DB:', e);
+    }
     return newService;
   }, []);
 
-  const updateService = useCallback((id: string, updates: Partial<CmsService>) => {
+  const updateService = useCallback(async (id: string, updates: Partial<CmsService>) => {
     initStoreIfNeeded();
     const next = storeState.services.map((s) => (s.id === id ? { ...s, ...updates } : s));
     storeState = { ...storeState, services: next };
     setLocalData(STORAGE_KEYS.SERVICES, next);
     notify();
+
+    try {
+      const target = next.find((s) => s.id === id);
+      if (target) {
+        await saveServiceDb({ ...target, ...updates, id });
+      }
+    } catch (e) {
+      console.error('Failed to update Service in DB:', e);
+    }
   }, []);
 
-  const deleteService = useCallback((id: string) => {
+  const deleteService = useCallback(async (id: string) => {
     initStoreIfNeeded();
     const next = storeState.services.filter((s) => s.id !== id);
     storeState = { ...storeState, services: next };
     setLocalData(STORAGE_KEYS.SERVICES, next);
     notify();
+
+    try {
+      await deleteServiceDb(id);
+    } catch (e) {
+      console.error('Failed to delete Service from DB:', e);
+    }
   }, []);
 
   // Production Videos
-  const addProductionVideo = useCallback((video: Omit<CmsProductionVideo, 'id'>) => {
+  const addProductionVideo = useCallback(async (video: Omit<CmsProductionVideo, 'id'>) => {
     initStoreIfNeeded();
-    const newVid: CmsProductionVideo = { ...video, id: `vid-${Date.now()}` };
+    const tempId = `temp-${Date.now()}`;
+    const newVid: CmsProductionVideo = { ...video, id: tempId };
     const next = [...storeState.productionVideos, newVid];
     storeState = { ...storeState, productionVideos: next };
     setLocalData(STORAGE_KEYS.VIDEOS, next);
     notify();
+
+    try {
+      const res = await saveProductionVideoDb(video);
+      if (res.success && res.video) {
+        const updated = storeState.productionVideos.map((v) => (v.id === tempId ? res.video! : v));
+        storeState = { ...storeState, productionVideos: updated };
+        setLocalData(STORAGE_KEYS.VIDEOS, updated);
+        notify();
+        return res.video;
+      }
+    } catch (e) {
+      console.error('Failed to save Video to DB:', e);
+    }
     return newVid;
   }, []);
 
-  const updateProductionVideo = useCallback((id: string, updates: Partial<CmsProductionVideo>) => {
+  const updateProductionVideo = useCallback(async (id: string, updates: Partial<CmsProductionVideo>) => {
     initStoreIfNeeded();
     const next = storeState.productionVideos.map((v) => (v.id === id ? { ...v, ...updates } : v));
     storeState = { ...storeState, productionVideos: next };
     setLocalData(STORAGE_KEYS.VIDEOS, next);
     notify();
+
+    try {
+      const target = next.find((v) => v.id === id);
+      if (target) {
+        await saveProductionVideoDb({ ...target, ...updates, id });
+      }
+    } catch (e) {
+      console.error('Failed to update Video in DB:', e);
+    }
   }, []);
 
-  const deleteProductionVideo = useCallback((id: string) => {
+  const deleteProductionVideo = useCallback(async (id: string) => {
     initStoreIfNeeded();
     const next = storeState.productionVideos.filter((v) => v.id !== id);
     storeState = { ...storeState, productionVideos: next };
     setLocalData(STORAGE_KEYS.VIDEOS, next);
     notify();
+
+    try {
+      await deleteProductionVideoDb(id);
+    } catch (e) {
+      console.error('Failed to delete Video from DB:', e);
+    }
   }, []);
 
   // Production Gallery
-  const addGalleryItem = useCallback((item: Omit<CmsProductionGalleryItem, 'id'>) => {
+  const addGalleryItem = useCallback(async (item: Omit<CmsProductionGalleryItem, 'id'>) => {
     initStoreIfNeeded();
-    const newItem: CmsProductionGalleryItem = { ...item, id: `gal-${Date.now()}` };
+    const tempId = `temp-${Date.now()}`;
+    const newItem: CmsProductionGalleryItem = { ...item, id: tempId };
     const next = [...storeState.productionGallery, newItem];
     storeState = { ...storeState, productionGallery: next };
     setLocalData(STORAGE_KEYS.GALLERY, next);
     notify();
+
+    try {
+      const res = await saveProductionGalleryDb(item);
+      if (res.success && res.item) {
+        const updated = storeState.productionGallery.map((g) => (g.id === tempId ? res.item! : g));
+        storeState = { ...storeState, productionGallery: updated };
+        setLocalData(STORAGE_KEYS.GALLERY, updated);
+        notify();
+        return res.item;
+      }
+    } catch (e) {
+      console.error('Failed to save Gallery Item to DB:', e);
+    }
     return newItem;
   }, []);
 
-  const updateGalleryItem = useCallback((id: string, updates: Partial<CmsProductionGalleryItem>) => {
+  const updateGalleryItem = useCallback(async (id: string, updates: Partial<CmsProductionGalleryItem>) => {
     initStoreIfNeeded();
     const next = storeState.productionGallery.map((g) => (g.id === id ? { ...g, ...updates } : g));
     storeState = { ...storeState, productionGallery: next };
     setLocalData(STORAGE_KEYS.GALLERY, next);
     notify();
+
+    try {
+      const target = next.find((g) => g.id === id);
+      if (target) {
+        await saveProductionGalleryDb({ ...target, ...updates, id });
+      }
+    } catch (e) {
+      console.error('Failed to update Gallery Item in DB:', e);
+    }
   }, []);
 
-  const deleteGalleryItem = useCallback((id: string) => {
+  const deleteGalleryItem = useCallback(async (id: string) => {
     initStoreIfNeeded();
     const next = storeState.productionGallery.filter((g) => g.id !== id);
     storeState = { ...storeState, productionGallery: next };
     setLocalData(STORAGE_KEYS.GALLERY, next);
     notify();
+
+    try {
+      await deleteProductionGalleryDb(id);
+    } catch (e) {
+      console.error('Failed to delete Gallery Item from DB:', e);
+    }
   }, []);
 
   // Testimonials
-  const addTestimonial = useCallback((testi: Omit<CmsTestimonial, 'id'>) => {
+  const addTestimonial = useCallback(async (testi: Omit<CmsTestimonial, 'id'>) => {
     initStoreIfNeeded();
-    const newTesti: CmsTestimonial = { ...testi, id: `testi-${Date.now()}` };
+    const tempId = `temp-${Date.now()}`;
+    const newTesti: CmsTestimonial = { ...testi, id: tempId };
     const next = [...storeState.testimonials, newTesti];
     storeState = { ...storeState, testimonials: next };
     setLocalData(STORAGE_KEYS.TESTIMONIALS, next);
     notify();
+
+    try {
+      const res = await saveTestimonialDb(testi);
+      if (res.success && res.testimonial) {
+        const updated = storeState.testimonials.map((t) => (t.id === tempId ? res.testimonial! : t));
+        storeState = { ...storeState, testimonials: updated };
+        setLocalData(STORAGE_KEYS.TESTIMONIALS, updated);
+        notify();
+        return res.testimonial;
+      }
+    } catch (e) {
+      console.error('Failed to save Testimonial to DB:', e);
+    }
     return newTesti;
   }, []);
 
-  const updateTestimonial = useCallback((id: string, updates: Partial<CmsTestimonial>) => {
+  const updateTestimonial = useCallback(async (id: string, updates: Partial<CmsTestimonial>) => {
     initStoreIfNeeded();
     const next = storeState.testimonials.map((t) => (t.id === id ? { ...t, ...updates } : t));
     storeState = { ...storeState, testimonials: next };
     setLocalData(STORAGE_KEYS.TESTIMONIALS, next);
     notify();
+
+    try {
+      const target = next.find((t) => t.id === id);
+      if (target) {
+        await saveTestimonialDb({ ...target, ...updates, id });
+      }
+    } catch (e) {
+      console.error('Failed to update Testimonial in DB:', e);
+    }
   }, []);
 
-  const deleteTestimonial = useCallback((id: string) => {
+  const deleteTestimonial = useCallback(async (id: string) => {
     initStoreIfNeeded();
     const next = storeState.testimonials.filter((t) => t.id !== id);
     storeState = { ...storeState, testimonials: next };
     setLocalData(STORAGE_KEYS.TESTIMONIALS, next);
     notify();
+
+    try {
+      await deleteTestimonialDb(id);
+    } catch (e) {
+      console.error('Failed to delete Testimonial from DB:', e);
+    }
   }, []);
 
   // Slogan & Quote
-  const updateSloganQuote = useCallback((updates: Partial<CmsSloganQuote>) => {
+  const updateSloganQuote = useCallback(async (updates: Partial<CmsSloganQuote>) => {
     initStoreIfNeeded();
     const next = { ...storeState.sloganQuote, ...updates };
     storeState = { ...storeState, sloganQuote: next };
     setLocalData(STORAGE_KEYS.SLOGAN, next);
     notify();
+
+    try {
+      await saveSloganQuoteDb(next);
+    } catch (e) {
+      console.error('Failed to save Slogan Quote to DB:', e);
+    }
   }, []);
 
   // Company Settings
-  const updateCompanySettings = useCallback((updates: Partial<CmsCompanySettings>) => {
+  const updateCompanySettings = useCallback(async (updates: Partial<CmsCompanySettings>) => {
     initStoreIfNeeded();
     const next = { ...storeState.companySettings, ...updates };
     storeState = { ...storeState, companySettings: next };
     setLocalData(STORAGE_KEYS.COMPANY, next);
     notify();
+
+    try {
+      await saveCompanySettingsDb(next);
+    } catch (e) {
+      console.error('Failed to save Company Settings to DB:', e);
+    }
   }, []);
 
   // Policies
-  const updatePolicy = useCallback((key: 'privacy' | 'terms' | 'warranty' | 'shipping', updates: Partial<CmsPolicy>) => {
+  const updatePolicy = useCallback(async (key: 'privacy' | 'terms' | 'warranty' | 'shipping', updates: Partial<CmsPolicy>) => {
     initStoreIfNeeded();
+    const currentPol = storeState.policies[key];
+    const updatedPolicy: CmsPolicy = { ...currentPol, ...updates };
     const next = {
       ...storeState.policies,
-      [key]: { ...storeState.policies[key], ...updates },
+      [key]: updatedPolicy,
     };
     storeState = { ...storeState, policies: next };
     setLocalData(STORAGE_KEYS.POLICIES, next);
     notify();
+
+    try {
+      await savePolicyDb(updatedPolicy);
+    } catch (e) {
+      console.error('Failed to save Policy to DB:', e);
+    }
   }, []);
 
   // Theme Settings
@@ -596,8 +881,8 @@ export function useAppStore() {
     notify();
   }, []);
 
-  // Reset to seed data
-  const resetToSeedData = useCallback(() => {
+  // Reset to seed data and sync to Cloud DB
+  const resetToSeedData = useCallback(async () => {
     storeState = {
       designs: [],
       fabrics: INITIAL_FABRIC_MATERIALS,
@@ -618,6 +903,7 @@ export function useAppStore() {
       themeSettings: INITIAL_CMS_THEME_SETTINGS,
       isInitialized: true,
       isLoadingDesigns: false,
+      isLoadingCms: false,
     };
     setLocalData(STORAGE_KEYS.FABRICS, INITIAL_FABRIC_MATERIALS);
     setLocalData(STORAGE_KEYS.CUTS, INITIAL_APPAREL_CUTS);
@@ -636,12 +922,19 @@ export function useAppStore() {
     setLocalData(STORAGE_KEYS.POLICIES, INITIAL_CMS_POLICIES);
     setLocalData(STORAGE_KEYS.THEME, INITIAL_CMS_THEME_SETTINGS);
     notify();
-    fetchAndSyncDesigns();
+
+    try {
+      await seedAllCmsToDb();
+      await fetchAndSyncAllDb();
+    } catch (e) {
+      console.error('Error resetting seed to DB:', e);
+    }
   }, []);
 
   return {
     isInitialized: state.isInitialized,
     isLoadingDesigns: state.isLoadingDesigns,
+    isLoadingCms: state.isLoadingCms,
     designs: state.designs,
     fabrics: state.fabrics,
     cuts: state.cuts,
@@ -659,6 +952,7 @@ export function useAppStore() {
     companySettings: state.companySettings,
     policies: state.policies,
     themeSettings: state.themeSettings,
+    refreshAllDb,
     refreshDesigns,
     setDesigns,
     toggleFavorite,
