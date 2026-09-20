@@ -375,11 +375,11 @@ export default function AdminCatalogPage() {
           className={`flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out select-none ${
             isLeftPanelCollapsed
               ? 'w-0 opacity-0 overflow-hidden pointer-events-none'
-              : 'w-[320px] xl:w-[360px] opacity-100'
+              : 'w-[380px] xl:w-[420px] opacity-100'
           }`}
         >
           {/* Search + Category chips */}
-          <div className="p-3 space-y-2.5 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-2xs mb-3 shrink-0">
+          <div className="p-3.5 space-y-2.5 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-2xs mb-3 shrink-0">
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -438,7 +438,7 @@ export default function AdminCatalogPage() {
                 <p className="text-xs">Tiada rekaan dijumpai</p>
               </div>
             ) : activeView === 'grid' ? (
-              <div className="grid grid-cols-2 gap-2 pt-0.5">
+              <div className="grid grid-cols-2 gap-2.5 pt-0.5">
                 {filteredDesigns.map((item, idx) => {
                   const isActive = idx === activeDesignIndex;
                   return (
@@ -452,7 +452,7 @@ export default function AdminCatalogPage() {
                           : 'border-slate-200/80 dark:border-zinc-800 hover:border-slate-400 bg-white dark:bg-zinc-900'
                       }`}
                     >
-                      <div className="aspect-square w-full bg-slate-50 dark:bg-zinc-950 flex items-center justify-center p-2 overflow-hidden">
+                      <div className="aspect-square w-full bg-slate-50 dark:bg-zinc-950 flex items-center justify-center overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={item.thumbnail_url || item.mockup_front_url || '/images/prod_sportswear.jpg'}
@@ -460,7 +460,7 @@ export default function AdminCatalogPage() {
                           onError={(e) => {
                             e.currentTarget.src = '/images/prod_sportswear.jpg';
                           }}
-                          className={`w-full h-full object-contain transition-transform duration-200 ${isActive ? 'scale-105' : 'group-hover:scale-105'}`}
+                          className={`w-full h-full object-cover transition-transform duration-200 ${isActive ? 'scale-105' : 'group-hover:scale-105'}`}
                         />
                       </div>
                       <div className={`px-2.5 py-2 ${isActive ? 'bg-slate-900 text-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-900'}`}>
@@ -494,7 +494,7 @@ export default function AdminCatalogPage() {
                       }`}
                     >
                       <div
-                        className={`w-11 h-11 rounded-xl overflow-hidden shrink-0 border flex items-center justify-center bg-slate-100 dark:bg-zinc-950 p-1 ${
+                        className={`w-12 h-12 rounded-xl overflow-hidden shrink-0 border flex items-center justify-center bg-slate-100 dark:bg-zinc-950 ${
                           isActive ? 'border-slate-700' : 'border-slate-200 dark:border-zinc-800'
                         }`}
                       >
@@ -505,7 +505,7 @@ export default function AdminCatalogPage() {
                           onError={(e) => {
                             e.currentTarget.src = '/images/prod_sportswear.jpg';
                           }}
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -640,14 +640,11 @@ export default function AdminCatalogPage() {
                 </button>
               </div>
             ) : activeDesign ? (
-              <div className="w-full max-w-xl mx-auto flex flex-col items-center">
-                {/* Main Design Preview Frame */}
-                <div className="w-full bg-white dark:bg-zinc-900 rounded-3xl shadow-lg border border-slate-200/70 dark:border-zinc-800 overflow-hidden">
-                  {/* Mockup Canvas */}
-                  <div
-                    className={`relative group ${checkerBg} flex items-center justify-center p-6`}
-                    style={{ minHeight: '340px' }}
-                  >
+              <div className="w-full max-w-[420px] sm:max-w-[460px] mx-auto flex flex-col items-center my-auto">
+                {/* Main Design Preview Frame - 1:1 Aspect Fit without empty borders */}
+                <div className="w-full bg-white dark:bg-zinc-900 rounded-3xl shadow-lg border border-slate-200/80 dark:border-zinc-800 overflow-hidden">
+                  {/* Mockup Canvas - 1:1 Square Ratio */}
+                  <div className="relative group w-full aspect-square bg-slate-100 dark:bg-zinc-950 flex items-center justify-center overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={activeDesign.thumbnail_url || activeDesign.mockup_front_url || '/images/prod_sportswear.jpg'}
@@ -655,11 +652,11 @@ export default function AdminCatalogPage() {
                       onError={(e) => {
                         e.currentTarget.src = '/images/prod_sportswear.jpg';
                       }}
-                      className="max-h-[360px] w-auto object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 drop-shadow-sm"
                     />
 
                     {/* Badges */}
-                    <div className="absolute top-4 left-4 flex items-center gap-2">
+                    <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
                       {activeDesign.is_featured && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500 text-white text-[10px] font-semibold shadow-sm backdrop-blur-sm">
                           <Star className="w-3 h-3 fill-white" />
@@ -667,7 +664,7 @@ export default function AdminCatalogPage() {
                         </span>
                       )}
                     </div>
-                    <div className="absolute top-4 right-4">
+                    <div className="absolute top-4 right-4 z-10">
                       {typeInfo && (
                         <span
                           className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-semibold border backdrop-blur-sm bg-white/90 dark:bg-zinc-800/90 ${typeInfo.color}`}
@@ -683,14 +680,14 @@ export default function AdminCatalogPage() {
                         <button
                           type="button"
                           onClick={handlePrev}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm shadow-md border border-slate-200/60 dark:border-zinc-700 flex items-center justify-center text-slate-600 dark:text-zinc-200 hover:text-slate-900 hover:bg-white transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                          className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm shadow-md border border-slate-200/60 dark:border-zinc-700 flex items-center justify-center text-slate-600 dark:text-zinc-200 hover:text-slate-900 hover:bg-white transition-all opacity-0 group-hover:opacity-100 cursor-pointer z-10"
                         >
                           <ChevronLeft className="w-4 h-4" />
                         </button>
                         <button
                           type="button"
                           onClick={handleNext}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm shadow-md border border-slate-200/60 dark:border-zinc-700 flex items-center justify-center text-slate-600 dark:text-zinc-200 hover:text-slate-900 hover:bg-white transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm shadow-md border border-slate-200/60 dark:border-zinc-700 flex items-center justify-center text-slate-600 dark:text-zinc-200 hover:text-slate-900 hover:bg-white transition-all opacity-0 group-hover:opacity-100 cursor-pointer z-10"
                         >
                           <ChevronRight className="w-4 h-4" />
                         </button>
@@ -699,7 +696,7 @@ export default function AdminCatalogPage() {
                   </div>
 
                   {/* Info Row & Navigation */}
-                  <div className="p-5 border-t border-slate-100 dark:border-zinc-800">
+                  <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-zinc-800">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <h2 className="text-base font-bold text-slate-900 dark:text-zinc-100 truncate">
@@ -728,7 +725,7 @@ export default function AdminCatalogPage() {
 
                     {/* Prev / Next controls */}
                     {filteredDesigns.length > 1 && (
-                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-zinc-800/80">
+                      <div className="flex items-center justify-between mt-3.5 pt-3.5 border-t border-slate-100 dark:border-zinc-800/80">
                         <button
                           type="button"
                           onClick={handlePrev}
@@ -755,13 +752,13 @@ export default function AdminCatalogPage() {
 
                 {/* Filmstrip Thumbnails */}
                 {filteredDesigns.length > 1 && (
-                  <div className="flex gap-2 mt-4 max-w-full overflow-x-auto pb-1 px-1">
+                  <div className="flex gap-2 mt-3.5 max-w-full overflow-x-auto pb-1 px-1">
                     {filteredDesigns.map((item, idx) => (
                       <button
                         key={item.id}
                         type="button"
                         onClick={() => setActiveDesignIndex(idx)}
-                        className={`shrink-0 w-14 h-14 rounded-2xl overflow-hidden border-2 transition-all cursor-pointer bg-white dark:bg-zinc-800 flex items-center justify-center p-1 ${
+                        className={`shrink-0 w-13 h-13 rounded-2xl overflow-hidden border-2 transition-all cursor-pointer bg-white dark:bg-zinc-800 flex items-center justify-center ${
                           idx === activeDesignIndex
                             ? 'border-slate-900 dark:border-zinc-100 shadow-md scale-105 ring-2 ring-slate-900/10'
                             : 'border-transparent hover:border-slate-300 opacity-60 hover:opacity-100'
@@ -774,7 +771,7 @@ export default function AdminCatalogPage() {
                           onError={(e) => {
                             e.currentTarget.src = '/images/prod_sportswear.jpg';
                           }}
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-cover"
                         />
                       </button>
                     ))}
@@ -840,7 +837,7 @@ export default function AdminCatalogPage() {
                 />
                 {imageUrl ? (
                   <div
-                    className={`relative w-full h-52 rounded-2xl overflow-hidden border border-slate-200 ${checkerBg} group flex items-center justify-center p-3 shadow-inner`}
+                    className={`relative w-full aspect-square max-h-60 mx-auto rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 dark:bg-zinc-950 group flex items-center justify-center shadow-inner`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -849,7 +846,7 @@ export default function AdminCatalogPage() {
                       onError={(e) => {
                         e.currentTarget.src = '/images/prod_sportswear.jpg';
                       }}
-                      className="w-full h-full object-contain transition-transform group-hover:scale-105 duration-200 drop-shadow-sm"
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-200 drop-shadow-sm"
                     />
                     <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
                       <button
