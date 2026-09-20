@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
+import { buildWhatsAppInquiryUrl } from '@/lib/whatsapp/dynamic-link';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { Design } from '@/types/database';
 
@@ -26,7 +27,7 @@ function CatalogContent() {
   const searchParams = useSearchParams();
   const initialType = searchParams.get('type') || 'all';
 
-  const { designs, favorites, toggleFavorite, refreshDesigns } = useAppStore();
+  const { designs, favorites, toggleFavorite, refreshDesigns, companySettings } = useAppStore();
   const [selectedCategory, setSelectedCategory] = useState<string>(initialType);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDesign, setSelectedDesign] = useState<Design | null>(designs[0] || null);
@@ -191,7 +192,13 @@ function CatalogContent() {
             <div className="flex items-center gap-2.5 w-full">
               {/* WhatsApp Discussion Button */}
               <a
-                href={`https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ingin%20berbincang%20mengenai%20templat%20rekaan%20*${encodeURIComponent(selectedDesign.title)}*%20(ID:%20${selectedDesign.id})`}
+                href={buildWhatsAppInquiryUrl({
+                  phone: companySettings?.whatsapp_number,
+                  type: 'catalog',
+                  designTitle: selectedDesign.title,
+                  designId: selectedDesign.id,
+                  category: selectedDesign.category,
+                })}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Diskusi Produk di WhatsApp"
@@ -203,12 +210,18 @@ function CatalogContent() {
 
               {/* Primary Tempah Action Button */}
               <a
-                href={`https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ingin%20membuat%20tempahan%20untuk%20templat%20*${encodeURIComponent(selectedDesign.title)}*%20(Kategori:%20${encodeURIComponent(selectedDesign.category)})`}
+                href={buildWhatsAppInquiryUrl({
+                  phone: companySettings?.whatsapp_number,
+                  type: 'catalog',
+                  designTitle: selectedDesign.title,
+                  designId: selectedDesign.id,
+                  category: selectedDesign.category,
+                })}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 h-12 bg-[#00BDFF] hover:bg-sky-600 text-white font-bold rounded-xl text-center active:bg-sky-700 transition-colors flex items-center justify-center space-x-1.5 shadow-md shadow-sky-400/25 text-xs"
               >
-                <span>Tempah Rekaan Ini</span>
+                <span>Tanya & Tempah Rekaan Ini</span>
                 <ChevronRight className="w-4 h-4" />
               </a>
             </div>

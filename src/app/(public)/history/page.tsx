@@ -14,6 +14,7 @@ import {
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
 import { formatCurrency } from '@/lib/pricing-calculator';
+import { buildWhatsAppInquiryUrl } from '@/lib/whatsapp/dynamic-link';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { Order, OrderStatus } from '@/types/database';
 
@@ -37,7 +38,7 @@ const TIMELINE_STEPS = [
 ];
 
 export default function HistoryPage() {
-  const { orders, deleteOrder } = useAppStore();
+  const { orders, deleteOrder, companySettings } = useAppStore();
   const [selectedOrder, setSelectedOrder] = useState<Order>(orders[0] || {
     id: 'ord-fallback',
     order_number: 'SFV-2026-001',
@@ -211,7 +212,12 @@ export default function HistoryPage() {
         footer={
           <div className="space-y-2 w-full">
             <a
-              href={`https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20ingin%20semak%20status%20pesanan%20*${selectedOrder.order_number}*%20(${encodeURIComponent(selectedOrder.design_title)})`}
+              href={buildWhatsAppInquiryUrl({
+                phone: companySettings?.whatsapp_number,
+                type: 'order',
+                orderNumber: selectedOrder.order_number,
+                designTitle: selectedOrder.design_title,
+              })}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold py-3.5 rounded-xl text-center active:bg-emerald-700 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-emerald-500/20 text-xs"

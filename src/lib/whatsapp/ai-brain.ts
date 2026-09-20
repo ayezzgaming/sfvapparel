@@ -4,7 +4,8 @@ import {
   INITIAL_CMS_POLICIES, 
   INITIAL_CMS_SERVICES, 
   INITIAL_QUANTITY_TIERS,
-  INITIAL_ORDERS
+  INITIAL_ORDERS,
+  INITIAL_DESIGNS
 } from '../store/seed-data';
 
 const LITELLM_URL = process.env.LITELLM_API_URL || 'http://187.127.223.53:4000';
@@ -94,10 +95,11 @@ export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<
     lower.includes('nak cakap manusia') || 
     lower.includes('cakap dengan admin') || 
     lower.includes('human agent') ||
-    lower.includes('panggil admin')
+    lower.includes('panggil admin') ||
+    lower.includes('hubungi staf')
   ) {
     pauseContact(msg.from, 60);
-    const handoverText = 'Baik, saya telah maklumkan kepada staf kilang kami. Staf manusia akan menyambung perbualan ini sebentar lagi ya! 😊';
+    const handoverText = 'Baik, mesej anda telah dimaklumkan kepada staf khidmat pelanggan kilang kami. Pegawai bertugas akan menyambung perbualan ini sebentar lagi.';
     await sendWahaMessage(msg.from, handoverText);
     return { success: true, replied: true, responseText: handoverText, reason: 'human_handover_triggered' };
   }
@@ -113,12 +115,32 @@ WHATSAPP KILANG: +${INITIAL_CMS_COMPANY_SETTINGS.whatsapp_number}
 `.trim();
 
   const servicesInfo = INITIAL_CMS_SERVICES.filter(s => s.is_active).map(s => 
-    `- ${s.title} (${s.category}): ${s.headline}. Harga: ${s.price_prefix} ${s.price_amount} ${s.price_unit}. ${s.highlight}`
+    `- ${s.title} (${s.category}): ${s.headline}. Harga bermula: ${s.price_prefix} ${s.price_amount} ${s.price_unit}. ${s.highlight}`
   ).join('\n');
 
   const pricingTiersInfo = INITIAL_QUANTITY_TIERS.map(t => 
-    `- Kuantiti ${t.min_qty} hingga ${t.max_qty || 'ke atas'} helai: Diskaun ${t.discount_percentage}% (Penjimatan harga kilang direct).`
+    `- Kuantiti ${t.min_qty} hingga ${t.max_qty || 'ke atas'} helai: Diskaun ${t.discount_percentage}% (Penjimatan harga pukal direct kilang).`
   ).join('\n');
+
+  // Check if user is asking about a specific design/catalog product (e.g. DES-1, DES-2)
+  const designMatch = lower.match(/des-[\w\d]+/i);
+  let liveDesignContext = 'Tiada rujukan ID produk khusus dalam mesej ini.';
+  if (designMatch) {
+    const targetDesId = designMatch[0].toLowerCase();
+    const foundDesign = INITIAL_DESIGNS.find(d => d.id.toLowerCase() === targetDesId);
+    if (foundDesign) {
+      liveDesignContext = `
+PRODUK / REKAAN DITANYA OLEH PELANGGAN:
+- ID Produk: ${foundDesign.id.toUpperCase()}
+- Nama Rekaan: ${foundDesign.title}
+- Kategori: ${foundDesign.category}
+- Jenis Cetakan: ${foundDesign.print_type === 'sublimation' ? 'Sublimasi Penuh (Full Sublimation)' : 'Cetakan DTF'}
+- Penerangan: ${foundDesign.description}
+- Pilihan Kain Sesuai: Drifit Milano 165gsm (Breathable cepat kering) atau Microfiber Smooth
+- Tempoh Siap: ${foundDesign.print_type === 'sublimation' ? '7 hingga 10 hari bekerja' : '3 hingga 5 hari bekerja'}
+      `.trim();
+    }
+  }
 
   // Check if user is asking for order tracking
   const orderMatch = lower.match(/ord-\d{4}-\d{3,4}/i);
@@ -134,7 +156,7 @@ DATA PESANAN DITEMUI DALAM SISTEM:
 - Rekaan: ${foundOrder.design_title} (${foundOrder.print_type === 'sublimation' ? 'Sublimasi Penuh' : 'DTF'})
 - Kuantiti: ${foundOrder.total_quantity} helai (Jumlah: RM${foundOrder.total_amount})
 - Status Semasa: ${foundOrder.status.replace('_', ' ').toUpperCase()}
-- No Tracking Pos: ${foundOrder.tracking_number || 'Belum dipos / sedang disiapkan'}
+- No Tracking Pos: ${foundOrder.tracking_number || 'Belum dipos / dalam proses cetakan'}
 - Nota Pengeluaran: ${foundOrder.production_notes || 'Tiada'}
       `.trim();
     }
@@ -142,26 +164,35 @@ DATA PESANAN DITEMUI DALAM SISTEM:
 
   // 6. Build Master System Prompt
   const systemPrompt = `
-Anda adalah Pembantu Khidmat Pelanggan & Jualan Rasmi Kilang SFV APPAREL (Malaysia).
-Tugas anda adalah melayani pelanggan WhatsApp dengan ramah, profesional, ringkas, dan santun dalam Bahasa Melayu.
+Anda adalah Pegawai Khidmat Pelanggan & Jualan Rasmi Kilang Pembuatan Pakaian SFV APPAREL (Malaysia).
+Tugas anda adalah melayani pertanyaan pelanggan WhatsApp dengan nada pertuturan manusia yang santun, profesional, jelas, dan berwibawa dalam Bahasa Melayu.
 
-=== PERATURAN MUTLAK (ANTI-HALUSINASI & ANTI-HARDCODE) ===
-1. Jawab HANYA berdasarkan DATA PANGKALAN DATA RASMI di bawah.
-2. JANGAN MENEBAK atau membuat rekaan harga/maklumat yang tiada dalam data.
-3. Jika pelanggan bertanya perkara di luar pengetahuan atau komplain rumit, nyatakan anda boleh menjana ID TIKET sokongan atau menyambungkan kepada staf kilang.
-4. Gunakan nada bahasa manusia yang mesra, ringkas, bersahaja seperti staf kilang Malaysia yang membantu (gunakan panggilan "Encik/Cik/Tuan/Puan", emoji sopan 😊, ✨).
-5. Jangan gunakan ayat robot seperti "Saya adalah model AI". Berlakonlah sebagai staf kilang SFV Apparel.
+=== PERATURAN MUTLAK (ANTI-HALUSINASI, SIFAR EMOJI & SIFAR HARDCODE) ===
+1. Jawab HANYA berdasarkan DATA PANGKALAN DATA RASMI KILANG di bawah.
+2. JANGAN MENEBAK atau mereka-reka maklumat yang tiada dalam data.
+3. HINDARI PENGGUNAAN SEBARANG EMOJI ATAU EMOTICON DALAM SETIAP JAWAPAN. Kekalkan teks yang bersih, kemas, dan matang.
+4. Jangan sesekali berkata bahawa anda adalah model AI atau bot. Bertindaklah sepenuhnya sebagai pegawai syarikat SFV Apparel.
+5. Jika pelanggan bertanyakan produk/rekaan (cth: ada ID Produk):
+   - Nyatakan anda telah mengesahkan rekaan tersebut di dalam sistem katalog kilang.
+   - Terangkan pilihan jenis material kain yang sesuai dan jenis cetakan.
+   - Tanyakan anggaran kuantiti helai yang ingin ditempah untuk semakan potongan harga pukal.
+6. Jika pelanggan bertanyakan semakan pesanan (cth: ada No Pesanan ORD-XXXX):
+   - Nyatakan status terkini tempahan mereka secara tepat berdasarkan data.
+7. Jika ada isu rumit di luar maklumat data, nyatakan anda boleh mendaftarkan ID TIKET sokongan untuk tindakan staf kilang.
 
 === DATA PANGKALAN DATA RASMI KILANG SFV APPAREL ===
 ${companyInfo}
 
-SERVIS KILANG KAMI:
+SERVIS KILANG:
 ${servicesInfo}
 
 STRUKTUR DISKAUN KUANTITI:
 ${pricingTiersInfo}
 
-DATA SEMAKAN PESANAN:
+REKAAN / PRODUK YANG DITANYAKAN:
+${liveDesignContext}
+
+SEMAKAN STATUS PESANAN:
 ${liveOrderContext}
 `.trim();
 

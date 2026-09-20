@@ -19,6 +19,7 @@ import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
 import { useUI } from '@/lib/store/ui-context';
 import { formatCurrency } from '@/lib/pricing-calculator';
+import { buildWhatsAppInquiryUrl } from '@/lib/whatsapp/dynamic-link';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import IosInstallPromptModal from '@/components/pwa/IosInstallPromptModal';
 
@@ -177,7 +178,10 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             {/* Tab 3 (Center): Raised Circular WhatsApp Action */}
             <div className="flex flex-col items-center justify-center flex-1 -mt-5 relative z-10">
               <a
-                href={`https://wa.me/${companySettings?.whatsapp_number || '60148599138'}?text=${encodeURIComponent(companySettings?.whatsapp_default_message || 'Hai SFV Apparel, saya ingin bertanya tentang tempahan custom.')}`}
+                href={buildWhatsAppInquiryUrl({
+                  phone: companySettings?.whatsapp_number,
+                  type: 'general',
+                })}
                 target="_blank"
                 rel="noopener noreferrer"
                 draggable={false}

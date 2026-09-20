@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAppStore } from '@/lib/store/app-store';
+import { buildWhatsAppInquiryUrl } from '@/lib/whatsapp/dynamic-link';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { 
   MapPin,
@@ -17,7 +18,7 @@ import {
 import { FaWhatsapp } from 'react-icons/fa6';
 
 export default function ProfilePage() {
-  const { customers, resetToSeedData } = useAppStore();
+  const { customers, resetToSeedData, companySettings } = useAppStore();
   const activeCustomer = customers[0] || {
     full_name: 'Muhammad Farhan',
     email: 'farhan.harimau@gmail.com',
@@ -143,7 +144,10 @@ export default function ProfilePage() {
           
           {/* WhatsApp Support (Genuine Icon) */}
           <a
-            href="https://wa.me/60148599138?text=Hai%20SFV%20Apparel,%20saya%20memerlukan%20bantuan%20mengenai%20tempahan%20saya"
+            href={buildWhatsAppInquiryUrl({
+              phone: companySettings?.whatsapp_number,
+              type: 'general',
+            })}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50/80 active:bg-slate-100 transition-colors block"

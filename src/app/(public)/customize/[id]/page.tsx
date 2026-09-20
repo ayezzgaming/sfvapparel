@@ -20,6 +20,8 @@ import {
   Printer, 
   Shirt
 } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa6';
+import { buildWhatsAppInquiryUrl } from '@/lib/whatsapp/dynamic-link';
 
 const AVAILABLE_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
 
@@ -35,7 +37,8 @@ export default function CustomizePage() {
     dtfDimensions, 
     tiers, 
     addOrder,
-    refreshDesigns
+    refreshDesigns,
+    companySettings
   } = useAppStore();
 
   React.useEffect(() => {
@@ -595,11 +598,29 @@ export default function CustomizePage() {
             </span>
           </div>
 
+          <a
+            href={buildWhatsAppInquiryUrl({
+              phone: companySettings?.whatsapp_number,
+              type: 'customize',
+              designTitle: design?.title,
+              designId: design?.id,
+              cutName: selectedCut?.name,
+              fabricName: selectedFabric?.name,
+              totalQty: totalQuantity > 0 ? totalQuantity : undefined,
+            })}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Tanya di WhatsApp"
+            className="w-11 h-11 rounded-full bg-emerald-50 border border-emerald-200/80 text-[#25D366] hover:bg-emerald-100 flex items-center justify-center shrink-0 active:scale-90 transition-all shadow-xs cursor-pointer"
+          >
+            <FaWhatsapp className="w-5 h-5" />
+          </a>
+
           <button
             type="button"
             disabled={totalQuantity <= 0}
             onClick={() => setIsCheckoutOpen(true)}
-            className="flex-1 py-3 px-4 rounded-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 active:scale-[0.98] text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition-all shadow-sm"
+            className="flex-1 py-3 px-4 rounded-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 active:scale-[0.98] text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition-all shadow-sm cursor-pointer"
           >
             <span>Teruskan Tempahan</span>
             <ShoppingBag className="w-3.5 h-3.5" />
