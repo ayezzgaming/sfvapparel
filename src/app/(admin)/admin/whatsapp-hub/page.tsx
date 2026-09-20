@@ -20,13 +20,17 @@ import {
   ChevronLeft,
   ChevronRight,
   SendHorizontal,
-  SlidersHorizontal,
-  Bot
+  Bot,
+  Ticket,
+  UserCheck,
+  PauseCircle,
+  PlayCircle
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { WahaChatSummary, WahaChatMessage } from '@/lib/whatsapp/waha-client';
+import { SupportTicket } from '@/app/api/whatsapp/tickets/route';
 
-type HubSectionKey = 'inbox' | 'device' | 'automation' | 'tester';
+type HubSectionKey = 'inbox' | 'device' | 'automation' | 'tickets' | 'tester';
 
 interface WahaStatusData {
   name: string;
@@ -46,7 +50,7 @@ const QUICK_TEMPLATES = [
 ];
 
 export default function WhatsAppHubPage() {
-  // Navigation & Panel states (Consistent with Catalog, Ads Generator & CMS)
+  // Navigation & Panel states
   const [activeTab, setActiveTab] = useState<HubSectionKey>('inbox');
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
@@ -66,7 +70,12 @@ export default function WhatsAppHubPage() {
   const [replyText, setReplyText] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [pausedChatIds, setPausedChatIds] = useState<Record<string, boolean>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Support Tickets State
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const [loadingTickets, setLoadingTickets] = useState(false);
 
   // Test Message State
   const [testPhone, setTestPhone] = useState('60148599138');
@@ -115,6 +124,21 @@ export default function WhatsAppHubPage() {
     } catch {}
   }, [statusData.status, selectedChat]);
 
+  // Fetch tickets
+  const fetchTickets = useCallback(async () => {
+    setLoadingTickets(true);
+    try {
+      const res = await fetch('/api/whatsapp/tickets', { cache: 'no-store' });
+      const data = await res.json();
+      if (Array.isArray(data.tickets)) {
+        setTickets(data.tickets);
+      }
+    } catch {
+    } finally {
+      setLoadingTickets(false);
+    }
+  }, []);
+
   // Fetch messages
   const fetchMessages = useCallback(async (chatId: string) => {
     setLoadingMessages(true);
@@ -133,11 +157,12 @@ export default function WhatsAppHubPage() {
 
   useEffect(() => {
     fetchStatus();
+    fetchTickets();
     const interval = setInterval(() => {
       fetchStatus();
     }, 5000);
     return () => clearInterval(interval);
-  }, [fetchStatus]);
+  }, [fetchStatus, fetchTickets]);
 
   useEffect(() => {
     if (statusData.status === 'WORKING') {
@@ -163,7 +188,7 @@ export default function WhatsAppHubPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Send Reply
+  // Send Reply (also pauses bot for 30m)
   const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedChat || !replyText.trim() || sendingReply) return;
@@ -180,6 +205,9 @@ export default function WhatsAppHubPage() {
     };
     setMessages((prev) => [...prev, tempMsg]);
     setReplyText('');
+
+    // Mark as paused for human CS takeover
+    setPausedChatIds((prev) => ({ ...prev, [selectedChat.id]: true }));
 
     try {
       const res = await fetch('/api/whatsapp/messages', {
@@ -199,6 +227,13 @@ export default function WhatsAppHubPage() {
     } finally {
       setSendingReply(false);
     }
+  };
+
+  const toggleBotForChat = (chatId: string) => {
+    setPausedChatIds((prev) => ({
+      ...prev,
+      [chatId]: !prev[chatId],
+    }));
   };
 
   // Restart / Fresh QR
@@ -291,6 +326,13 @@ export default function WhatsAppHubPage() {
       badge: chats.length > 0 ? `${chats.length}` : undefined,
     },
     {
+      id: 'tickets' as HubSectionKey,
+      title: 'Tiket Sokongan (ID TIKET)',
+      subtitle: 'Isu khas & tindakan susulan',
+      icon: Ticket,
+      badge: tickets.length > 0 ? `${tickets.length}` : undefined,
+    },
+    {
       id: 'device' as HubSectionKey,
       title: 'Peranti & Imbas QR',
       subtitle: 'Status sambungan nombor kilang',
@@ -333,10 +375,10 @@ export default function WhatsAppHubPage() {
             </div>
             <div>
               <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-tight">
-                Pusat Automasi WhatsApp
+                Pusat Automasi WhatsApp & AI Brain
               </h1>
               <p className="text-xs text-slate-500 mt-0.5">
-                Pengurusan perbualan multi-device dan automasi notifikasi pesanan kilang.
+                Pengurusan perbualan multi-device, AI Agent berkepintaran pangkalan data, dan automasi kilang.
               </p>
             </div>
           </div>
@@ -450,7 +492,7 @@ export default function WhatsAppHubPage() {
               <span className="font-mono text-[10px] text-slate-400">187.127.223.53</span>
             </div>
             <p className="text-[10.5px] text-slate-400 leading-snug">
-              Engine WAHA & n8n aktif 24/7 di latar belakang.
+              LiteLLM Router & WAHA aktif 24/7 di latar belakang.
             </p>
           </div>
         </div>
@@ -485,12 +527,14 @@ export default function WhatsAppHubPage() {
             <div>
               <h2 className="text-sm font-bold text-slate-900 tracking-tight">
                 {activeTab === 'inbox' && 'Omnichannel Live Chat Inbox'}
+                {activeTab === 'tickets' && 'Pengurusan Tiket Sokongan Pelanggan (ID TIKET)'}
                 {activeTab === 'device' && 'Pengurusan Peranti & Imbasan Kod QR'}
                 {activeTab === 'automation' && 'Alur Automasi & Notifikasi Pesanan'}
                 {activeTab === 'tester' && 'Ujian Penghantaran Mesej WhatsApp'}
               </h2>
               <p className="text-[11.5px] text-slate-500 mt-0.5">
                 {activeTab === 'inbox' && 'Baca dan balas mesej pelanggan secara dua arah serentak dari web & telefon.'}
+                {activeTab === 'tickets' && 'Senarai isu khusus dan tempahan khas yang dijana oleh AI untuk tindakan staf.'}
                 {activeTab === 'device' && 'Sambungkan atau putuskan akaun WhatsApp rasmi kilang.'}
                 {activeTab === 'automation' && 'Pemicu mesej automatik untuk tempahan baharu, status produksi dan invois.'}
                 {activeTab === 'tester' && 'Hantar mesej ujian ke nombor telefon untuk memastikan bot berfungsi.'}
@@ -506,6 +550,17 @@ export default function WhatsAppHubPage() {
               >
                 <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
                 <span>Segar Semula Chat</span>
+              </button>
+            )}
+
+            {activeTab === 'tickets' && (
+              <button
+                type="button"
+                onClick={() => fetchTickets()}
+                className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loadingTickets ? 'animate-spin text-[#00BDFF]' : ''}`} />
+                <span>Segar Semula Tiket</span>
               </button>
             )}
           </div>
@@ -563,6 +618,7 @@ export default function WhatsAppHubPage() {
                       ) : (
                         filteredChats.map((chat) => {
                           const isSelected = selectedChat?.id === chat.id;
+                          const isBotPaused = pausedChatIds[chat.id];
                           return (
                             <div
                               key={chat.id}
@@ -587,9 +643,20 @@ export default function WhatsAppHubPage() {
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-[11px] text-slate-400 font-mono mt-0.5 truncate">
-                                  +{chat.phone}
-                                </p>
+                                <div className="flex items-center justify-between mt-0.5">
+                                  <p className="text-[11px] text-slate-400 font-mono truncate">
+                                    +{chat.phone}
+                                  </p>
+                                  {isBotPaused ? (
+                                    <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200">
+                                      Staf CS
+                                    </span>
+                                  ) : (
+                                    <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-sky-50 text-[#00BDFF] border border-sky-200">
+                                      Bot AI
+                                    </span>
+                                  )}
+                                </div>
                                 {chat.lastMessage && (
                                   <p className="text-[11px] text-slate-500 truncate mt-0.5">
                                     {chat.lastMessage.fromMe && <span className="font-semibold text-slate-700">Anda: </span>}
@@ -607,31 +674,64 @@ export default function WhatsAppHubPage() {
                   {/* Right Column: Chat Content */}
                   {selectedChat ? (
                     <div className="flex-1 flex flex-col bg-[#F8FAFC]">
-                      {/* Active Chat Bar */}
+                      {/* Active Chat Bar with Bot Pause Toggle */}
                       <div className="p-3 px-5 bg-white border-b border-slate-200/80 flex items-center justify-between shrink-0">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 rounded-xl bg-slate-800 text-white font-bold text-xs flex items-center justify-center">
                             {selectedChat.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <h3 className="text-xs font-bold text-slate-900">
-                              {selectedChat.name}
-                            </h3>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-xs font-bold text-slate-900">
+                                {selectedChat.name}
+                              </h3>
+                              {pausedChatIds[selectedChat.id] ? (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
+                                  <PauseCircle className="w-3 h-3" />
+                                  Bot Dijeda (Staf Manusia)
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200 flex items-center gap-1">
+                                  <Bot className="w-3 h-3" />
+                                  Bot AI Aktif
+                                </span>
+                              )}
+                            </div>
                             <p className="text-[10.5px] text-slate-400 font-mono">
                               +{selectedChat.phone}
                             </p>
                           </div>
                         </div>
 
-                        <a
-                          href={`https://wa.me/${selectedChat.phone}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          <span>WhatsApp Web</span>
-                        </a>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => toggleBotForChat(selectedChat.id)}
+                            className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                          >
+                            {pausedChatIds[selectedChat.id] ? (
+                              <>
+                                <PlayCircle className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>Aktifkan Semula Bot</span>
+                              </>
+                            ) : (
+                              <>
+                                <PauseCircle className="w-3.5 h-3.5 text-amber-600" />
+                                <span>Jeda Bot (Ambil Alih)</span>
+                              </>
+                            )}
+                          </button>
+
+                          <a
+                            href={`https://wa.me/${selectedChat.phone}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            <span>WhatsApp Web</span>
+                          </a>
+                        </div>
                       </div>
 
                       {/* Chat Messages List */}
@@ -698,7 +798,7 @@ export default function WhatsAppHubPage() {
                           type="text"
                           value={replyText}
                           onChange={(e) => setReplyText(e.target.value)}
-                          placeholder="Tulis mesej balasan terus ke WhatsApp pelanggan..."
+                          placeholder="Tulis mesej balasan (staf mengambil alih perbualan)..."
                           className="flex-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-400"
                         />
                         <button
@@ -721,7 +821,72 @@ export default function WhatsAppHubPage() {
               )
             )}
 
-            {/* VIEW 2: DEVICE & QR SCANNER */}
+            {/* VIEW 2: SUPPORT TICKETS (ID TIKET) */}
+            {activeTab === 'tickets' && (
+              <div className="flex-1 overflow-y-auto p-6 space-y-4 sparkle-scroll">
+                <div className="flex items-center justify-between max-w-4xl mx-auto pb-2">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Senarai Tiket Tindakan Lanjutan</h3>
+                    <p className="text-xs text-slate-500">Isu khas atau tempahan korporat yang dijana AI untuk perhatian staf kilang.</p>
+                  </div>
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200">
+                    {tickets.length} Tiket Didaftarkan
+                  </span>
+                </div>
+
+                <div className="max-w-4xl mx-auto space-y-3">
+                  {tickets.length === 0 ? (
+                    <div className="p-12 text-center text-xs text-slate-400 bg-white rounded-2xl border border-slate-200/80">
+                      Tiada tiket sokongan terbuka pada masa ini.
+                    </div>
+                  ) : (
+                    tickets.map((t) => (
+                      <div key={t.id} className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-2.5">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-800 border border-slate-200">
+                              {t.ticketNumber}
+                            </span>
+                            <span className="text-xs font-bold text-slate-900">
+                              {t.customerName || 'Pelanggan'}
+                            </span>
+                            <span className="text-[11px] font-mono text-slate-400">
+                              (+{t.customerPhone})
+                            </span>
+                          </div>
+
+                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase ${
+                            t.status === 'open' 
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200' 
+                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          }`}>
+                            {t.status === 'open' ? 'Perlu Tindakan' : 'Selesai'}
+                          </span>
+                        </div>
+
+                        <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200/60">
+                          {t.summary}
+                        </p>
+
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                          <span>Didaftarkan: {new Date(t.createdAt).toLocaleString()}</span>
+                          <a
+                            href={`https://wa.me/${t.customerPhone}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#00BDFF] hover:underline font-semibold flex items-center gap-1"
+                          >
+                            <span>Hubungi Pelanggan di WhatsApp →</span>
+                          </a>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 3: DEVICE & QR SCANNER */}
             {activeTab === 'device' && (
               <div className="flex-1 overflow-y-auto p-6 space-y-6 sparkle-scroll">
                 {isConnected ? (
@@ -818,7 +983,7 @@ export default function WhatsAppHubPage() {
               </div>
             )}
 
-            {/* VIEW 3: AUTOMATION TRIGGERS */}
+            {/* VIEW 4: AUTOMATION TRIGGERS */}
             {activeTab === 'automation' && (
               <div className="flex-1 overflow-y-auto p-6 space-y-4 sparkle-scroll">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-w-4xl mx-auto text-xs">
@@ -871,10 +1036,10 @@ export default function WhatsAppHubPage() {
                     </div>
                     <div>
                       <h4 className="text-xs font-bold text-slate-900">
-                        n8n Workflow Engine (Hostinger VPS)
+                        LiteLLM Multi-Key Router & n8n Engine
                       </h4>
                       <p className="text-[11px] text-slate-500">
-                        Alur kerja pintar sedia menerima webhook dari sistem SFV Apparel.
+                        Router Port 4000 aktif menyalurkan AI Groq Llama 3.3 70B tanpa sekatan rate-limit.
                       </p>
                     </div>
                   </div>
@@ -892,7 +1057,7 @@ export default function WhatsAppHubPage() {
               </div>
             )}
 
-            {/* VIEW 4: TEST SENDER */}
+            {/* VIEW 5: TEST SENDER */}
             {activeTab === 'tester' && (
               <div className="flex-1 overflow-y-auto p-6 sparkle-scroll">
                 <div className="max-w-md mx-auto p-5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
