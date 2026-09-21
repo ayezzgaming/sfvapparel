@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppStore } from '@/lib/store/app-store';
 import { buildWhatsAppInquiryUrl } from '@/lib/whatsapp/dynamic-link';
+import { lookupMalaysiaPostcode } from '@/lib/malaysia-postcode';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { 
   MapPin,
@@ -47,7 +48,6 @@ export default function ProfilePage() {
   const [addrLine, setAddrLine] = useState('');
   const [addrPostcode, setAddrPostcode] = useState('');
   const [addrCity, setAddrCity] = useState('');
-  const [isLookingUpPostcode, setIsLookingUpPostcode] = useState(false);
   const [isSavingAddress, setIsSavingAddress] = useState(false);
   const [addressMsg, setAddressMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -63,23 +63,15 @@ export default function ProfilePage() {
     }
   }, [customer]);
 
-  // Malaysia Postcode auto-lookup
-  const handlePostcodeChange = async (val: string) => {
+  // Malaysia Postcode auto-lookup (0ms Instant Realtime Synchronous Lookup)
+  const handlePostcodeChange = (val: string) => {
     const cleaned = val.replace(/\D/g, '').slice(0, 5);
     setAddrPostcode(cleaned);
 
-    if (cleaned.length === 5) {
-      setIsLookingUpPostcode(true);
-      try {
-        const res = await fetch(`/api/malaysia/postcode?code=${cleaned}`);
-        const data = await res.json();
-        if (data.success && data.city && data.state) {
-          setAddrCity(`${data.city}, ${data.state}`);
-        }
-      } catch {
-        // Keep existing city
-      } finally {
-        setIsLookingUpPostcode(false);
+    if (cleaned.length >= 2) {
+      const match = lookupMalaysiaPostcode(cleaned);
+      if (match) {
+        setAddrCity(`${match.city}, ${match.state}`);
       }
     }
   };
@@ -522,17 +514,9 @@ export default function ProfilePage() {
             
             {/* Poskod (Auto Detect City & State) */}
             <div className="px-4 py-3">
-              <div className="flex justify-between items-center mb-0.5">
-                <label className="block text-[11px] font-medium text-slate-400">
-                  Poskod Malaysia (5 Digit)
-                </label>
-                {isLookingUpPostcode && (
-                  <span className="text-[10px] text-blue-600 flex items-center gap-1">
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    Mengesahkan kawasan...
-                  </span>
-                )}
-              </div>
+              <label className="block text-[11px] font-medium text-slate-400 mb-0.5">
+                Poskod Malaysia (5 Digit)
+              </label>
               <input
                 type="text"
                 value={addrPostcode}

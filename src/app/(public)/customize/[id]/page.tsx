@@ -13,6 +13,7 @@ import {
 import { SizingMatrix } from '@/types/database';
 import SizeChartModal from '@/components/public/SizeChartModal';
 import CourierLogo from '@/components/ui/CourierLogo';
+import { lookupMalaysiaPostcode } from '@/lib/malaysia-postcode';
 import { 
   calculateMalaysiaShippingRates, 
   CourierOption 
@@ -174,7 +175,6 @@ export default function CustomizePage() {
   const [addrLine, setAddrLine] = useState('');
   const [addrPostcode, setAddrPostcode] = useState('');
   const [addrCity, setAddrCity] = useState('');
-  const [isLookingUpPostcode, setIsLookingUpPostcode] = useState(false);
   const [saveAddressToProfile, setSaveAddressToProfile] = useState<boolean>(true);
   const [additionalNotes, setAdditionalNotes] = useState('');
 
@@ -194,23 +194,15 @@ export default function CustomizePage() {
     }
   }, [customer]);
 
-  // Malaysia Postcode auto-lookup (Sama persis seperti di halaman profil)
-  const handlePostcodeChange = async (val: string) => {
+  // Malaysia Postcode auto-lookup (0ms Instant Realtime Synchronous Lookup)
+  const handlePostcodeChange = (val: string) => {
     const cleaned = val.replace(/\D/g, '').slice(0, 5);
     setAddrPostcode(cleaned);
 
-    if (cleaned.length === 5) {
-      setIsLookingUpPostcode(true);
-      try {
-        const res = await fetch(`/api/malaysia/postcode?code=${cleaned}`);
-        const data = await res.json();
-        if (data.success && data.city && data.state) {
-          setAddrCity(`${data.city}, ${data.state}`);
-        }
-      } catch {
-        // Kekalkan nilai sedia ada jika ralat
-      } finally {
-        setIsLookingUpPostcode(false);
+    if (cleaned.length >= 2) {
+      const match = lookupMalaysiaPostcode(cleaned);
+      if (match) {
+        setAddrCity(`${match.city}, ${match.state}`);
       }
     }
   };
