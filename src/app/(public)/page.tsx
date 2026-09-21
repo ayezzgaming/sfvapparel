@@ -21,7 +21,12 @@ import {
   Star,
   Sparkles,
   Award,
-  ThumbsUp
+  ThumbsUp,
+  MapPin,
+  Navigation,
+  Copy,
+  Check,
+  ExternalLink
 } from 'lucide-react';
 import { FaWhatsapp, FaTiktok, FaFacebookF, FaInstagram, FaTelegram } from 'react-icons/fa6';
 import { formatWhatsAppLink } from '@/lib/whatsapp/dynamic-link';
@@ -179,6 +184,17 @@ export default function HomePage() {
 
   const [selectedPolicyKey, setSelectedPolicyKey] = useState<'privacy' | 'terms' | 'warranty' | 'shipping'>('privacy');
   const [isPolicySheetOpen, setIsPolicySheetOpen] = useState(false);
+
+  const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
+  const [copiedAddress, setCopiedAddress] = useState(false);
+
+  const handleCopyAddress = (text: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedAddress(true);
+      setTimeout(() => setCopiedAddress(false), 2500);
+    }
+  };
 
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -1093,6 +1109,58 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* 1.5 ALAMAT KILANG & WAKTU OPERASI (Airy & Structured Card with Mini Map Link Button) */}
+        <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs space-y-3">
+          {/* Baris Alamat */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                <MapPin className="w-3.5 h-3.5 stroke-[2.2]" />
+              </div>
+              <div className="space-y-0.5 min-w-0">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Lokasi Kilang & Pejabat
+                </span>
+                <p className="text-[11.5px] text-slate-700 font-medium leading-relaxed">
+                  {companySettings.address}
+                </p>
+              </div>
+            </div>
+            
+            {/* Mini Link Button to open Map Bottom Sheet */}
+            <button
+              type="button"
+              onClick={() => setIsLocationSheetOpen(true)}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 text-[11px] font-bold border border-blue-200/70 shadow-2xs shrink-0 active:scale-95 transition-all cursor-pointer"
+              title="Buka Peta Lokasi"
+            >
+              <span>Peta</span>
+              <ExternalLink className="w-3 h-3" />
+            </button>
+          </div>
+
+          {/* Baris Waktu Operasi */}
+          <div className="pt-2.5 border-t border-slate-100/90 flex items-start gap-2.5">
+            <div className="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+              <Clock className="w-3.5 h-3.5 stroke-[2.2]" />
+            </div>
+            <div className="space-y-0.5 min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Waktu Operasi
+                </span>
+                <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded-md border border-emerald-200/50">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Buka Isnin - Sabtu</span>
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                {companySettings.working_hours}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* 2. Link Columns */}
         <div className="grid grid-cols-2 gap-6 pt-5 border-t border-gray-200/70 text-xs">
           <div className="space-y-2.5">
@@ -1493,6 +1561,120 @@ export default function HomePage() {
           </div>
         </SwipeableBottomSheet>
       )}
+
+      {/* =========================================================================
+          BOTTOM SHEET 5: LOKASI KILANG & PETA INTERAKTIF
+         ========================================================================= */}
+      <SwipeableBottomSheet
+        isOpen={isLocationSheetOpen}
+        onClose={() => setIsLocationSheetOpen(false)}
+        title="Lokasi Kilang & Waktu Operasi"
+        subtitle={`${companySettings.brand_name || 'SFV APPAREL'} · Lokasi & Navigasi`}
+      >
+        <div className="space-y-4 select-none pb-2">
+          {/* Map Container */}
+          <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-100">
+            <iframe
+              title="Peta Lokasi Kilang SFV Apparel"
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(companySettings.address || 'No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor')}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full h-full"
+            />
+          </div>
+
+          {/* Alamat Penuh Card */}
+          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900">{companySettings.company_name}</h4>
+                  <p className="text-[10px] text-slate-500">Alamat Kilang / Pejabat Utama</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleCopyAddress(companySettings.address)}
+                className="px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-[11px] font-semibold tracking-tight shadow-2xs active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
+              >
+                {copiedAddress ? (
+                  <>
+                    <Check className="w-3 h-3 text-emerald-600" />
+                    <span className="text-emerald-600">Disalin!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3 h-3 text-slate-500" />
+                    <span>Salin</span>
+                  </>
+                )}
+              </button>
+            </div>
+            <p className="text-xs text-slate-600 font-medium leading-relaxed pl-9">
+              {companySettings.address}
+            </p>
+          </div>
+
+          {/* Navigation Action Buttons (Capsule style) */}
+          <div className="grid grid-cols-2 gap-2.5 pt-1">
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(companySettings.address)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-3 px-4 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>Google Maps</span>
+            </a>
+            <a
+              href={`https://waze.com/ul?q=${encodeURIComponent(companySettings.address)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-3 px-4 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all"
+            >
+              <Navigation className="w-3.5 h-3.5 text-blue-600" />
+              <span>Navigasi Waze</span>
+            </a>
+          </div>
+
+          {/* Waktu Operasi Jadual Kemas */}
+          <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold text-slate-900">Jadual Waktu Operasi Kilang</span>
+              </div>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-semibold border border-emerald-200/60">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Waktu Standard</span>
+              </span>
+            </div>
+
+            <div className="space-y-1.5 text-xs text-slate-600">
+              <div className="flex items-center justify-between py-1 border-b border-slate-100">
+                <span className="font-medium text-slate-700">Isnin – Jumaat</span>
+                <span className="font-bold text-slate-900">9:00 AM – 6:00 PM</span>
+              </div>
+              <div className="flex items-center justify-between py-1 border-b border-slate-100">
+                <span className="font-medium text-slate-700">Sabtu</span>
+                <span className="font-bold text-slate-900">9:00 AM – 1:00 PM</span>
+              </div>
+              <div className="flex items-center justify-between py-1 text-slate-400">
+                <span>Ahad & Cuti Umum</span>
+                <span className="font-semibold text-rose-500">Tutup (Online WhatsApp dibuka)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </SwipeableBottomSheet>
 
       {/* =========================================================================
           FULLSCREEN LIGHTBOX IMAGE ZOOM MODAL (PORTAL AT z-[2000] TO OVERLAY BOTTOM SHEET)
