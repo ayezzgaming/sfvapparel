@@ -288,15 +288,22 @@ export async function updateOrderStatusDb(
   }
 }
 
-export async function deleteOrderDb(orderId: string): Promise<{ success: boolean; message?: string }> {
+export async function deleteOrderDb(orderIdOrNumber: string): Promise<{ success: boolean; message?: string }> {
   try {
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Database connection failed.' };
 
-    const { error } = await supabase
-      .from('orders')
-      .delete()
-      .eq('id', orderId);
+    const cleanId = orderIdOrNumber.trim();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
+
+    let query = supabase.from('orders').delete();
+    if (isUuid) {
+      query = query.or(`id.eq.${cleanId},order_number.eq.${cleanId}`);
+    } else {
+      query = query.eq('order_number', cleanId);
+    }
+
+    const { error } = await query;
 
     if (error) {
       console.error('[orderActions] deleteOrderDb error:', error.message);

@@ -21,7 +21,8 @@ import {
   CreditCard,
   AlertCircle,
   FileText,
-  Printer
+  Printer,
+  Trash2
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import OrderInvoiceModal from '@/components/invoice/OrderInvoiceModal';
@@ -39,7 +40,7 @@ const STATUS_LIST: { status: OrderStatus; label: string; color: string }[] = [
 ];
 
 export default function AdminOrdersPage() {
-  const { orders, updateOrderStatus, markOrderBalancePaid } = useAppStore();
+  const { orders, updateOrderStatus, markOrderBalancePaid, deleteOrder } = useAppStore();
 
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [filterType, setFilterType] = useState<'all' | 'sublimation' | 'dtf'>('all');
@@ -56,6 +57,31 @@ export default function AdminOrdersPage() {
   const [isMarkingBalancePaid, setIsMarkingBalancePaid] = useState(false);
   const [waToast, setWaToast] = useState<{ success: boolean; message: string } | null>(null);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
+  const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
+
+  const handleDeleteOrder = async (orderId: string, orderNumber: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+
+    const isConfirmed = window.confirm(
+      `ADAKAH ANDA PASTI mahu memadam pesanan "${orderNumber}" secara KEKAL dari pangkalan data Supabase?\n\nTindakan ini akan memadam rekod transaksi secara mutlak dan tidak boleh diundur.`
+    );
+    if (!isConfirmed) return;
+
+    setIsDeletingId(orderId);
+    try {
+      await deleteOrder(orderId);
+      if (activeOrder?.id === orderId) {
+        setActiveOrder(null);
+      }
+      setWaToast({ success: true, message: `Pesanan ${orderNumber} berjaya dipadam dari pangkalan data.` });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Gagal memadam pesanan dari pangkalan data.';
+      setWaToast({ success: false, message: msg });
+    } finally {
+      setIsDeletingId(null);
+      setTimeout(() => setWaToast(null), 4000);
+    }
+  };
 
   const handleSendWhatsAppNotification = async () => {
     if (!activeOrder || !activeOrder.customer_phone) {
@@ -386,8 +412,19 @@ export default function AdminOrdersPage() {
 
                         {/* Tindakan */}
                         <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                          <div className="inline-flex items-center justify-center w-8 h-8 rounded-full text-slate-400 group-hover:text-slate-700 group-hover:bg-slate-100 transition-colors">
-                            <ChevronRight className="w-4 h-4" />
+                          <div className="flex items-center justify-end space-x-1">
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteOrder(ord.id, ord.order_number, e)}
+                              disabled={isDeletingId === ord.id}
+                              className="w-8 h-8 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50"
+                              title="Padam pesanan kekal dari pangkalan data"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                            <div className="inline-flex items-center justify-center w-8 h-8 rounded-full text-slate-400 group-hover:text-slate-700 group-hover:bg-slate-100 transition-colors">
+                              <ChevronRight className="w-4 h-4" />
+                            </div>
                           </div>
                         </td>
                       </tr>
@@ -426,9 +463,20 @@ export default function AdminOrdersPage() {
                         {new Date(ord.created_at).toLocaleDateString()}
                       </span>
                     </div>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusObj.color}`}>
-                      {statusObj.label}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusObj.color}`}>
+                        {statusObj.label}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteOrder(ord.id, ord.order_number, e)}
+                        disabled={isDeletingId === ord.id}
+                        className="w-7 h-7 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer"
+                        title="Padam pesanan kekal"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex items-center space-x-3">
@@ -733,6 +781,17 @@ export default function AdminOrdersPage() {
                 </button>
 
                 <div className="flex items-center justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={(e) => activeOrder && handleDeleteOrder(activeOrder.id, activeOrder.order_number, e)}
+                    disabled={isDeletingId === activeOrder.id}
+                    className="px-3.5 py-2 rounded-full text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-200 transition-all cursor-pointer flex items-center gap-1 disabled:opacity-50"
+                    title="Padam pesanan kekal dari pangkalan data"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Padam Pesanan</span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => setActiveOrder(null)}
