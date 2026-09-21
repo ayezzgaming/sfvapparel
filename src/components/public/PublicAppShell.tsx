@@ -173,9 +173,9 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             >
               <div className="flex items-center justify-center h-6 w-6">
                 {isHome ? (
-                  <IoHome className="w-5.5 h-5.5 transition-transform duration-200 scale-110" style={{ color: bottomActiveColor }} />
+                  <IoHome className="w-[21px] h-[21px] transition-transform duration-200 scale-105" style={{ color: bottomActiveColor }} />
                 ) : (
-                  <IoHomeOutline className="w-5.5 h-5.5 transition-colors" style={{ color: bottomInactiveColor }} />
+                  <IoHomeOutline className="w-[21px] h-[21px] transition-colors" style={{ color: bottomInactiveColor }} />
                 )}
               </div>
               <span className={`text-[10px] tracking-tight mt-0.5 transition-colors ${isHome ? 'font-bold' : 'font-medium'}`} style={{ color: isHome ? bottomActiveColor : bottomInactiveColor }}>
@@ -192,9 +192,9 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             >
               <div className="flex items-center justify-center h-6 w-6">
                 {isCatalog ? (
-                  <IoGrid className="w-5.5 h-5.5 transition-transform duration-200 scale-110" style={{ color: bottomActiveColor }} />
+                  <IoGrid className="w-[20px] h-[20px] transition-transform duration-200 scale-105" style={{ color: bottomActiveColor }} />
                 ) : (
-                  <IoGridOutline className="w-5.5 h-5.5 transition-colors" style={{ color: bottomInactiveColor }} />
+                  <IoGridOutline className="w-[20px] h-[20px] transition-colors" style={{ color: bottomInactiveColor }} />
                 )}
               </div>
               <span className={`text-[10px] tracking-tight mt-0.5 transition-colors ${isCatalog ? 'font-bold' : 'font-medium'}`} style={{ color: isCatalog ? bottomActiveColor : bottomInactiveColor }}>
@@ -232,9 +232,9 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             >
               <div className="flex items-center justify-center h-6 w-6 relative">
                 {isHistory ? (
-                  <IoTime className="w-5.5 h-5.5 transition-transform duration-200 scale-110" style={{ color: bottomActiveColor }} />
+                  <IoTime className="w-[24px] h-[24px] transition-transform duration-200 scale-105" style={{ color: bottomActiveColor }} />
                 ) : (
-                  <IoTimeOutline className="w-5.5 h-5.5 transition-colors" style={{ color: bottomInactiveColor }} />
+                  <IoTimeOutline className="w-[24px] h-[24px] transition-colors" style={{ color: bottomInactiveColor }} />
                 )}
                 {activeOrdersCount > 0 && !isHistory && (
                   <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#FF3B30] ring-2 ring-white" />
@@ -254,9 +254,9 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             >
               <div className="flex items-center justify-center h-6 w-6">
                 {isProfile ? (
-                  <IoPerson className="w-5.5 h-5.5 transition-transform duration-200 scale-110" style={{ color: bottomActiveColor }} />
+                  <IoPerson className="w-[21px] h-[21px] transition-transform duration-200 scale-105" style={{ color: bottomActiveColor }} />
                 ) : (
-                  <IoPersonOutline className="w-5.5 h-5.5 transition-colors" style={{ color: bottomInactiveColor }} />
+                  <IoPersonOutline className="w-[21px] h-[21px] transition-colors" style={{ color: bottomInactiveColor }} />
                 )}
               </div>
               <span className={`text-[10px] tracking-tight mt-0.5 transition-colors ${isProfile ? 'font-bold' : 'font-medium'}`} style={{ color: isProfile ? bottomActiveColor : bottomInactiveColor }}>

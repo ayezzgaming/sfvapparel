@@ -525,12 +525,6 @@ export default function HomePage() {
         <div className="space-y-3.5">
           <div className="flex justify-between items-end mb-1">
             <div>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-100/80 text-[#0052FF] text-[9.5px] font-bold tracking-wide uppercase">
-                  <Sparkles className="w-2.5 h-2.5 text-[#0052FF]" />
-                  <span>Katalog Kilang</span>
-                </span>
-              </div>
               <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                 Pilihan Servis
               </h2>
@@ -586,8 +580,7 @@ export default function HomePage() {
 
                     {/* Floating Pill on Top-Left */}
                     <div className="absolute top-2.5 left-2.5 z-10">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/90 backdrop-blur-md text-[10px] font-bold text-slate-800 shadow-xs border border-white/80">
-                        <Zap className="w-2.5 h-2.5 text-[#0052FF]" />
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/90 backdrop-blur-md text-[10px] font-bold text-slate-800 shadow-xs border border-white/80">
                         <span>{item.highlight || 'Kualiti Kilang'}</span>
                       </span>
                     </div>
