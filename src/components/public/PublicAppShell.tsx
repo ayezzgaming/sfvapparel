@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { App } from 'konsta/react';
@@ -43,9 +43,26 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
   const isHistory = pathname.startsWith('/history');
   const isProfile = pathname.startsWith('/profile');
 
-  const activeOrders = orders.filter((o) => o.status !== 'delivered' && o.status !== 'cancelled');
-  const activeOrdersCount = activeOrders.length;
-  const favoritesCount = favorites.length;
+  // Filter orders by authenticated customer from Database
+  const customerOrders = useMemo(() => {
+    if (!isAuthenticated || !customer) return [];
+    const phone = customer.whatsapp || '';
+    const cleanPhone = phone.replace(/[\s\-\+\(\)]/g, '');
+
+    return orders.filter((o) => {
+      if (o.customer_id && customer.id && o.customer_id === customer.id) return true;
+      if (o.customer_phone && cleanPhone) {
+        const orderPhoneClean = o.customer_phone.replace(/[\s\-\+\(\)]/g, '');
+        if (orderPhoneClean.includes(cleanPhone.slice(-8)) || cleanPhone.includes(orderPhoneClean.slice(-8))) return true;
+      }
+      if (customer.email && o.customer_email && o.customer_email.toLowerCase() === customer.email.toLowerCase()) return true;
+      return false;
+    });
+  }, [orders, isAuthenticated, customer]);
+
+  const activeOrders = customerOrders.filter((o) => o.status !== 'delivered' && o.status !== 'cancelled');
+  const activeOrdersCount = isAuthenticated ? activeOrders.length : 0;
+  const favoritesCount = isAuthenticated ? favorites.length : 0;
   const shouldHideBottomNav = isBottomSheetOpen || isCustomize;
 
   // Theme computations
@@ -61,7 +78,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
   const whatsappFabBg = themeSettings?.whatsapp_fab_bg || '#25D366';
 
   // Filter full design objects that are favorited
-  const favoriteDesigns = designs.filter((d) => favorites.includes(d.id));
+  const favoriteDesigns = isAuthenticated ? designs.filter((d) => favorites.includes(d.id)) : [];
 
   return (
     <App theme="ios" safeAreas={true} className="!bg-white h-full font-ios antialiased selection:bg-[#00BDFF] selection:text-white overscroll-none">
