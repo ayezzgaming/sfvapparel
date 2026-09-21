@@ -81,7 +81,9 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
   const whatsappFabBg = themeSettings?.whatsapp_fab_bg || '#25D366';
 
   // Filter full design objects that are favorited
-  const favoriteDesigns = isAuthenticated ? designs.filter((d) => favorites.includes(d.id)) : [];
+  const favoriteDesigns = isAuthenticated && Array.isArray(designs) && Array.isArray(favorites)
+    ? designs.filter((d) => d && favorites.includes(d.id))
+    : [];
 
   return (
     <App theme="ios" safeAreas={true} className="!bg-white h-full font-ios antialiased selection:bg-[#00BDFF] selection:text-white overscroll-none">

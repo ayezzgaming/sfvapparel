@@ -106,20 +106,22 @@ export default function CustomizePage() {
     dtfDimensions, 
     tiers, 
     addOrder,
-    companySettings
+    companySettings,
+    isInitialized
   } = useAppStore();
 
   const design = useMemo(() => {
-    return designs.find((d) => d.id === designId) || designs[0];
+    if (!designs || designs.length === 0) return null;
+    return designs.find((d) => d && d.id === designId) || designs[0] || null;
   }, [designs, designId]);
 
-  // Show loading spinner while checking auth
-  if (isAuthLoading) {
+  // Show loading spinner while checking auth or initializing designs
+  if (isAuthLoading || (!isInitialized && (!designs || designs.length === 0))) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center font-ios">
         <div className="text-center">
-          <div className="w-10 h-10 border-2 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-slate-500">Memuatkan...</p>
+          <div className="w-10 h-10 border-2 border-[#00BDFF] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-xs font-medium text-slate-500">Memuatkan butiran tempahan...</p>
         </div>
       </div>
     );
@@ -477,9 +479,20 @@ export default function CustomizePage() {
   }, [addrPostcode, addrCity, customer, totalQuantity]);
 
   const selectedCourier = useMemo(() => {
+    const list = shippingCalculation?.couriers || [];
     return (
-      shippingCalculation.couriers.find((c) => c.id === selectedCourierId) ||
-      shippingCalculation.couriers[0]
+      list.find((c) => c.id === selectedCourierId) ||
+      list[0] || {
+        id: 'jnt',
+        name: 'J&T Express Malaysia',
+        shortName: 'J&T Express',
+        serviceType: 'standard' as const,
+        estimatedDays: '1 - 2 Hari Bekerja',
+        rate: 8.5,
+        logoType: 'jnt' as const,
+        description: 'Penghantaran standard',
+        isAvailable: true,
+      }
     );
   }, [shippingCalculation, selectedCourierId]);
 
