@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   Search, 
   X, 
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
+import { useAuth } from '@/hooks/useAuth';
 import { buildWhatsAppInquiryUrl } from '@/lib/whatsapp/dynamic-link';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { Design } from '@/types/database';
@@ -26,9 +27,11 @@ const CATEGORY_PILLS = [
 ];
 
 function CatalogContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initialType = searchParams.get('type') || 'all';
 
+  const { isAuthenticated } = useAuth();
   const { designs, favorites, toggleFavorite, companySettings, isLoadingDesigns } = useAppStore();
   const [selectedCategory, setSelectedCategory] = useState<string>(initialType);
   const [searchQuery, setSearchQuery] = useState('');
@@ -147,11 +150,15 @@ function CatalogContent() {
                       loading="lazy"
                     />
 
-                    {/* Minimalist Clean Heart Button (No Heavy Circle Base) */}
+                    {/* Minimalist Clean Heart Button */}
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (!isAuthenticated) {
+                          router.push(`/auth/login?redirect=${encodeURIComponent('/catalog')}`);
+                          return;
+                        }
                         toggleFavorite(design.id);
                       }}
                       aria-label="Kegemaran"

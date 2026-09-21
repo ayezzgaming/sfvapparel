@@ -71,20 +71,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Gagal menyimpan OTP.' }, { status: 500 });
     }
 
-    // Send OTP via WAHA
+    // Send OTP via WAHA (Strictly no emojis)
     const chatId = formatChatId(normalizedPhone);
-    const message = `🔐 *SFV Apparel — Kod Pengesahan*\n\nAssalamualaikum *${name}*!\n\nKod OTP anda ialah:\n\n*${otpCode}*\n\n⏱️ Kod ini sah selama *5 minit* sahaja.\n\n_Jangan kongsikan kod ini kepada sesiapa._`;
+    const message = `*SFV Apparel - Kod Pengesahan*\n\nAssalamualaikum *${name}*,\n\nKod OTP anda ialah: *${otpCode}*\n\nKod ini sah selama 5 minit sahaja.\nJangan kongsikan kod ini kepada sesiapa.`;
 
     const wahaResult = await sendWahaMessage(chatId, message);
 
     if (!wahaResult.success) {
       console.warn('[send-otp] WAHA send warning/error:', wahaResult.error);
-      // In development mode or if WAHA is waiting for QR scan, we can inform the client
       const isDev = process.env.NODE_ENV !== 'production';
       if (isDev) {
         return NextResponse.json({
           success: true,
-          message: `[DEV/TEST] OTP dijana: ${otpCode}. (Sesi WhatsApp VPS status: Perlu scan QR di WhatsApp Hub)`,
+          message: `Kod OTP anda: ${otpCode}. (Sesi WhatsApp VPS: Perlu imbas QR di WhatsApp Hub)`,
           phone: normalizedPhone,
           devOtp: otpCode,
         });
@@ -93,7 +92,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { 
           success: false, 
-          message: 'Gagal menghantar WhatsApp. Sila pastikan sistem WhatsApp Hub telah diimbas QR atau hubungi sokongan.',
+          message: 'Gagal menghantar kod ke WhatsApp. Sila pastikan sistem WhatsApp Hub telah diimbas atau hubungi sokongan.',
           error: wahaResult.error
         },
         { status: 502 }

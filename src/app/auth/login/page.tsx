@@ -2,11 +2,13 @@
 
 import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import {
-  Phone, User, Mail, ArrowRight, ShieldCheck, RefreshCw,
-  ChevronLeft, MessageSquare, Loader2, CheckCircle2, AlertCircle
+  ChevronLeft,
+  Loader2,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 
 function LoginForm() {
@@ -38,7 +40,6 @@ function LoginForm() {
     return () => clearInterval(timer);
   }, [countdown]);
 
-  // Format phone display
   const formatPhoneDisplay = (p: string) => {
     return p.replace(/(\d{2})(\d{4})(\d+)/, '+$1 $2 $3');
   };
@@ -57,7 +58,7 @@ function LoginForm() {
       const data = await res.json();
 
       if (!data.success) {
-        setError(data.message || 'Gagal menghantar OTP.');
+        setError(data.message || 'Gagal menghantar kod pengesahan.');
         return;
       }
 
@@ -65,13 +66,12 @@ function LoginForm() {
       setSuccessMsg(data.message);
       setStep('otp');
       setCountdown(60);
+
       if (data.devOtp && typeof data.devOtp === 'string') {
         const devOtpChars = data.devOtp.split('').slice(0, 6);
         setOtp(devOtpChars);
-        // Auto verify after a brief pause
         setTimeout(() => handleVerifyOtp(data.devOtp), 600);
       } else {
-        // Focus first OTP input
         setTimeout(() => otpRefs.current[0]?.focus(), 100);
       }
     } catch {
@@ -92,7 +92,6 @@ function LoginForm() {
       otpRefs.current[index + 1]?.focus();
     }
 
-    // Auto-submit when all filled
     if (newOtp.every((d) => d) && value) {
       handleVerifyOtp(newOtp.join(''));
     }
@@ -131,13 +130,12 @@ function LoginForm() {
       const data = await res.json();
 
       if (!data.success) {
-        setError(data.message || 'OTP tidak sah.');
+        setError(data.message || 'Kod OTP tidak sah.');
         setOtp(['', '', '', '', '', '']);
         setTimeout(() => otpRefs.current[0]?.focus(), 50);
         return;
       }
 
-      // Success!
       await refresh();
       router.push(redirectTo);
     } catch {
@@ -161,10 +159,16 @@ function LoginForm() {
       const data = await res.json();
       if (data.success) {
         setCountdown(60);
-        setSuccessMsg('OTP baru telah dihantar!');
-        setTimeout(() => otpRefs.current[0]?.focus(), 100);
+        setSuccessMsg('Kod pengesahan baru telah dihantar.');
+        if (data.devOtp && typeof data.devOtp === 'string') {
+          const devOtpChars = data.devOtp.split('').slice(0, 6);
+          setOtp(devOtpChars);
+          setTimeout(() => handleVerifyOtp(data.devOtp), 600);
+        } else {
+          setTimeout(() => otpRefs.current[0]?.focus(), 100);
+        }
       } else {
-        setError(data.message || 'Gagal menghantar semula OTP.');
+        setError(data.message || 'Gagal menghantar semula kod.');
       }
     } catch {
       setError('Ralat sambungan.');
@@ -174,234 +178,202 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col items-center justify-center p-4">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
+    <div className="min-h-screen bg-[#F2F2F7] flex flex-col justify-between p-4 font-ios antialiased selection:bg-slate-200">
+      {/* Top Bar / Back button */}
+      <div className="w-full max-w-md mx-auto pt-4 flex items-center justify-between">
+        <Link
+          href={redirectTo}
+          className="inline-flex items-center gap-1 text-xs text-slate-600 hover:text-slate-900 active:opacity-60 transition-opacity py-1 px-2 rounded-lg"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>Kembali</span>
+        </Link>
+        <span className="text-[11px] font-medium text-slate-400">SVF Apparel</span>
       </div>
 
-      <div className="relative w-full max-w-md">
-        {/* Logo / Brand */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-sky-400 to-blue-600 rounded-2xl shadow-lg shadow-sky-500/30 mb-4">
-            <ShieldCheck className="w-7 h-7 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-white">SFV Apparel</h1>
-          <p className="text-slate-400 text-sm mt-1">Portal Tempahan Kustom</p>
+      {/* Center Container */}
+      <div className="w-full max-w-sm mx-auto my-auto py-6">
+        
+        {/* Brand Header (Apple Monochromatic Minimalist) */}
+        <div className="text-center mb-7 space-y-1.5">
+          <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
+            {step === 'form' ? 'Akaun Pelanggan' : 'Pengesahan WhatsApp'}
+          </h1>
+          <p className="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">
+            {step === 'form'
+              ? 'Sila masukkan nombor WhatsApp dan nama anda untuk log masuk atau pendaftaran.'
+              : `Kod pengesahan 6 digit telah dihantar ke nombor ${formatPhoneDisplay(normalizedPhone)}`}
+          </p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl">
-          {step === 'form' ? (
-            <>
-              <div className="mb-6">
-                <h2 className="text-xl font-bold text-white">Log Masuk / Daftar</h2>
-                <p className="text-slate-400 text-sm mt-1">
-                  Masukkan nombor WhatsApp anda. Kami akan hantar kod pengesahan.
-                </p>
+        {/* Error / Success Notifications (Subtle Monochrome Alert) */}
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-white border border-rose-200/80 shadow-xs flex items-start gap-2.5 text-xs text-rose-600">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span className="leading-snug">{error}</span>
+          </div>
+        )}
+
+        {successMsg && !error && (
+          <div className="mb-4 p-3 rounded-xl bg-white border border-slate-200 shadow-xs flex items-start gap-2.5 text-xs text-slate-700">
+            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-slate-900" />
+            <span className="leading-snug">{successMsg}</span>
+          </div>
+        )}
+
+        {/* STEP 1: FORM INPUT */}
+        {step === 'form' && (
+          <form onSubmit={handleSendOtp} className="space-y-4">
+            
+            {/* Inset Group Inputs (iOS Style) */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden divide-y divide-slate-100">
+              
+              {/* WhatsApp Number */}
+              <div className="px-4 py-3">
+                <label className="block text-[11px] font-medium text-slate-400 mb-0.5">
+                  Nombor WhatsApp
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="012 345 6789"
+                  required
+                  autoFocus
+                  className="w-full text-sm text-slate-900 placeholder-slate-300 bg-transparent focus:outline-none font-mono"
+                />
               </div>
 
-              <form onSubmit={handleSendOtp} className="space-y-4">
-                {/* Name */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5 ml-1">
-                    Nama Penuh <span className="text-rose-400">*</span>
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                      placeholder="Nama anda"
-                      className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-sky-400/60 focus:bg-white/8 transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* WhatsApp */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5 ml-1">
-                    Nombor WhatsApp <span className="text-rose-400">*</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                      <span className="text-xs text-slate-400 font-mono">🇲🇾</span>
-                    </div>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      required
-                      placeholder="01X-XXXX XXXX"
-                      className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 text-sm font-mono focus:outline-none focus:border-sky-400/60 focus:bg-white/8 transition-all"
-                    />
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-1 ml-1">Contoh: 0123456789</p>
-                </div>
-
-                {/* Email (optional) */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5 ml-1 flex items-center gap-1">
-                    Email <span className="text-slate-500 font-normal">(pilihan)</span>
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="email@example.com"
-                      className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-sky-400/60 focus:bg-white/8 transition-all"
-                    />
-                  </div>
-                </div>
-
-                {error && (
-                  <div className="flex items-center gap-2 text-rose-400 text-xs bg-rose-500/10 border border-rose-500/20 rounded-xl px-3 py-2.5">
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                    {error}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={isLoading || !name || !phone}
-                  className="w-full py-3.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-sky-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> Menghantar OTP...</>
-                  ) : (
-                    <><MessageSquare className="w-4 h-4" /> Hantar Kod ke WhatsApp <ArrowRight className="w-4 h-4" /></>
-                  )}
-                </button>
-              </form>
-
-              {/* WhatsApp info */}
-              <div className="mt-4 flex items-start gap-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
-                <div className="text-emerald-400 text-base mt-0.5">💬</div>
-                <p className="text-[11px] text-emerald-300/80 leading-relaxed">
-                  Kod OTP akan dihantar ke WhatsApp anda dalam masa beberapa saat. Pastikan WhatsApp anda aktif dan nombor adalah betul.
-                </p>
+              {/* Full Name */}
+              <div className="px-4 py-3">
+                <label className="block text-[11px] font-medium text-slate-400 mb-0.5">
+                  Nama Penuh
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Nama anda"
+                  required
+                  className="w-full text-sm text-slate-900 placeholder-slate-300 bg-transparent focus:outline-none"
+                />
               </div>
-            </>
-          ) : (
-            <>
-              {/* Back button */}
+
+              {/* Optional Email */}
+              <div className="px-4 py-3">
+                <label className="block text-[11px] font-medium text-slate-400 mb-0.5">
+                  Emel (Pilihan)
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="nama@contoh.com"
+                  className="w-full text-sm text-slate-900 placeholder-slate-300 bg-transparent focus:outline-none font-mono"
+                />
+              </div>
+
+            </div>
+
+            {/* Apple Light Action Button (No dark button) */}
+            <div className="pt-2">
               <button
-                onClick={() => { setStep('form'); setError(''); setOtp(['', '', '', '', '', '']); }}
-                className="flex items-center gap-1 text-slate-400 hover:text-white text-xs mb-5 transition-colors"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" /> Kembali
-              </button>
-
-              <div className="mb-6">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-500/20 border border-emerald-500/30 rounded-2xl mb-3">
-                  <MessageSquare className="w-6 h-6 text-emerald-400" />
-                </div>
-                <h2 className="text-xl font-bold text-white">Semak WhatsApp Anda</h2>
-                <p className="text-slate-400 text-sm mt-1">
-                  Kami hantar kod 6-digit ke
-                </p>
-                <p className="text-sky-400 font-mono text-sm font-semibold">
-                  {formatPhoneDisplay(normalizedPhone)}
-                </p>
-              </div>
-
-              {/* OTP Input */}
-              <div className="flex gap-2 justify-center mb-4" onPaste={handleOtpPaste}>
-                {otp.map((digit, i) => (
-                  <input
-                    key={i}
-                    ref={(el) => { otpRefs.current[i] = el; }}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(i, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                    disabled={isLoading}
-                    className={`w-11 h-14 text-center text-xl font-bold rounded-xl border transition-all focus:outline-none ${
-                      digit
-                        ? 'bg-sky-500/20 border-sky-400/60 text-white'
-                        : 'bg-white/5 border-white/10 text-white'
-                    } focus:border-sky-400/80 focus:bg-sky-500/15 disabled:opacity-50`}
-                  />
-                ))}
-              </div>
-
-              {isLoading && (
-                <div className="flex items-center justify-center gap-2 text-sky-400 text-sm mb-3">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Mengesahkan...</span>
-                </div>
-              )}
-
-              {error && (
-                <div className="flex items-center gap-2 text-rose-400 text-xs bg-rose-500/10 border border-rose-500/20 rounded-xl px-3 py-2.5 mb-3">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  {error}
-                </div>
-              )}
-
-              {successMsg && !error && (
-                <div className="flex items-center gap-2 text-emerald-400 text-xs bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2.5 mb-3">
-                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                  {successMsg}
-                </div>
-              )}
-
-              {/* Manual verify button */}
-              <button
-                onClick={() => handleVerifyOtp(otp.join(''))}
-                disabled={otp.some((d) => !d) || isLoading}
-                className="w-full py-3.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-sky-500/25 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+                type="submit"
+                disabled={isLoading || !phone.trim() || !name.trim()}
+                className="w-full py-3.5 px-4 rounded-xl bg-white border border-slate-300/80 text-slate-900 hover:bg-slate-50 active:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium text-xs tracking-tight shadow-xs transition-all flex items-center justify-center gap-2"
               >
                 {isLoading ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Mengesahkan...</>
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
+                    <span>Menghantar Kod...</span>
+                  </>
                 ) : (
-                  <><CheckCircle2 className="w-4 h-4" /> Sahkan & Masuk</>
+                  <span>Teruskan Pengesahan</span>
                 )}
               </button>
+            </div>
 
-              {/* Resend */}
-              <div className="text-center">
-                {countdown > 0 ? (
-                  <p className="text-slate-500 text-xs">
-                    Hantar semula dalam <span className="text-slate-300 font-mono">{countdown}s</span>
-                  </p>
-                ) : (
-                  <button
-                    onClick={handleResendOtp}
-                    disabled={isLoading}
-                    className="text-sky-400 hover:text-sky-300 text-xs flex items-center gap-1 mx-auto transition-colors"
-                  >
-                    <RefreshCw className="w-3 h-3" /> Hantar Semula OTP
-                  </button>
-                )}
-              </div>
-            </>
-          )}
-        </div>
+          </form>
+        )}
 
-        {/* Footer */}
-        <p className="text-center text-slate-600 text-[11px] mt-6">
-          Dengan mendaftar, anda bersetuju dengan dasar privasi SFV Apparel.
+        {/* STEP 2: OTP INPUT */}
+        {step === 'otp' && (
+          <div className="space-y-5">
+            
+            {/* 6-Digit OTP Box Grid (Apple Monochromatic Style) */}
+            <div className="flex justify-between gap-2" onPaste={handleOtpPaste}>
+              {otp.map((digit, idx) => (
+                <input
+                  key={idx}
+                  ref={(el) => { otpRefs.current[idx] = el; }}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleOtpChange(idx, e.target.value)}
+                  onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                  disabled={isLoading}
+                  className={`w-12 h-14 text-center text-lg font-mono font-medium rounded-xl bg-white border transition-all focus:outline-none shadow-xs ${
+                    digit 
+                      ? 'border-slate-400 text-slate-900' 
+                      : 'border-slate-200/80 text-slate-900 focus:border-slate-400'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Resend & Edit Actions */}
+            <div className="flex flex-col items-center space-y-2.5 pt-2">
+              <button
+                type="button"
+                onClick={handleResendOtp}
+                disabled={countdown > 0 || isLoading}
+                className="text-xs font-medium text-slate-600 hover:text-slate-900 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors"
+              >
+                {countdown > 0
+                  ? `Hantar semula kod dalam ${countdown}s`
+                  : 'Hantar Semula Kod Pengesahan'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setStep('form');
+                  setOtp(['', '', '', '', '', '']);
+                  setError('');
+                }}
+                disabled={isLoading}
+                className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                Tukar Nombor Telefon
+              </button>
+            </div>
+
+          </div>
+        )}
+
+      </div>
+
+      {/* Footer System Info */}
+      <div className="w-full max-w-md mx-auto pb-4 text-center">
+        <p className="text-[10px] text-slate-400 font-medium">
+          SFV Apparel • Sistem Pengesahan Selamat
         </p>
       </div>
+
     </div>
   );
 }
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-sky-400 animate-spin" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#F2F2F7] flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );

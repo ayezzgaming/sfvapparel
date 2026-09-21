@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { App } from 'konsta/react';
 import { 
   IoHomeOutline, 
@@ -14,9 +14,10 @@ import {
   IoPersonOutline, 
   IoPerson 
 } from 'react-icons/io5';
-import { Heart, ShoppingBag, Trash2 } from 'lucide-react';
+import { Heart, ShoppingBag, Trash2, LogIn } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
+import { useAuth } from '@/hooks/useAuth';
 import { useUI } from '@/lib/store/ui-context';
 import { formatCurrency } from '@/lib/pricing-calculator';
 import { buildWhatsAppInquiryUrl } from '@/lib/whatsapp/dynamic-link';
@@ -28,7 +29,9 @@ interface PublicAppShellProps {
 }
 
 export default function PublicAppShell({ children }: PublicAppShellProps) {
+  const router = useRouter();
   const pathname = usePathname();
+  const { isAuthenticated, customer } = useAuth();
   const { orders, favorites, designs, deleteOrder, toggleFavorite, companySettings, themeSettings } = useAppStore();
   const { isBottomSheetOpen } = useUI();
   const [isBagOpen, setIsBagOpen] = useState(false);
@@ -250,56 +253,80 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             maxHeight="max-h-[85vh]"
             title={
               <div className="flex items-center gap-2">
-                <span className="bg-sky-50 text-[#00BDFF] text-[10.5px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-sky-100">
+                <span className="text-xs font-semibold text-slate-900">
                   Bakul Pesanan
                 </span>
-                <span className="text-xs text-slate-500 font-medium">
-                  ({activeOrdersCount} aktif)
-                </span>
+                {isAuthenticated && (
+                  <span className="text-xs text-slate-400 font-normal">
+                    ({activeOrdersCount} aktif)
+                  </span>
+                )}
               </div>
             }
             footer={
-              <Link
-                href="/history"
-                onClick={() => setIsBagOpen(false)}
-                className="w-full bg-[#00BDFF] text-white font-semibold py-3.5 rounded-xl text-center active:bg-sky-600 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-sky-400/20 text-xs"
-              >
-                <span>Buka Pengurusan Pesanan Penuh →</span>
-              </Link>
+              isAuthenticated ? (
+                <Link
+                  href="/history"
+                  onClick={() => setIsBagOpen(false)}
+                  className="w-full bg-slate-900 text-white font-medium py-3.5 rounded-xl text-center active:bg-slate-800 transition-colors flex items-center justify-center text-xs"
+                >
+                  <span>Buka Pengurusan Pesanan Penuh</span>
+                </Link>
+              ) : (
+                <Link
+                  href={`/auth/login?redirect=${encodeURIComponent(pathname)}`}
+                  onClick={() => setIsBagOpen(false)}
+                  className="w-full bg-slate-900 text-white font-medium py-3.5 rounded-xl text-center active:bg-slate-800 transition-colors flex items-center justify-center gap-2 text-xs"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>Log Masuk Untuk Semak Pesanan</span>
+                </Link>
+              )
             }
           >
-            {activeOrders.length === 0 ? (
+            {!isAuthenticated ? (
+              <div className="py-8 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                  <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
+                </div>
+                <div className="max-w-xs mx-auto space-y-1">
+                  <h3 className="font-semibold text-slate-900 text-sm">Log Masuk Diperlukan</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Sila log masuk dengan akaun anda untuk melihat senarai dan status pesanan aktif.
+                  </p>
+                </div>
+              </div>
+            ) : activeOrders.length === 0 ? (
               <div className="py-8 text-center space-y-3">
                 <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
                   <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm">Tiada Pesanan Aktif</h3>
-                  <p className="text-xs text-slate-500 mt-1">Anda belum mempunyai tempahan yang sedang diproses di kilang.</p>
+                  <h3 className="font-semibold text-slate-900 text-sm">Tiada Pesanan Aktif</h3>
+                  <p className="text-xs text-slate-500 mt-1">Anda belum mempunyai tempahan yang sedang diproses.</p>
                 </div>
               </div>
             ) : (
               activeOrders.map((order) => (
                 <div 
                   key={order.id}
-                  className="p-4 rounded-2xl bg-[#F8FAFC] border border-slate-200/70 space-y-2.5 relative group"
+                  className="p-4 rounded-2xl bg-white border border-slate-200/70 space-y-2.5 relative"
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <span className="font-mono text-xs font-bold text-slate-900">
+                      <span className="font-mono text-xs font-semibold text-slate-900">
                         {order.order_number}
                       </span>
-                      <h4 className="text-[13.5px] font-semibold text-slate-800 leading-snug mt-0.5">
+                      <h4 className="text-[13.5px] font-medium text-slate-800 leading-snug mt-0.5">
                         {order.design_title}
                       </h4>
                     </div>
                     
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-100 uppercase">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 uppercase">
                         {order.status.replace('_', ' ')}
                       </span>
                       
-                      {/* Tombol Hapus Pesanan */}
                       <button
                         type="button"
                         onClick={(e) => {
@@ -310,16 +337,16 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                         }}
                         aria-label="Padam pesanan"
                         title="Padam dari bakul"
-                        className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 active:scale-90 transition-all shrink-0"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 active:scale-90 transition-all shrink-0"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-200/50">
-                    <span className="text-slate-500">{order.total_quantity} helai pakaian</span>
-                    <span className="font-bold text-slate-900">{formatCurrency(order.total_amount)}</span>
+                  <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-100">
+                    <span className="text-slate-500">{order.total_quantity} helai</span>
+                    <span className="font-semibold text-slate-900">{formatCurrency(order.total_amount)}</span>
                   </div>
                 </div>
               ))
@@ -335,39 +362,64 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             maxHeight="max-h-[85vh]"
             title={
               <div className="flex items-center gap-2">
-                <span className="bg-rose-50 text-[#FF2D55] text-[10.5px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                <span className="text-xs font-semibold text-slate-900">
                   Pilihan Kegemaran
                 </span>
-                <span className="text-xs text-slate-500 font-medium">
-                  ({favoritesCount} disimpan)
-                </span>
+                {isAuthenticated && (
+                  <span className="text-xs text-slate-400 font-normal">
+                    ({favoritesCount} disimpan)
+                  </span>
+                )}
               </div>
             }
             footer={
-              <Link
-                href="/catalog"
-                onClick={() => setIsFavoritesOpen(false)}
-                className="w-full bg-[#00BDFF] text-white font-semibold py-3.5 rounded-xl text-center active:bg-sky-600 transition-colors flex items-center justify-center space-x-2 shadow-md shadow-sky-400/20 text-xs"
-              >
-                <span>Terokai Lebih Banyak di Katalog →</span>
-              </Link>
+              isAuthenticated ? (
+                <Link
+                  href="/catalog"
+                  onClick={() => setIsFavoritesOpen(false)}
+                  className="w-full bg-slate-900 text-white font-medium py-3.5 rounded-xl text-center active:bg-slate-800 transition-colors flex items-center justify-center text-xs"
+                >
+                  <span>Terokai Katalog</span>
+                </Link>
+              ) : (
+                <Link
+                  href={`/auth/login?redirect=${encodeURIComponent(pathname)}`}
+                  onClick={() => setIsFavoritesOpen(false)}
+                  className="w-full bg-slate-900 text-white font-medium py-3.5 rounded-xl text-center active:bg-slate-800 transition-colors flex items-center justify-center gap-2 text-xs"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>Log Masuk Untuk Akses Kegemaran</span>
+                </Link>
+              )
             }
           >
-            {favoriteDesigns.length === 0 ? (
+            {!isAuthenticated ? (
               <div className="py-8 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-400 flex items-center justify-center mx-auto">
+                <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                  <Heart className="w-6 h-6 stroke-[1.5]" />
+                </div>
+                <div className="max-w-xs mx-auto space-y-1">
+                  <h3 className="font-semibold text-slate-900 text-sm">Log Masuk Diperlukan</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Sila log masuk untuk menyimpan dan melihat templat pakaian kegemaran anda.
+                  </p>
+                </div>
+              </div>
+            ) : favoriteDesigns.length === 0 ? (
+              <div className="py-8 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
                   <Heart className="w-6 h-6 stroke-[1.5]" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm">Tiada Rekaan Kegemaran</h3>
-                  <p className="text-xs text-slate-500 mt-1">Tekan ikon hati pada mana-mana templat di katalog untuk menyimpannya di sini.</p>
+                  <h3 className="font-semibold text-slate-900 text-sm">Tiada Rekaan Kegemaran</h3>
+                  <p className="text-xs text-slate-500 mt-1">Tekan ikon hati pada templat di katalog untuk menyimpannya di sini.</p>
                 </div>
               </div>
             ) : (
               favoriteDesigns.map((design) => (
                 <div 
                   key={design.id}
-                  className="p-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200/70 flex items-center gap-3.5 justify-between"
+                  className="p-3.5 rounded-2xl bg-white border border-slate-200/70 flex items-center gap-3.5 justify-between"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200/60">
@@ -379,7 +431,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h4 className="text-xs font-bold text-slate-900 truncate">
+                      <h4 className="text-xs font-semibold text-slate-900 truncate">
                         {design.title}
                       </h4>
                       <p className="text-[11px] text-slate-400 mt-0.5 capitalize truncate">
@@ -392,7 +444,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                     <Link
                       href={`/customize/${design.id}`}
                       onClick={() => setIsFavoritesOpen(false)}
-                      className="px-3 py-1.5 rounded-xl bg-[#00BDFF] text-white text-xs font-semibold active:bg-sky-600 transition-colors shadow-2xs"
+                      className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-medium active:bg-slate-800 transition-colors shadow-2xs"
                     >
                       Tempah
                     </Link>
@@ -401,7 +453,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                       type="button"
                       onClick={() => toggleFavorite(design.id)}
                       aria-label="Buang dari kegemaran"
-                      className="p-2 rounded-xl bg-white border border-slate-200/60 text-[#FF2D55] hover:bg-rose-50 active:scale-90 transition-all"
+                      className="p-2 rounded-xl bg-slate-50 border border-slate-200/60 text-slate-500 hover:text-rose-600 active:scale-90 transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
