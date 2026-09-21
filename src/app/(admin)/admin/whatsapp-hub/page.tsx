@@ -26,7 +26,8 @@ import {
   PauseCircle,
   PlayCircle,
   User,
-  Phone
+  Phone,
+  X
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
@@ -108,16 +109,20 @@ export default function WhatsAppHubPage() {
       if (saved) {
         setPrivateChatIds(JSON.parse(saved));
       }
-    } catch {}
+    } catch {
+      // ignore
+    }
   }, []);
 
   const togglePrivateForChat = (chatId: string) => {
     setPrivateChatIds((prev) => {
-      const next = { ...prev, [chatId]: !prev[chatId] };
+      const updated = { ...prev, [chatId]: !prev[chatId] };
       try {
-        localStorage.setItem('sfv_wa_private_chats', JSON.stringify(next));
-      } catch {}
-      return next;
+        localStorage.setItem('sfv_wa_private_chats', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
     });
   };
 
@@ -125,158 +130,112 @@ export default function WhatsAppHubPage() {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loadingTickets, setLoadingTickets] = useState(false);
 
-  // Test Message State
+  // Test Message Form
   const [testPhone, setTestPhone] = useState('');
-  const [testMessage, setTestMessage] = useState('Hai! Ini adalah ujian integrasi automasi WhatsApp SFV Apparel.');
-  const [sendResult, setSendResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [testMessage, setTestMessage] = useState('Salam dari Kilang SFV Apparel! Ujian sambungan WhatsApp berjaya.');
   const [sending, setSending] = useState(false);
+  const [sendResult, setSendResult] = useState<{ success: boolean; message: string } | null>(null);
 
-  // References for tracking changes without triggering re-render loops
-  const messagesCountRef = useRef<number>(0);
-  const lastMsgIdRef = useRef<string>('');
-
-  // Fetch status & QR
-  const fetchStatus = useCallback(async (isManual: boolean = false) => {
+  // Fetch Session Status & QR
+  const fetchStatus = useCallback(async (isManual = false) => {
     if (isManual) setRefreshing(true);
     try {
-      const res = await fetch('/api/whatsapp/qr', { cache: 'no-store' });
+      const res = await fetch('/api/whatsapp/session');
       const data = await res.json();
-      const newStatus = data.status || 'UNKNOWN';
-      setStatusData({
-        name: 'default',
-        status: newStatus,
-        me: data.me,
-      });
-
-      if (data.qr) {
-        setQrCode(data.qr);
-        setChats([]);
-        setMessages([]);
-        setSelectedChat(null);
-      } else if (newStatus === 'WORKING') {
-        setQrCode(null);
-      } else {
-        setChats([]);
-        setMessages([]);
-        setSelectedChat(null);
+      if (data.success && data.data) {
+        setStatusData(data.data);
+        if (data.data.status === 'SCAN_QR_CODE' && data.data.qr) {
+          setQrCode(data.data.qr);
+        } else {
+          setQrCode(null);
+        }
       }
-    } catch {
-      setStatusData({ name: 'default', status: 'UNKNOWN' });
-      setChats([]);
-      setMessages([]);
-      setSelectedChat(null);
+    } catch (err) {
+      console.error('Failed to fetch WA session status', err);
     } finally {
       setLoading(false);
       if (isManual) setRefreshing(false);
     }
   }, []);
 
-  // Fetch chats (silently in background without causing parent re-render loops)
-  const fetchChats = useCallback(async () => {
-    try {
-      const res = await fetch('/api/whatsapp/chats', { cache: 'no-store' });
-      const data = await res.json();
-      if (data.connected && Array.isArray(data.chats)) {
-        setChats(data.chats);
-        // If nothing is selected, select the first chat
-        setSelectedChat((prev) => {
-          if (!prev && data.chats.length > 0) return data.chats[0];
-          if (prev) {
-            const updated = data.chats.find((c: WahaChatSummary) => c.id === prev.id);
-            return updated || prev;
-          }
-          return prev;
-        });
-      } else {
-        setChats([]);
-        setMessages([]);
-        setSelectedChat(null);
-      }
-    } catch {
-      setChats([]);
-      setMessages([]);
-      setSelectedChat(null);
-    }
-  }, []);
-
-  // Fetch tickets
+  // Fetch Tickets
   const fetchTickets = useCallback(async () => {
     setLoadingTickets(true);
     try {
-      const res = await fetch('/api/whatsapp/tickets', { cache: 'no-store' });
+      const res = await fetch('/api/whatsapp/tickets');
       const data = await res.json();
-      if (Array.isArray(data.tickets)) {
+      if (data.success && data.tickets) {
         setTickets(data.tickets);
       }
-    } catch {
+    } catch (err) {
+      console.error('Failed to fetch support tickets', err);
     } finally {
       setLoadingTickets(false);
     }
   }, []);
 
-  // Fetch messages for active chat
-  const fetchMessages = useCallback(async (chatId: string, isInitial: boolean = false) => {
-    if (isInitial) setLoadingMessages(true);
+  // Fetch Chats List
+  const fetchChats = useCallback(async () => {
     try {
-      const res = await fetch(`/api/whatsapp/messages?chatId=${encodeURIComponent(chatId)}`, { cache: 'no-store' });
+      const res = await fetch('/api/whatsapp/chats');
       const data = await res.json();
-      if (Array.isArray(data.messages)) {
-        const newMsgs = data.messages as WahaChatMessage[];
-        const latestId = newMsgs.length > 0 ? newMsgs[newMsgs.length - 1].id : '';
-        
-        // Only update state if message array changed
-        if (isInitial || newMsgs.length !== messagesCountRef.current || latestId !== lastMsgIdRef.current) {
-          messagesCountRef.current = newMsgs.length;
-          lastMsgIdRef.current = latestId;
-          setMessages(newMsgs);
-          setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: isInitial ? 'auto' : 'smooth' });
-          }, 60);
+      if (data.success && Array.isArray(data.chats)) {
+        setChats(data.chats);
+        if (!selectedChat && data.chats.length > 0) {
+          setSelectedChat(data.chats[0]);
         }
       }
-    } catch {
-      if (isInitial) setMessages([]);
+    } catch (err) {
+      console.error('Failed to fetch WA chats', err);
+    }
+  }, [selectedChat]);
+
+  // Fetch Messages for Selected Chat
+  const fetchMessages = useCallback(async (chatId: string) => {
+    setLoadingMessages(true);
+    try {
+      const res = await fetch(`/api/whatsapp/messages?chatId=${encodeURIComponent(chatId)}&limit=40`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.messages)) {
+        setMessages(data.messages);
+      }
+    } catch (err) {
+      console.error('Failed to fetch messages for', chatId, err);
     } finally {
-      if (isInitial) setLoadingMessages(false);
+      setLoadingMessages(false);
     }
   }, []);
 
-  // Polling Status & Tickets every 10s
+  // Initial Load & Polling
   useEffect(() => {
     fetchStatus();
     fetchTickets();
     const interval = setInterval(() => {
       fetchStatus();
-    }, 10000);
+    }, 15000);
     return () => clearInterval(interval);
   }, [fetchStatus, fetchTickets]);
 
-  // Polling Chats list every 6s
+  // Auto load chats when status is WORKING
   useEffect(() => {
     if (statusData.status === 'WORKING') {
       fetchChats();
-      const chatInterval = setInterval(() => {
-        fetchChats();
-      }, 6000);
+      const chatInterval = setInterval(fetchChats, 12000);
       return () => clearInterval(chatInterval);
     }
   }, [statusData.status, fetchChats]);
 
-  // When selectedChat changes, load initial messages
+  // Load messages when selectedChat changes
   useEffect(() => {
-    if (selectedChat?.id) {
-      messagesCountRef.current = 0;
-      lastMsgIdRef.current = '';
-      fetchMessages(selectedChat.id, true);
-
-      const msgInterval = setInterval(() => {
-        fetchMessages(selectedChat.id, false);
-      }, 4000);
-      return () => clearInterval(msgInterval);
-    } else {
-      setMessages([]);
+    if (selectedChat) {
+      fetchMessages(selectedChat.id);
     }
-  }, [selectedChat?.id, fetchMessages]);
+  }, [selectedChat, fetchMessages]);
+
+  // Scroll messages to bottom on new message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // Send Reply (also pauses bot for 30m)
   const handleSendReply = async (e: React.FormEvent) => {
@@ -409,7 +368,7 @@ export default function WhatsAppHubPage() {
 
   const isConnected = statusData.status === 'WORKING';
 
-  // Navigation Items Definition (Clean Apple Style)
+  // Navigation Items Definition
   const navSections = [
     {
       id: 'inbox' as HubSectionKey,
@@ -420,7 +379,7 @@ export default function WhatsAppHubPage() {
     },
     {
       id: 'tickets' as HubSectionKey,
-      title: 'Tiket Sokongan (ID TIKET)',
+      title: 'Tiket Sokongan',
       subtitle: 'Isu khas & tindakan susulan',
       icon: Ticket,
       badge: tickets.length > 0 ? `${tickets.length}` : undefined,
@@ -467,63 +426,66 @@ export default function WhatsAppHubPage() {
   });
 
   return (
-    <div className="h-full flex flex-col p-4 sm:p-5 lg:p-6 select-none font-sans overflow-hidden bg-slate-50/50">
+    <div className="w-full h-full overflow-hidden bg-[#f0f4f9] dark:bg-zinc-950 flex flex-col p-4 gap-3 text-slate-900 dark:text-zinc-100 font-sans select-none">
       
       {/* ----------------- TOP HEADER TOOLBAR ----------------- */}
-      <div className="shrink-0 flex items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-sky-50 text-[#00BDFF] border border-sky-100 flex items-center justify-center shadow-2xs shrink-0">
-              <FaWhatsapp className="w-5 h-5" />
+      <div className="shrink-0 flex items-center justify-between gap-3 min-h-[38px]">
+        {/* Title & Status */}
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
+            <div className="w-7 h-7 rounded-full bg-sky-50 dark:bg-sky-950 text-[#00BDFF] border border-sky-100 dark:border-sky-900 flex items-center justify-center shadow-2xs shrink-0">
+              <FaWhatsapp className="w-4 h-4" />
             </div>
-            <div>
-              <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-tight">
-                Pusat Automasi WhatsApp & AI Brain
-              </h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Pengurusan perbualan multi-device, AI Agent berkepintaran pangkalan data, dan automasi kilang.
-              </p>
+            <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 tracking-tight">
+              Hab WhatsApp & AI Brain
+            </span>
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-[10px] font-semibold">
+              <Radio className={`w-3 h-3 ${isConnected ? 'text-emerald-500 animate-pulse' : 'text-amber-500'}`} />
+              <span className={isConnected ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
+                {loading ? 'Menyemak...' : isConnected ? 'Terhubung' : 'Perlu Imbas QR'}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Right Toolbar Actions */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200/80 text-xs shadow-2xs">
-            <Radio className={`w-3.5 h-3.5 ${isConnected ? 'text-emerald-500 animate-pulse' : 'text-amber-500'}`} />
-            <span className="font-semibold text-slate-700">
-              {loading ? 'Menyemak...' : isConnected ? 'WhatsApp Terhubung' : 'Perlu Imbas QR'}
-            </span>
-          </div>
-
           <button
             type="button"
             onClick={() => fetchStatus(true)}
             disabled={refreshing || loading}
             title="Segar semula status"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200/80 hover:border-slate-300 text-slate-700 text-xs font-medium transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:text-zinc-200 text-xs font-medium border border-slate-200 dark:border-zinc-700 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${refreshing ? 'animate-spin text-[#00BDFF]' : ''}`} />
-            <span className="hidden sm:inline">{refreshing ? 'Menyemak...' : 'Segar Semula'}</span>
+            <span>{refreshing ? 'Menyemak...' : 'Segar Semula'}</span>
           </button>
         </div>
       </div>
 
-      {/* ----------------- SPLIT PANEL BODY ----------------- */}
-      <div className="flex-1 min-h-0 overflow-hidden flex items-stretch gap-4 relative pt-4 animate-in fade-in">
+      {/* ----------------- 1 MAIN CARD (SPLIT LAYOUT) ----------------- */}
+      <div className="flex-1 min-h-0 flex overflow-hidden bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-xs relative">
         
         {/* =========================================================================
             SISI KIRI: PANEL NAVIGASI MODUL WHATSAPP HUB
            ========================================================================= */}
         <div
-          className={`flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out select-none ${
-            isLeftPanelCollapsed
-              ? 'w-0 opacity-0 overflow-hidden pointer-events-none'
-              : 'w-[280px] xl:w-[310px] opacity-100'
+          className={`shrink-0 transition-all duration-300 ease-in-out border-r border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col h-full overflow-hidden ${
+            isLeftPanelCollapsed ? 'w-0 border-r-0 overflow-hidden' : 'w-72 sm:w-80'
           }`}
         >
+          {/* Header Panel Kiri */}
+          <div className="p-4 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-zinc-800/50">
+            <h2 className="text-xs font-bold text-slate-800 dark:text-zinc-100 uppercase tracking-wider">
+              Navigasi Hab WhatsApp
+            </h2>
+            <span className="text-[10px] font-semibold text-slate-400 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 px-2 py-0.5 rounded-full">
+              5 Modul
+            </span>
+          </div>
+
           {/* Search / Filter Box */}
-          <div className="p-2.5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs mb-2.5 shrink-0">
+          <div className="p-3 border-b border-slate-100 dark:border-zinc-800 shrink-0">
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -531,13 +493,13 @@ export default function WhatsAppHubPage() {
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
                 placeholder="Cari navigasi WhatsApp..."
-                className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 text-xs text-slate-800 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-400 font-medium"
+                className="w-full pl-8 pr-3 py-1.5 rounded-full bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 border border-slate-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40 focus:border-[#00BDFF] font-medium"
               />
             </div>
           </div>
 
           {/* Module Nav Items List */}
-          <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1 pb-2 sparkle-scroll">
+          <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1.5 sparkle-scroll">
             {filteredNavSections.map((sec) => {
               const Icon = sec.icon;
               const isActive = activeTab === sec.id;
@@ -546,28 +508,28 @@ export default function WhatsAppHubPage() {
                   key={sec.id}
                   type="button"
                   onClick={() => setActiveTab(sec.id)}
-                  className={`w-full flex items-center justify-between p-3 rounded-2xl text-left transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-left transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-sky-50/80 border-2 border-[#00BDFF] ring-2 ring-sky-400/20 shadow-xs'
-                      : 'bg-white border border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/70 shadow-2xs'
+                      ? 'bg-[#C2E7FF] dark:bg-sky-950 text-[#001D35] dark:text-[#00BDFF] font-bold shadow-2xs'
+                      : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-900'
                   }`}
                 >
                   <div className="flex items-center space-x-3 min-w-0">
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                      isActive ? 'bg-[#00BDFF] text-white shadow-2xs' : 'bg-slate-100 text-slate-600'
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                      isActive ? 'bg-[#00BDFF] text-white' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'
                     }`}>
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
-                        <span className={`text-xs font-bold truncate ${isActive ? 'text-[#00BDFF]' : 'text-slate-800'}`}>
+                        <span className="text-xs font-bold truncate">
                           {sec.title}
                         </span>
                         {sec.statusDot && (
-                          <span className={`w-1.5 h-1.5 rounded-full ${sec.statusDot} shrink-0`} />
+                          <span className={`w-2 h-2 rounded-full ${sec.statusDot} shrink-0`} />
                         )}
                       </div>
-                      <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                      <p className="text-[10px] text-slate-400 truncate mt-0.5">
                         {sec.subtitle}
                       </p>
                     </div>
@@ -575,7 +537,9 @@ export default function WhatsAppHubPage() {
 
                   {sec.badge && (
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ml-2 ${
-                      isActive ? 'bg-[#00BDFF] text-white' : 'bg-slate-100 text-slate-600'
+                      isActive
+                        ? 'bg-white/80 dark:bg-sky-900 text-[#001D35] dark:text-[#00BDFF]'
+                        : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'
                     }`}>
                       {sec.badge}
                     </span>
@@ -586,16 +550,16 @@ export default function WhatsAppHubPage() {
           </div>
 
           {/* VPS & Privacy Info Mini Card at Left Footer */}
-          <div className="p-3 bg-white rounded-2xl border border-slate-200/80 shadow-2xs mt-auto shrink-0 space-y-1.5">
-            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-700">
-              <span className="flex items-center gap-1 text-slate-700 font-bold">
+          <div className="p-3.5 bg-slate-50 dark:bg-zinc-800/50 border-t border-slate-100 dark:border-zinc-800 shrink-0 space-y-1">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-700 dark:text-zinc-300">
+              <span className="flex items-center gap-1 font-bold">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                 Privasi Terjamin
               </span>
-              <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-500 font-mono">Live Stream</span>
+              <span className="text-[9.5px] px-1.5 py-0.2 rounded-full bg-white dark:bg-zinc-700 text-slate-500 font-mono">Live Sync</span>
             </div>
             <p className="text-[10px] text-slate-400 leading-snug">
-              Mesej dibaca secara live tanpa disimpan di database. Apabila anda Logout, seluruh sesi dipadam serta-merta.
+              Mesej diselaraskan terus dari peranti tanpa simpanan pihak ketiga.
             </p>
           </div>
         </div>
@@ -603,39 +567,34 @@ export default function WhatsAppHubPage() {
         {/* =========================================================================
             SISI KANAN: KAD UTAMA KANDUNGAN DENGAN TUAS TOGGLE KIRI
            ========================================================================= */}
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out flex-1 min-w-0 mr-0">
+        <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden bg-slate-50/40 dark:bg-zinc-900/40 relative">
           
-          {/* Gagang Toggle Kapsul Sisi Kiri (Tuas Pengatur Luas Panel) */}
+          {/* FLOATING CAPSULE TOGGLE HANDLE (LEFT EDGE OF RIGHT PANEL) */}
           <button
             type="button"
-            onClick={() => setIsLeftPanelCollapsed((v) => !v)}
-            title={isLeftPanelCollapsed ? 'Buka Panel Navigasi' : 'Sembunyikan Panel Navigasi'}
-            className={`absolute left-[5px] top-1/2 -translate-y-1/2 h-12 rounded-full flex items-center justify-center cursor-pointer select-none z-40 transition-all duration-200 ease-out group p-0 border-0 outline-none origin-left ${
-              isLeftPanelCollapsed
-                ? 'w-5 bg-[#f0f4f9] hover:bg-[#e2e7ee]'
-                : 'w-1.5 hover:w-5 bg-[#f0f4f9] hover:bg-[#e2e7ee]'
-            }`}
+            onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-5 h-12 bg-white dark:bg-zinc-800 border-y border-r border-slate-200 dark:border-zinc-700 rounded-r-full shadow-md flex items-center justify-center text-slate-500 hover:text-[#00BDFF] dark:hover:text-[#00BDFF] transition-all cursor-pointer"
+            title={isLeftPanelCollapsed ? 'Buka Navigasi WhatsApp' : 'Tutup Navigasi WhatsApp'}
+            aria-label="Toggle Left Panel"
           >
-            <span
-              className={`transition-opacity duration-150 flex items-center justify-center text-slate-500 ${
-                isLeftPanelCollapsed ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-              }`}
-            >
-              {isLeftPanelCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
-            </span>
+            {isLeftPanelCollapsed ? (
+              <ChevronRight className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronLeft className="w-3.5 h-3.5" />
+            )}
           </button>
 
           {/* ----------------- INTERNAL CARD HEADER ----------------- */}
-          <div className="shrink-0 px-6 py-3.5 border-b border-slate-100 flex items-center justify-between gap-4 bg-slate-50/50">
+          <div className="shrink-0 px-5 py-3 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between gap-4 bg-slate-50/50 dark:bg-zinc-800/50">
             <div>
-              <h2 className="text-sm font-bold text-slate-900 tracking-tight">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
                 {activeTab === 'inbox' && 'Omnichannel Live Chat Inbox'}
                 {activeTab === 'tickets' && 'Pengurusan Tiket Sokongan Pelanggan (ID TIKET)'}
                 {activeTab === 'device' && 'Pengurusan Peranti & Imbasan Kod QR'}
                 {activeTab === 'automation' && 'Alur Automasi & Notifikasi Pesanan'}
                 {activeTab === 'tester' && 'Ujian Penghantaran Mesej WhatsApp'}
               </h2>
-              <p className="text-[11.5px] text-slate-500 mt-0.5">
+              <p className="text-[11px] text-slate-500 mt-0.5">
                 {activeTab === 'inbox' && 'Baca dan balas mesej pelanggan secara dua arah serentak dari web & telefon.'}
                 {activeTab === 'tickets' && 'Senarai isu khusus dan tempahan khas yang dijana oleh AI untuk tindakan staf.'}
                 {activeTab === 'device' && 'Sambungkan atau putuskan akaun WhatsApp rasmi kilang.'}
@@ -649,7 +608,7 @@ export default function WhatsAppHubPage() {
               <button
                 type="button"
                 onClick={() => fetchChats()}
-                className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                className="px-4 py-1.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 dark:bg-zinc-800 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
                 <span>Segar Semula Chat</span>
@@ -660,7 +619,7 @@ export default function WhatsAppHubPage() {
               <button
                 type="button"
                 onClick={() => fetchTickets()}
-                className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                className="px-4 py-1.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 dark:bg-zinc-800 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loadingTickets ? 'animate-spin text-[#00BDFF]' : ''}`} />
                 <span>Segar Semula Tiket</span>
@@ -675,11 +634,11 @@ export default function WhatsAppHubPage() {
             {activeTab === 'inbox' && (
               !isConnected ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
-                  <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-500 border border-amber-200/80 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-amber-50 text-amber-500 border border-amber-200/80 flex items-center justify-center">
                     <Smartphone className="w-7 h-7" />
                   </div>
                   <div className="max-w-sm space-y-1">
-                    <h3 className="text-sm font-bold text-slate-900">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                       WhatsApp Belum Disambungkan
                     </h3>
                     <p className="text-xs text-slate-500 leading-relaxed">
@@ -689,7 +648,7 @@ export default function WhatsAppHubPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab('device')}
-                    className="px-4 py-2 rounded-xl bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold shadow-md shadow-sky-400/20 active:scale-95 transition-all cursor-pointer flex items-center gap-2"
+                    className="px-5 py-2.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer flex items-center gap-2"
                   >
                     <span>Buka Imbasan QR</span>
                     <Smartphone className="w-4 h-4" />
@@ -698,16 +657,16 @@ export default function WhatsAppHubPage() {
               ) : (
                 <div className="flex-1 flex overflow-hidden">
                   {/* Left Column: Contacts List */}
-                  <div className="w-72 sm:w-80 border-r border-slate-200/80 flex flex-col shrink-0 bg-slate-50/40">
-                    <div className="p-3 border-b border-slate-200/80 bg-white space-y-2">
+                  <div className="w-72 sm:w-80 border-r border-slate-200/80 dark:border-zinc-800 flex flex-col shrink-0 bg-slate-50/40 dark:bg-zinc-900/40">
+                    <div className="p-3 border-b border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-2">
                       {/* Filter Category Tabs: Semua | Pelanggan | Peribadi */}
-                      <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl text-[11px] font-semibold">
+                      <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-zinc-800 rounded-full text-[11px] font-semibold">
                         <button
                           type="button"
                           onClick={() => setChatCategoryFilter('all')}
-                          className={`flex-1 py-1 rounded-lg transition-all text-center cursor-pointer ${
+                          className={`flex-1 py-1 rounded-full transition-all text-center cursor-pointer ${
                             chatCategoryFilter === 'all'
-                              ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                              ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 shadow-2xs font-bold'
                               : 'text-slate-500 hover:text-slate-900'
                           }`}
                         >
@@ -716,9 +675,9 @@ export default function WhatsAppHubPage() {
                         <button
                           type="button"
                           onClick={() => setChatCategoryFilter('customers')}
-                          className={`flex-1 py-1 rounded-lg transition-all text-center cursor-pointer ${
+                          className={`flex-1 py-1 rounded-full transition-all text-center cursor-pointer ${
                             chatCategoryFilter === 'customers'
-                              ? 'bg-white text-[#00BDFF] shadow-2xs font-bold'
+                              ? 'bg-white dark:bg-zinc-900 text-[#00BDFF] shadow-2xs font-bold'
                               : 'text-slate-500 hover:text-slate-900'
                           }`}
                         >
@@ -727,9 +686,9 @@ export default function WhatsAppHubPage() {
                         <button
                           type="button"
                           onClick={() => setChatCategoryFilter('private')}
-                          className={`flex-1 py-1 rounded-lg transition-all text-center cursor-pointer ${
+                          className={`flex-1 py-1 rounded-full transition-all text-center cursor-pointer ${
                             chatCategoryFilter === 'private'
-                              ? 'bg-white text-slate-800 shadow-2xs font-bold'
+                              ? 'bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 shadow-2xs font-bold'
                               : 'text-slate-500 hover:text-slate-900'
                           }`}
                         >
@@ -744,12 +703,12 @@ export default function WhatsAppHubPage() {
                           value={chatSearch}
                           onChange={(e) => setChatSearch(e.target.value)}
                           placeholder="Cari perbualan..."
-                          className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-400 placeholder:text-slate-400"
+                          className="w-full pl-8 pr-3 py-1.5 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40 placeholder:text-slate-400"
                         />
                       </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto divide-y divide-slate-100 sparkle-scroll">
+                    <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-zinc-800 sparkle-scroll">
                       {filteredChats.length === 0 ? (
                         <div className="p-8 text-center space-y-2">
                           <MessageSquare className="w-6 h-6 text-slate-300 mx-auto" />
@@ -771,11 +730,11 @@ export default function WhatsAppHubPage() {
                               onClick={() => setSelectedChat(chat)}
                               className={`p-3 flex items-start gap-3 cursor-pointer transition-all ${
                                 isSelected 
-                                  ? 'bg-sky-50/80 border-l-4 border-[#00BDFF]' 
-                                  : 'hover:bg-slate-100/70 bg-white'
+                                  ? 'bg-sky-50/80 dark:bg-sky-950/40 border-l-4 border-[#00BDFF]' 
+                                  : 'hover:bg-slate-100/70 dark:hover:bg-zinc-800/40 bg-white dark:bg-zinc-900'
                               }`}
                             >
-                              <div className={`w-10 h-10 rounded-xl text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs ${
+                              <div className={`w-9 h-9 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs ${
                                 isPrivate 
                                   ? 'bg-gradient-to-tr from-slate-600 to-slate-700' 
                                   : 'bg-gradient-to-tr from-slate-800 to-slate-900'
@@ -784,7 +743,7 @@ export default function WhatsAppHubPage() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between">
-                                  <h4 className="text-xs font-bold text-slate-900 truncate">
+                                  <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
                                     {chat.name}
                                   </h4>
                                   {chat.lastMessage && (
@@ -798,22 +757,22 @@ export default function WhatsAppHubPage() {
                                     +{chat.phone}
                                   </p>
                                   {isPrivate ? (
-                                    <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-0.5">
+                                    <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 flex items-center gap-0.5">
                                       🔒 Peribadi
                                     </span>
                                   ) : isBotPaused ? (
-                                    <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200">
+                                    <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
                                       Staf CS
                                     </span>
                                   ) : (
-                                    <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-sky-50 text-[#00BDFF] border border-sky-200">
+                                    <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200">
                                       Bot AI
                                     </span>
                                   )}
                                 </div>
                                 {chat.lastMessage && (
-                                  <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                                    {chat.lastMessage.fromMe && <span className="font-semibold text-slate-700">Anda: </span>}
+                                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate mt-0.5">
+                                    {chat.lastMessage.fromMe && <span className="font-semibold text-slate-700 dark:text-zinc-300">Anda: </span>}
                                     {chat.lastMessage.body}
                                   </p>
                                 )}
@@ -827,28 +786,28 @@ export default function WhatsAppHubPage() {
 
                   {/* Right Column: Chat Content */}
                   {selectedChat ? (
-                    <div className="flex-1 flex flex-col bg-[#F8FAFC]">
+                    <div className="flex-1 flex flex-col bg-slate-50/50 dark:bg-zinc-950/40">
                       {/* Active Chat Bar with Bot Pause Toggle */}
-                      <div className="p-3 px-5 bg-white border-b border-slate-200/80 flex items-center justify-between shrink-0">
+                      <div className="p-3 px-5 bg-white dark:bg-zinc-900 border-b border-slate-200/80 dark:border-zinc-800 flex items-center justify-between shrink-0">
                         <div className="flex items-center space-x-3">
-                          <div className={`w-8 h-8 rounded-xl text-white font-bold text-xs flex items-center justify-center ${
-                            privateChatIds[selectedChat.id] ? 'bg-slate-600' : 'bg-slate-800'
+                          <div className={`w-8 h-8 rounded-full text-white font-bold text-xs flex items-center justify-center ${
+                            privateChatIds[selectedChat.id] ? 'bg-slate-600' : 'bg-[#00BDFF]'
                           }`}>
                             {selectedChat.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h3 className="text-xs font-bold text-slate-900">
+                              <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
                                 {selectedChat.name}
                               </h3>
                               {privateChatIds[selectedChat.id] ? (
-                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1">
-                                  🔒 Perbualan Peribadi (Bot Dimatikan)
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 flex items-center gap-1">
+                                  🔒 Perbualan Peribadi
                                 </span>
                               ) : pausedChatIds[selectedChat.id] ? (
                                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
                                   <PauseCircle className="w-3 h-3" />
-                                  Bot Dijeda (Staf Manusia)
+                                  Bot Dijeda (Staf)
                                 </span>
                               ) : (
                                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200 flex items-center gap-1">
@@ -868,10 +827,10 @@ export default function WhatsAppHubPage() {
                             type="button"
                             onClick={() => togglePrivateForChat(selectedChat.id)}
                             title={privateChatIds[selectedChat.id] ? "Tukar kepada Pelanggan" : "Tandakan Sebagai Peribadi / Teman"}
-                            className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                            className={`px-3.5 py-1.5 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
                               privateChatIds[selectedChat.id]
-                                ? 'bg-slate-100 text-slate-700 border-slate-300'
-                                : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200/80'
+                                ? 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-zinc-800 dark:text-zinc-200'
+                                : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200/80 dark:bg-zinc-800 dark:text-zinc-300'
                             }`}
                           >
                             {privateChatIds[selectedChat.id] ? (
@@ -891,17 +850,17 @@ export default function WhatsAppHubPage() {
                             <button
                               type="button"
                               onClick={() => toggleBotForChat(selectedChat.id)}
-                              className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                              className="px-3.5 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                             >
                               {pausedChatIds[selectedChat.id] ? (
                                 <>
                                   <PlayCircle className="w-3.5 h-3.5 text-emerald-600" />
-                                  <span>Aktifkan Semula Bot</span>
+                                  <span>Aktifkan Bot</span>
                                 </>
                               ) : (
                                 <>
                                   <PauseCircle className="w-3.5 h-3.5 text-amber-600" />
-                                  <span>Jeda Bot (Ambil Alih)</span>
+                                  <span>Jeda Bot</span>
                                 </>
                               )}
                             </button>
@@ -911,7 +870,7 @@ export default function WhatsAppHubPage() {
                             href={`https://wa.me/${selectedChat.phone}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                            className="px-3.5 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
                             <span>WhatsApp Web</span>
@@ -920,16 +879,16 @@ export default function WhatsAppHubPage() {
                       </div>
 
                       {privateChatIds[selectedChat.id] && (
-                        <div className="mx-4 mt-3 p-2.5 rounded-xl bg-amber-50/90 border border-amber-200/80 text-[11.5px] text-amber-800 flex items-center gap-2">
+                        <div className="mx-4 mt-3 p-2.5 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-[11.5px] text-amber-800 flex items-center gap-2">
                           <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
                           <span>
-                            <strong>Perbualan Peribadi:</strong> Bot AI dinyahaktifkan secara mutlak untuk nombor ini bagi menjaga privasi keluarga/rakan anda.
+                            <strong>Perbualan Peribadi:</strong> Bot AI dinyahaktifkan secara mutlak untuk nombor ini bagi menjaga privasi anda.
                           </span>
                         </div>
                       )}
 
                       {/* Chat Messages List */}
-                      <div className="flex-1 overflow-y-auto p-4 sm:p-6 sparkle-scroll bg-slate-50/50">
+                      <div className="flex-1 overflow-y-auto p-4 sm:p-6 sparkle-scroll bg-slate-50/50 dark:bg-zinc-950/50">
                         <div className="max-w-3xl mx-auto w-full space-y-3">
                           {loadingMessages ? (
                             <div className="py-16 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
@@ -937,7 +896,7 @@ export default function WhatsAppHubPage() {
                               <span>Memuatkan mesej perbualan...</span>
                             </div>
                           ) : messages.length === 0 ? (
-                            <div className="py-16 text-center text-xs text-slate-400 bg-white/60 rounded-2xl border border-dashed border-slate-200">
+                            <div className="py-16 text-center text-xs text-slate-400 bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800">
                               Tiada rekod mesej lagi dalam sesi ini.
                             </div>
                           ) : (
@@ -952,17 +911,17 @@ export default function WhatsAppHubPage() {
                                     className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-2.5 text-xs shadow-xs space-y-1.5 transition-all ${
                                       msg.fromMe
                                         ? 'bg-[#00BDFF] text-white rounded-tr-xs'
-                                        : 'bg-white text-slate-800 border border-slate-200/80 rounded-tl-xs'
+                                        : 'bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 border border-slate-200/80 dark:border-zinc-800 rounded-tl-xs'
                                     }`}
                                   >
                                     {vcard ? (
                                       <div className={`p-2.5 rounded-xl border space-y-2 ${
                                         msg.fromMe 
                                           ? 'bg-sky-600/30 border-sky-400/40 text-white' 
-                                          : 'bg-slate-50 border-slate-200 text-slate-800'
+                                          : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-100'
                                       }`}>
                                         <div className="flex items-center gap-2.5">
-                                          <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
+                                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                                             msg.fromMe ? 'bg-white/20 text-white' : 'bg-[#00BDFF]/10 text-[#00BDFF]'
                                           }`}>
                                             <User className="w-4 h-4" />
@@ -979,7 +938,7 @@ export default function WhatsAppHubPage() {
                                             href={`https://wa.me/${vcard.phone}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className={`inline-flex items-center justify-center gap-1.5 w-full py-1.5 rounded-lg font-semibold text-[11px] transition-colors ${
+                                            className={`inline-flex items-center justify-center gap-1.5 w-full py-1.5 rounded-full font-semibold text-[11px] transition-colors ${
                                               msg.fromMe 
                                                 ? 'bg-white text-[#00BDFF] hover:bg-sky-50' 
                                                 : 'bg-[#00BDFF] text-white hover:bg-sky-600'
@@ -1012,7 +971,7 @@ export default function WhatsAppHubPage() {
                       </div>
 
                       {/* Quick Templates Bar */}
-                      <div className="px-4 py-2 bg-white/95 border-t border-slate-200/70 overflow-x-auto flex items-center gap-2 scrollbar-none">
+                      <div className="px-4 py-2 bg-white/95 dark:bg-zinc-900/95 border-t border-slate-200/70 dark:border-zinc-800 overflow-x-auto flex items-center gap-2 scrollbar-none">
                         <div className="max-w-3xl mx-auto w-full flex items-center gap-2">
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
                             <Sparkles className="w-3 h-3 text-[#00BDFF]" />
@@ -1023,7 +982,7 @@ export default function WhatsAppHubPage() {
                               key={idx}
                               type="button"
                               onClick={() => setReplyText(tmpl)}
-                              className="px-2.5 py-1 rounded-full bg-slate-50 hover:bg-sky-50 hover:text-[#00BDFF] hover:border-sky-200 border border-slate-200/70 text-[11px] text-slate-600 truncate max-w-xs shrink-0 transition-colors cursor-pointer"
+                              className="px-3 py-1 rounded-full bg-slate-50 hover:bg-sky-50 hover:text-[#00BDFF] hover:border-sky-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/70 dark:border-zinc-700 text-[11px] text-slate-600 dark:text-zinc-300 truncate max-w-xs shrink-0 transition-colors cursor-pointer"
                             >
                               {tmpl}
                             </button>
@@ -1032,19 +991,19 @@ export default function WhatsAppHubPage() {
                       </div>
 
                       {/* Reply Form */}
-                      <div className="p-3 bg-white border-t border-slate-200/80">
+                      <div className="p-3 bg-white dark:bg-zinc-900 border-t border-slate-200/80 dark:border-zinc-800">
                         <form onSubmit={handleSendReply} className="max-w-3xl mx-auto w-full flex items-center gap-2">
                           <input
                             type="text"
                             value={replyText}
                             onChange={(e) => setReplyText(e.target.value)}
                             placeholder="Tulis mesej balasan (staf mengambil alih perbualan)..."
-                            className="flex-1 px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-400"
+                            className="flex-1 px-4 py-2 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40"
                           />
                           <button
                             type="submit"
                             disabled={sendingReply || !replyText.trim()}
-                            className="px-4 py-2.5 rounded-xl bg-[#00BDFF] hover:bg-sky-500 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                            className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-sky-500 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
                           >
                             <SendHorizontal className={`w-3.5 h-3.5 ${sendingReply ? 'animate-spin' : ''}`} />
                             <span>Hantar</span>
@@ -1067,28 +1026,28 @@ export default function WhatsAppHubPage() {
               <div className="flex-1 overflow-y-auto p-6 space-y-4 sparkle-scroll">
                 <div className="flex items-center justify-between max-w-4xl mx-auto pb-2">
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900">Senarai Tiket Tindakan Lanjutan</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Senarai Tiket Tindakan Lanjutan</h3>
                     <p className="text-xs text-slate-500">Isu khas atau tempahan korporat yang dijana AI untuk perhatian staf kilang.</p>
                   </div>
-                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200">
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-sky-50 dark:bg-sky-950/50 text-[#00BDFF] border border-sky-200/60 dark:border-sky-900">
                     {tickets.length} Tiket Didaftarkan
                   </span>
                 </div>
 
                 <div className="max-w-4xl mx-auto space-y-3">
                   {tickets.length === 0 ? (
-                    <div className="p-12 text-center text-xs text-slate-400 bg-white rounded-2xl border border-slate-200/80">
+                    <div className="p-12 text-center text-xs text-slate-400 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800">
                       Tiada tiket sokongan terbuka pada masa ini.
                     </div>
                   ) : (
                     tickets.map((t) => (
-                      <div key={t.id} className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-2.5">
+                      <div key={t.id} className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-2.5">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center space-x-2">
-                            <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-800 border border-slate-200">
+                            <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700">
                               {t.ticketNumber}
                             </span>
-                            <span className="text-xs font-bold text-slate-900">
+                            <span className="text-xs font-bold text-slate-900 dark:text-zinc-100">
                               {t.customerName || 'Pelanggan'}
                             </span>
                             <span className="text-[11px] font-mono text-slate-400">
@@ -1105,7 +1064,7 @@ export default function WhatsAppHubPage() {
                           </span>
                         </div>
 
-                        <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200/60">
+                        <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed bg-slate-50 dark:bg-zinc-800/60 p-3 rounded-xl border border-slate-200/60 dark:border-zinc-700/60">
                           {t.summary}
                         </p>
 
@@ -1132,19 +1091,19 @@ export default function WhatsAppHubPage() {
               <div className="flex-1 overflow-y-auto p-6 space-y-6 sparkle-scroll">
                 {isConnected ? (
                   <div className="max-w-2xl mx-auto space-y-5">
-                    <div className="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 flex items-center justify-between">
+                    <div className="p-5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800 flex items-center justify-between">
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20">
+                        <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20">
                           <Smartphone className="w-6 h-6" />
                         </div>
                         <div>
-                          <h3 className="text-sm font-bold text-slate-900">
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                             {statusData.me?.pushName || 'SFV Apparel Official'}
                           </h3>
-                          <p className="text-xs text-slate-600 font-mono mt-0.5">
+                          <p className="text-xs text-slate-600 dark:text-zinc-400 font-mono mt-0.5">
                             +{statusData.me?.id?.split('@')[0] || companySettings?.whatsapp_number || ''}
                           </p>
-                          <p className="text-[11px] text-emerald-700 mt-1 flex items-center gap-1">
+                          <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1 flex items-center gap-1 font-semibold">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             <span>Akaun WhatsApp aktif dan bersambung secara 2-way sync</span>
                           </p>
@@ -1152,7 +1111,7 @@ export default function WhatsAppHubPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800">
                       <span className="text-xs text-slate-500">
                         Hostinger VPS Engine (IP: 187.127.223.53)
                       </span>
@@ -1161,7 +1120,7 @@ export default function WhatsAppHubPage() {
                         type="button"
                         onClick={handleLogout}
                         disabled={actionLoading}
-                        className="px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                        className="px-4 py-2 rounded-full bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
                       >
                         <LogOut className="w-3.5 h-3.5" />
                         <span>Putuskan Sambungan</span>
@@ -1169,7 +1128,7 @@ export default function WhatsAppHubPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center gap-6 p-6 rounded-2xl bg-slate-50 border border-slate-200/80">
+                  <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center gap-6 p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-xs">
                     <div className="w-52 h-52 bg-white rounded-2xl p-2.5 shadow-md border border-slate-200/80 flex items-center justify-center shrink-0">
                       {qrCode ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -1189,16 +1148,16 @@ export default function WhatsAppHubPage() {
                     </div>
 
                     <div className="flex-1 space-y-3">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-zinc-100">
                         Langkah Menyambungkan WhatsApp:
                       </h3>
-                      <div className="space-y-2.5 text-xs text-slate-600">
+                      <div className="space-y-2.5 text-xs text-slate-600 dark:text-zinc-300">
                         <div className="flex items-start gap-2">
-                          <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-800 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">1</span>
+                          <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-700 text-slate-800 dark:text-zinc-200 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">1</span>
                           <span>Buka aplikasi <strong>WhatsApp</strong> di telefon bimbit anda.</span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-800 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">2</span>
+                          <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-700 text-slate-800 dark:text-zinc-200 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">2</span>
                           <span>Tekan <strong>Tetapan</strong> ➔ <strong>Perangkat Tertaut (Linked Devices)</strong>.</span>
                         </div>
                         <div className="flex items-start gap-2">
@@ -1212,7 +1171,7 @@ export default function WhatsAppHubPage() {
                           type="button"
                           onClick={handleRestartSession}
                           disabled={actionLoading}
-                          className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                          className="px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer shadow-xs disabled:opacity-50"
                         >
                           <RefreshCw className={`w-3.5 h-3.5 ${actionLoading ? 'animate-spin' : ''}`} />
                           <span>Jana Semula Kod QR</span>
@@ -1228,9 +1187,9 @@ export default function WhatsAppHubPage() {
             {activeTab === 'automation' && (
               <div className="flex-1 overflow-y-auto p-6 space-y-4 sparkle-scroll">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-w-4xl mx-auto text-xs">
-                  <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-1.5">
+                  <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900">1. Notifikasi Pesanan Baharu</span>
+                      <span className="font-bold text-slate-900 dark:text-zinc-100">1. Notifikasi Pesanan Baharu</span>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
                     </div>
                     <p className="text-slate-500 leading-relaxed">
@@ -1238,9 +1197,9 @@ export default function WhatsAppHubPage() {
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-1.5">
+                  <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900">2. Amaran Tempahan Kilang</span>
+                      <span className="font-bold text-slate-900 dark:text-zinc-100">2. Amaran Tempahan Kilang</span>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
                     </div>
                     <p className="text-slate-500 leading-relaxed">
@@ -1248,9 +1207,9 @@ export default function WhatsAppHubPage() {
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-1.5">
+                  <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900">3. Status Siap Cetak</span>
+                      <span className="font-bold text-slate-900 dark:text-zinc-100">3. Status Siap Cetak</span>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
                     </div>
                     <p className="text-slate-500 leading-relaxed">
@@ -1258,9 +1217,9 @@ export default function WhatsAppHubPage() {
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-1.5">
+                  <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900">4. Nombor Tracking Pos</span>
+                      <span className="font-bold text-slate-900 dark:text-zinc-100">4. Nombor Tracking Pos</span>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
                     </div>
                     <p className="text-slate-500 leading-relaxed">
@@ -1270,13 +1229,13 @@ export default function WhatsAppHubPage() {
                 </div>
 
                 {/* n8n Engine Link Card */}
-                <div className="max-w-4xl mx-auto p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+                <div className="max-w-4xl mx-auto p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 flex items-center justify-between shadow-2xs">
                   <div className="flex items-center space-x-3">
-                    <div className="w-9 h-9 rounded-xl bg-sky-50 text-[#00BDFF] border border-sky-100 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-sky-50 dark:bg-sky-950 text-[#00BDFF] border border-sky-100 dark:border-sky-900 flex items-center justify-center shrink-0">
                       <Layers className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-slate-900">
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
                         LiteLLM Multi-Key Router & n8n Engine
                       </h4>
                       <p className="text-[11px] text-slate-500">
@@ -1289,7 +1248,7 @@ export default function WhatsAppHubPage() {
                     href="http://187.127.223.53:5678"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+                    className="px-4 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
                   >
                     <span>Editor n8n</span>
                     <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
@@ -1301,37 +1260,37 @@ export default function WhatsAppHubPage() {
             {/* VIEW 5: TEST SENDER */}
             {activeTab === 'tester' && (
               <div className="flex-1 overflow-y-auto p-6 sparkle-scroll">
-                <div className="max-w-md mx-auto p-5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                <div className="max-w-md mx-auto p-5 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-zinc-100">
                     Uji Penghantaran Mesej
                   </h3>
 
                   <form onSubmit={handleSendTest} className="space-y-3.5">
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-700">Nombor Telefon Penerima</label>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Nombor Telefon Penerima</label>
                       <input
                         type="text"
                         required
                         value={testPhone}
                         onChange={(e) => setTestPhone(e.target.value)}
                         placeholder="Contoh: 60148599138"
-                        className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-mono focus:outline-none focus:ring-1 focus:ring-sky-400"
+                        className="w-full px-4 py-2 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-700">Kandungan Mesej</label>
+                      <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Kandungan Mesej</label>
                       <textarea
                         rows={3}
                         required
                         value={testMessage}
                         onChange={(e) => setTestMessage(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 resize-none focus:outline-none focus:ring-1 focus:ring-sky-400"
+                        className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 resize-none focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40"
                       />
                     </div>
 
                     {sendResult && (
-                      <div className={`p-3 rounded-xl text-xs flex items-start gap-2 ${
+                      <div className={`p-3 rounded-2xl text-xs flex items-start gap-2 ${
                         sendResult.success 
                           ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
                           : 'bg-rose-50 text-rose-800 border border-rose-200'
@@ -1344,7 +1303,7 @@ export default function WhatsAppHubPage() {
                     <button
                       type="submit"
                       disabled={sending || !isConnected}
-                      className="w-full py-2.5 rounded-xl bg-[#00BDFF] hover:bg-sky-500 active:scale-95 text-white font-bold text-xs shadow-md shadow-sky-400/20 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      className="w-full py-2.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 active:scale-95 text-white font-bold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
                     >
                       <Send className={`w-3.5 h-3.5 ${sending ? 'animate-spin' : ''}`} />
                       <span>{sending ? 'Sedang Menghantar...' : 'Hantar Mesej Ujian'}</span>
