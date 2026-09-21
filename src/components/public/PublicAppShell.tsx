@@ -95,19 +95,17 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               style={{ touchAction: 'none' }}
             >
               {/* Brand Logo */}
-              <Link href="/" draggable={false} className="inline-flex items-center space-x-2 select-none active:opacity-75 transition-opacity group">
+              <Link href="/" draggable={false} className="inline-flex items-center gap-2 select-none active:opacity-75 transition-opacity group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/logo.svg"
                   alt="SFV APPAREL"
-                  height={32}
-                  style={{ maxHeight: '32px', height: '32px', width: 'auto' }}
-                  className="h-7 sm:h-8 w-auto max-h-8 object-contain shrink-0 pointer-events-none group-active:scale-95 transition-transform"
+                  className="h-7 sm:h-7.5 w-auto object-contain shrink-0 pointer-events-none group-active:scale-95 transition-transform"
                 />
-                <div className="flex flex-col">
-                  <span className="text-sm font-black tracking-tight text-slate-900 leading-none">SFV APPAREL</span>
-                  <span className="text-[9px] font-bold text-[#0052FF] tracking-wider uppercase">Kilang Cetak Jersi</span>
-                </div>
+                <span className="text-[15px] sm:text-base tracking-tight text-slate-900 leading-none flex items-center">
+                  <span className="font-extrabold tracking-normal">SFV</span>
+                  <span className="font-light ml-1 text-slate-700 tracking-wide">APPAREL</span>
+                </span>
               </Link>
 
               {/* Header Action Icons (Sleek, Clean & No Heavy Base Circles) */}
