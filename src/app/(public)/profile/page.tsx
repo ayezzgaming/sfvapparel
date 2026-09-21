@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,19 +18,119 @@ import {
   FileText,
   User,
   ShieldCheck,
-  Loader2
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  Edit3
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { customer, isAuthenticated, isLoading, logout } = useAuth();
+  const { customer, isAuthenticated, isLoading, logout, updateProfile, updateAddress } = useAuth();
   const { companySettings } = useAppStore();
 
-  const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [pushEnabled, setPushEnabled] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Profile Form state
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editTeam, setEditTeam] = useState('');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Address Form state
+  const [addrLine, setAddrLine] = useState('');
+  const [addrPostcode, setAddrPostcode] = useState('');
+  const [addrCity, setAddrCity] = useState('');
+  const [isLookingUpPostcode, setIsLookingUpPostcode] = useState(false);
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const [addressMsg, setAddressMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Sync customer data to form states when modal opens
+  useEffect(() => {
+    if (customer) {
+      setEditName(customer.full_name || '');
+      setEditEmail(customer.email || '');
+      setEditTeam(customer.company_or_team || '');
+      setAddrLine(customer.address || '');
+      setAddrPostcode(customer.postal_code || '');
+      setAddrCity(customer.city || '');
+    }
+  }, [customer]);
+
+  // Malaysia Postcode auto-lookup
+  const handlePostcodeChange = async (val: string) => {
+    const cleaned = val.replace(/\D/g, '').slice(0, 5);
+    setAddrPostcode(cleaned);
+
+    if (cleaned.length === 5) {
+      setIsLookingUpPostcode(true);
+      try {
+        const res = await fetch(`/api/malaysia/postcode?code=${cleaned}`);
+        const data = await res.json();
+        if (data.success && data.city && data.state) {
+          setAddrCity(`${data.city}, ${data.state}`);
+        }
+      } catch {
+        // Keep existing city
+      } finally {
+        setIsLookingUpPostcode(false);
+      }
+    }
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editName.trim()) return;
+    setIsSavingProfile(true);
+    setProfileMsg(null);
+
+    const res = await updateProfile({
+      full_name: editName.trim(),
+      email: editEmail.trim() || undefined,
+      company_or_team: editTeam.trim() || undefined,
+    });
+
+    setIsSavingProfile(false);
+    if (res.success) {
+      setProfileMsg({ type: 'success', text: 'Maklumat profil berjaya dikemaskini.' });
+      setTimeout(() => {
+        setIsEditProfileOpen(false);
+        setProfileMsg(null);
+      }, 1200);
+    } else {
+      setProfileMsg({ type: 'error', text: res.message || 'Gagal mengemaskini profil.' });
+    }
+  };
+
+  const handleSaveAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addrLine.trim()) return;
+    setIsSavingAddress(true);
+    setAddressMsg(null);
+
+    const res = await updateAddress({
+      address: addrLine.trim(),
+      postal_code: addrPostcode.trim() || undefined,
+      city: addrCity.trim() || undefined,
+    });
+
+    setIsSavingAddress(false);
+    if (res.success) {
+      setAddressMsg({ type: 'success', text: 'Alamat penghantaran berjaya disimpan di pangkalan data.' });
+      setTimeout(() => {
+        setIsAddressModalOpen(false);
+        setAddressMsg(null);
+      }, 1200);
+    } else {
+      setAddressMsg({ type: 'error', text: res.message || 'Gagal menyimpan alamat.' });
+    }
+  };
 
   const handleLogout = async () => {
     if (confirm('Adakah anda pasti untuk log keluar dari akaun ini?')) {
@@ -75,11 +175,28 @@ export default function ProfilePage() {
               {formatPhone(customer.whatsapp || customer.email)}
             </p>
 
-            {customer.email && !customer.email.includes('@whatsapp.noreply') && (
-              <p className="text-[11px] text-slate-400">
+            {customer.company_or_team && (
+              <p className="text-[11px] font-medium text-slate-600">
+                {customer.company_or_team}
+              </p>
+            )}
+
+            {customer.email && (
+              <p className="text-[11px] text-slate-400 font-mono">
                 {customer.email}
               </p>
             )}
+
+            <div className="pt-1.5">
+              <button
+                type="button"
+                onClick={() => setIsEditProfileOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200/80 text-[11px] font-medium text-slate-700 hover:bg-slate-50 active:scale-95 transition-all shadow-2xs"
+              >
+                <Edit3 className="w-3 h-3" />
+                <span>Kemaskini Profil</span>
+              </button>
+            </div>
           </div>
         </div>
       ) : (
@@ -110,31 +227,46 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* 2. Inset Group 1: MAKLUMAT TEMPAHAN */}
+      {/* 2. Inset Group 1: MAKLUMAT PENGHANTARAN & TEMPAHAN */}
       <div className="space-y-1.5">
         <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400 px-3 block">
-          Maklumat Tempahan
+          Maklumat Tempahan & Alamat
         </span>
 
         <div className="bg-white rounded-2xl overflow-hidden shadow-2xs border border-slate-200/60 divide-y divide-slate-100">
           
-          {/* Buku Alamat */}
+          {/* Buku Alamat Penghantaran */}
           <div 
-            onClick={() => setIsAddressModalOpen(true)}
+            onClick={() => {
+              if (!isAuthenticated) {
+                router.push('/auth/login?redirect=/profile');
+                return;
+              }
+              setIsAddressModalOpen(true);
+            }}
             className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
                 <MapPin className="w-4 h-4 stroke-[1.75]" />
               </div>
-              <span className="text-[13.5px] font-medium text-slate-900">
-                Alamat Penghantaran
-              </span>
+              <div>
+                <span className="text-[13.5px] font-medium text-slate-900 block">
+                  Alamat Penghantaran
+                </span>
+                {isAuthenticated && customer?.address && (
+                  <span className="text-[11px] text-slate-400 truncate max-w-[200px] block mt-0.5">
+                    {customer.address}
+                  </span>
+                )}
+              </div>
             </div>
             
-            <div className="flex items-center gap-1 text-slate-400">
+            <div className="flex items-center gap-1 text-slate-400 shrink-0">
               <span className="text-xs text-slate-400 truncate max-w-[120px]">
-                {isAuthenticated ? 'Malaysia' : 'Belum ditetapkan'}
+                {isAuthenticated 
+                  ? (customer?.city || (customer?.address ? 'Disimpan' : 'Tambah Alamat'))
+                  : 'Log Masuk'}
               </span>
               <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
             </div>
@@ -245,7 +377,6 @@ export default function ProfilePage() {
               </span>
             </div>
 
-            {/* Apple iOS Switch */}
             <button
               type="button"
               onClick={() => setPushEnabled(!pushEnabled)}
@@ -262,7 +393,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* 5. Inset Group 4: LOG KELUAR (When Authenticated) */}
+      {/* 5. Inset Group 4: LOG KELUAR */}
       {isAuthenticated && (
         <div className="space-y-1.5">
           <div className="bg-white rounded-2xl overflow-hidden shadow-2xs border border-slate-200/60">
@@ -293,48 +424,180 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      {/* MODAL ALAMAT PENGHANTARAN */}
+      {/* =========================================================================
+          MODAL KEMASKINI PROFIL (SWIPEABLE iOS BOTTOM SHEET)
+         ========================================================================= */}
+      <SwipeableBottomSheet
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
+        maxHeight="max-h-[85vh]"
+        title="Kemaskini Profil"
+        subtitle="Maklumat rasmi akaun pengguna anda"
+      >
+        <form onSubmit={handleSaveProfile} className="space-y-4 pt-1">
+          {profileMsg && (
+            <div className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+              profileMsg.type === 'success' 
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                : 'bg-rose-50 text-rose-800 border border-rose-200'
+            }`}>
+              {profileMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+              <span>{profileMsg.text}</span>
+            </div>
+          )}
+
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden divide-y divide-slate-100">
+            <div className="px-4 py-3">
+              <label className="block text-[11px] font-medium text-slate-400 mb-0.5">
+                Nama Penuh
+              </label>
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Nama anda"
+                required
+                className="w-full text-xs text-slate-900 placeholder-slate-300 bg-transparent focus:outline-none font-medium"
+              />
+            </div>
+
+            <div className="px-4 py-3">
+              <label className="block text-[11px] font-medium text-slate-400 mb-0.5">
+                Nama Pasukan / Syarikat (Pilihan)
+              </label>
+              <input
+                type="text"
+                value={editTeam}
+                onChange={(e) => setEditTeam(e.target.value)}
+                placeholder="Contoh: Kelab Futsal Harimau"
+                className="w-full text-xs text-slate-900 placeholder-slate-300 bg-transparent focus:outline-none"
+              />
+            </div>
+
+            <div className="px-4 py-3">
+              <label className="block text-[11px] font-medium text-slate-400 mb-0.5">
+                Alamat Emel
+              </label>
+              <input
+                type="email"
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                placeholder="nama@contoh.com"
+                className="w-full text-xs text-slate-900 placeholder-slate-300 bg-transparent focus:outline-none font-mono"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSavingProfile || !editName.trim()}
+            className="w-full py-3 px-4 rounded-xl bg-slate-900 text-white font-medium text-xs tracking-tight shadow-xs hover:bg-slate-800 active:bg-slate-950 disabled:opacity-40 transition-all flex items-center justify-center gap-2"
+          >
+            {isSavingProfile ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+                <span>Menyimpan ke Pangkalan Data...</span>
+              </>
+            ) : (
+              <span>Simpan Profil</span>
+            )}
+          </button>
+        </form>
+      </SwipeableBottomSheet>
+
+      {/* =========================================================================
+          MODAL ALAMAT PENGHANTARAN DENGAN API POSKOD MALAYSIA
+         ========================================================================= */}
       <SwipeableBottomSheet
         isOpen={isAddressModalOpen}
         onClose={() => setIsAddressModalOpen(false)}
-        maxHeight="max-h-[80vh]"
-        title="Alamat Penghantaran"
-        subtitle="Alamat penghantaran pesanan anda"
-        footer={
-          <button
-            type="button"
-            onClick={() => setIsAddressModalOpen(false)}
-            className="w-full bg-slate-900 text-white font-medium py-3 rounded-xl text-center active:bg-slate-800 transition-colors text-xs"
-          >
-            Tutup
-          </button>
-        }
+        maxHeight="max-h-[85vh]"
+        title="Alamat Penghantaran Malaysia"
+        subtitle="Alamat penghantaran tersimpan di pangkalan data"
       >
-        <div className="space-y-3 pt-1 text-xs">
-          {isAuthenticated && customer ? (
-            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1.5">
-              <span className="font-semibold text-slate-900 block">{customer.full_name}</span>
-              <p className="text-slate-500 font-mono text-[11px]">{formatPhone(customer.whatsapp)}</p>
-              <p className="text-slate-500 text-[11px] pt-1">
-                Alamat pengesahan akan dimasukkan semasa langkah pengesahan pesanan akhir.
-              </p>
-            </div>
-          ) : (
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 text-center space-y-2">
-              <p className="text-slate-600">Sila log masuk untuk menguruskan alamat penghantaran anda.</p>
-              <Link
-                href="/auth/login?redirect=/profile"
-                onClick={() => setIsAddressModalOpen(false)}
-                className="inline-block text-xs font-medium text-blue-600 hover:underline"
-              >
-                Log Masuk Sekarang →
-              </Link>
+        <form onSubmit={handleSaveAddress} className="space-y-4 pt-1">
+          {addressMsg && (
+            <div className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+              addressMsg.type === 'success' 
+                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                : 'bg-rose-50 text-rose-800 border border-rose-200'
+            }`}>
+              {addressMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+              <span>{addressMsg.text}</span>
             </div>
           )}
-          <p className="text-[11px] text-slate-400">
-            Penghantaran kurier disokong ke seluruh Semenanjung, Sabah & Sarawak.
-          </p>
-        </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden divide-y divide-slate-100">
+            
+            {/* Poskod (Auto Detect City & State) */}
+            <div className="px-4 py-3">
+              <div className="flex justify-between items-center mb-0.5">
+                <label className="block text-[11px] font-medium text-slate-400">
+                  Poskod Malaysia (5 Digit)
+                </label>
+                {isLookingUpPostcode && (
+                  <span className="text-[10px] text-blue-600 flex items-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Mengesahkan kawasan...
+                  </span>
+                )}
+              </div>
+              <input
+                type="text"
+                value={addrPostcode}
+                onChange={(e) => handlePostcodeChange(e.target.value)}
+                placeholder="Contoh: 50450 atau 40000"
+                maxLength={5}
+                className="w-full text-xs text-slate-900 placeholder-slate-300 bg-transparent focus:outline-none font-mono font-medium"
+              />
+            </div>
+
+            {/* Bandar & Negeri (Auto-populated from API) */}
+            <div className="px-4 py-3 bg-slate-50/50">
+              <label className="block text-[11px] font-medium text-slate-400 mb-0.5">
+                Bandar & Negeri (Auto Pengecaman)
+              </label>
+              <input
+                type="text"
+                value={addrCity}
+                onChange={(e) => setAddrCity(e.target.value)}
+                placeholder="Diisi automatik selepas poskod dimasukkan"
+                className="w-full text-xs text-slate-800 placeholder-slate-400 bg-transparent focus:outline-none"
+              />
+            </div>
+
+            {/* Alamat Baris (No Rumah, Jalan, Taman) */}
+            <div className="px-4 py-3">
+              <label className="block text-[11px] font-medium text-slate-400 mb-0.5">
+                Alamat Baris (No Rumah / Bangunan / Jalan)
+              </label>
+              <textarea
+                rows={2}
+                value={addrLine}
+                onChange={(e) => setAddrLine(e.target.value)}
+                placeholder="No 12, Jalan Hang Tuah, Seksyen 3"
+                required
+                className="w-full text-xs text-slate-900 placeholder-slate-300 bg-transparent focus:outline-none resize-none leading-relaxed"
+              />
+            </div>
+
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSavingAddress || !addrLine.trim()}
+            className="w-full py-3 px-4 rounded-xl bg-slate-900 text-white font-medium text-xs tracking-tight shadow-xs hover:bg-slate-800 active:bg-slate-950 disabled:opacity-40 transition-all flex items-center justify-center gap-2"
+          >
+            {isSavingAddress ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+                <span>Menyimpan ke Pangkalan Data...</span>
+              </>
+            ) : (
+              <span>Simpan Alamat Penghantaran</span>
+            )}
+          </button>
+        </form>
       </SwipeableBottomSheet>
 
       {/* MODAL JADUAL UKURAN SAIZ */}

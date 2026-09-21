@@ -7,6 +7,10 @@ export interface AuthCustomer {
   full_name: string;
   whatsapp: string | null;
   email: string | null;
+  company_or_team?: string | null;
+  address?: string | null;
+  city?: string | null;
+  postal_code?: string | null;
   phone_verified: boolean;
   total_orders?: number;
   total_spent?: number;
@@ -21,6 +25,8 @@ interface AuthState {
 interface AuthContextValue extends AuthState {
   refresh: () => Promise<void>;
   logout: () => Promise<void>;
+  updateProfile: (data: { full_name: string; email?: string; company_or_team?: string }) => Promise<{ success: boolean; message?: string }>;
+  updateAddress: (data: { address: string; postal_code?: string; city?: string }) => Promise<{ success: boolean; message?: string }>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -56,12 +62,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState({ customer: null, isLoading: false, isAuthenticated: false });
   }, []);
 
+  const updateProfile = useCallback(async (profileData: { full_name: string; email?: string; company_or_team?: string }) => {
+    try {
+      const res = await fetch('/api/auth/profile/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(profileData),
+      });
+      const data = await res.json();
+      if (data.success && data.customer) {
+        setState((prev) => ({ ...prev, customer: data.customer }));
+        return { success: true, message: data.message };
+      }
+      return { success: false, message: data.message || 'Gagal mengemaskini profil.' };
+    } catch {
+      return { success: false, message: 'Ralat sambungan pelayan.' };
+    }
+  }, []);
+
+  const updateAddress = useCallback(async (addressData: { address: string; postal_code?: string; city?: string }) => {
+    try {
+      const res = await fetch('/api/auth/address/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(addressData),
+      });
+      const data = await res.json();
+      if (data.success && data.customer) {
+        setState((prev) => ({ ...prev, customer: data.customer }));
+        return { success: true, message: data.message };
+      }
+      return { success: false, message: data.message || 'Gagal mengemaskini alamat.' };
+    } catch {
+      return { success: false, message: 'Ralat sambungan pelayan.' };
+    }
+  }, []);
+
   useEffect(() => {
     refresh();
   }, [refresh]);
 
   return (
-    <AuthContext.Provider value={{ ...state, refresh, logout }}>
+    <AuthContext.Provider value={{ ...state, refresh, logout, updateProfile, updateAddress }}>
       {children}
     </AuthContext.Provider>
   );
