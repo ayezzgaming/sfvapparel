@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { 
   Search, 
@@ -27,15 +28,11 @@ function CatalogContent() {
   const searchParams = useSearchParams();
   const initialType = searchParams.get('type') || 'all';
 
-  const { designs, favorites, toggleFavorite, refreshDesigns, companySettings, isLoadingDesigns } = useAppStore();
+  const { designs, favorites, toggleFavorite, companySettings, isLoadingDesigns } = useAppStore();
   const [selectedCategory, setSelectedCategory] = useState<string>(initialType);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDesign, setSelectedDesign] = useState<Design | null>(designs[0] || null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  useEffect(() => {
-    refreshDesigns();
-  }, [refreshDesigns]);
 
   const handleOpenDesign = (design: Design) => {
     setSelectedDesign(design);
@@ -140,11 +137,13 @@ function CatalogContent() {
                 >
                   {/* Clean Visual Image Area */}
                   <div className="relative w-full aspect-[4/4.5] overflow-hidden bg-slate-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={design.thumbnail_url || design.mockup_front_url}
                       alt={design.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 250px"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                      loading="lazy"
                     />
 
                     {/* Minimalist Clean Heart Button (No Heavy Circle Base) */}
@@ -245,11 +244,13 @@ function CatalogContent() {
           <div className="space-y-4">
             {/* Mockup Preview Photo (1:1 Ratio) */}
             <div className="relative w-full aspect-square rounded-2xl bg-slate-100 overflow-hidden shadow-xs border border-slate-200/60">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={selectedDesign.mockup_front_url || selectedDesign.thumbnail_url}
                 alt={selectedDesign.title}
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 640px) 90vw, 400px"
+                className="object-cover"
+                priority
               />
             </div>
 
