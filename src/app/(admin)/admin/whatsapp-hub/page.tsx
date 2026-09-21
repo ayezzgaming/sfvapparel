@@ -99,11 +99,6 @@ function stripWhatsAppFormatting(text: string): string {
 function renderFormattedTokens(text: string, keyPrefix: string): React.ReactNode {
   if (!text) return null;
 
-  // Regex to match WhatsApp formatting:
-  // 1. Monospace: ```(.*?)```
-  // 2. Bold: **(.*?)** or *(.*?)*
-  // 3. Italic: _(.*?)_
-  // 4. Strikethrough: ~(.*?)~
   const tokenRegex = /(```[\s\S]*?```|\*\*[^\*]+?\*\*|\*[^\*]+?\*|_[^_]+?_|~[^~]+?~)/g;
   const segments = text.split(tokenRegex);
 
@@ -186,7 +181,6 @@ export default function WhatsAppHubPage() {
   // Navigation & Panel states
   const [activeTab, setActiveTab] = useState<HubSectionKey>('inbox');
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
-  const [searchFilter, setSearchFilter] = useState('');
 
   // Status & Connection States
   const [statusData, setStatusData] = useState<WahaStatusData>({ name: 'default', status: 'UNKNOWN' });
@@ -401,7 +395,6 @@ export default function WhatsAppHubPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'restart' }),
       });
-      // Allow 2 seconds for engine restart
       await new Promise((r) => setTimeout(r, 2000));
       await fetchStatus(true);
     } catch {
@@ -474,48 +467,6 @@ export default function WhatsAppHubPage() {
 
   const isConnected = statusData.status === 'WORKING';
 
-  // Navigation Items Definition
-  const navSections = [
-    {
-      id: 'inbox' as HubSectionKey,
-      title: 'Live Chat Inbox',
-      subtitle: 'Perbualan WhatsApp pelanggan',
-      icon: MessageSquare,
-      badge: chats.length > 0 ? `${chats.length}` : undefined,
-    },
-    {
-      id: 'tickets' as HubSectionKey,
-      title: 'Tiket Sokongan',
-      subtitle: 'Isu khas & tindakan susulan',
-      icon: Ticket,
-      badge: tickets.length > 0 ? `${tickets.length}` : undefined,
-    },
-    {
-      id: 'device' as HubSectionKey,
-      title: 'Peranti & Imbas QR',
-      subtitle: 'Status sambungan nombor kilang',
-      icon: Smartphone,
-      statusDot: isConnected ? 'bg-emerald-500' : 'bg-amber-500',
-    },
-    {
-      id: 'automation' as HubSectionKey,
-      title: 'Automasi Pesanan',
-      subtitle: 'Pemicu notifikasi jersi & invois',
-      icon: Bell,
-    },
-    {
-      id: 'tester' as HubSectionKey,
-      title: 'Uji Penghantaran',
-      subtitle: 'Ujian mesej langsung',
-      icon: Send,
-    },
-  ];
-
-  const filteredNavSections = navSections.filter((sec) =>
-    sec.title.toLowerCase().includes(searchFilter.toLowerCase()) ||
-    sec.subtitle.toLowerCase().includes(searchFilter.toLowerCase())
-  );
-
   const customerCount = chats.filter((c) => !privateChatIds[c.id]).length;
   const privateCount = chats.filter((c) => !!privateChatIds[c.id]).length;
 
@@ -536,7 +487,7 @@ export default function WhatsAppHubPage() {
       
       {/* ----------------- TOP HEADER TOOLBAR ----------------- */}
       <div className="shrink-0 flex items-center justify-between gap-3 min-h-[38px]">
-        {/* Title & Status */}
+        {/* Title & Top Tabs Switcher */}
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
             <div className="w-7 h-7 rounded-full bg-sky-50 dark:bg-sky-950 text-[#00BDFF] border border-sky-100 dark:border-sky-900 flex items-center justify-center shadow-2xs shrink-0">
@@ -545,17 +496,50 @@ export default function WhatsAppHubPage() {
             <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 tracking-tight">
               Hab WhatsApp & AI Brain
             </span>
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-[10px] font-semibold">
-              <Radio className={`w-3 h-3 ${isConnected ? 'text-emerald-500 animate-pulse' : 'text-amber-500'}`} />
-              <span className={isConnected ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
-                {loading ? 'Menyemak...' : isConnected ? 'WhatsApp Terhubung' : 'Perlu Imbas QR'}
-              </span>
-            </div>
+          </div>
+
+          {/* Module Switcher Tabs (Top Bar like Ads Generator & Catalog) */}
+          <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-zinc-800/90 backdrop-blur-md p-1 rounded-full border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
+            {[
+              { id: 'inbox', label: `Live Chat (${chats.length})`, icon: MessageSquare },
+              { id: 'tickets', label: `Tiket (${tickets.length})`, icon: Ticket },
+              { id: 'device', label: 'Peranti & QR', icon: Smartphone, statusDot: isConnected ? 'bg-emerald-500' : 'bg-amber-500' },
+              { id: 'automation', label: 'Automasi Pesanan', icon: Bell },
+              { id: 'tester', label: 'Uji Mesej', icon: Send },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    isActive
+                      ? 'bg-[#00BDFF] text-white shadow-xs'
+                      : 'text-slate-600 dark:text-zinc-400 hover:text-[#00BDFF] dark:hover:text-zinc-200'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
+                  {tab.statusDot && (
+                    <span className={`w-1.5 h-1.5 rounded-full ${tab.statusDot} shrink-0`} />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* Right Toolbar Actions */}
         <div className="flex items-center gap-2 shrink-0">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-[11px] font-semibold">
+            <Radio className={`w-3 h-3 ${isConnected ? 'text-emerald-500 animate-pulse' : 'text-amber-500'}`} />
+            <span className={isConnected ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
+              {loading ? 'Menyemak...' : isConnected ? 'WhatsApp Terhubung' : 'Perlu Imbas QR'}
+            </span>
+          </div>
+
           <button
             type="button"
             onClick={() => fetchStatus(true)}
@@ -572,879 +556,736 @@ export default function WhatsAppHubPage() {
       {/* ----------------- 1 MAIN CARD (SPLIT LAYOUT) ----------------- */}
       <div className="flex-1 min-h-0 flex overflow-hidden bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-xs relative">
         
-        {/* =========================================================================
-            SISI KIRI: PANEL NAVIGASI MODUL WHATSAPP HUB
-           ========================================================================= */}
-        <div
-          className={`shrink-0 transition-all duration-300 ease-in-out border-r border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col h-full overflow-hidden ${
-            isLeftPanelCollapsed ? 'w-0 border-r-0 overflow-hidden' : 'w-72 sm:w-80'
-          }`}
-        >
-          {/* Header Panel Kiri */}
-          <div className="p-4 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-zinc-800/50">
-            <h2 className="text-xs font-bold text-slate-800 dark:text-zinc-100 uppercase tracking-wider">
-              Navigasi Hab WhatsApp
-            </h2>
-            <span className="text-[10px] font-semibold text-slate-400 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 px-2 py-0.5 rounded-full">
-              5 Modul
-            </span>
-          </div>
-
-          {/* Search / Filter Box */}
-          <div className="p-3 border-b border-slate-100 dark:border-zinc-800 shrink-0">
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={searchFilter}
-                onChange={(e) => setSearchFilter(e.target.value)}
-                placeholder="Cari navigasi WhatsApp..."
-                className="w-full pl-8 pr-3 py-1.5 rounded-full bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 border border-slate-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40 focus:border-[#00BDFF] font-medium"
-              />
+        {/* TAB 1: LIVE CHAT INBOX (Split: Contact List + Conversation) */}
+        {activeTab === 'inbox' && (
+          !isConnected ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
+              <div className="w-14 h-14 rounded-full bg-amber-50 text-amber-500 border border-amber-200/80 flex items-center justify-center shadow-xs">
+                <Smartphone className="w-7 h-7" />
+              </div>
+              <div className="max-w-sm space-y-1">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
+                  WhatsApp Belum Disambungkan
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Sila imbas kod QR di tab <strong>Peranti & QR</strong> untuk mula membalas chat pelanggan secara langsung.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('device')}
+                className="px-5 py-2.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer flex items-center gap-2"
+              >
+                <span>Buka Imbasan QR</span>
+                <Smartphone className="w-4 h-4" />
+              </button>
             </div>
-          </div>
+          ) : (
+            <div className="flex-1 min-h-0 flex overflow-hidden relative">
+              
+              {/* LEFT PANEL: CONTACTS LIST (Collapsible) */}
+              <div
+                className={`shrink-0 transition-all duration-300 ease-in-out border-r border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col h-full overflow-hidden ${
+                  isLeftPanelCollapsed ? 'w-0 border-r-0 overflow-hidden' : 'w-72 sm:w-80 md:w-88'
+                }`}
+              >
+                {/* Search & Category Filter Header */}
+                <div className="p-3 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/50 space-y-2 shrink-0">
+                  <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-zinc-800 rounded-full text-[11px] font-semibold border border-slate-200/60 dark:border-zinc-700/60">
+                    <button
+                      type="button"
+                      onClick={() => setChatCategoryFilter('all')}
+                      className={`flex-1 py-1 rounded-full transition-all text-center cursor-pointer ${
+                        chatCategoryFilter === 'all'
+                          ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 shadow-2xs font-bold'
+                          : 'text-slate-500 hover:text-slate-900'
+                      }`}
+                    >
+                      Semua ({chats.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setChatCategoryFilter('customers')}
+                      className={`flex-1 py-1 rounded-full transition-all text-center cursor-pointer ${
+                        chatCategoryFilter === 'customers'
+                          ? 'bg-white dark:bg-zinc-900 text-[#00BDFF] shadow-2xs font-bold'
+                          : 'text-slate-500 hover:text-slate-900'
+                      }`}
+                    >
+                      Pelanggan ({customerCount})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setChatCategoryFilter('private')}
+                      className={`flex-1 py-1 rounded-full transition-all text-center cursor-pointer ${
+                        chatCategoryFilter === 'private'
+                          ? 'bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 shadow-2xs font-bold'
+                          : 'text-slate-500 hover:text-slate-900'
+                      }`}
+                    >
+                      🔒 Peribadi ({privateCount})
+                    </button>
+                  </div>
 
-          {/* Module Nav Items List */}
-          <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1.5 sparkle-scroll">
-            {filteredNavSections.map((sec) => {
-              const Icon = sec.icon;
-              const isActive = activeTab === sec.id;
-              return (
-                <button
-                  key={sec.id}
-                  type="button"
-                  onClick={() => setActiveTab(sec.id)}
-                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-left transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-[#C2E7FF] dark:bg-sky-950 text-[#001D35] dark:text-[#00BDFF] font-bold shadow-2xs'
-                      : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-900'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3 min-w-0">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                      isActive ? 'bg-[#00BDFF] text-white' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'
-                    }`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-bold truncate">
-                          {sec.title}
-                        </span>
-                        {sec.statusDot && (
-                          <span className={`w-2 h-2 rounded-full ${sec.statusDot} shrink-0`} />
-                        )}
-                      </div>
-                      <p className="text-[10px] text-slate-400 truncate mt-0.5">
-                        {sec.subtitle}
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={chatSearch}
+                      onChange={(e) => setChatSearch(e.target.value)}
+                      placeholder="Cari perbualan..."
+                      className="w-full pl-8 pr-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40 placeholder:text-slate-400 shadow-2xs"
+                    />
+                  </div>
+                </div>
+
+                {/* Contacts List */}
+                <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-zinc-800 sparkle-scroll">
+                  {filteredChats.length === 0 ? (
+                    <div className="p-8 text-center space-y-2">
+                      <MessageSquare className="w-6 h-6 text-slate-300 mx-auto" />
+                      <p className="text-xs text-slate-400">
+                        {chatCategoryFilter === 'private'
+                          ? 'Tiada perbualan ditandakan sebagai peribadi.'
+                          : 'Tiada perbualan aktif.'}
                       </p>
                     </div>
-                  </div>
+                  ) : (
+                    filteredChats.map((chat) => {
+                      const isSelected = selectedChat?.id === chat.id;
+                      const isBotPaused = pausedChatIds[chat.id];
+                      const isPrivate = !!privateChatIds[chat.id];
 
-                  {sec.badge && (
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ml-2 ${
-                      isActive
-                        ? 'bg-white/80 dark:bg-sky-900 text-[#001D35] dark:text-[#00BDFF]'
-                        : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'
-                    }`}>
-                      {sec.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* VPS & Privacy Info Mini Card at Left Footer */}
-          <div className="p-3.5 bg-slate-50 dark:bg-zinc-800/50 border-t border-slate-100 dark:border-zinc-800 shrink-0 space-y-1">
-            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-700 dark:text-zinc-300">
-              <span className="flex items-center gap-1 font-bold">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                Privasi Terjamin
-              </span>
-              <span className="text-[9.5px] px-1.5 py-0.2 rounded-full bg-white dark:bg-zinc-700 text-slate-500 font-mono">Live Sync</span>
-            </div>
-            <p className="text-[10px] text-slate-400 leading-snug">
-              Mesej diselaraskan terus dari peranti tanpa simpanan pihak ketiga.
-            </p>
-          </div>
-        </div>
-
-        {/* =========================================================================
-            SISI KANAN: KAD UTAMA KANDUNGAN DENGAN TUAS TOGGLE KIRI
-           ========================================================================= */}
-        <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden bg-slate-50/40 dark:bg-zinc-900/40 relative">
-          
-          {/* FLOATING CAPSULE TOGGLE HANDLE (LEFT EDGE OF RIGHT PANEL) */}
-          <button
-            type="button"
-            onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-5 h-12 bg-white dark:bg-zinc-800 border-y border-r border-slate-200 dark:border-zinc-700 rounded-r-full shadow-md flex items-center justify-center text-slate-500 hover:text-[#00BDFF] dark:hover:text-[#00BDFF] transition-all cursor-pointer"
-            title={isLeftPanelCollapsed ? 'Buka Navigasi WhatsApp' : 'Tutup Navigasi WhatsApp'}
-            aria-label="Toggle Left Panel"
-          >
-            {isLeftPanelCollapsed ? (
-              <ChevronRight className="w-3.5 h-3.5" />
-            ) : (
-              <ChevronLeft className="w-3.5 h-3.5" />
-            )}
-          </button>
-
-          {/* ----------------- INTERNAL CARD HEADER ----------------- */}
-          <div className="shrink-0 px-5 py-3 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between gap-4 bg-slate-50/50 dark:bg-zinc-800/50">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-                {activeTab === 'inbox' && 'Omnichannel Live Chat Inbox'}
-                {activeTab === 'tickets' && 'Pengurusan Tiket Sokongan Pelanggan (ID TIKET)'}
-                {activeTab === 'device' && 'Pengurusan Peranti & Imbasan Kod QR'}
-                {activeTab === 'automation' && 'Alur Automasi & Notifikasi Pesanan'}
-                {activeTab === 'tester' && 'Ujian Penghantaran Mesej WhatsApp'}
-              </h2>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                {activeTab === 'inbox' && 'Baca dan balas mesej pelanggan secara dua arah serentak dari web & telefon.'}
-                {activeTab === 'tickets' && 'Senarai isu khusus dan tempahan khas yang dijana oleh AI untuk tindakan staf.'}
-                {activeTab === 'device' && 'Sambungkan atau putuskan akaun WhatsApp rasmi kilang.'}
-                {activeTab === 'automation' && 'Pemicu mesej automatik untuk tempahan baharu, status produksi dan invois.'}
-                {activeTab === 'tester' && 'Hantar mesej ujian ke nombor telefon untuk memastikan bot berfungsi.'}
-              </p>
-            </div>
-
-            {/* Context Actions */}
-            {activeTab === 'inbox' && isConnected && (
-              <button
-                type="button"
-                onClick={() => fetchChats()}
-                className="px-4 py-1.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 dark:bg-zinc-800 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
-              >
-                <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
-                <span>Segar Semula Chat</span>
-              </button>
-            )}
-
-            {activeTab === 'tickets' && (
-              <button
-                type="button"
-                onClick={() => fetchTickets()}
-                className="px-4 py-1.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 dark:bg-zinc-800 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loadingTickets ? 'animate-spin text-[#00BDFF]' : ''}`} />
-                <span>Segar Semula Tiket</span>
-              </button>
-            )}
-          </div>
-
-          {/* ----------------- CARD CONTENT BODY ----------------- */}
-          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-            
-            {/* VIEW 1: LIVE OMNICHANNEL INBOX */}
-            {activeTab === 'inbox' && (
-              !isConnected ? (
-                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
-                  <div className="w-14 h-14 rounded-full bg-amber-50 text-amber-500 border border-amber-200/80 flex items-center justify-center">
-                    <Smartphone className="w-7 h-7" />
-                  </div>
-                  <div className="max-w-sm space-y-1">
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
-                      WhatsApp Belum Disambungkan
-                    </h3>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      Sila imbas kod QR di menu <strong>Peranti & Imbas QR</strong> untuk mula membalas chat pelanggan dari web ini.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('device')}
-                    className="px-5 py-2.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer flex items-center gap-2"
-                  >
-                    <span>Buka Imbasan QR</span>
-                    <Smartphone className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex-1 flex overflow-hidden">
-                  {/* Left Column: Contacts List */}
-                  <div className="w-72 sm:w-80 border-r border-slate-200/80 dark:border-zinc-800 flex flex-col shrink-0 bg-slate-50/40 dark:bg-zinc-900/40">
-                    <div className="p-3 border-b border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-2">
-                      {/* Filter Category Tabs: Semua | Pelanggan | Peribadi */}
-                      <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-zinc-800 rounded-full text-[11px] font-semibold">
-                        <button
-                          type="button"
-                          onClick={() => setChatCategoryFilter('all')}
-                          className={`flex-1 py-1 rounded-full transition-all text-center cursor-pointer ${
-                            chatCategoryFilter === 'all'
-                              ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 shadow-2xs font-bold'
-                              : 'text-slate-500 hover:text-slate-900'
+                      return (
+                        <div
+                          key={chat.id}
+                          onClick={() => setSelectedChat(chat)}
+                          className={`p-3.5 flex items-start gap-3 cursor-pointer transition-all ${
+                            isSelected 
+                              ? 'bg-sky-50/90 dark:bg-sky-950/40 border-l-4 border-[#00BDFF]' 
+                              : 'hover:bg-slate-50/80 dark:hover:bg-zinc-800/40 bg-white dark:bg-zinc-900'
                           }`}
                         >
-                          Semua ({chats.length})
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setChatCategoryFilter('customers')}
-                          className={`flex-1 py-1 rounded-full transition-all text-center cursor-pointer ${
-                            chatCategoryFilter === 'customers'
-                              ? 'bg-white dark:bg-zinc-900 text-[#00BDFF] shadow-2xs font-bold'
-                              : 'text-slate-500 hover:text-slate-900'
-                          }`}
-                        >
-                          Pelanggan ({customerCount})
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setChatCategoryFilter('private')}
-                          className={`flex-1 py-1 rounded-full transition-all text-center cursor-pointer ${
-                            chatCategoryFilter === 'private'
-                              ? 'bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 shadow-2xs font-bold'
-                              : 'text-slate-500 hover:text-slate-900'
-                          }`}
-                        >
-                          🔒 Peribadi ({privateCount})
-                        </button>
-                      </div>
-
-                      <div className="relative">
-                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="text"
-                          value={chatSearch}
-                          onChange={(e) => setChatSearch(e.target.value)}
-                          placeholder="Cari perbualan..."
-                          className="w-full pl-8 pr-3 py-1.5 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40 placeholder:text-slate-400"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-zinc-800 sparkle-scroll">
-                      {filteredChats.length === 0 ? (
-                        <div className="p-8 text-center space-y-2">
-                          <MessageSquare className="w-6 h-6 text-slate-300 mx-auto" />
-                          <p className="text-xs text-slate-400">
-                            {chatCategoryFilter === 'private'
-                              ? 'Tiada perbualan ditandakan sebagai peribadi.'
-                              : 'Tiada perbualan aktif.'}
-                          </p>
-                        </div>
-                      ) : (
-                        filteredChats.map((chat) => {
-                          const isSelected = selectedChat?.id === chat.id;
-                          const isBotPaused = pausedChatIds[chat.id];
-                          const isPrivate = !!privateChatIds[chat.id];
-
-                          return (
-                            <div
-                              key={chat.id}
-                              onClick={() => setSelectedChat(chat)}
-                              className={`p-3 flex items-start gap-3 cursor-pointer transition-all ${
-                                isSelected 
-                                  ? 'bg-sky-50/80 dark:bg-sky-950/40 border-l-4 border-[#00BDFF]' 
-                                  : 'hover:bg-slate-100/70 dark:hover:bg-zinc-800/40 bg-white dark:bg-zinc-900'
-                              }`}
-                            >
-                              <div className={`w-9 h-9 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs ${
-                                isPrivate 
-                                  ? 'bg-gradient-to-tr from-slate-600 to-slate-700' 
-                                  : 'bg-gradient-to-tr from-slate-800 to-slate-900'
-                              }`}>
-                                {chat.name.charAt(0).toUpperCase()}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                  <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
-                                    {chat.name}
-                                  </h4>
-                                  {chat.lastMessage && (
-                                    <span className="text-[10px] text-slate-400 font-mono">
-                                      {new Date(chat.lastMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="flex items-center justify-between mt-0.5">
-                                  <p className="text-[11px] text-slate-400 font-mono truncate">
-                                    +{chat.phone}
-                                  </p>
-                                  {isPrivate ? (
-                                    <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 flex items-center gap-0.5">
-                                      🔒 Peribadi
-                                    </span>
-                                  ) : isBotPaused ? (
-                                    <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium">
-                                      Staf CS
-                                    </span>
-                                  ) : (
-                                    <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200 font-medium">
-                                      Bot AI
-                                    </span>
-                                  )}
-                                </div>
-                                {chat.lastMessage && (
-                                  <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate mt-0.5">
-                                    {chat.lastMessage.fromMe && <span className="font-semibold text-slate-700 dark:text-zinc-300">Anda: </span>}
-                                    {stripWhatsAppFormatting(chat.lastMessage.body)}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Right Column: Chat Content */}
-                  {selectedChat ? (
-                    <div className="flex-1 flex flex-col bg-[#efeae2]/50 dark:bg-zinc-950">
-                      {/* Active Chat Bar with Bot Pause Toggle */}
-                      <div className="p-3 px-5 bg-white dark:bg-zinc-900 border-b border-slate-200/80 dark:border-zinc-800 flex items-center justify-between shrink-0 shadow-2xs">
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-9 h-9 rounded-full text-white font-bold text-xs flex items-center justify-center shadow-xs ${
-                            privateChatIds[selectedChat.id] ? 'bg-slate-600' : 'bg-[#00BDFF]'
+                          <div className={`w-9 h-9 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs ${
+                            isPrivate 
+                              ? 'bg-gradient-to-tr from-slate-600 to-slate-700' 
+                              : 'bg-gradient-to-tr from-slate-800 to-slate-900'
                           }`}>
-                            {selectedChat.name.charAt(0).toUpperCase()}
+                            {chat.name.charAt(0).toUpperCase()}
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
-                                {selectedChat.name}
-                              </h3>
-                              {privateChatIds[selectedChat.id] ? (
-                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 flex items-center gap-1">
-                                  🔒 Perbualan Peribadi
-                                </span>
-                              ) : pausedChatIds[selectedChat.id] ? (
-                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
-                                  <PauseCircle className="w-3 h-3" />
-                                  Bot Dijeda (Staf)
-                                </span>
-                              ) : (
-                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200 flex items-center gap-1">
-                                  <Bot className="w-3 h-3" />
-                                  Bot AI Aktif
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
+                                {chat.name}
+                              </h4>
+                              {chat.lastMessage && (
+                                <span className="text-[10px] text-slate-400 font-mono">
+                                  {new Date(chat.lastMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                               )}
                             </div>
-                            <p className="text-[10.5px] text-slate-400 font-mono">
-                              +{selectedChat.phone}
-                            </p>
+                            <div className="flex items-center justify-between mt-0.5">
+                              <p className="text-[11px] text-slate-400 font-mono truncate">
+                                +{chat.phone}
+                              </p>
+                              {isPrivate ? (
+                                <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 flex items-center gap-0.5">
+                                  🔒 Peribadi
+                                </span>
+                              ) : isBotPaused ? (
+                                <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium">
+                                  Staf CS
+                                </span>
+                              ) : (
+                                <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200 font-medium">
+                                  Bot AI
+                                </span>
+                              )}
+                            </div>
+                            {chat.lastMessage && (
+                              <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate mt-0.5">
+                                {chat.lastMessage.fromMe && <span className="font-semibold text-slate-700 dark:text-zinc-300">Anda: </span>}
+                                {stripWhatsAppFormatting(chat.lastMessage.body)}
+                              </p>
+                            )}
                           </div>
                         </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
 
-                        <div className="flex items-center gap-2">
+              {/* RIGHT PANEL: CHAT CONVERSATION */}
+              <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden bg-[#efeae2]/50 dark:bg-zinc-950 relative">
+                
+                {/* FLOATING CAPSULE TOGGLE HANDLE (LEFT EDGE OF RIGHT PANEL) */}
+                <button
+                  type="button"
+                  onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-5 h-12 bg-white dark:bg-zinc-800 border-y border-r border-slate-200 dark:border-zinc-700 rounded-r-full shadow-md flex items-center justify-center text-slate-500 hover:text-[#00BDFF] dark:hover:text-[#00BDFF] transition-all cursor-pointer"
+                  title={isLeftPanelCollapsed ? 'Buka Senarai Perbualan' : 'Tutup Senarai Perbualan'}
+                  aria-label="Toggle Contacts List"
+                >
+                  {isLeftPanelCollapsed ? (
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  ) : (
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  )}
+                </button>
+
+                {selectedChat ? (
+                  <div className="flex-1 flex flex-col h-full overflow-hidden">
+                    {/* Active Chat Top Bar */}
+                    <div className="p-3 px-5 bg-white dark:bg-zinc-900 border-b border-slate-200/80 dark:border-zinc-800 flex items-center justify-between shrink-0 shadow-2xs">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-9 h-9 rounded-full text-white font-bold text-xs flex items-center justify-center shadow-xs ${
+                          privateChatIds[selectedChat.id] ? 'bg-slate-600' : 'bg-[#00BDFF]'
+                        }`}>
+                          {selectedChat.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
+                              {selectedChat.name}
+                            </h3>
+                            {privateChatIds[selectedChat.id] ? (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 flex items-center gap-1">
+                                🔒 Perbualan Peribadi
+                              </span>
+                            ) : pausedChatIds[selectedChat.id] ? (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
+                                <PauseCircle className="w-3 h-3" />
+                                Bot Dijeda (Staf)
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200 flex items-center gap-1">
+                                <Bot className="w-3 h-3" />
+                                Bot AI Aktif
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[10.5px] text-slate-400 font-mono">
+                            +{selectedChat.phone}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => togglePrivateForChat(selectedChat.id)}
+                          title={privateChatIds[selectedChat.id] ? "Tukar kepada Pelanggan" : "Tandakan Sebagai Peribadi / Teman"}
+                          className={`px-3.5 py-1.5 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                            privateChatIds[selectedChat.id]
+                              ? 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-zinc-800 dark:text-zinc-200'
+                              : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200/80 dark:bg-zinc-800 dark:text-zinc-300'
+                          }`}
+                        >
+                          {privateChatIds[selectedChat.id] ? (
+                            <>
+                              <UserCheck className="w-3.5 h-3.5 text-slate-600" />
+                              <span>Tukar ke Pelanggan</span>
+                            </>
+                          ) : (
+                            <>
+                              <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
+                              <span>Tanda Peribadi</span>
+                            </>
+                          )}
+                        </button>
+
+                        {!privateChatIds[selectedChat.id] && (
                           <button
                             type="button"
-                            onClick={() => togglePrivateForChat(selectedChat.id)}
-                            title={privateChatIds[selectedChat.id] ? "Tukar kepada Pelanggan" : "Tandakan Sebagai Peribadi / Teman"}
-                            className={`px-3.5 py-1.5 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
-                              privateChatIds[selectedChat.id]
-                                ? 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-zinc-800 dark:text-zinc-200'
-                                : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200/80 dark:bg-zinc-800 dark:text-zinc-300'
-                            }`}
+                            onClick={() => toggleBotForChat(selectedChat.id)}
+                            className="px-3.5 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                           >
-                            {privateChatIds[selectedChat.id] ? (
+                            {pausedChatIds[selectedChat.id] ? (
                               <>
-                                <UserCheck className="w-3.5 h-3.5 text-slate-600" />
-                                <span>Tukar ke Pelanggan</span>
+                                <PlayCircle className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>Aktifkan Bot</span>
                               </>
                             ) : (
                               <>
-                                <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
-                                <span>Tanda Peribadi</span>
+                                <PauseCircle className="w-3.5 h-3.5 text-amber-600" />
+                                <span>Jeda Bot</span>
                               </>
                             )}
                           </button>
+                        )}
 
-                          {!privateChatIds[selectedChat.id] && (
-                            <button
-                              type="button"
-                              onClick={() => toggleBotForChat(selectedChat.id)}
-                              className="px-3.5 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                            >
-                              {pausedChatIds[selectedChat.id] ? (
-                                <>
-                                  <PlayCircle className="w-3.5 h-3.5 text-emerald-600" />
-                                  <span>Aktifkan Bot</span>
-                                </>
-                              ) : (
-                                <>
-                                  <PauseCircle className="w-3.5 h-3.5 text-amber-600" />
-                                  <span>Jeda Bot</span>
-                                </>
-                              )}
-                            </button>
-                          )}
-
-                          <a
-                            href={`https://wa.me/${selectedChat.phone}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-3.5 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            <span>WhatsApp Web</span>
-                          </a>
-                        </div>
-                      </div>
-
-                      {privateChatIds[selectedChat.id] && (
-                        <div className="mx-4 mt-3 p-2.5 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-[11.5px] text-amber-800 flex items-center gap-2">
-                          <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
-                          <span>
-                            <strong>Perbualan Peribadi:</strong> Bot AI dinyahaktifkan secara mutlak untuk nombor ini bagi menjaga privasi anda.
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Chat Messages List */}
-                      <div className="flex-1 overflow-y-auto p-4 sm:p-6 sparkle-scroll">
-                        <div className="max-w-3xl mx-auto w-full space-y-3.5">
-                          {loadingMessages ? (
-                            <div className="py-16 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
-                              <RefreshCw className="w-5 h-5 animate-spin text-[#00BDFF]" />
-                              <span>Memuatkan mesej perbualan...</span>
-                            </div>
-                          ) : messages.length === 0 ? (
-                            <div className="py-16 text-center text-xs text-slate-400 bg-white/80 dark:bg-zinc-900/80 rounded-2xl border border-dashed border-slate-300 dark:border-zinc-800">
-                              Tiada rekod mesej lagi dalam sesi ini.
-                            </div>
-                          ) : (
-                            messages.map((msg) => {
-                              const vcard = parseVCard(msg.body);
-                              const isMedia = !vcard && isMediaFilename(msg.body);
-
-                              return (
-                                <div
-                                  key={msg.id}
-                                  className={`flex ${msg.fromMe ? 'justify-end' : 'justify-start'}`}
-                                >
-                                  <div
-                                    className={`max-w-[85%] sm:max-w-[75%] lg:max-w-[68%] rounded-2xl px-4 py-2.5 text-[12.5px] shadow-xs space-y-1.5 transition-all select-text ${
-                                      msg.fromMe
-                                        ? 'bg-[#D9FDD3] dark:bg-[#005C4B] text-[#111B21] dark:text-[#E9EDEF] border border-[#C2EBBB] dark:border-[#005C4B] rounded-tr-xs'
-                                        : 'bg-white dark:bg-zinc-900 text-[#111B21] dark:text-[#E9EDEF] border border-slate-200/90 dark:border-zinc-800 rounded-tl-xs'
-                                    }`}
-                                  >
-                                    {vcard ? (
-                                      <div className={`p-2.5 rounded-xl border space-y-2 ${
-                                        msg.fromMe 
-                                          ? 'bg-emerald-100/60 border-emerald-300/60 text-[#111B21]' 
-                                          : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-100'
-                                      }`}>
-                                        <div className="flex items-center gap-2.5">
-                                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                                            msg.fromMe ? 'bg-emerald-600 text-white' : 'bg-[#00BDFF]/10 text-[#00BDFF]'
-                                          }`}>
-                                            <User className="w-4 h-4" />
-                                          </div>
-                                          <div className="min-w-0 flex-1">
-                                            <p className="font-bold text-xs truncate">{vcard.name}</p>
-                                            <p className={`text-[10px] font-mono truncate ${msg.fromMe ? 'text-emerald-800' : 'text-slate-500'}`}>
-                                              {vcard.phone ? `+${vcard.phone}` : 'Kad Kenalan'}
-                                            </p>
-                                          </div>
-                                        </div>
-                                        {vcard.phone && (
-                                          <a
-                                            href={`https://wa.me/${vcard.phone}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={`inline-flex items-center justify-center gap-1.5 w-full py-1.5 rounded-full font-semibold text-[11px] transition-colors ${
-                                              msg.fromMe 
-                                                ? 'bg-emerald-700 text-white hover:bg-emerald-800' 
-                                                : 'bg-[#00BDFF] text-white hover:bg-sky-600'
-                                            }`}
-                                          >
-                                            <Phone className="w-3 h-3" />
-                                            <span>Mesej Nombor Ini</span>
-                                          </a>
-                                        )}
-                                      </div>
-                                    ) : isMedia ? (
-                                      <div className={`p-2.5 rounded-xl border flex items-center gap-2.5 ${
-                                        msg.fromMe
-                                          ? 'bg-emerald-100/50 border-emerald-300/50 text-[#111B21]'
-                                          : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-100'
-                                      }`}>
-                                        <div className="w-9 h-9 rounded-lg bg-[#00BDFF]/10 text-[#00BDFF] flex items-center justify-center shrink-0">
-                                          {msg.body.match(/\.(png|jpe?g|webp|gif)$/i) ? (
-                                            <ImageIcon className="w-4 h-4" />
-                                          ) : (
-                                            <FileText className="w-4 h-4" />
-                                          )}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                          <p className="font-bold text-xs truncate">{msg.body}</p>
-                                          <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
-                                            Lampiran Fail / Gambar
-                                          </span>
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      <div className="leading-relaxed whitespace-pre-wrap break-words">
-                                        {formatWhatsAppText(msg.body)}
-                                      </div>
-                                    )}
-
-                                    <div className={`flex items-center justify-end gap-1 text-[10px] font-mono ${
-                                      msg.fromMe ? 'text-[#54656f] dark:text-[#8696a0]' : 'text-slate-400'
-                                    }`}>
-                                      <span>
-                                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                      </span>
-                                      {msg.fromMe && <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb]" />}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })
-                          )}
-                          <div ref={messagesEndRef} />
-                        </div>
-                      </div>
-
-                      {/* Quick Templates Bar */}
-                      <div className="px-4 py-2 bg-white/95 dark:bg-zinc-900/95 border-t border-slate-200/70 dark:border-zinc-800 overflow-x-auto flex items-center gap-2 scrollbar-none">
-                        <div className="max-w-3xl mx-auto w-full flex items-center gap-2">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
-                            <Sparkles className="w-3 h-3 text-[#00BDFF]" />
-                            Templat:
-                          </span>
-                          {QUICK_TEMPLATES.map((tmpl, idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              onClick={() => setReplyText(tmpl)}
-                              className="px-3 py-1 rounded-full bg-slate-50 hover:bg-sky-50 hover:text-[#00BDFF] hover:border-sky-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/70 dark:border-zinc-700 text-[11px] text-slate-600 dark:text-zinc-300 truncate max-w-xs shrink-0 transition-colors cursor-pointer"
-                            >
-                              {tmpl}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Reply Form */}
-                      <div className="p-3 bg-white dark:bg-zinc-900 border-t border-slate-200/80 dark:border-zinc-800">
-                        <form onSubmit={handleSendReply} className="max-w-3xl mx-auto w-full flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
-                            placeholder="Tulis mesej balasan (staf mengambil alih perbualan)..."
-                            className="flex-1 px-4 py-2 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40"
-                          />
-                          <button
-                            type="submit"
-                            disabled={sendingReply || !replyText.trim()}
-                            className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-sky-500 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
-                          >
-                            <SendHorizontal className={`w-3.5 h-3.5 ${sendingReply ? 'animate-spin' : ''}`} />
-                            <span>Hantar</span>
-                          </button>
-                        </form>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400 space-y-2">
-                      <MessageSquare className="w-8 h-8 text-slate-300" />
-                      <p className="text-xs">Pilih salah satu perbualan di sebelah kiri untuk melihat mesej.</p>
-                    </div>
-                  )}
-                </div>
-              )
-            )}
-
-            {/* VIEW 2: SUPPORT TICKETS (ID TIKET) */}
-            {activeTab === 'tickets' && (
-              <div className="flex-1 overflow-y-auto p-6 space-y-4 sparkle-scroll">
-                <div className="flex items-center justify-between max-w-4xl mx-auto pb-2">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Senarai Tiket Tindakan Lanjutan</h3>
-                    <p className="text-xs text-slate-500">Isu khas atau tempahan korporat yang dijana AI untuk perhatian staf kilang.</p>
-                  </div>
-                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-sky-50 dark:bg-sky-950/50 text-[#00BDFF] border border-sky-200/60 dark:border-sky-900">
-                    {tickets.length} Tiket Didaftarkan
-                  </span>
-                </div>
-
-                <div className="max-w-4xl mx-auto space-y-3">
-                  {tickets.length === 0 ? (
-                    <div className="p-12 text-center text-xs text-slate-400 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800">
-                      Tiada tiket sokongan terbuka pada masa ini.
-                    </div>
-                  ) : (
-                    tickets.map((t) => (
-                      <div key={t.id} className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-2.5">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center space-x-2">
-                            <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700">
-                              {t.ticketNumber}
-                            </span>
-                            <span className="text-xs font-bold text-slate-900 dark:text-zinc-100">
-                              {t.customerName || 'Pelanggan'}
-                            </span>
-                            <span className="text-[11px] font-mono text-slate-400">
-                              (+{t.customerPhone})
-                            </span>
-                          </div>
-
-                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase ${
-                            t.status === 'open' 
-                              ? 'bg-amber-50 text-amber-700 border border-amber-200' 
-                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          }`}>
-                            {t.status === 'open' ? 'Perlu Tindakan' : 'Selesai'}
-                          </span>
-                        </div>
-
-                        <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed bg-slate-50 dark:bg-zinc-800/60 p-3 rounded-xl border border-slate-200/60 dark:border-zinc-700/60">
-                          {formatWhatsAppText(t.summary)}
-                        </p>
-
-                        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                          <span>Didaftarkan: {new Date(t.createdAt).toLocaleString()}</span>
-                          <a
-                            href={`https://wa.me/${t.customerPhone}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[#00BDFF] hover:underline font-semibold flex items-center gap-1"
-                          >
-                            <span>Hubungi Pelanggan di WhatsApp →</span>
-                          </a>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* VIEW 3: DEVICE & QR SCANNER */}
-            {activeTab === 'device' && (
-              <div className="flex-1 overflow-y-auto p-6 space-y-6 sparkle-scroll">
-                {isConnected ? (
-                  <div className="max-w-2xl mx-auto space-y-5">
-                    <div className="p-5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800 flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20">
-                          <Smartphone className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
-                            {statusData.me?.pushName || 'SFV Apparel Official'}
-                          </h3>
-                          <p className="text-xs text-slate-600 dark:text-zinc-400 font-mono mt-0.5">
-                            +{statusData.me?.id?.split('@')[0] || companySettings?.whatsapp_number || ''}
-                          </p>
-                          <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1 flex items-center gap-1 font-semibold">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Akaun WhatsApp aktif dan bersambung secara 2-way sync</span>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800">
-                      <span className="text-xs text-slate-500">
-                        Hostinger VPS Engine (IP: 187.127.223.53)
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={handleLogout}
-                        disabled={actionLoading}
-                        className="px-4 py-2 rounded-full bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
-                      >
-                        <LogOut className="w-3.5 h-3.5" />
-                        <span>Putuskan Sambungan</span>
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center gap-6 p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-xs">
-                    <div className="w-52 h-52 bg-white rounded-2xl p-2.5 shadow-md border border-slate-200/80 flex items-center justify-center shrink-0">
-                      {qrCode ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img 
-                          src={qrCode} 
-                          alt="WhatsApp QR Code" 
-                          className="w-full h-full object-contain rounded-xl"
-                        />
-                      ) : (
-                        <div className="text-center space-y-2 p-4">
-                          <RefreshCw className="w-6 h-6 animate-spin text-slate-400 mx-auto" />
-                          <p className="text-xs text-slate-500 font-medium">
-                            Menjana Kod QR WhatsApp...
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex-1 space-y-3">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-zinc-100">
-                        Langkah Menyambungkan WhatsApp:
-                      </h3>
-                      <div className="space-y-2.5 text-xs text-slate-600 dark:text-zinc-300">
-                        <div className="flex items-start gap-2">
-                          <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-700 text-slate-800 dark:text-zinc-200 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">1</span>
-                          <span>Buka aplikasi <strong>WhatsApp</strong> di telefon bimbit anda.</span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-700 text-slate-800 dark:text-zinc-200 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">2</span>
-                          <span>Tekan <strong>Tetapan</strong> ➔ <strong>Perangkat Tertaut (Linked Devices)</strong>.</span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <span className="w-5 h-5 rounded-full bg-[#00BDFF] text-white font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">3</span>
-                          <span>Tekan <strong>Tautkan Perangkat</strong> dan halakan kamera ke kod QR.</span>
-                        </div>
-                      </div>
-
-                      <div className="pt-2">
-                        <button
-                          type="button"
-                          onClick={handleRestartSession}
-                          disabled={actionLoading}
-                          className="px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                        <a
+                          href={`https://wa.me/${selectedChat.phone}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3.5 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
                         >
-                          <RefreshCw className={`w-3.5 h-3.5 ${actionLoading ? 'animate-spin' : ''}`} />
-                          <span>Jana Semula Kod QR</span>
-                        </button>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span>WhatsApp Web</span>
+                        </a>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
 
-            {/* VIEW 4: AUTOMATION TRIGGERS */}
-            {activeTab === 'automation' && (
-              <div className="flex-1 overflow-y-auto p-6 space-y-4 sparkle-scroll">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-w-4xl mx-auto text-xs">
-                  <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900 dark:text-zinc-100">1. Notifikasi Pesanan Baharu</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
-                    </div>
-                    <p className="text-slate-500 leading-relaxed">
-                      Menghantar ringkasan tempahan jersi & pautan invois ke WhatsApp pelanggan secara automatik.
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900 dark:text-zinc-100">2. Amaran Tempahan Kilang</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
-                    </div>
-                    <p className="text-slate-500 leading-relaxed">
-                      Menghantar butiran saiz & kuantiti terus ke WhatsApp admin kilang.
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900 dark:text-zinc-100">3. Status Siap Cetak</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
-                    </div>
-                    <p className="text-slate-500 leading-relaxed">
-                      WhatsApp dihantar kepada pelanggan apabila jersi/baju mereka telah siap dicetak.
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900 dark:text-zinc-100">4. Nombor Tracking Pos</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
-                    </div>
-                    <p className="text-slate-500 leading-relaxed">
-                      Menghantar nombor tracking pos laju automatik kepada pelanggan sebaik sahaja bungkusan dipos.
-                    </p>
-                  </div>
-                </div>
-
-                {/* n8n Engine Link Card */}
-                <div className="max-w-4xl mx-auto p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 flex items-center justify-between shadow-2xs">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-9 h-9 rounded-full bg-sky-50 dark:bg-sky-950 text-[#00BDFF] border border-sky-100 dark:border-sky-900 flex items-center justify-center shrink-0">
-                      <Layers className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
-                        LiteLLM Multi-Key Router & n8n Engine
-                      </h4>
-                      <p className="text-[11px] text-slate-500">
-                        Router Port 4000 aktif menyalurkan AI Groq Llama 3.3 70B tanpa sekatan rate-limit.
-                      </p>
-                    </div>
-                  </div>
-
-                  <a
-                    href="http://187.127.223.53:5678"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
-                  >
-                    <span>Editor n8n</span>
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-                  </a>
-                </div>
-              </div>
-            )}
-
-            {/* VIEW 5: TEST SENDER */}
-            {activeTab === 'tester' && (
-              <div className="flex-1 overflow-y-auto p-6 sparkle-scroll">
-                <div className="max-w-md mx-auto p-5 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-zinc-100">
-                    Uji Penghantaran Mesej
-                  </h3>
-
-                  <form onSubmit={handleSendTest} className="space-y-3.5">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Nombor Telefon Penerima</label>
-                      <input
-                        type="text"
-                        required
-                        value={testPhone}
-                        onChange={(e) => setTestPhone(e.target.value)}
-                        placeholder="Contoh: 60148599138"
-                        className="w-full px-4 py-2 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Kandungan Mesej</label>
-                      <textarea
-                        rows={3}
-                        required
-                        value={testMessage}
-                        onChange={(e) => setTestMessage(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 resize-none focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40"
-                      />
-                    </div>
-
-                    {sendResult && (
-                      <div className={`p-3 rounded-2xl text-xs flex items-start gap-2 ${
-                        sendResult.success 
-                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
-                          : 'bg-rose-50 text-rose-800 border border-rose-200'
-                      }`}>
-                        {sendResult.success ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> : <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />}
-                        <span>{sendResult.message}</span>
+                    {privateChatIds[selectedChat.id] && (
+                      <div className="mx-4 mt-3 p-2.5 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-[11.5px] text-amber-800 flex items-center gap-2 shrink-0">
+                        <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>
+                          <strong>Perbualan Peribadi:</strong> Bot AI dinyahaktifkan secara mutlak untuk nombor ini bagi menjaga privasi anda.
+                        </span>
                       </div>
                     )}
 
+                    {/* Messages Body */}
+                    <div className="flex-1 overflow-y-auto p-4 sm:p-6 sparkle-scroll">
+                      <div className="max-w-3xl mx-auto w-full space-y-3.5">
+                        {loadingMessages ? (
+                          <div className="py-16 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
+                            <RefreshCw className="w-5 h-5 animate-spin text-[#00BDFF]" />
+                            <span>Memuatkan mesej perbualan...</span>
+                          </div>
+                        ) : messages.length === 0 ? (
+                          <div className="py-16 text-center text-xs text-slate-400 bg-white/80 dark:bg-zinc-900/80 rounded-2xl border border-dashed border-slate-300 dark:border-zinc-800">
+                            Tiada rekod mesej lagi dalam sesi ini.
+                          </div>
+                        ) : (
+                          messages.map((msg) => {
+                            const vcard = parseVCard(msg.body);
+                            const isMedia = !vcard && isMediaFilename(msg.body);
+
+                            return (
+                              <div
+                                key={msg.id}
+                                className={`flex ${msg.fromMe ? 'justify-end' : 'justify-start'}`}
+                              >
+                                <div
+                                  className={`max-w-[85%] sm:max-w-[75%] lg:max-w-[68%] rounded-2xl px-4 py-2.5 text-[12.5px] shadow-xs space-y-1.5 transition-all select-text ${
+                                    msg.fromMe
+                                      ? 'bg-[#D9FDD3] dark:bg-[#005C4B] text-[#111B21] dark:text-[#E9EDEF] border border-[#C2EBBB] dark:border-[#005C4B] rounded-tr-xs'
+                                      : 'bg-white dark:bg-zinc-900 text-[#111B21] dark:text-[#E9EDEF] border border-slate-200/90 dark:border-zinc-800 rounded-tl-xs'
+                                  }`}
+                                >
+                                  {vcard ? (
+                                    <div className={`p-2.5 rounded-xl border space-y-2 ${
+                                      msg.fromMe 
+                                        ? 'bg-emerald-100/60 border-emerald-300/60 text-[#111B21]' 
+                                        : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-100'
+                                    }`}>
+                                      <div className="flex items-center gap-2.5">
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                                          msg.fromMe ? 'bg-emerald-600 text-white' : 'bg-[#00BDFF]/10 text-[#00BDFF]'
+                                        }`}>
+                                          <User className="w-4 h-4" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                          <p className="font-bold text-xs truncate">{vcard.name}</p>
+                                          <p className={`text-[10px] font-mono truncate ${msg.fromMe ? 'text-emerald-800' : 'text-slate-500'}`}>
+                                            {vcard.phone ? `+${vcard.phone}` : 'Kad Kenalan'}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      {vcard.phone && (
+                                        <a
+                                          href={`https://wa.me/${vcard.phone}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className={`inline-flex items-center justify-center gap-1.5 w-full py-1.5 rounded-full font-semibold text-[11px] transition-colors ${
+                                            msg.fromMe 
+                                              ? 'bg-emerald-700 text-white hover:bg-emerald-800' 
+                                              : 'bg-[#00BDFF] text-white hover:bg-sky-600'
+                                          }`}
+                                        >
+                                          <Phone className="w-3 h-3" />
+                                          <span>Mesej Nombor Ini</span>
+                                        </a>
+                                      )}
+                                    </div>
+                                  ) : isMedia ? (
+                                    <div className={`p-2.5 rounded-xl border flex items-center gap-2.5 ${
+                                      msg.fromMe
+                                        ? 'bg-emerald-100/50 border-emerald-300/50 text-[#111B21]'
+                                        : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-100'
+                                    }`}>
+                                      <div className="w-9 h-9 rounded-lg bg-[#00BDFF]/10 text-[#00BDFF] flex items-center justify-center shrink-0">
+                                        {msg.body.match(/\.(png|jpe?g|webp|gif)$/i) ? (
+                                          <ImageIcon className="w-4 h-4" />
+                                        ) : (
+                                          <FileText className="w-4 h-4" />
+                                        )}
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <p className="font-bold text-xs truncate">{msg.body}</p>
+                                        <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                                          Lampiran Fail / Gambar
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="leading-relaxed whitespace-pre-wrap break-words">
+                                      {formatWhatsAppText(msg.body)}
+                                    </div>
+                                  )}
+
+                                  <div className={`flex items-center justify-end gap-1 text-[10px] font-mono ${
+                                    msg.fromMe ? 'text-[#54656f] dark:text-[#8696a0]' : 'text-slate-400'
+                                  }`}>
+                                    <span>
+                                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                    {msg.fromMe && <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb]" />}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                        <div ref={messagesEndRef} />
+                      </div>
+                    </div>
+
+                    {/* Quick Templates Bar */}
+                    <div className="px-4 py-2 bg-white/95 dark:bg-zinc-900/95 border-t border-slate-200/70 dark:border-zinc-800 overflow-x-auto flex items-center gap-2 scrollbar-none shrink-0">
+                      <div className="max-w-3xl mx-auto w-full flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-[#00BDFF]" />
+                          Templat:
+                        </span>
+                        {QUICK_TEMPLATES.map((tmpl, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setReplyText(tmpl)}
+                            className="px-3 py-1 rounded-full bg-slate-50 hover:bg-sky-50 hover:text-[#00BDFF] hover:border-sky-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/70 dark:border-zinc-700 text-[11px] text-slate-600 dark:text-zinc-300 truncate max-w-xs shrink-0 transition-colors cursor-pointer"
+                          >
+                            {tmpl}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Reply Form */}
+                    <div className="p-3 bg-white dark:bg-zinc-900 border-t border-slate-200/80 dark:border-zinc-800 shrink-0">
+                      <form onSubmit={handleSendReply} className="max-w-3xl mx-auto w-full flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder="Tulis mesej balasan (staf mengambil alih perbualan)..."
+                          className="flex-1 px-4 py-2 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40"
+                        />
+                        <button
+                          type="submit"
+                          disabled={sendingReply || !replyText.trim()}
+                          className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-sky-500 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          <SendHorizontal className={`w-3.5 h-3.5 ${sendingReply ? 'animate-spin' : ''}`} />
+                          <span>Hantar</span>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400 space-y-2">
+                    <MessageSquare className="w-8 h-8 text-slate-300" />
+                    <p className="text-xs">Pilih salah satu perbualan di sebelah kiri untuk melihat mesej.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        )}
+
+        {/* TAB 2: SUPPORT TICKETS (ID TIKET) */}
+        {activeTab === 'tickets' && (
+          <div className="flex-1 overflow-y-auto p-6 space-y-4 sparkle-scroll">
+            <div className="flex items-center justify-between max-w-4xl mx-auto pb-2">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Senarai Tiket Tindakan Lanjutan</h3>
+                <p className="text-xs text-slate-500">Isu khas atau tempahan korporat yang dijana AI untuk perhatian staf kilang.</p>
+              </div>
+              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-sky-50 dark:bg-sky-950/50 text-[#00BDFF] border border-sky-200/60 dark:border-sky-900">
+                {tickets.length} Tiket Didaftarkan
+              </span>
+            </div>
+
+            <div className="max-w-4xl mx-auto space-y-3">
+              {tickets.length === 0 ? (
+                <div className="p-12 text-center text-xs text-slate-400 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800">
+                  Tiada tiket sokongan terbuka pada masa ini.
+                </div>
+              ) : (
+                tickets.map((t) => (
+                  <div key={t.id} className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-2.5">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700">
+                          {t.ticketNumber}
+                        </span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-zinc-100">
+                          {t.customerName || 'Pelanggan'}
+                        </span>
+                        <span className="text-[11px] font-mono text-slate-400">
+                          (+{t.customerPhone})
+                        </span>
+                      </div>
+
+                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase ${
+                        t.status === 'open' 
+                          ? 'bg-amber-50 text-amber-700 border border-amber-200' 
+                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      }`}>
+                        {t.status === 'open' ? 'Perlu Tindakan' : 'Selesai'}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed bg-slate-50 dark:bg-zinc-800/60 p-3 rounded-xl border border-slate-200/60 dark:border-zinc-700/60">
+                      {formatWhatsAppText(t.summary)}
+                    </p>
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                      <span>Didaftarkan: {new Date(t.createdAt).toLocaleString()}</span>
+                      <a
+                        href={`https://wa.me/${t.customerPhone}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#00BDFF] hover:underline font-semibold flex items-center gap-1"
+                      >
+                        <span>Hubungi Pelanggan di WhatsApp →</span>
+                      </a>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: DEVICE & QR SCANNER */}
+        {activeTab === 'device' && (
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 sparkle-scroll">
+            {isConnected ? (
+              <div className="max-w-2xl mx-auto space-y-5">
+                <div className="p-5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800 flex items-center justify-between shadow-xs">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20">
+                      <Smartphone className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
+                        {statusData.me?.pushName || 'SFV Apparel Official'}
+                      </h3>
+                      <p className="text-xs text-slate-600 dark:text-zinc-400 font-mono mt-0.5">
+                        +{statusData.me?.id?.split('@')[0] || companySettings?.whatsapp_number || ''}
+                      </p>
+                      <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1 flex items-center gap-1 font-semibold">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Akaun WhatsApp aktif dan bersambung secara 2-way sync</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800">
+                  <span className="text-xs text-slate-500">
+                    Hostinger VPS Engine (IP: 187.127.223.53)
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    disabled={actionLoading}
+                    className="px-4 py-2 rounded-full bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Putuskan Sambungan</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center gap-6 p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-xs">
+                <div className="w-52 h-52 bg-white rounded-2xl p-2.5 shadow-md border border-slate-200/80 flex items-center justify-center shrink-0">
+                  {qrCode ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img 
+                      src={qrCode} 
+                      alt="WhatsApp QR Code" 
+                      className="w-full h-full object-contain rounded-xl"
+                    />
+                  ) : (
+                    <div className="text-center space-y-2 p-4">
+                      <RefreshCw className="w-6 h-6 animate-spin text-slate-400 mx-auto" />
+                      <p className="text-xs text-slate-500 font-medium">
+                        Menjana Kod QR WhatsApp...
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-zinc-100">
+                    Langkah Menyambungkan WhatsApp:
+                  </h3>
+                  <div className="space-y-2.5 text-xs text-slate-600 dark:text-zinc-300">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-700 text-slate-800 dark:text-zinc-200 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">1</span>
+                      <span>Buka aplikasi <strong>WhatsApp</strong> di telefon bimbit anda.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-zinc-700 text-slate-800 dark:text-zinc-200 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">2</span>
+                      <span>Tekan <strong>Tetapan</strong> ➔ <strong>Perangkat Tertaut (Linked Devices)</strong>.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-[#00BDFF] text-white font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">3</span>
+                      <span>Tekan <strong>Tautkan Perangkat</strong> dan halakan kamera ke kod QR.</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
                     <button
-                      type="submit"
-                      disabled={sending || !isConnected}
-                      className="w-full py-2.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 active:scale-95 text-white font-bold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      type="button"
+                      onClick={handleRestartSession}
+                      disabled={actionLoading}
+                      className="px-4 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer shadow-xs disabled:opacity-50"
                     >
-                      <Send className={`w-3.5 h-3.5 ${sending ? 'animate-spin' : ''}`} />
-                      <span>{sending ? 'Sedang Menghantar...' : 'Hantar Mesej Ujian'}</span>
+                      <RefreshCw className={`w-3.5 h-3.5 ${actionLoading ? 'animate-spin' : ''}`} />
+                      <span>Jana Semula Kod QR</span>
                     </button>
-                  </form>
+                  </div>
                 </div>
               </div>
             )}
-
           </div>
-        </div>
+        )}
+
+        {/* TAB 4: AUTOMATION TRIGGERS */}
+        {activeTab === 'automation' && (
+          <div className="flex-1 overflow-y-auto p-6 space-y-4 sparkle-scroll">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-w-4xl mx-auto text-xs">
+              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900 dark:text-zinc-100">1. Notifikasi Pesanan Baharu</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
+                </div>
+                <p className="text-slate-500 leading-relaxed">
+                  Menghantar ringkasan tempahan jersi & pautan invois ke WhatsApp pelanggan secara automatik.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900 dark:text-zinc-100">2. Amaran Tempahan Kilang</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
+                </div>
+                <p className="text-slate-500 leading-relaxed">
+                  Menghantar butiran saiz & kuantiti terus ke WhatsApp admin kilang.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900 dark:text-zinc-100">3. Status Siap Cetak</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
+                </div>
+                <p className="text-slate-500 leading-relaxed">
+                  WhatsApp dihantar kepada pelanggan apabila jersi/baju mereka telah siap dicetak.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900 dark:text-zinc-100">4. Nombor Tracking Pos</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
+                </div>
+                <p className="text-slate-500 leading-relaxed">
+                  Menghantar nombor tracking pos laju automatik kepada pelanggan sebaik sahaja bungkusan dipos.
+                </p>
+              </div>
+            </div>
+
+            {/* n8n Engine Link Card */}
+            <div className="max-w-4xl mx-auto p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 flex items-center justify-between shadow-2xs">
+              <div className="flex items-center space-x-3">
+                <div className="w-9 h-9 rounded-full bg-sky-50 dark:bg-sky-950 text-[#00BDFF] border border-sky-100 dark:border-sky-900 flex items-center justify-center shrink-0">
+                  <Layers className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
+                    LiteLLM Multi-Key Router & n8n Engine
+                  </h4>
+                  <p className="text-[11px] text-slate-500">
+                    Router Port 4000 aktif menyalurkan AI Groq Llama 3.3 70B tanpa sekatan rate-limit.
+                  </p>
+                </div>
+              </div>
+
+              <a
+                href="http://187.127.223.53:5678"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+              >
+                <span>Editor n8n</span>
+                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: TEST SENDER */}
+        {activeTab === 'tester' && (
+          <div className="flex-1 overflow-y-auto p-6 sparkle-scroll">
+            <div className="max-w-md mx-auto p-5 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-zinc-100">
+                Uji Penghantaran Mesej
+              </h3>
+
+              <form onSubmit={handleSendTest} className="space-y-3.5">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Nombor Telefon Penerima</label>
+                  <input
+                    type="text"
+                    required
+                    value={testPhone}
+                    onChange={(e) => setTestPhone(e.target.value)}
+                    placeholder="Contoh: 60148599138"
+                    className="w-full px-4 py-2 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Kandungan Mesej</label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={testMessage}
+                    onChange={(e) => setTestMessage(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 resize-none focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40"
+                  />
+                </div>
+
+                {sendResult && (
+                  <div className={`p-3 rounded-2xl text-xs flex items-start gap-2 ${
+                    sendResult.success 
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                      : 'bg-rose-50 text-rose-800 border border-rose-200'
+                  }`}>
+                    {sendResult.success ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" /> : <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />}
+                    <span>{sendResult.message}</span>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={sending || !isConnected}
+                  className="w-full py-2.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 active:scale-95 text-white font-bold text-xs shadow-xs transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
+                >
+                  <Send className={`w-3.5 h-3.5 ${sending ? 'animate-spin' : ''}`} />
+                  <span>{sending ? 'Sedang Menghantar...' : 'Hantar Mesej Ujian'}</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
