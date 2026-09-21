@@ -398,7 +398,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 <Link
                   href="/catalog"
                   onClick={() => setIsFavoritesOpen(false)}
-                  className="w-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white font-bold py-3.5 rounded-2xl text-center active:scale-[0.98] transition-all flex items-center justify-center text-xs tracking-wide shadow-md shadow-blue-500/20"
+                  className="w-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white font-bold py-3.5 px-6 rounded-full text-center active:scale-[0.98] transition-all flex items-center justify-center text-xs tracking-wide shadow-md shadow-blue-500/20"
                 >
                   <span>Terokai Katalog</span>
                 </Link>
@@ -406,7 +406,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 <Link
                   href={`/auth/login?redirect=${encodeURIComponent(pathname)}`}
                   onClick={() => setIsFavoritesOpen(false)}
-                  className="w-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white font-bold py-3.5 rounded-2xl text-center active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs tracking-wide shadow-md shadow-blue-500/20"
+                  className="w-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white font-bold py-3.5 px-6 rounded-full text-center active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs tracking-wide shadow-md shadow-blue-500/20"
                 >
                   <LogIn className="w-3.5 h-3.5" />
                   <span>Log Masuk Untuk Akses Kegemaran</span>

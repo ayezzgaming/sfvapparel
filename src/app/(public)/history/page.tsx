@@ -259,7 +259,7 @@ export default function HistoryPage() {
                 })}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-[#25D366] text-white font-medium py-3 rounded-xl text-center active:bg-emerald-600 transition-colors flex items-center justify-center space-x-2 shadow-xs text-xs"
+                className="w-full bg-[#25D366] hover:bg-emerald-600 text-white font-bold py-3.5 px-6 rounded-full text-center active:scale-[0.98] transition-all flex items-center justify-center space-x-2 shadow-md shadow-emerald-500/20 text-xs"
               >
                 <FaWhatsapp className="w-4 h-4" />
                 <span>Semak Kemaskini dengan Kilang (WhatsApp)</span>
@@ -268,7 +268,7 @@ export default function HistoryPage() {
               <button
                 type="button"
                 onClick={() => handleDeleteOrder(selectedOrder.id, selectedOrder.order_number)}
-                className="w-full py-2.5 text-center text-xs font-medium text-slate-400 hover:text-rose-600 transition-colors"
+                className="w-full py-2.5 text-center text-xs font-semibold text-slate-400 hover:text-rose-600 transition-colors"
               >
                 Padam Rekod Ini
               </button>

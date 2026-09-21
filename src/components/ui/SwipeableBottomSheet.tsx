@@ -26,7 +26,7 @@ export default function SwipeableBottomSheet({
   children,
   footer,
   maxHeight = 'max-h-[85vh]',
-  showCloseButton = true,
+  showCloseButton = false,
 }: SwipeableBottomSheetProps) {
   const [mounted, setMounted] = useState(false);
   const sheetId = React.useId();
@@ -160,31 +160,18 @@ export default function SwipeableBottomSheet({
             <div className="w-12 h-1.5 bg-gray-300 rounded-full active:bg-gray-400 transition-colors" />
           </div>
 
-          {(title || subtitle || badge || showCloseButton) && (
-            <div className="flex justify-between items-center pb-1">
-              <div className="flex-1 pr-2">
-                {badge && <div className="mb-1">{badge}</div>}
-                {title && (
-                  <div className="font-bold text-slate-900 text-base leading-tight">
-                    {title}
-                  </div>
-                )}
-                {subtitle && (
-                  <div className="text-[11px] text-slate-400 mt-0.5 leading-snug">
-                    {subtitle}
-                  </div>
-                )}
-              </div>
-
-              {showCloseButton && (
-                <button
-                  type="button"
-                  onClick={onClose}
-                  aria-label="Tutup"
-                  className="bg-gray-100 p-2 rounded-full text-gray-500 hover:bg-gray-200 active:scale-95 transition-colors shrink-0"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+          {(title || subtitle || badge) && (
+            <div className="pb-1 text-center sm:text-left">
+              {badge && <div className="mb-1 flex justify-center sm:justify-start">{badge}</div>}
+              {title && (
+                <div className="font-bold text-slate-900 text-base leading-snug">
+                  {title}
+                </div>
+              )}
+              {subtitle && (
+                <div className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                  {subtitle}
+                </div>
               )}
             </div>
           )}

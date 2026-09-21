@@ -1260,7 +1260,7 @@ export default function HomePage() {
                 alt={selectedProduct.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute top-3 left-3 bg-[#00BDFF] text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+              <div className="absolute top-3 left-3 bg-[#0052FF] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-sm">
                 {selectedProduct.category}
               </div>
             </div>
@@ -1269,16 +1269,16 @@ export default function HomePage() {
               <h3 className="text-lg font-bold text-slate-900 tracking-tight">
                 {selectedProduct.headline}
               </h3>
-              <p className="text-xs text-[#00BDFF] font-semibold mt-0.5">
+              <p className="text-xs text-[#0052FF] font-semibold mt-0.5">
                 {selectedProduct.highlight}
               </p>
             </div>
 
-            <div className="space-y-3.5 border-t border-slate-100 pt-4">
+            <div className="space-y-3 border-t border-slate-100 pt-4">
               {selectedProduct.details?.map((detail, idx) => (
-                <div key={idx} className="space-y-1">
+                <div key={idx} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1">
                   <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0052FF] shrink-0" />
                     <span>{detail.title}</span>
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed pl-5">
@@ -1292,17 +1292,16 @@ export default function HomePage() {
               <Link
                 href={selectedProduct.href}
                 onClick={() => setIsProductSheetOpen(false)}
-                className="w-full py-3 px-4 rounded-xl bg-[#00BDFF] hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md shadow-blue-500/20 active:scale-[0.98] transition-all"
+                className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md shadow-blue-500/20 active:scale-[0.98] transition-all"
               >
                 <span>Lihat Templat {selectedProduct.title}</span>
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4 text-white/90" />
               </Link>
             </div>
           </div>
         </SwipeableBottomSheet>
       )}
 
-      {/* =========================================================================
       {/* =========================================================================
           ORDER STEP DETAILS BOTTOM SHEET MODAL (CLEAN & SPACIOUS)
          ========================================================================= */}
@@ -1311,7 +1310,7 @@ export default function HomePage() {
         onClose={() => setIsStepSheetOpen(false)}
         showCloseButton={false}
         badge={
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] text-[11px] font-bold border border-blue-100">
+          <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-[#0052FF] text-[11px] font-bold border border-blue-100">
             Langkah {selectedStep.step}
           </span>
         }
@@ -1319,7 +1318,7 @@ export default function HomePage() {
       >
         <div className="space-y-4 select-none font-ios pb-1">
           {/* Clean Description Card */}
-          <div className="p-4 rounded-2xl bg-slate-50/90 border border-slate-200/70 text-[13px] text-slate-600 leading-relaxed">
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 text-[13px] text-slate-700 leading-relaxed">
             {selectedStep.detailDesc}
           </div>
 
@@ -1333,7 +1332,7 @@ export default function HomePage() {
                 {selectedStep.points.map((pt, i) => (
                   <div
                     key={i}
-                    className="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-100 shadow-2xs text-[12.5px] text-slate-700 leading-relaxed"
+                    className="flex items-start gap-3 p-3.5 rounded-2xl bg-white border border-slate-100 shadow-2xs text-[12.5px] text-slate-700 leading-relaxed"
                   >
                     <div className="w-5 h-5 rounded-full bg-blue-50 text-[#0052FF] border border-blue-100 flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">
                       ✓
@@ -1345,12 +1344,12 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* Action Button - SFV Brand Blue Gradient (Never Black) */}
+          {/* Action Button - Capsule SFV Brand Blue Gradient */}
           <div className="pt-2">
             <button
               type="button"
               onClick={() => setIsStepSheetOpen(false)}
-              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs tracking-wide text-center active:scale-[0.98] transition-all shadow-md shadow-blue-500/20"
+              className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs tracking-wide text-center active:scale-[0.98] transition-all shadow-md shadow-blue-500/20"
             >
               Faham & Tutup
             </button>
@@ -1375,9 +1374,9 @@ export default function HomePage() {
 
             <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
               {policies[selectedPolicyKey].sections?.map((sec, idx) => (
-                <div key={idx} className="p-3.5 rounded-xl bg-white border border-slate-100 shadow-2xs space-y-1">
+                <div key={idx} className="p-4 rounded-2xl bg-white border border-slate-100 shadow-2xs space-y-1.5">
                   <h4 className="font-bold text-slate-900 text-xs">{sec.heading}</h4>
-                  <p className="text-slate-600 leading-relaxed text-[12px]">{sec.text}</p>
+                  <p className="text-slate-600 leading-relaxed text-[12.5px]">{sec.text}</p>
                 </div>
               ))}
             </div>
@@ -1386,7 +1385,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setIsPolicySheetOpen(false)}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs text-center active:scale-[0.98] transition-all shadow-md shadow-blue-500/20"
+                className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs text-center active:scale-[0.98] transition-all shadow-md shadow-blue-500/20"
               >
                 Tutup Maklumat
               </button>
@@ -1416,7 +1415,7 @@ export default function HomePage() {
                 alt={selectedGalleryItem.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md text-[#00BDFF] text-[11px] font-bold px-3 py-1 rounded-full shadow-sm border border-sky-100">
+              <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md text-[#0052FF] text-[11px] font-bold px-3 py-1 rounded-full shadow-sm border border-sky-100">
                 {selectedGalleryItem.tag}
               </div>
 
@@ -1429,7 +1428,7 @@ export default function HomePage() {
             {/* Details Summary Card */}
             <div className="space-y-3 p-4 rounded-2xl bg-slate-50 border border-slate-200/70">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#00BDFF]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0052FF]">
                   Hasil Produksi Sebenar
                 </span>
                 <h3 className="text-base font-bold text-slate-900 tracking-tight leading-snug mt-0.5">
@@ -1449,7 +1448,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Action Buttons */}
+            {/* Action Buttons - Capsule */}
             <div className="pt-1 space-y-2">
               <a
                 href={formatWhatsAppLink(
@@ -1458,7 +1457,7 @@ export default function HomePage() {
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md shadow-emerald-500/20 active:scale-[0.98] transition-all"
+                className="w-full py-3.5 px-6 rounded-full bg-[#25D366] hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md shadow-emerald-500/20 active:scale-[0.98] transition-all"
               >
                 <FaWhatsapp className="w-4 h-4 text-white" />
                 <span>Tempah Rekaan Seperti Ini di WhatsApp</span>
@@ -1467,7 +1466,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setIsGallerySheetOpen(false)}
-                className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs text-center active:scale-[0.98] transition-all"
+                className="w-full py-3 px-6 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs text-center active:scale-[0.98] transition-all"
               >
                 Tutup Maklumat
               </button>
