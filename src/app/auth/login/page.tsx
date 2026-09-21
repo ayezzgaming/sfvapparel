@@ -178,9 +178,9 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F2F2F7] flex flex-col justify-between p-4 font-ios antialiased selection:bg-slate-200">
+    <div className="h-[100dvh] min-h-[100dvh] w-full bg-[#F2F2F7] flex flex-col justify-between px-4 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+1.25rem)] overflow-y-auto sparkle-scroll font-ios antialiased selection:bg-slate-200">
       {/* Top Bar / Back button */}
-      <div className="w-full max-w-md mx-auto pt-4 flex items-center justify-between">
+      <div className="w-full max-w-md mx-auto flex items-center justify-between shrink-0">
         <Link
           href={redirectTo}
           className="inline-flex items-center gap-1 text-xs text-slate-600 hover:text-slate-900 active:opacity-60 transition-opacity py-1 px-2 rounded-lg"
@@ -192,7 +192,7 @@ function LoginForm() {
       </div>
 
       {/* Center Container */}
-      <div className="w-full max-w-sm mx-auto my-auto py-6">
+      <div className="w-full max-w-sm mx-auto my-auto py-6 shrink-0">
         
         {/* Brand Header (Apple Monochromatic Minimalist) */}
         <div className="text-center mb-7 space-y-1.5">
@@ -355,7 +355,7 @@ function LoginForm() {
       </div>
 
       {/* Footer System Info */}
-      <div className="w-full max-w-md mx-auto pb-4 text-center">
+      <div className="w-full max-w-md mx-auto pt-4 pb-1 text-center shrink-0">
         <p className="text-[10px] text-slate-400 font-medium">
           SFV Apparel • Sistem Pengesahan Selamat
         </p>
@@ -369,7 +369,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#F2F2F7] flex items-center justify-center">
+        <div className="h-[100dvh] min-h-[100dvh] w-full bg-[#F2F2F7] flex items-center justify-center">
           <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
         </div>
       }
