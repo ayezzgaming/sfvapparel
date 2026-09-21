@@ -785,84 +785,86 @@ export default function HomePage() {
       {/* =========================================================================
           SECTION 3: PROSES PRODUKSI (DYNAMIC VIDEO REEL)
          ========================================================================= */}
-      <div className="w-full bg-white pt-6 pb-12 px-4 border-t border-gray-100">
-        <div className="mb-5 flex justify-between items-end">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Proses Produksi</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Lihat kualiti cetakan & kemasan jersi anda dihasilkan</p>
+      {(isLoadingCms || activeVideos.length > 0) && (
+        <div className="w-full bg-white pt-6 pb-12 px-4 border-t border-gray-100">
+          <div className="mb-5 flex justify-between items-end">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Proses Produksi</h2>
+              <p className="text-xs text-slate-500 mt-0.5">Lihat kualiti cetakan & kemasan jersi anda dihasilkan</p>
+            </div>
           </div>
-        </div>
 
-        <div 
-          className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar" 
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {isLoadingCms && activeVideos.length === 0 ? (
-            [1, 2].map((i) => (
-              <div
-                key={i}
-                className="shrink-0 w-[72vw] max-w-[270px] aspect-[9/15] rounded-[28px] bg-slate-200 animate-pulse flex flex-col justify-end p-4 space-y-2"
-              >
-                <div className="h-3 bg-slate-300 rounded w-1/3" />
-                <div className="h-5 bg-slate-300 rounded w-3/4" />
-              </div>
-            ))
-          ) : (
-            activeVideos.map((video) => (
-              <div 
-                key={video.id}
-                className="relative shrink-0 w-[72vw] max-w-[270px] aspect-[9/15] rounded-[28px] overflow-hidden bg-slate-900 snap-center shadow-lg shadow-slate-900/10 border border-slate-200/80 transition-transform active:scale-[0.98]"
-              >
-                {activeVideo === video.id ? (
-                  <iframe 
-                    className="absolute inset-0 w-full h-full"
-                    src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1&controls=1&modestbranding=1&rel=0&playsinline=1`} 
-                    title={video.title}
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                ) : (
-                  <div 
-                    className="relative w-full h-full cursor-pointer group"
-                    onClick={() => setActiveVideo(video.id)}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      src={video.thumbnail_url} 
-                      alt={video.title} 
-                      loading="lazy"
-                      decoding="async"
-                      className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
+          <div 
+            className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar" 
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {isLoadingCms && activeVideos.length === 0 ? (
+              [1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="shrink-0 w-[72vw] max-w-[270px] aspect-[9/15] rounded-[28px] bg-slate-200 animate-pulse flex flex-col justify-end p-4 space-y-2"
+                >
+                  <div className="h-3 bg-slate-300 rounded w-1/3" />
+                  <div className="h-5 bg-slate-300 rounded w-3/4" />
+                </div>
+              ))
+            ) : (
+              activeVideos.map((video) => (
+                <div 
+                  key={video.id}
+                  className="relative shrink-0 w-[72vw] max-w-[270px] aspect-[9/15] rounded-[28px] overflow-hidden bg-slate-900 snap-center shadow-lg shadow-slate-900/10 border border-slate-200/80 transition-transform active:scale-[0.98]"
+                >
+                  {activeVideo === video.id ? (
+                    <iframe 
+                      className="absolute inset-0 w-full h-full"
+                      src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1&controls=1&modestbranding=1&rel=0&playsinline=1`} 
+                      title={video.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
                     />
-                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/35 to-transparent pointer-events-none" />
+                  ) : (
+                    <div 
+                      className="relative w-full h-full cursor-pointer group"
+                      onClick={() => setActiveVideo(video.id)}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img 
+                        src={video.thumbnail_url} 
+                        alt={video.title} 
+                        loading="lazy"
+                        decoding="async"
+                        className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
+                      />
+                      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/35 to-transparent pointer-events-none" />
 
-                    {/* Play Button */}
-                    <div className="absolute inset-0 flex items-center justify-center z-10">
-                      <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-white/35 group-hover:bg-[#00BDFF] backdrop-blur-xl border border-white/70 shadow-[0_8px_30px_rgba(0,0,0,0.3)] flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110">
-                        <Play className="w-7 h-7 sm:w-8 sm:h-8 ml-1 fill-white text-white drop-shadow-md" />
+                      {/* Play Button */}
+                      <div className="absolute inset-0 flex items-center justify-center z-10">
+                        <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-white/35 group-hover:bg-[#00BDFF] backdrop-blur-xl border border-white/70 shadow-[0_8px_30px_rgba(0,0,0,0.3)] flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110">
+                          <Play className="w-7 h-7 sm:w-8 sm:h-8 ml-1 fill-white text-white drop-shadow-md" />
+                        </div>
+                      </div>
+
+                      <div className="absolute inset-x-0 bottom-0 p-4 pb-5 z-10">
+                        <span className="bg-[#00BDFF] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider mb-1.5 inline-block shadow-sm">
+                          {video.category}
+                        </span>
+                        <h3 className="text-white font-bold text-[15px] sm:text-[16px] leading-snug drop-shadow-md">
+                          {video.title}
+                        </h3>
+                        <p className="text-white/80 text-[11px] font-medium mt-1 flex items-center gap-1 group-hover:text-white transition-colors">
+                          <span>Tonton rakaman</span>
+                          <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                        </p>
                       </div>
                     </div>
-
-                    <div className="absolute inset-x-0 bottom-0 p-4 pb-5 z-10">
-                      <span className="bg-[#00BDFF] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider mb-1.5 inline-block shadow-sm">
-                        {video.category}
-                      </span>
-                      <h3 className="text-white font-bold text-[15px] sm:text-[16px] leading-snug drop-shadow-md">
-                        {video.title}
-                      </h3>
-                      <p className="text-white/80 text-[11px] font-medium mt-1 flex items-center gap-1 group-hover:text-white transition-colors">
-                        <span>Tonton rakaman</span>
-                        <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))
-          )}
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* =========================================================================
           SECTION 3.5: HASIL PRODUKSI KILANG (DYNAMIC SHOWCASE CAROUSEL)

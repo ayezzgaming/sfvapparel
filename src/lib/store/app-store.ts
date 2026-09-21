@@ -127,14 +127,14 @@ let storeState: AppStoreState = {
   cuts: INITIAL_APPAREL_CUTS,
   dtfDimensions: INITIAL_DTF_DIMENSIONS,
   tiers: INITIAL_QUANTITY_TIERS,
-  customers: INITIAL_CUSTOMERS,
-  orders: INITIAL_ORDERS,
+  customers: [],
+  orders: [],
   favorites: [],
-  heroBanners: INITIAL_CMS_HERO_BANNERS,
+  heroBanners: [],
   services: INITIAL_CMS_SERVICES,
-  productionVideos: INITIAL_CMS_PRODUCTION_VIDEOS,
-  productionGallery: INITIAL_CMS_PRODUCTION_GALLERY,
-  testimonials: INITIAL_CMS_TESTIMONIALS,
+  productionVideos: [],
+  productionGallery: [],
+  testimonials: [],
   sloganQuote: INITIAL_CMS_SLOGAN_QUOTE,
   companySettings: INITIAL_CMS_COMPANY_SETTINGS,
   policies: INITIAL_CMS_POLICIES,
@@ -156,7 +156,7 @@ function notify() {
  */
 async function fetchAndSyncAllDb() {
   const isDesignsEmpty = storeState.designs.length === 0;
-  const isCmsEmpty = storeState.heroBanners.length === 0;
+  const isCmsEmpty = storeState.heroBanners.length === 0 && storeState.productionVideos.length === 0;
 
   if (isDesignsEmpty || isCmsEmpty) {
     storeState = {
@@ -173,7 +173,7 @@ async function fetchAndSyncAllDb() {
     // -------------------------------------------------------------
     const designsPromise = getDesignsDb()
       .then((res) => {
-        if (res.success && Array.isArray(res.designs) && res.designs.length > 0) {
+        if (res.success && Array.isArray(res.designs)) {
           storeState = { ...storeState, designs: res.designs };
         }
       })
@@ -195,11 +195,11 @@ async function fetchAndSyncAllDb() {
 
           storeState = {
             ...storeState,
-            heroBanners: Array.isArray(heroBanners) && heroBanners.length > 0 ? heroBanners : storeState.heroBanners,
+            heroBanners: Array.isArray(heroBanners) ? heroBanners : [],
             services: Array.isArray(services) && services.length > 0 ? services : storeState.services,
-            productionVideos: Array.isArray(productionVideos) && productionVideos.length > 0 ? productionVideos : storeState.productionVideos,
-            productionGallery: Array.isArray(productionGallery) && productionGallery.length > 0 ? productionGallery : storeState.productionGallery,
-            testimonials: Array.isArray(testimonials) && testimonials.length > 0 ? testimonials : storeState.testimonials,
+            productionVideos: Array.isArray(productionVideos) ? productionVideos : [],
+            productionGallery: Array.isArray(productionGallery) ? productionGallery : [],
+            testimonials: Array.isArray(testimonials) ? testimonials : [],
             sloganQuote: sloganQuote || storeState.sloganQuote,
             companySettings: companySettings || storeState.companySettings,
             policies: policies || storeState.policies,
@@ -289,14 +289,14 @@ const serverSnapshot: AppStoreState = {
   cuts: INITIAL_APPAREL_CUTS,
   dtfDimensions: INITIAL_DTF_DIMENSIONS,
   tiers: INITIAL_QUANTITY_TIERS,
-  customers: INITIAL_CUSTOMERS,
-  orders: INITIAL_ORDERS,
+  customers: [],
+  orders: [],
   favorites: [],
-  heroBanners: INITIAL_CMS_HERO_BANNERS,
+  heroBanners: [],
   services: INITIAL_CMS_SERVICES,
-  productionVideos: INITIAL_CMS_PRODUCTION_VIDEOS,
-  productionGallery: INITIAL_CMS_PRODUCTION_GALLERY,
-  testimonials: INITIAL_CMS_TESTIMONIALS,
+  productionVideos: [],
+  productionGallery: [],
+  testimonials: [],
   sloganQuote: INITIAL_CMS_SLOGAN_QUOTE,
   companySettings: INITIAL_CMS_COMPANY_SETTINGS,
   policies: INITIAL_CMS_POLICIES,
