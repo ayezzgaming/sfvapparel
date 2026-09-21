@@ -17,7 +17,11 @@ import {
   PackageCheck,
   ZoomIn,
   Maximize2,
-  X
+  X,
+  Star,
+  Sparkles,
+  Award,
+  ThumbsUp
 } from 'lucide-react';
 import { FaWhatsapp, FaTiktok, FaFacebookF, FaInstagram, FaTelegram } from 'react-icons/fa6';
 import { formatWhatsAppLink } from '@/lib/whatsapp/dynamic-link';
@@ -29,30 +33,20 @@ import {
   CmsProductionVideo, 
   CmsProductionGalleryItem, 
   CmsTestimonial, 
-  CmsPolicy
+  CmsPolicy,
+  CmsTrustBadge
 } from '@/types/database';
+import { INITIAL_CMS_TRUST_BADGES } from '@/lib/store/seed-data';
 
-interface TrustBadgeItem {
-  id: string;
-  title: string;
-  desc: string;
-  pill: string;
-  icon: React.ElementType;
+export const BADGE_THEMES: Record<string, {
   gradient: string;
   border: string;
   iconBg: string;
   iconColor: string;
   pillStyle: string;
   dotActive: string;
-}
-
-const TRUST_BADGES: TrustBadgeItem[] = [
-  {
-    id: 'direct-kilang',
-    title: 'Harga Direct Kilang',
-    desc: 'Tanpa orang tengah · Lebih jimat & telus',
-    pill: 'Direct Kilang',
-    icon: Building2,
+}> = {
+  sky: {
     gradient: 'from-white via-slate-50/50 to-sky-50/30',
     border: 'border-slate-200/90 dark:border-zinc-800',
     iconBg: 'bg-[#00BDFF]/10 text-[#00BDFF]',
@@ -60,12 +54,7 @@ const TRUST_BADGES: TrustBadgeItem[] = [
     pillStyle: 'bg-sky-50 text-[#00BDFF] border-sky-100',
     dotActive: 'bg-[#00BDFF]',
   },
-  {
-    id: 'no-moq',
-    title: 'Tiada Minimum Order',
-    desc: 'Kustom & DTF · 1 helai pun kami buat',
-    pill: 'Bebas MOQ',
-    icon: PackageCheck,
+  indigo: {
     gradient: 'from-white via-slate-50/50 to-indigo-50/30',
     border: 'border-slate-200/90 dark:border-zinc-800',
     iconBg: 'bg-indigo-500/10 text-indigo-600',
@@ -73,25 +62,7 @@ const TRUST_BADGES: TrustBadgeItem[] = [
     pillStyle: 'bg-indigo-50 text-indigo-700 border-indigo-100',
     dotActive: 'bg-indigo-600',
   },
-  {
-    id: 'siap-pantas',
-    title: 'Siap Pantas 5-7 Hari',
-    desc: 'Produksi pantas · Penghantaran tepat masa',
-    pill: 'Express Siap',
-    icon: Clock,
-    gradient: 'from-white via-slate-50/50 to-sky-50/30',
-    border: 'border-slate-200/90 dark:border-zinc-800',
-    iconBg: 'bg-sky-500/10 text-sky-600',
-    iconColor: 'text-sky-600',
-    pillStyle: 'bg-sky-50 text-sky-700 border-sky-100',
-    dotActive: 'bg-sky-600',
-  },
-  {
-    id: 'qc-guarantee',
-    title: 'Jaminan 1-to-1 QC',
-    desc: 'Pemeriksaan kualiti rapi · Ganti jika rosak',
-    pill: '100% QC Pass',
-    icon: ShieldCheck,
+  emerald: {
     gradient: 'from-white via-slate-50/50 to-emerald-50/30',
     border: 'border-slate-200/90 dark:border-zinc-800',
     iconBg: 'bg-emerald-500/10 text-emerald-600',
@@ -99,7 +70,56 @@ const TRUST_BADGES: TrustBadgeItem[] = [
     pillStyle: 'bg-emerald-50 text-emerald-700 border-emerald-100',
     dotActive: 'bg-emerald-600',
   },
-];
+  amber: {
+    gradient: 'from-white via-slate-50/50 to-amber-50/30',
+    border: 'border-slate-200/90 dark:border-zinc-800',
+    iconBg: 'bg-amber-500/10 text-amber-600',
+    iconColor: 'text-amber-600',
+    pillStyle: 'bg-amber-50 text-amber-700 border-amber-100',
+    dotActive: 'bg-amber-600',
+  },
+  blue: {
+    gradient: 'from-white via-slate-50/50 to-blue-50/30',
+    border: 'border-slate-200/90 dark:border-zinc-800',
+    iconBg: 'bg-blue-500/10 text-blue-600',
+    iconColor: 'text-blue-600',
+    pillStyle: 'bg-blue-50 text-blue-700 border-blue-100',
+    dotActive: 'bg-blue-600',
+  },
+  rose: {
+    gradient: 'from-white via-slate-50/50 to-rose-50/30',
+    border: 'border-slate-200/90 dark:border-zinc-800',
+    iconBg: 'bg-rose-500/10 text-rose-600',
+    iconColor: 'text-rose-600',
+    pillStyle: 'bg-rose-50 text-rose-700 border-rose-100',
+    dotActive: 'bg-rose-600',
+  },
+  purple: {
+    gradient: 'from-white via-slate-50/50 to-purple-50/30',
+    border: 'border-slate-200/90 dark:border-zinc-800',
+    iconBg: 'bg-purple-500/10 text-purple-600',
+    iconColor: 'text-purple-600',
+    pillStyle: 'bg-purple-50 text-purple-700 border-purple-100',
+    dotActive: 'bg-purple-600',
+  },
+};
+
+export function getTrustIconComponent(iconName?: string): React.ElementType {
+  switch (iconName) {
+    case 'Building2': return Building2;
+    case 'PackageCheck': return PackageCheck;
+    case 'Clock': return Clock;
+    case 'ShieldCheck': return ShieldCheck;
+    case 'Truck': return Truck;
+    case 'Zap': return Zap;
+    case 'CheckCircle2': return CheckCircle2;
+    case 'Star': return Star;
+    case 'Sparkles': return Sparkles;
+    case 'Award': return Award;
+    case 'ThumbsUp': return ThumbsUp;
+    default: return Building2;
+  }
+}
 
 interface StepDetail {
   step: string;
@@ -211,6 +231,7 @@ export default function HomePage() {
   const {
     isLoadingCms,
     heroBanners,
+    trustBadges,
     services,
     productionVideos,
     productionGallery,
@@ -401,16 +422,22 @@ export default function HomePage() {
   const [activeTrustIndex, setActiveTrustIndex] = useState(0);
   const [isTrustPaused, setIsTrustPaused] = useState(false);
 
+  const activeBadges = (trustBadges && trustBadges.length > 0)
+    ? trustBadges.filter((b) => b.is_active)
+    : INITIAL_CMS_TRUST_BADGES;
+  const safeTrustBadges = activeBadges.length > 0 ? activeBadges : INITIAL_CMS_TRUST_BADGES;
+
   useEffect(() => {
-    if (isTrustPaused) return;
+    if (isTrustPaused || safeTrustBadges.length <= 1) return;
     const interval = setInterval(() => {
-      setActiveTrustIndex((prev) => (prev + 1) % TRUST_BADGES.length);
+      setActiveTrustIndex((prev) => (prev + 1) % safeTrustBadges.length);
     }, 3200);
     return () => clearInterval(interval);
-  }, [isTrustPaused]);
+  }, [isTrustPaused, safeTrustBadges.length]);
 
-  const currentTrust = TRUST_BADGES[activeTrustIndex];
-  const TrustIcon = currentTrust.icon;
+  const currentTrust = safeTrustBadges[activeTrustIndex] || safeTrustBadges[0] || INITIAL_CMS_TRUST_BADGES[0];
+  const TrustIcon = getTrustIconComponent(currentTrust.icon_name);
+  const currentTheme = BADGE_THEMES[currentTrust.color_theme] || BADGE_THEMES.sky;
 
   const currentBanner = activeBanners[activeBannerIndex] || activeBanners[0] || null;
 
@@ -515,10 +542,10 @@ export default function HomePage() {
 
         {/* 1.5 VALUE PROPOSITION / TRUST CARD SWAP (Compact, Soft Color & Auto-Slide) */}
         <div 
-          className={`relative overflow-hidden rounded-2xl border ${currentTrust.border} bg-gradient-to-r ${currentTrust.gradient} p-3 sm:p-3.5 shadow-xs transition-all duration-500 cursor-pointer select-none group`}
+          className={`relative overflow-hidden rounded-2xl border ${currentTheme.border} bg-gradient-to-r ${currentTheme.gradient} p-3 sm:p-3.5 shadow-xs transition-all duration-500 cursor-pointer select-none group`}
           onMouseEnter={() => setIsTrustPaused(true)}
           onMouseLeave={() => setIsTrustPaused(false)}
-          onClick={() => setActiveTrustIndex((prev) => (prev + 1) % TRUST_BADGES.length)}
+          onClick={() => setActiveTrustIndex((prev) => (prev + 1) % safeTrustBadges.length)}
           role="button"
           tabIndex={0}
           aria-label={`Jaminan: ${currentTrust.title}`}
@@ -528,7 +555,7 @@ export default function HomePage() {
               {/* Soft Animated Icon */}
               <div 
                 key={`icon-${currentTrust.id}`}
-                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${currentTrust.iconBg} flex items-center justify-center shrink-0 shadow-xs transition-transform duration-300 group-hover:scale-105`}
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${currentTheme.iconBg} flex items-center justify-center shrink-0 shadow-xs transition-transform duration-300 group-hover:scale-105`}
               >
                 <TrustIcon className="w-5 h-5 stroke-[2.2]" />
               </div>
@@ -539,7 +566,7 @@ export default function HomePage() {
                   <span className="text-[12px] sm:text-[13px] font-bold text-slate-900 tracking-tight leading-tight">
                     {currentTrust.title}
                   </span>
-                  <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md border ${currentTrust.pillStyle} tracking-wide`}>
+                  <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md border ${currentTheme.pillStyle} tracking-wide`}>
                     {currentTrust.pill}
                   </span>
                 </div>
@@ -550,27 +577,30 @@ export default function HomePage() {
             </div>
 
             {/* Slide Navigation & Mini Soft Indicator Dots */}
-            <div className="flex items-center gap-1 shrink-0 pl-1">
-              {TRUST_BADGES.map((badge, idx) => {
-                const isActive = idx === activeTrustIndex;
-                return (
-                  <button
-                    key={badge.id}
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveTrustIndex(idx);
-                    }}
-                    aria-label={`Slide ke ${badge.title}`}
-                    className={`transition-all duration-300 rounded-full ${
-                      isActive 
-                        ? `w-4 h-1.5 ${badge.dotActive} shadow-xs` 
-                        : 'w-1.5 h-1.5 bg-slate-300/80 hover:bg-slate-400'
-                    }`}
-                  />
-                );
-              })}
-            </div>
+            {safeTrustBadges.length > 1 && (
+              <div className="flex items-center gap-1 shrink-0 pl-1">
+                {safeTrustBadges.map((badge, idx) => {
+                  const isActive = idx === activeTrustIndex;
+                  const theme = BADGE_THEMES[badge.color_theme] || BADGE_THEMES.sky;
+                  return (
+                    <button
+                      key={badge.id}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveTrustIndex(idx);
+                      }}
+                      aria-label={`Slide ke ${badge.title}`}
+                      className={`transition-all duration-300 rounded-full ${
+                        isActive 
+                          ? `w-4 h-1.5 ${theme.dotActive} shadow-xs` 
+                          : 'w-1.5 h-1.5 bg-slate-300/80 hover:bg-slate-400'
+                      }`}
+                    />
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 

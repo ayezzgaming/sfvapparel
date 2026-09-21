@@ -8,7 +8,8 @@ import {
   CmsTestimonial, 
   CmsSloganQuote, 
   CmsCompanySettings, 
-  CmsPolicy 
+  CmsPolicy,
+  CmsTrustBadge
 } from '@/types/database';
 import { getServiceSupabase } from '@/lib/supabase/serverClient';
 import {
@@ -20,6 +21,7 @@ import {
   INITIAL_CMS_SLOGAN_QUOTE,
   INITIAL_CMS_COMPANY_SETTINGS,
   INITIAL_CMS_POLICIES,
+  INITIAL_CMS_TRUST_BADGES,
 } from '@/lib/store/seed-data';
 
 // Helper to validate UUID format (any version, including custom 0x-prefixed seed UUIDs)
@@ -114,6 +116,7 @@ export async function uploadCmsImageToStorage(
 
 export interface CmsFullData {
   heroBanners: CmsHeroBanner[];
+  trustBadges: CmsTrustBadge[];
   services: CmsService[];
   productionVideos: CmsProductionVideo[];
   productionGallery: CmsProductionGalleryItem[];
@@ -138,6 +141,7 @@ export async function getCmsDataDb(): Promise<{
         success: false,
         data: {
           heroBanners: [],
+          trustBadges: INITIAL_CMS_TRUST_BADGES,
           services: [],
           productionVideos: [],
           productionGallery: [],
@@ -334,10 +338,39 @@ export async function getCmsDataDb(): Promise<{
       is_active: Boolean(t.is_active ?? true),
     }));
 
+    // 9. Fetch Trust Badges
+    let formattedTrustBadges: CmsTrustBadge[] = INITIAL_CMS_TRUST_BADGES;
+    try {
+      const { data: trustRow } = await supabase.from('cms_policies').select('*').eq('id', 'trust_badges').maybeSingle();
+      if (trustRow && trustRow.sections && Array.isArray(trustRow.sections) && trustRow.sections.length > 0) {
+        formattedTrustBadges = trustRow.sections.map((b: any, idx: number) => ({
+          id: String(b.id || `badge-${idx + 1}`),
+          title: String(b.title || ''),
+          desc: String(b.desc || ''),
+          pill: String(b.pill || ''),
+          icon_name: String(b.icon_name || 'Building2'),
+          color_theme: String(b.color_theme || 'sky'),
+          sort_order: Number(b.sort_order ?? idx + 1),
+          is_active: Boolean(b.is_active ?? true),
+        }));
+      } else {
+        await supabase.from('cms_policies').upsert({
+          id: 'trust_badges',
+          badge: 'Kelebihan Kilang',
+          title: 'Kelebihan & Jaminan Terus Dari Kilang',
+          description: 'Trust badges slider on homepage',
+          sections: INITIAL_CMS_TRUST_BADGES,
+        });
+      }
+    } catch (e) {
+      console.warn('Failed to load trust badges from db, using initial seed:', e);
+    }
+
     return {
       success: true,
       data: {
         heroBanners: formattedBanners,
+        trustBadges: formattedTrustBadges,
         services: formattedServices,
         productionVideos: formattedVideos,
         productionGallery: formattedGallery,
@@ -354,6 +387,7 @@ export async function getCmsDataDb(): Promise<{
       success: false,
       data: {
         heroBanners: INITIAL_CMS_HERO_BANNERS,
+        trustBadges: INITIAL_CMS_TRUST_BADGES,
         services: INITIAL_CMS_SERVICES,
         productionVideos: INITIAL_CMS_PRODUCTION_VIDEOS,
         productionGallery: INITIAL_CMS_PRODUCTION_GALLERY,
@@ -1023,9 +1057,150 @@ export async function seedAllCmsToDb(): Promise<{ success: boolean; message?: st
     }));
     await supabase.from('cms_policies').upsert(seedPol);
 
+    // Trust Badges
+    await supabase.from('cms_policies').upsert({
+      id: 'trust_badges',
+      badge: 'Kelebihan Kilang',
+      title: 'Kelebihan & Jaminan Terus Dari Kilang',
+      description: 'Trust badges slider on homepage',
+      sections: INITIAL_CMS_TRUST_BADGES,
+    });
+
     return { success: true };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Gagal menetapkan semula data CMS.';
+    return { success: false, message: msg };
+  }
+}
+
+/**
+ * Save All Trust Badges
+ */
+export async function saveTrustBadgesDb(badges: CmsTrustBadge[]): Promise<{
+  success: boolean;
+  data?: CmsTrustBadge[];
+  message?: string;
+}> {
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
+
+    const { error } = await supabase.from('cms_policies').upsert({
+      id: 'trust_badges',
+      badge: 'Kelebihan Kilang',
+      title: 'Kelebihan & Jaminan Terus Dari Kilang',
+      description: 'Trust badges slider on homepage',
+      sections: badges,
+    });
+
+    if (error) {
+      console.error('saveTrustBadgesDb error:', error.message);
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, data: badges };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Gagal menyimpan senarai kelebihan kilang.';
+    return { success: false, message: msg };
+  }
+}
+
+/**
+ * Save / Update Single Trust Badge
+ */
+export async function saveTrustBadgeDb(badge: Partial<CmsTrustBadge> & { id?: string }): Promise<{
+  success: boolean;
+  badge?: CmsTrustBadge;
+  message?: string;
+}> {
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
+
+    // Fetch existing
+    const { data: trustRow } = await supabase.from('cms_policies').select('*').eq('id', 'trust_badges').maybeSingle();
+    let currentBadges: CmsTrustBadge[] = INITIAL_CMS_TRUST_BADGES;
+    if (trustRow && trustRow.sections && Array.isArray(trustRow.sections) && trustRow.sections.length > 0) {
+      currentBadges = trustRow.sections;
+    }
+
+    const badgeId = badge.id || `badge-${Date.now()}`;
+    const existingIndex = currentBadges.findIndex((b) => b.id === badgeId);
+
+    let updatedBadge: CmsTrustBadge;
+    let nextBadges: CmsTrustBadge[];
+
+    if (existingIndex >= 0) {
+      updatedBadge = {
+        ...currentBadges[existingIndex],
+        ...badge,
+        id: badgeId,
+      };
+      nextBadges = currentBadges.map((b, idx) => (idx === existingIndex ? updatedBadge : b));
+    } else {
+      updatedBadge = {
+        id: badgeId,
+        title: badge.title || '',
+        desc: badge.desc || '',
+        pill: badge.pill || '',
+        icon_name: badge.icon_name || 'Building2',
+        color_theme: badge.color_theme || 'sky',
+        sort_order: badge.sort_order ?? currentBadges.length + 1,
+        is_active: badge.is_active ?? true,
+      };
+      nextBadges = [...currentBadges, updatedBadge];
+    }
+
+    const { error } = await supabase.from('cms_policies').upsert({
+      id: 'trust_badges',
+      badge: 'Kelebihan Kilang',
+      title: 'Kelebihan & Jaminan Terus Dari Kilang',
+      description: 'Trust badges slider on homepage',
+      sections: nextBadges,
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, badge: updatedBadge };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Gagal menyimpan badge.';
+    return { success: false, message: msg };
+  }
+}
+
+/**
+ * Delete Single Trust Badge
+ */
+export async function deleteTrustBadgeDb(id: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
+
+    const { data: trustRow } = await supabase.from('cms_policies').select('*').eq('id', 'trust_badges').maybeSingle();
+    let currentBadges: CmsTrustBadge[] = INITIAL_CMS_TRUST_BADGES;
+    if (trustRow && trustRow.sections && Array.isArray(trustRow.sections)) {
+      currentBadges = trustRow.sections;
+    }
+
+    const nextBadges = currentBadges.filter((b) => b.id !== id);
+
+    const { error } = await supabase.from('cms_policies').upsert({
+      id: 'trust_badges',
+      badge: 'Kelebihan Kilang',
+      title: 'Kelebihan & Jaminan Terus Dari Kilang',
+      description: 'Trust badges slider on homepage',
+      sections: nextBadges,
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Gagal memadam badge.';
     return { success: false, message: msg };
   }
 }

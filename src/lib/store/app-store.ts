@@ -20,6 +20,7 @@ import {
   CmsPolicy,
   CmsThemeSettings,
   CmsThemePresetKey,
+  CmsTrustBadge,
 } from '@/types/database';
 import { getDesignsDb, saveDesignDb, deleteDesignDb } from '@/app/actions/designActions';
 import {
@@ -37,6 +38,9 @@ import {
   saveSloganQuoteDb,
   saveCompanySettingsDb,
   savePolicyDb,
+  saveTrustBadgesDb,
+  saveTrustBadgeDb,
+  deleteTrustBadgeDb,
   seedAllCmsToDb,
 } from '@/app/actions/cmsActions';
 import {
@@ -60,6 +64,7 @@ import {
   INITIAL_ORDERS,
   INITIAL_QUANTITY_TIERS,
   INITIAL_CMS_HERO_BANNERS,
+  INITIAL_CMS_TRUST_BADGES,
   INITIAL_CMS_SERVICES,
   INITIAL_CMS_PRODUCTION_VIDEOS,
   INITIAL_CMS_PRODUCTION_GALLERY,
@@ -108,6 +113,7 @@ interface AppStoreState {
   orders: Order[];
   favorites: string[];
   heroBanners: CmsHeroBanner[];
+  trustBadges: CmsTrustBadge[];
   services: CmsService[];
   productionVideos: CmsProductionVideo[];
   productionGallery: CmsProductionGalleryItem[];
@@ -131,6 +137,7 @@ let storeState: AppStoreState = {
   orders: [],
   favorites: [],
   heroBanners: [],
+  trustBadges: INITIAL_CMS_TRUST_BADGES,
   services: INITIAL_CMS_SERVICES,
   productionVideos: [],
   productionGallery: [],
@@ -184,6 +191,7 @@ async function fetchAndSyncAllDb() {
         if (res.success && res.data) {
           const {
             heroBanners,
+            trustBadges,
             services,
             productionVideos,
             productionGallery,
@@ -196,6 +204,7 @@ async function fetchAndSyncAllDb() {
           storeState = {
             ...storeState,
             heroBanners: Array.isArray(heroBanners) ? heroBanners : [],
+            trustBadges: Array.isArray(trustBadges) && trustBadges.length > 0 ? trustBadges : storeState.trustBadges,
             services: Array.isArray(services) && services.length > 0 ? services : storeState.services,
             productionVideos: Array.isArray(productionVideos) ? productionVideos : [],
             productionGallery: Array.isArray(productionGallery) ? productionGallery : [],
@@ -293,6 +302,7 @@ const serverSnapshot: AppStoreState = {
   orders: [],
   favorites: [],
   heroBanners: [],
+  trustBadges: INITIAL_CMS_TRUST_BADGES,
   services: INITIAL_CMS_SERVICES,
   productionVideos: [],
   productionGallery: [],
@@ -711,6 +721,76 @@ export function useAppStore() {
     }
   }, []);
 
+  // Trust Badges / Value Proposition Cards
+  const addTrustBadge = useCallback(async (badge: Omit<CmsTrustBadge, 'id'>) => {
+    initStoreIfNeeded();
+    const tempId = `badge-${Date.now()}`;
+    const newBadge: CmsTrustBadge = { ...badge, id: tempId };
+    const next = [...storeState.trustBadges, newBadge];
+    storeState = { ...storeState, trustBadges: next };
+    notify();
+
+    try {
+      const res = await saveTrustBadgeDb(badge);
+      if (res.success && res.badge) {
+        const synced = storeState.trustBadges.map((b) => (b.id === tempId ? res.badge! : b));
+        storeState = { ...storeState, trustBadges: synced };
+        notify();
+        return res.badge;
+      }
+    } catch (e) {
+      console.error('Failed to save Trust Badge to DB:', e);
+    }
+    return newBadge;
+  }, []);
+
+  const updateTrustBadge = useCallback(async (id: string, updates: Partial<CmsTrustBadge>) => {
+    initStoreIfNeeded();
+    const next = storeState.trustBadges.map((b) => (b.id === id ? { ...b, ...updates } : b));
+    storeState = { ...storeState, trustBadges: next };
+    notify();
+
+    try {
+      const target = next.find((b) => b.id === id);
+      if (target) {
+        const res = await saveTrustBadgeDb({ ...target, ...updates, id });
+        if (res.success && res.badge) {
+          const synced = storeState.trustBadges.map((b) => (b.id === id ? res.badge! : b));
+          storeState = { ...storeState, trustBadges: synced };
+          notify();
+        }
+      }
+    } catch (e) {
+      console.error('Failed to update Trust Badge in DB:', e);
+    }
+  }, []);
+
+  const deleteTrustBadge = useCallback(async (id: string) => {
+    initStoreIfNeeded();
+    const next = storeState.trustBadges.filter((b) => b.id !== id);
+    storeState = { ...storeState, trustBadges: next };
+    notify();
+
+    try {
+      await deleteTrustBadgeDb(id);
+    } catch (e) {
+      console.error('Failed to delete Trust Badge from DB:', e);
+    }
+  }, []);
+
+  const reorderTrustBadges = useCallback(async (badges: CmsTrustBadge[]) => {
+    initStoreIfNeeded();
+    const updated = badges.map((b, idx) => ({ ...b, sort_order: idx + 1 }));
+    storeState = { ...storeState, trustBadges: updated };
+    notify();
+
+    try {
+      await saveTrustBadgesDb(updated);
+    } catch (e) {
+      console.error('Failed to reorder Trust Badges in DB:', e);
+    }
+  }, []);
+
   // Services
   const addService = useCallback(async (service: Omit<CmsService, 'id'>) => {
     initStoreIfNeeded();
@@ -1002,6 +1082,7 @@ export function useAppStore() {
       orders: INITIAL_ORDERS,
       favorites: [],
       heroBanners: INITIAL_CMS_HERO_BANNERS,
+      trustBadges: INITIAL_CMS_TRUST_BADGES,
       services: INITIAL_CMS_SERVICES,
       productionVideos: INITIAL_CMS_PRODUCTION_VIDEOS,
       productionGallery: INITIAL_CMS_PRODUCTION_GALLERY,
@@ -1037,6 +1118,7 @@ export function useAppStore() {
     orders: state.orders,
     favorites: state.favorites,
     heroBanners: state.heroBanners,
+    trustBadges: state.trustBadges,
     services: state.services,
     productionVideos: state.productionVideos,
     productionGallery: state.productionGallery,
@@ -1071,6 +1153,10 @@ export function useAppStore() {
     addHeroBanner,
     updateHeroBanner,
     deleteHeroBanner,
+    addTrustBadge,
+    updateTrustBadge,
+    deleteTrustBadge,
+    reorderTrustBadges,
     addService,
     updateService,
     deleteService,

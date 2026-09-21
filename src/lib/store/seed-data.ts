@@ -317,6 +317,49 @@ export const INITIAL_CMS_HERO_BANNERS = [
   },
 ];
 
+export const INITIAL_CMS_TRUST_BADGES = [
+  {
+    id: 'direct-kilang',
+    title: 'Harga Direct Kilang',
+    desc: 'Tanpa orang tengah · Lebih jimat & telus',
+    pill: 'Direct Kilang',
+    icon_name: 'Building2',
+    color_theme: 'sky',
+    sort_order: 1,
+    is_active: true,
+  },
+  {
+    id: 'no-moq',
+    title: 'Tiada Minimum Order',
+    desc: 'Kustom & DTF · 1 helai pun kami buat',
+    pill: 'Bebas MOQ',
+    icon_name: 'PackageCheck',
+    color_theme: 'indigo',
+    sort_order: 2,
+    is_active: true,
+  },
+  {
+    id: 'siap-pantas',
+    title: 'Siap Pantas 5-7 Hari',
+    desc: 'Produksi pantas · Penghantaran tepat masa',
+    pill: 'Express Siap',
+    icon_name: 'Clock',
+    color_theme: 'sky',
+    sort_order: 3,
+    is_active: true,
+  },
+  {
+    id: 'qc-guarantee',
+    title: 'Jaminan 1-to-1 QC',
+    desc: 'Pemeriksaan kualiti rapi · Ganti jika rosak',
+    pill: '100% QC Pass',
+    icon_name: 'ShieldCheck',
+    color_theme: 'emerald',
+    sort_order: 4,
+    is_active: true,
+  },
+];
+
 export const INITIAL_CMS_SERVICES = [
   {
     id: 'sublimation',

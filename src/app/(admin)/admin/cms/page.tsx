@@ -32,7 +32,14 @@ import {
   SlidersHorizontal,
   ChevronRight,
   ChevronLeft,
-  Search
+  Search,
+  PackageCheck,
+  Truck,
+  Zap,
+  Award,
+  ThumbsUp,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store/app-store';
 import { 
@@ -40,16 +47,19 @@ import {
   CmsService, 
   CmsProductionVideo, 
   CmsProductionGalleryItem, 
-  CmsTestimonial 
+  CmsTestimonial,
+  CmsTrustBadge
 } from '@/types/database';
 import ImageUploadField from '@/components/admin/ImageUploadField';
+import { BADGE_THEMES, getTrustIconComponent } from '@/app/(public)/page';
 
-type CmsTabKey = 'hero' | 'services' | 'slogan' | 'videos' | 'gallery' | 'testimonials' | 'company' | 'policies';
+type CmsTabKey = 'hero' | 'badges' | 'services' | 'slogan' | 'videos' | 'gallery' | 'testimonials' | 'company' | 'policies';
 
 export default function AdminCmsPage() {
   const {
     isLoadingCms,
     heroBanners,
+    trustBadges,
     services,
     productionVideos,
     productionGallery,
@@ -61,6 +71,10 @@ export default function AdminCmsPage() {
     addHeroBanner,
     updateHeroBanner,
     deleteHeroBanner,
+    addTrustBadge,
+    updateTrustBadge,
+    deleteTrustBadge,
+    reorderTrustBadges,
     addService,
     updateService,
     deleteService,
@@ -150,6 +164,61 @@ export default function AdminCmsPage() {
       triggerToast('Slide banner baharu berjaya ditambah!');
     }
     setIsBannerModalOpen(false);
+  };
+
+  // -------------------------------------------------------------
+  // TRUST BADGES (KELEBIHAN & JAMINAN KILANG) MODAL STATE
+  // -------------------------------------------------------------
+  const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
+  const [editingBadge, setEditingBadge] = useState<CmsTrustBadge | null>(null);
+  const [badgeForm, setBadgeForm] = useState({
+    title: '',
+    desc: '',
+    pill: '',
+    icon_name: 'Building2',
+    color_theme: 'sky',
+    is_active: true,
+  });
+
+  const handleOpenBadgeModal = (badge?: CmsTrustBadge) => {
+    if (badge) {
+      setEditingBadge(badge);
+      setBadgeForm({
+        title: badge.title,
+        desc: badge.desc,
+        pill: badge.pill,
+        icon_name: badge.icon_name || 'Building2',
+        color_theme: badge.color_theme || 'sky',
+        is_active: badge.is_active,
+      });
+    } else {
+      setEditingBadge(null);
+      setBadgeForm({
+        title: '',
+        desc: '',
+        pill: '',
+        icon_name: 'Building2',
+        color_theme: 'sky',
+        is_active: true,
+      });
+    }
+    setIsBadgeModalOpen(true);
+  };
+
+  const handleSaveBadge = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!badgeForm.title) return;
+    if (editingBadge) {
+      updateTrustBadge(editingBadge.id, badgeForm);
+      triggerToast('Sorotan kelebihan berjaya dikemaskini!');
+    } else {
+      addTrustBadge({
+        ...badgeForm,
+        sort_order: (trustBadges || []).length + 1,
+      });
+      triggerToast('Sorotan kelebihan baharu berjaya ditambah!');
+    }
+    setIsBadgeModalOpen(false);
   };
 
   // -------------------------------------------------------------
@@ -417,6 +486,17 @@ export default function AdminCmsPage() {
             <span>Tambah Slide Banner</span>
           </button>
         );
+      case 'badges':
+        return (
+          <button
+            type="button"
+            onClick={() => handleOpenBadgeModal()}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Tambah Kelebihan</span>
+          </button>
+        );
       case 'services':
         return (
           <button
@@ -467,12 +547,13 @@ export default function AdminCmsPage() {
   };
 
   const SECTIONS: { id: CmsTabKey; label: string; desc: string; icon: React.ElementType; count?: number }[] = [
-    { id: 'hero', label: 'Banner Utama', desc: 'Slide promosi & muka depan', icon: ImageIcon, count: heroBanners.length },
-    { id: 'services', label: 'Servis Kilang', desc: 'Pakej servis & cetakan', icon: Layers, count: services.length },
+    { id: 'hero', label: 'Banner Utama', desc: 'Slide promosi & muka depan', icon: ImageIcon, count: (heroBanners || []).length },
+    { id: 'badges', label: 'Sorotan & Kelebihan', desc: 'Kad nilai kilang (Direct Kilang, MOQ, QC)', icon: ShieldCheck, count: (trustBadges || []).length },
+    { id: 'services', label: 'Servis Kilang', desc: 'Pakej servis & cetakan', icon: Layers, count: (services || []).length },
     { id: 'slogan', label: 'Slogan & CTA', desc: 'Tajuk inspirasi & WhatsApp', icon: Quote },
-    { id: 'videos', label: 'Video Produksi', desc: 'Pautan video YouTube kilang', icon: Video, count: productionVideos.length },
-    { id: 'gallery', label: 'Hasil Kilang', desc: 'Portfolio jersi pelanggan', icon: Sparkles, count: productionGallery.length },
-    { id: 'testimonials', label: 'Testimoni', desc: 'Ulasan & penilaian bintang', icon: Star, count: testimonials.length },
+    { id: 'videos', label: 'Video Produksi', desc: 'Pautan video YouTube kilang', icon: Video, count: (productionVideos || []).length },
+    { id: 'gallery', label: 'Hasil Kilang', desc: 'Portfolio jersi pelanggan', icon: Sparkles, count: (productionGallery || []).length },
+    { id: 'testimonials', label: 'Testimoni', desc: 'Ulasan & penilaian bintang', icon: Star, count: (testimonials || []).length },
     { id: 'company', label: 'Profil Syarikat', desc: 'SSM, WhatsApp & Alamat', icon: Building2 },
     { id: 'policies', label: 'Polisi & Terma', desc: 'Privasi, Jaminan & Terma', icon: FileText },
   ];
@@ -637,6 +718,7 @@ export default function AdminCmsPage() {
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
                 {activeTab === 'hero' && 'Pengurusan Slide Banner Utama'}
+                {activeTab === 'badges' && 'Pengurusan Sorotan Kelebihan & Jaminan Kilang'}
                 {activeTab === 'services' && 'Pengurusan Pilihan Servis Kilang'}
                 {activeTab === 'slogan' && 'Slogan Utama & Ajakan Tindakan'}
                 {activeTab === 'videos' && 'Rakaman Video Proses Produksi'}
@@ -647,6 +729,7 @@ export default function AdminCmsPage() {
               </h2>
               <p className="text-[11px] text-slate-500 mt-0.5">
                 {activeTab === 'hero' && 'Susun imej banner, tajuk, tag dan pautan butang katalog muka depan'}
+                {activeTab === 'badges' && 'Urus kad slaid nilai (Harga Direct Kilang, Tiada MOQ, QC, Siap Pantas) pada muka depan awam'}
                 {activeTab === 'services' && 'Katalog kad servis, jenis cetakan dan penentuan harga'}
                 {activeTab === 'slogan' && 'Sesuaikan teks tajuk inspirasi dan mesej templat WhatsApp'}
                 {activeTab === 'videos' && 'Pautan rakaman YouTube untuk tatapan pelanggan'}
@@ -659,7 +742,7 @@ export default function AdminCmsPage() {
 
             {/* Contextual Internal Sub-Toggles */}
             <div className="flex items-center gap-2 shrink-0">
-              {(activeTab === 'hero' || activeTab === 'services' || activeTab === 'videos' || activeTab === 'gallery' || activeTab === 'testimonials') && (
+              {(activeTab === 'hero' || activeTab === 'badges' || activeTab === 'services' || activeTab === 'videos' || activeTab === 'gallery' || activeTab === 'testimonials') && (
                 <div className="flex items-center bg-slate-100/90 dark:bg-zinc-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
                   <button
                     type="button"
@@ -891,6 +974,191 @@ export default function AdminCmsPage() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* =========================================================================
+                TAB 1.5: SOROTAN & KELEBIHAN KILANG (TRUST BADGES)
+               ========================================================================= */}
+            {activeTab === 'badges' && (
+              <div className="space-y-4">
+                {/* Info Card */}
+                <div className="p-3.5 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/70 dark:border-blue-900/60 flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div className="text-xs space-y-0.5">
+                    <p className="font-bold text-blue-950 dark:text-blue-100">
+                      Sorotan Nilai & Jaminan Terus Dari Kilang (Public Slider)
+                    </p>
+                    <p className="text-blue-800/80 dark:text-blue-300 text-[11px] leading-relaxed">
+                      Kad ini dipaparkan betul-betul di bawah Banner Utama pada halaman depan pelanggan. Ia bertukar secara auto-slide untuk meyakinkan pelanggan tentang kelebihan kilang anda (Harga Direct Kilang, Tiada MOQ, Siap Pantas, QC Guarantee).
+                    </p>
+                  </div>
+                </div>
+
+                {viewMode === 'grid' ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {(trustBadges || []).map((badge, idx) => {
+                      const theme = BADGE_THEMES[badge.color_theme] || BADGE_THEMES.sky;
+                      const Icon = getTrustIconComponent(badge.icon_name);
+                      return (
+                        <div
+                          key={badge.id}
+                          className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group"
+                        >
+                          {/* Live Preview Header */}
+                          <div className={`p-3.5 bg-gradient-to-r ${theme.gradient} border-b ${theme.border}`}>
+                            <div className="flex items-center justify-between gap-2 mb-2.5">
+                              <span className="text-[10px] font-bold text-slate-400 font-mono">
+                                #{idx + 1}
+                              </span>
+                              <span className={`text-[9.5px] font-bold px-2 py-0.5 rounded-md border ${theme.pillStyle}`}>
+                                {badge.pill || 'Status'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-xl ${theme.iconBg} flex items-center justify-center shrink-0 shadow-xs`}>
+                                <Icon className="w-5 h-5 stroke-[2.2]" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
+                                  {badge.title}
+                                </h4>
+                                <p className="text-[10.5px] text-slate-500 font-medium truncate mt-0.5">
+                                  {badge.desc}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Controls Footer */}
+                          <div className="p-3 bg-white dark:bg-zinc-900 flex items-center justify-between border-t border-slate-100 dark:border-zinc-800">
+                            <div className="flex items-center space-x-2">
+                              <button
+                                type="button"
+                                onClick={() => updateTrustBadge(badge.id, { is_active: !badge.is_active })}
+                                className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-full transition-colors ${
+                                  badge.is_active
+                                    ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                                }`}
+                              >
+                                {badge.is_active ? 'Aktif' : 'Nyahaktif'}
+                              </button>
+                              <span className="text-[10px] text-slate-400 capitalize">
+                                Tema: {badge.color_theme || 'sky'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center space-x-1">
+                              {/* Reorder buttons */}
+                              <button
+                                type="button"
+                                disabled={idx === 0}
+                                onClick={() => {
+                                  if (idx === 0) return;
+                                  const next = [...trustBadges];
+                                  const temp = next[idx - 1];
+                                  next[idx - 1] = next[idx];
+                                  next[idx] = temp;
+                                  reorderTrustBadges(next);
+                                }}
+                                className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                                title="Gerak Ke Atas"
+                              >
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={idx === (trustBadges || []).length - 1}
+                                onClick={() => {
+                                  if (idx === (trustBadges || []).length - 1) return;
+                                  const next = [...trustBadges];
+                                  const temp = next[idx + 1];
+                                  next[idx + 1] = next[idx];
+                                  next[idx] = temp;
+                                  reorderTrustBadges(next);
+                                }}
+                                className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                                title="Gerak Ke Bawah"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenBadgeModal(badge)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                title="Edit"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (confirm(`Padam sorotan "${badge.title}"?`)) {
+                                    deleteTrustBadge(badge.id);
+                                    triggerToast('Sorotan dipadam');
+                                  }
+                                }}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                title="Padam"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden divide-y divide-slate-100 dark:divide-zinc-800">
+                    {(trustBadges || []).map((badge, idx) => {
+                      const theme = BADGE_THEMES[badge.color_theme] || BADGE_THEMES.sky;
+                      const Icon = getTrustIconComponent(badge.icon_name);
+                      return (
+                        <div key={badge.id} className="p-3.5 flex items-center justify-between gap-4 hover:bg-slate-50/50">
+                          <div className="flex items-center space-x-3.5 min-w-0">
+                            <div className={`w-9 h-9 rounded-xl ${theme.iconBg} flex items-center justify-center shrink-0`}>
+                              <Icon className="w-4.5 h-4.5 stroke-[2.2]" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="text-xs font-bold text-slate-800 dark:text-zinc-100 truncate">{badge.title}</p>
+                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${theme.pillStyle}`}>
+                                  {badge.pill}
+                                </span>
+                              </div>
+                              <p className="text-[10.5px] text-slate-400 truncate mt-0.5">{badge.desc}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-2 shrink-0">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${badge.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                              {badge.is_active ? 'Aktif' : 'Nyahaktif'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenBadgeModal(badge)}
+                              className="p-1.5 text-slate-500 hover:text-blue-600"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteTrustBadge(badge.id)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -1700,6 +1968,211 @@ export default function AdminCmsPage() {
                   className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs"
                 >
                   Simpan Banner
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL 1.5: SOROTAN & KELEBIHAN KILANG (TRUST BADGES)
+         ========================================================================= */}
+      {isBadgeModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
+                {editingBadge ? 'Kemaskini Sorotan Kelebihan' : 'Tambah Sorotan Baharu'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsBadgeModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveBadge} className="p-6 space-y-4 max-h-[85vh] overflow-y-auto sparkle-scroll">
+              {/* Live Preview Inside Modal */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Pratonton Langsung Kad:</label>
+                {(() => {
+                  const theme = BADGE_THEMES[badgeForm.color_theme] || BADGE_THEMES.sky;
+                  const Icon = getTrustIconComponent(badgeForm.icon_name);
+                  return (
+                    <div className={`p-3.5 rounded-2xl bg-gradient-to-r ${theme.gradient} border ${theme.border} shadow-xs flex items-center gap-3`}>
+                      <div className={`w-10 h-10 rounded-xl ${theme.iconBg} flex items-center justify-center shrink-0 shadow-xs`}>
+                        <Icon className="w-5 h-5 stroke-[2.2]" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
+                            {badgeForm.title || 'Tajuk Kelebihan'}
+                          </span>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${theme.pillStyle}`}>
+                            {badgeForm.pill || 'Status Pill'}
+                          </span>
+                        </div>
+                        <p className="text-[10.5px] text-slate-500 font-medium truncate mt-0.5">
+                          {badgeForm.desc || 'Penerangan ringkas kelebihan kilang...'}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Title & Status Pill */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                    Tajuk Sorotan <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={badgeForm.title}
+                    onChange={(e) => setBadgeForm({ ...badgeForm, title: e.target.value })}
+                    placeholder="cth: Harga Direct Kilang"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                    Teks Tag / Status Pill <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={badgeForm.pill}
+                    onChange={(e) => setBadgeForm({ ...badgeForm, pill: e.target.value })}
+                    placeholder="cth: Direct Kilang"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                  Penerangan Ringkas <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={badgeForm.desc}
+                  onChange={(e) => setBadgeForm({ ...badgeForm, desc: e.target.value })}
+                  placeholder="cth: Tanpa orang tengah · Lebih jimat & telus"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                  required
+                />
+              </div>
+
+              {/* Icon Selector */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                  Pilih Ikon Simbol:
+                </label>
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                  {[
+                    { name: 'Building2', label: 'Kilang' },
+                    { name: 'PackageCheck', label: 'MOQ' },
+                    { name: 'Clock', label: 'Pantas' },
+                    { name: 'ShieldCheck', label: 'QC' },
+                    { name: 'Truck', label: 'Pos' },
+                    { name: 'Zap', label: 'Kilat' },
+                    { name: 'CheckCircle2', label: 'Sahih' },
+                    { name: 'Star', label: 'Bintang' },
+                    { name: 'Sparkles', label: 'HD' },
+                    { name: 'Award', label: 'Pakar' },
+                    { name: 'ThumbsUp', label: 'Puas' },
+                  ].map((ic) => {
+                    const IcComponent = getTrustIconComponent(ic.name);
+                    const isSelected = badgeForm.icon_name === ic.name;
+                    return (
+                      <button
+                        key={ic.name}
+                        type="button"
+                        onClick={() => setBadgeForm({ ...badgeForm, icon_name: ic.name })}
+                        className={`p-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-blue-50 dark:bg-blue-950/50 border-blue-600 text-blue-600 ring-2 ring-blue-500/20'
+                            : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 hover:border-slate-300'
+                        }`}
+                      >
+                        <IcComponent className="w-4 h-4" />
+                        <span className="text-[9px] font-medium truncate w-full text-center">{ic.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Color Theme Picker */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                  Pilih Tema Warna:
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { key: 'sky', label: 'Biru Sky', bg: 'bg-sky-500', border: 'border-sky-300' },
+                    { key: 'indigo', label: 'Indigo', bg: 'bg-indigo-600', border: 'border-indigo-300' },
+                    { key: 'emerald', label: 'Hijau QC', bg: 'bg-emerald-600', border: 'border-emerald-300' },
+                    { key: 'amber', label: 'Kuning Emas', bg: 'bg-amber-500', border: 'border-amber-300' },
+                    { key: 'blue', label: 'Biru Royal', bg: 'bg-blue-600', border: 'border-blue-300' },
+                    { key: 'rose', label: 'Merah Rose', bg: 'bg-rose-500', border: 'border-rose-300' },
+                    { key: 'purple', label: 'Ungu Kreatif', bg: 'bg-purple-600', border: 'border-purple-300' },
+                  ].map((thm) => {
+                    const isSelected = badgeForm.color_theme === thm.key;
+                    return (
+                      <button
+                        key={thm.key}
+                        type="button"
+                        onClick={() => setBadgeForm({ ...badgeForm, color_theme: thm.key })}
+                        className={`p-2 rounded-xl border flex items-center space-x-2 transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-blue-50/80 dark:bg-blue-950/40 border-blue-600 ring-2 ring-blue-500/20'
+                            : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 hover:border-slate-300'
+                        }`}
+                      >
+                        <span className={`w-3.5 h-3.5 rounded-full ${thm.bg} shrink-0 shadow-2xs`} />
+                        <span className="text-[11px] font-medium text-slate-800 dark:text-zinc-200 truncate">
+                          {thm.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Active Toggle */}
+              <div className="flex items-center space-x-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="badge_active_check"
+                  checked={badgeForm.is_active}
+                  onChange={(e) => setBadgeForm({ ...badgeForm, is_active: e.target.checked })}
+                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                />
+                <label htmlFor="badge_active_check" className="text-xs font-semibold text-slate-700 dark:text-zinc-300 cursor-pointer">
+                  Aktifkan paparan sorotan ini pada halaman pelanggan
+                </label>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setIsBadgeModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs cursor-pointer"
+                >
+                  Simpan Sorotan
                 </button>
               </div>
             </form>

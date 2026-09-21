@@ -272,5 +272,13 @@ export interface CmsThemeSettings {
   whatsapp_fab_bg: string; // e.g. '#25D366'
 }
 
-
-
+export interface CmsTrustBadge {
+  id: string;
+  title: string;
+  desc: string;
+  pill: string;
+  icon_name: string;
+  color_theme: 'sky' | 'indigo' | 'emerald' | 'amber' | 'blue' | 'rose' | 'purple' | string;
+  sort_order: number;
+  is_active: boolean;
+}
