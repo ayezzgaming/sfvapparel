@@ -12,9 +12,11 @@ import {
   IoTimeOutline, 
   IoTime, 
   IoPersonOutline, 
-  IoPerson 
+  IoPerson,
+  IoHeartOutline,
+  IoBagHandleOutline
 } from 'react-icons/io5';
-import { Heart, ShoppingBag, Trash2, LogIn } from 'lucide-react';
+import { Trash2, LogIn } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
 import { useAuth } from '@/hooks/useAuth';
@@ -116,7 +118,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                   aria-label="Senarai Pilihan Kegemaran"
                   className="w-8 h-8 relative transition-all active:scale-90 flex items-center justify-center text-slate-700 hover:text-[#00BDFF] cursor-pointer touch-manipulation"
                 >
-                  <Heart className="w-4.5 h-4.5 stroke-[2]" />
+                  <IoHeartOutline className="w-[21px] h-[21px]" />
                   {favoritesCount > 0 && (
                     <span className="absolute top-0 right-0 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF3B30] text-white text-[8.5px] font-bold flex items-center justify-center shadow-xs ring-1.5 ring-white leading-none pointer-events-none animate-in zoom-in-75">
                       {favoritesCount > 99 ? '99+' : favoritesCount}
@@ -130,7 +132,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                   aria-label="Bakul Pesanan Aktif"
                   className="w-8 h-8 relative transition-all active:scale-90 flex items-center justify-center text-slate-700 hover:text-[#00BDFF] cursor-pointer touch-manipulation"
                 >
-                  <ShoppingBag className="w-4.5 h-4.5 stroke-[2]" />
+                  <IoBagHandleOutline className="w-[20px] h-[20px]" />
                   {activeOrdersCount > 0 && (
                     <span className="absolute top-0 right-0 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF3B30] text-white text-[8.5px] font-bold flex items-center justify-center shadow-xs ring-1.5 ring-white leading-none pointer-events-none animate-in zoom-in-75">
                       {activeOrdersCount > 99 ? '99+' : activeOrdersCount}
@@ -306,7 +308,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             {!isAuthenticated ? (
               <div className="py-8 text-center space-y-3">
                 <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-                  <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
+                  <IoBagHandleOutline className="w-6 h-6" />
                 </div>
                 <div className="max-w-xs mx-auto space-y-1">
                   <h3 className="font-semibold text-slate-900 text-sm">Log Masuk Diperlukan</h3>
@@ -318,7 +320,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             ) : activeOrders.length === 0 ? (
               <div className="py-8 text-center space-y-3">
                 <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-                  <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
+                  <IoBagHandleOutline className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 text-sm">Tiada Pesanan Aktif</h3>
@@ -415,7 +417,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             {!isAuthenticated ? (
               <div className="py-8 text-center space-y-3">
                 <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-                  <Heart className="w-6 h-6 stroke-[1.5]" />
+                  <IoHeartOutline className="w-6 h-6" />
                 </div>
                 <div className="max-w-xs mx-auto space-y-1">
                   <h3 className="font-semibold text-slate-900 text-sm">Log Masuk Diperlukan</h3>
@@ -427,7 +429,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             ) : favoriteDesigns.length === 0 ? (
               <div className="py-8 text-center space-y-3">
                 <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-                  <Heart className="w-6 h-6 stroke-[1.5]" />
+                  <IoHeartOutline className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 text-sm">Tiada Rekaan Kegemaran</h3>

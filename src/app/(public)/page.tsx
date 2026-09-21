@@ -523,8 +523,14 @@ export default function HomePage() {
 
         {/* 2. PILIHAN SERVIS HEADER & CARDS (DYNAMIC FROM CMS STORE) */}
         <div className="space-y-3.5">
-          <div className="flex justify-between items-end mb-2">
+          <div className="flex justify-between items-end mb-1">
             <div>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-100/80 text-[#0052FF] text-[9.5px] font-bold tracking-wide uppercase">
+                  <Sparkles className="w-2.5 h-2.5 text-[#0052FF]" />
+                  <span>Katalog Kilang</span>
+                </span>
+              </div>
               <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                 Pilihan Servis
               </h2>
@@ -536,19 +542,20 @@ export default function HomePage() {
             <Link
               href="/catalog"
               aria-label="Lihat Semua Servis"
-              className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-slate-700 hover:text-[#00BDFF] flex items-center justify-center transition-all active:scale-90 shadow-sm border border-black/[0.04]"
+              className="px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 hover:text-[#0052FF] text-xs font-semibold flex items-center gap-1 transition-all active:scale-95 shadow-xs border border-slate-200/80"
             >
-              <ChevronRight className="w-4 h-4 stroke-[2.2]" />
+              <span>Semua</span>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             </Link>
           </div>
 
           {/* Card Produk Dinamik */}
-          <div className="flex items-stretch gap-4 overflow-x-auto snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar -mx-4 px-4 pt-1 pb-4">
+          <div className="flex items-stretch gap-3.5 overflow-x-auto snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar -mx-4 px-4 pt-1 pb-4">
             {isLoadingCms && activeServices.length === 0 ? (
               [1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="rounded-3xl overflow-hidden bg-white w-[235px] flex-shrink-0 border border-black/[0.07] shadow-md shadow-slate-300/40 p-4 space-y-3 animate-pulse"
+                  className="rounded-[24px] overflow-hidden bg-white w-[235px] flex-shrink-0 border border-slate-200/80 shadow-xs p-4 space-y-3 animate-pulse"
                 >
                   <div className="w-full h-44 bg-slate-200 rounded-2xl" />
                   <div className="h-4 bg-slate-200 rounded w-3/4" />
@@ -560,47 +567,60 @@ export default function HomePage() {
                 </div>
               ))
             ) : (
-              activeServices.map((item) => (
+              activeServices.map((item, index) => (
                 <div
                   key={item.id}
                   onClick={() => handleOpenProduct(item)}
-                  className="rounded-3xl overflow-hidden bg-white w-[235px] flex-shrink-0 snap-start border border-black/[0.07] shadow-md shadow-slate-300/40 cursor-pointer select-none active:scale-[0.98] hover:shadow-lg transition-all flex flex-col justify-between"
+                  className="group rounded-[24px] overflow-hidden bg-white w-[235px] flex-shrink-0 snap-start border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer select-none active:scale-[0.98] flex flex-col justify-between"
                 >
-                  {/* Bagian Gambar */}
-                  <div className="relative w-full h-48 bg-slate-100">
+                  {/* Bagian Gambar dengan Badge Khas */}
+                  <div className="relative w-full h-44 bg-slate-100 overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={item.image_url}
                       alt={item.title}
                       loading="lazy"
                       decoding="async"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
+
+                    {/* Floating Pill on Top-Left */}
+                    <div className="absolute top-2.5 left-2.5 z-10">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/90 backdrop-blur-md text-[10px] font-bold text-slate-800 shadow-xs border border-white/80">
+                        <Zap className="w-2.5 h-2.5 text-[#0052FF]" />
+                        <span>{item.highlight || 'Kualiti Kilang'}</span>
+                      </span>
+                    </div>
+
+                    {/* Subtle Index Pill on Top-Right */}
+                    <div className="absolute top-2.5 right-2.5 z-10 w-6 h-6 rounded-full bg-black/30 backdrop-blur-md text-white text-[10px] font-bold flex items-center justify-center">
+                      0{index + 1}
+                    </div>
                   </div>
 
                   {/* Bagian Konten */}
-                  <div className="p-4 flex flex-col justify-between flex-1">
+                  <div className="p-3.5 flex flex-col justify-between flex-1 space-y-3">
                     <div>
-                      <h3 className="font-bold text-[17px] text-slate-900 leading-snug">
+                      <h3 className="font-bold text-[15px] text-slate-900 leading-snug group-hover:text-[#0052FF] transition-colors line-clamp-1">
                         {item.title}
                       </h3>
-                      <p className="text-slate-500 text-[13px] mt-1 line-clamp-1">
-                        {item.highlight}
+                      <p className="text-slate-500 text-xs mt-0.5 line-clamp-2 leading-relaxed">
+                        {item.headline || item.highlight || 'Pilihan fabrik microfiber berkualiti tinggi dan cetakan tahan lasak.'}
                       </p>
                     </div>
 
                     {/* Baris Harga & Butang Interaktif */}
-                    <div className="mt-4 pt-2.5 border-t border-slate-100 flex justify-between items-center">
+                    <div className="pt-2.5 border-t border-slate-100 flex justify-between items-center">
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#00BDFF]">
+                        <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#0052FF]">
                           {item.price_prefix || 'Bermula'}
                         </span>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-[17px] font-black text-slate-900 tracking-tight leading-none">
+                          <span className="text-base font-extrabold text-slate-900 tracking-tight leading-none">
                             {item.price_amount}
                           </span>
                           {item.price_unit && (
-                            <span className="text-[11px] font-medium text-slate-400">
+                            <span className="text-[10.5px] font-medium text-slate-400">
                               {item.price_unit}
                             </span>
                           )}
@@ -614,9 +634,10 @@ export default function HomePage() {
                           handleOpenProduct(item);
                         }}
                         aria-label={`Pilih ${item.title}`}
-                        className="w-9 h-9 rounded-full bg-blue-50 hover:bg-[#00BDFF] text-[#00BDFF] hover:text-white flex items-center justify-center transition-all active:scale-90 shadow-xs border border-blue-100"
+                        className="px-3 py-1.5 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white text-[11px] font-bold shadow-xs active:scale-95 transition-all flex items-center gap-1 shrink-0"
                       >
-                        <Plus className="w-5 h-5 stroke-[2.2]" />
+                        <span>Pilih</span>
+                        <ChevronRight className="w-3 h-3 text-white/90" />
                       </button>
                     </div>
                   </div>
