@@ -20,10 +20,12 @@ import {
   Trash2,
   X,
   Sparkles,
-  ToggleLeft,
-  ToggleRight,
+  ChevronLeft,
+  ChevronRight,
   TrendingUp,
-  Info
+  Info,
+  CheckCircle2,
+  SlidersHorizontal
 } from 'lucide-react';
 import { ApparelCut, DtfDimension, FabricMaterial, QuantityTierDiscount } from '@/types/database';
 
@@ -50,6 +52,7 @@ export default function AdminPricingRulesPage() {
   } = useAppStore();
 
   const [activeTab, setActiveTab] = useState<'sublimation_fabrics' | 'apparel_cuts' | 'dtf_dims' | 'volume_tiers' | 'simulator'>('sublimation_fabrics');
+  const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
 
   // Modals
   const [fabricModalData, setFabricModalData] = useState<Partial<FabricMaterial> | null>(null);
@@ -172,7 +175,12 @@ export default function AdminPricingRulesPage() {
     if (!tierModalData?.tier_label) return;
 
     if (tierModalData.id) {
-      updateQuantityTier(tierModalData.id, tierModalData);
+      updateQuantityTier(tierModalData.id, {
+        tier_label: tierModalData.tier_label,
+        min_qty: Number(tierModalData.min_qty) || 1,
+        max_qty: tierModalData.max_qty ? Number(tierModalData.max_qty) : null,
+        discount_percentage: Number(tierModalData.discount_percentage) || 0,
+      });
     } else {
       addQuantityTier({
         tier_label: tierModalData.tier_label || 'Tier Baru',
@@ -192,9 +200,9 @@ export default function AdminPricingRulesPage() {
       updateDtfDimension(dtfModalData.id, dtfModalData);
     } else {
       addDtfDimension({
-        name: dtfModalData.name || 'Saiz Cetakan Baru',
+        name: dtfModalData.name || 'Format DTF Baru',
         code: dtfModalData.code || dtfModalData.name.toLowerCase().replace(/\s+/g, '_'),
-        dimensions_desc: dtfModalData.dimensions_desc || '20 x 20 cm',
+        dimensions_desc: dtfModalData.dimensions_desc || 'A3 Size',
         base_price: Number(dtfModalData.base_price) || 10,
         garment_included_base_price: Number(dtfModalData.garment_included_base_price) || 25,
         is_meter_rate: Boolean(dtfModalData.is_meter_rate),
@@ -207,647 +215,706 @@ export default function AdminPricingRulesPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-normal text-slate-800 tracking-tight">
-            Formula Harga & Tetapan Borang Tempahan
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Urus pilihan fabrik, pola potongan, diskaun kuantiti, dan kadar DTF yang dipaparkan pada Borang Tempahan Kustom.
-          </p>
+    <div className="w-full h-full overflow-hidden bg-[#f0f4f9] dark:bg-zinc-950 flex flex-col p-4 gap-3 text-slate-900 dark:text-zinc-100 font-sans select-none">
+      
+      {/* ----------------- TOP TOOLBAR BAR ----------------- */}
+      <div className="shrink-0 flex items-center justify-between gap-3 min-h-[38px]">
+        {/* Title & Active Badge */}
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 tracking-tight">
+              Formula Harga & Borang Tempahan
+            </span>
+            <span className="text-[10px] font-semibold text-[#00BDFF] bg-sky-50 dark:bg-sky-950/50 px-2.5 py-0.5 rounded-full border border-sky-200/60 dark:border-sky-900">
+              {activeTab === 'sublimation_fabrics' && `Jenis Fabrik (${fabrics.length})`}
+              {activeTab === 'apparel_cuts' && `Pola & Kolar (${cuts.length})`}
+              {activeTab === 'volume_tiers' && `Diskaun Kuantiti (${tiers.length})`}
+              {activeTab === 'dtf_dims' && `Dimensi DTF (${dtfDimensions.length})`}
+              {activeTab === 'simulator' && 'Simulator Sebut Harga'}
+            </span>
+          </div>
         </div>
 
-        <button
-          onClick={() => refreshAllDb()}
-          disabled={isLoadingCms}
-          className="px-4 py-2 rounded-full bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-xs flex items-center space-x-1.5 transition-all self-start sm:self-auto cursor-pointer disabled:opacity-50"
-        >
-          <RotateCcw className={`w-3.5 h-3.5 text-slate-500 ${isLoadingCms ? 'animate-spin' : ''}`} />
-          <span>{isLoadingCms ? 'Memuatkan...' : 'Muat Semula'}</span>
-        </button>
+        {/* Toolbar Kanan */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => refreshAllDb()}
+            disabled={isLoadingCms}
+            className="px-4 py-1.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:text-zinc-200 text-xs font-medium border border-slate-200 dark:border-zinc-700 shadow-2xs flex items-center space-x-1.5 transition-all cursor-pointer disabled:opacity-50"
+          >
+            <RotateCcw className={`w-3.5 h-3.5 text-slate-500 ${isLoadingCms ? 'animate-spin' : ''}`} />
+            <span>{isLoadingCms ? 'Memuatkan...' : 'Muat Semula'}</span>
+          </button>
+        </div>
       </div>
 
-      {/* 2-Panel Settings Layout */}
-      <div className="flex flex-col md:flex-row gap-6 items-start">
-        {/* Left Panel Navigation */}
-        <aside className="w-full md:w-56 shrink-0 bg-white p-2 rounded-2xl border border-slate-200 shadow-xs space-y-1 md:sticky md:top-20">
-          {[
-            { id: 'sublimation_fabrics', label: 'Jenis Fabrik', icon: Layers, count: fabrics.length },
-            { id: 'apparel_cuts', label: 'Pola & Kolar', icon: Scissors, count: cuts.length },
-            { id: 'volume_tiers', label: 'Diskaun Kuantiti', icon: Percent, count: tiers.length },
-            { id: 'dtf_dims', label: 'Dimensi DTF', icon: Printer, count: dtfDimensions.length },
-            { id: 'simulator', label: 'Simulator Harga', icon: Calculator },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-[#C2E7FF] text-[#001D35] font-semibold'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                }`}
-              >
-                <div className="flex items-center space-x-2.5">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#001D35]' : 'text-slate-500'}`} />
-                  <span>{tab.label}</span>
-                </div>
-                {tab.count !== undefined && (
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/70 text-[#001D35] font-semibold' : 'text-slate-400'}`}>
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </aside>
+      {/* ----------------- 1 MAIN CARD (SPLIT LAYOUT) ----------------- */}
+      <div className="flex-1 min-h-0 flex overflow-hidden bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-xs relative">
+        
+        {/* LEFT PANEL: Categories Navigation (Collapsible) */}
+        <div
+          className={`shrink-0 transition-all duration-300 ease-in-out border-r border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col h-full overflow-hidden ${
+            isLeftPanelCollapsed ? 'w-0 border-r-0 overflow-hidden' : 'w-64 sm:w-72'
+          }`}
+        >
+          {/* Header Panel Kiri */}
+          <div className="p-4 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-zinc-800/50">
+            <h2 className="text-xs font-bold text-slate-800 dark:text-zinc-100 uppercase tracking-wider">
+              Kategori Formula
+            </h2>
+            <span className="text-[10px] font-semibold text-slate-400 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 px-2 py-0.5 rounded-full">
+              5 Modul
+            </span>
+          </div>
 
-        {/* Right Content Panel */}
-        <main className="flex-1 min-w-0 space-y-6">
-          {/* TAB 1: FABRIC MATERIALS */}
-          {activeTab === 'sublimation_fabrics' && (
-            <div className="p-6 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">Jenis Fabrik (Material)</h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Pilihan material kain sublimasi beserta harga seunit asas</p>
-                </div>
+          {/* Navigation Items */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-1">
+            {[
+              { id: 'sublimation_fabrics', label: 'Jenis Fabrik', icon: Layers, count: fabrics.length, desc: 'Material asas sublimasi' },
+              { id: 'apparel_cuts', label: 'Pola & Kolar', icon: Scissors, count: cuts.length, desc: 'Pilihan potongan & kolar' },
+              { id: 'volume_tiers', label: 'Diskaun Kuantiti', icon: Percent, count: tiers.length, desc: 'Tier diskaun pukal' },
+              { id: 'dtf_dims', label: 'Dimensi DTF', icon: Printer, count: dtfDimensions.length, desc: 'Format saiz & filem/baju' },
+              { id: 'simulator', label: 'Simulator Harga', icon: Calculator, desc: 'Kalkulator sebut harga' },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
                 <button
+                  key={tab.id}
                   type="button"
-                  onClick={() => setFabricModalData({
-                    name: '',
-                    code: '',
-                    weight_gsm: 160,
-                    breathability: 'High',
-                    sublimation_base_price: 35.00,
-                    description: '',
-                    is_popular: false,
-                    is_active: true,
-                  })}
-                  className="px-3.5 py-2 rounded-xl bg-[#00BDFF] hover:bg-sky-600 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-medium transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-[#C2E7FF] dark:bg-sky-950 text-[#001D35] dark:text-[#00BDFF] font-bold shadow-2xs'
+                      : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-900'
+                  }`}
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Fabrik</span>
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                      isActive ? 'bg-[#00BDFF] text-white' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'
+                    }`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div className="text-left min-w-0">
+                      <span className="block truncate font-bold">{tab.label}</span>
+                      <span className="text-[10px] text-slate-400 block truncate">{tab.desc}</span>
+                    </div>
+                  </div>
+                  {tab.count !== undefined && (
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
+                      isActive
+                        ? 'bg-white/80 dark:bg-sky-900 text-[#001D35] dark:text-[#00BDFF]'
+                        : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'
+                    }`}>
+                      {tab.count}
+                    </span>
+                  )}
                 </button>
-              </div>
+              );
+            })}
+          </div>
+        </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
-                    <tr>
-                      <th className="py-3 px-3.5">Nama Fabrik</th>
-                      <th className="py-3 px-3.5">Berat (GSM)</th>
-                      <th className="py-3 px-3.5">Pengudaraan</th>
-                      <th className="py-3 px-3.5 text-right">Harga Asas / helai</th>
-                      <th className="py-3 px-3.5 text-center">Status</th>
-                      <th className="py-3 px-3.5 text-center">Tindakan</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {fabrics.map((f) => {
-                      const isEditing = editingFabricId === f.id;
-                      return (
-                        <tr key={f.id} className="hover:bg-slate-50/60 transition-colors">
-                          <td className="py-3.5 px-3.5">
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-slate-900">{f.name}</span>
-                              {f.is_popular && (
-                                <span className="text-[9px] bg-amber-50 text-amber-600 border border-amber-200 px-1.5 py-0.2 rounded font-bold">
-                                  POPULAR
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[11px] text-slate-400 line-clamp-1">{f.description || 'Tiada deskripsi'}</span>
-                          </td>
-                          <td className="py-3.5 px-3.5 font-mono text-slate-600">{f.weight_gsm} GSM</td>
-                          <td className="py-3.5 px-3.5 text-slate-600">{f.breathability}</td>
-                          <td className="py-3.5 px-3.5 text-right font-mono font-bold text-slate-900">
-                            {isEditing ? (
-                              <input
-                                type="number"
-                                step="0.5"
-                                value={fabricPriceInput}
-                                onChange={(e) => setFabricPriceInput(Number(e.target.value))}
-                                className="w-20 px-2 py-1 bg-white border border-[#00BDFF] rounded-lg text-right text-xs font-mono font-bold"
-                              />
-                            ) : (
-                              formatCurrency(f.sublimation_base_price)
-                            )}
-                          </td>
-                          <td className="py-3.5 px-3.5 text-center">
-                            <button
-                              type="button"
-                              onClick={() => updateFabric(f.id, { is_active: !f.is_active })}
-                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
-                                f.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-400'
-                              }`}
-                            >
-                              {f.is_active ? 'Aktif' : 'Nyahaktif'}
-                            </button>
-                          </td>
-                          <td className="py-3.5 px-3.5 text-center">
-                            <div className="flex items-center justify-center gap-1">
+        {/* RIGHT PANEL: Tab Content Area with internal scroll */}
+        <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden bg-slate-50/40 dark:bg-zinc-900/40 relative">
+          
+          {/* FLOATING CAPSULE TOGGLE HANDLE (LEFT EDGE OF RIGHT PANEL) */}
+          <button
+            type="button"
+            onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-5 h-12 bg-white dark:bg-zinc-800 border-y border-r border-slate-200 dark:border-zinc-700 rounded-r-full shadow-md flex items-center justify-center text-slate-500 hover:text-[#00BDFF] dark:hover:text-[#00BDFF] transition-all cursor-pointer"
+            title={isLeftPanelCollapsed ? 'Buka Kategori Formula' : 'Tutup Kategori Formula'}
+            aria-label="Toggle Left Panel"
+          >
+            {isLeftPanelCollapsed ? (
+              <ChevronRight className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronLeft className="w-3.5 h-3.5" />
+            )}
+          </button>
+
+          {/* Tab Content Container */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+            
+            {/* TAB 1: FABRIC MATERIALS */}
+            {activeTab === 'sublimation_fabrics' && (
+              <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-800 pb-3">
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Jenis Fabrik (Material Sublimasi)</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">Pilihan material kain sublimasi beserta harga seunit asas.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFabricModalData({
+                      name: '',
+                      code: '',
+                      weight_gsm: 160,
+                      breathability: 'High',
+                      sublimation_base_price: 35.00,
+                      description: '',
+                      is_popular: false,
+                      is_active: true,
+                    })}
+                    className="px-4 py-2 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer self-start sm:self-auto"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Tambah Fabrik</span>
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-zinc-800">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50/80 dark:bg-zinc-800/80 text-slate-500 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200 dark:border-zinc-700">
+                      <tr>
+                        <th className="py-3 px-3.5">Nama Fabrik</th>
+                        <th className="py-3 px-3.5">Berat (GSM)</th>
+                        <th className="py-3 px-3.5">Pengudaraan</th>
+                        <th className="py-3 px-3.5 text-right">Harga Asas / Helai</th>
+                        <th className="py-3 px-3.5 text-center">Status</th>
+                        <th className="py-3 px-3.5 text-center">Tindakan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+                      {fabrics.map((f) => {
+                        const isEditing = editingFabricId === f.id;
+                        return (
+                          <tr key={f.id} className="hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-colors">
+                            <td className="py-3.5 px-3.5">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-slate-900 dark:text-zinc-100">{f.name}</span>
+                                {f.is_popular && (
+                                  <span className="text-[9px] bg-amber-50 text-amber-600 border border-amber-200 px-1.5 py-0.2 rounded-full font-bold">
+                                    POPULAR
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[11px] text-slate-400 line-clamp-1">{f.description || 'Tiada deskripsi'}</span>
+                            </td>
+                            <td className="py-3.5 px-3.5 font-mono text-slate-600 dark:text-zinc-400">{f.weight_gsm} GSM</td>
+                            <td className="py-3.5 px-3.5 text-slate-600 dark:text-zinc-400">{f.breathability}</td>
+                            <td className="py-3.5 px-3.5 text-right font-mono font-bold text-slate-900 dark:text-zinc-100">
                               {isEditing ? (
+                                <input
+                                  type="number"
+                                  step="0.5"
+                                  value={fabricPriceInput}
+                                  onChange={(e) => setFabricPriceInput(Number(e.target.value))}
+                                  className="w-20 px-2 py-1 bg-white dark:bg-zinc-800 border border-[#00BDFF] rounded-lg text-right text-xs font-mono font-bold"
+                                />
+                              ) : (
+                                formatCurrency(f.sublimation_base_price)
+                              )}
+                            </td>
+                            <td className="py-3.5 px-3.5 text-center">
+                              <button
+                                type="button"
+                                onClick={() => updateFabric(f.id, { is_active: !f.is_active })}
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                                  f.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-slate-100 dark:bg-zinc-800 text-slate-400'
+                                }`}
+                              >
+                                {f.is_active ? 'Aktif' : 'Nyahaktif'}
+                              </button>
+                            </td>
+                            <td className="py-3.5 px-3.5 text-center">
+                              <div className="flex items-center justify-center gap-1.5">
+                                {isEditing ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveFabricInline(f.id)}
+                                    className="p-1 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 cursor-pointer"
+                                    title="Simpan"
+                                  >
+                                    <Check className="w-3.5 h-3.5" />
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingFabricId(f.id);
+                                      setFabricPriceInput(f.sublimation_base_price);
+                                    }}
+                                    className="p-1 rounded-full text-slate-400 hover:text-[#00BDFF] hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
+                                    title="Edit Cepat Harga"
+                                  >
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
                                 <button
                                   type="button"
-                                  onClick={() => handleSaveFabricInline(f.id)}
-                                  className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors"
-                                  title="Simpan Harga"
+                                  onClick={() => setFabricModalData(f)}
+                                  className="p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
+                                  title="Edit Lengkap"
                                 >
-                                  <Check className="w-3.5 h-3.5" />
+                                  <SlidersHorizontal className="w-3.5 h-3.5" />
                                 </button>
-                              ) : (
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setEditingFabricId(f.id);
-                                    setFabricPriceInput(f.sublimation_base_price);
+                                    if (confirm(`Padam fabrik ${f.name}?`)) deleteFabric(f.id);
                                   }}
-                                  className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors"
-                                  title="Ubah Harga Pantas"
+                                  className="p-1 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                                  title="Padam"
                                 >
-                                  <Edit3 className="w-3.5 h-3.5" />
+                                  <Trash2 className="w-3.5 h-3.5" />
                                 </button>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => setFabricModalData(f)}
-                                className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10.5px] font-semibold transition-colors"
-                              >
-                                Edit Penuh
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (confirm(`Padam fabrik "${f.name}"?`)) {
-                                    deleteFabric(f.id);
-                                  }
-                                }}
-                                className="w-7 h-7 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors"
-                                title="Padam Fabrik"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: APPAREL CUTS */}
-          {activeTab === 'apparel_cuts' && (
-            <div className="p-6 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">Pola Potongan & Kolar</h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Kadar caj tambahan (*add-on*) bagi jenis kolar atau potongan khas</p>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setCutModalData({
-                    name: '',
-                    code: '',
-                    cut_add_on_price: 0,
-                    description: '',
-                    is_active: true,
-                  })}
-                  className="px-3.5 py-2 rounded-xl bg-[#00BDFF] hover:bg-sky-600 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Pola</span>
-                </button>
               </div>
+            )}
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
-                    <tr>
-                      <th className="py-3 px-3.5">Nama Pola & Kolar</th>
-                      <th className="py-3 px-3.5">Kod</th>
-                      <th className="py-3 px-3.5 text-right">Add-On Caj</th>
-                      <th className="py-3 px-3.5 text-center">Status</th>
-                      <th className="py-3 px-3.5 text-center">Tindakan</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {cuts.map((c) => {
-                      const isEditing = editingCutId === c.id;
-                      return (
-                        <tr key={c.id} className="hover:bg-slate-50/60 transition-colors">
-                          <td className="py-3.5 px-3.5">
-                            <span className="font-bold text-slate-900 block">{c.name}</span>
-                            <span className="text-[11px] text-slate-400 line-clamp-1">{c.description || 'Tiada deskripsi'}</span>
-                          </td>
-                          <td className="py-3.5 px-3.5 font-mono text-slate-500">{c.code}</td>
-                          <td className="py-3.5 px-3.5 text-right font-mono font-bold text-slate-900">
-                            {isEditing ? (
-                              <input
-                                type="number"
-                                step="0.5"
-                                value={cutPriceInput}
-                                onChange={(e) => setCutPriceInput(Number(e.target.value))}
-                                className="w-20 px-2 py-1 bg-white border border-[#00BDFF] rounded-lg text-right text-xs font-mono font-bold"
-                              />
-                            ) : c.cut_add_on_price > 0 ? (
-                              `+${formatCurrency(c.cut_add_on_price)}`
-                            ) : (
-                              <span className="text-slate-400 font-normal">Termasuk (RM 0)</span>
-                            )}
-                          </td>
-                          <td className="py-3.5 px-3.5 text-center">
-                            <button
-                              type="button"
-                              onClick={() => updateCut(c.id, { is_active: !c.is_active })}
-                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
-                                c.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-400'
-                              }`}
-                            >
-                              {c.is_active ? 'Aktif' : 'Nyahaktif'}
-                            </button>
-                          </td>
-                          <td className="py-3.5 px-3.5 text-center">
-                            <div className="flex items-center justify-center gap-1">
+            {/* TAB 2: APPAREL CUTS (POLA & KOLAR) */}
+            {activeTab === 'apparel_cuts' && (
+              <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-800 pb-3">
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Pola Potongan & Kolar Baju</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">Kadar caj tambahan mengikut jenis potongan atau kolar.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCutModalData({
+                      name: '',
+                      code: '',
+                      cut_add_on_price: 0,
+                      description: '',
+                      is_active: true,
+                    })}
+                    className="px-4 py-2 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer self-start sm:self-auto"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Tambah Pola</span>
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-zinc-800">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50/80 dark:bg-zinc-800/80 text-slate-500 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200 dark:border-zinc-700">
+                      <tr>
+                        <th className="py-3 px-3.5">Nama Pola / Kolar</th>
+                        <th className="py-3 px-3.5">Kod Sistem</th>
+                        <th className="py-3 px-3.5 text-right">Caj Tambahan (RM)</th>
+                        <th className="py-3 px-3.5 text-center">Status</th>
+                        <th className="py-3 px-3.5 text-center">Tindakan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+                      {cuts.map((c) => {
+                        const isEditing = editingCutId === c.id;
+                        return (
+                          <tr key={c.id} className="hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-colors">
+                            <td className="py-3.5 px-3.5">
+                              <span className="font-bold text-slate-900 dark:text-zinc-100 block">{c.name}</span>
+                              <span className="text-[11px] text-slate-400">{c.description || 'Tiada deskripsi'}</span>
+                            </td>
+                            <td className="py-3.5 px-3.5 font-mono text-slate-500">{c.code}</td>
+                            <td className="py-3.5 px-3.5 text-right font-mono font-bold text-slate-900 dark:text-zinc-100">
                               {isEditing ? (
+                                <input
+                                  type="number"
+                                  step="0.5"
+                                  value={cutPriceInput}
+                                  onChange={(e) => setCutPriceInput(Number(e.target.value))}
+                                  className="w-20 px-2 py-1 bg-white dark:bg-zinc-800 border border-[#00BDFF] rounded-lg text-right text-xs font-mono font-bold"
+                                />
+                              ) : (
+                                c.cut_add_on_price > 0 ? `+${formatCurrency(c.cut_add_on_price)}` : 'Percuma (RM 0.00)'
+                              )}
+                            </td>
+                            <td className="py-3.5 px-3.5 text-center">
+                              <button
+                                type="button"
+                                onClick={() => updateCut(c.id, { is_active: !c.is_active })}
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                                  c.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-slate-100 dark:bg-zinc-800 text-slate-400'
+                                }`}
+                              >
+                                {c.is_active ? 'Aktif' : 'Nyahaktif'}
+                              </button>
+                            </td>
+                            <td className="py-3.5 px-3.5 text-center">
+                              <div className="flex items-center justify-center gap-1.5">
+                                {isEditing ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveCutInline(c.id)}
+                                    className="p-1 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 cursor-pointer"
+                                  >
+                                    <Check className="w-3.5 h-3.5" />
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingCutId(c.id);
+                                      setCutPriceInput(c.cut_add_on_price);
+                                    }}
+                                    className="p-1 rounded-full text-slate-400 hover:text-[#00BDFF] hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
+                                    title="Edit Caj"
+                                  >
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
                                 <button
                                   type="button"
-                                  onClick={() => handleSaveCutInline(c.id)}
-                                  className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors"
-                                  title="Simpan Harga"
+                                  onClick={() => setCutModalData(c)}
+                                  className="p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
+                                  title="Edit Lengkap"
                                 >
-                                  <Check className="w-3.5 h-3.5" />
+                                  <SlidersHorizontal className="w-3.5 h-3.5" />
                                 </button>
-                              ) : (
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setEditingCutId(c.id);
-                                    setCutPriceInput(c.cut_add_on_price);
+                                    if (confirm(`Padam pola ${c.name}?`)) deleteCut(c.id);
                                   }}
-                                  className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors"
-                                  title="Ubah Harga"
+                                  className="p-1 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
                                 >
-                                  <Edit3 className="w-3.5 h-3.5" />
+                                  <Trash2 className="w-3.5 h-3.5" />
                                 </button>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => setCutModalData(c)}
-                                className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10.5px] font-semibold transition-colors"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (confirm(`Padam pola "${c.name}"?`)) {
-                                    deleteCut(c.id);
-                                  }
-                                }}
-                                className="w-7 h-7 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors"
-                                title="Padam Pola"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: VOLUME TIERS (DISKAUN KUANTITI) */}
-          {activeTab === 'volume_tiers' && (
-            <div className="p-6 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">Diskaun Kuantiti Pukal / Pembelian Tertentu</h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Penetapan diskaun peratus automatik mengikut jumlah kuantiti tempahan</p>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setTierModalData({
-                    tier_label: '',
-                    min_qty: 10,
-                    max_qty: 29,
-                    discount_percentage: 5,
-                  })}
-                  className="px-3.5 py-2 rounded-xl bg-[#00BDFF] hover:bg-sky-600 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Tier</span>
-                </button>
               </div>
+            )}
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
-                    <tr>
-                      <th className="py-3 px-3.5">Nama Tier</th>
-                      <th className="py-3 px-3.5">Julat Kuantiti (Helai)</th>
-                      <th className="py-3 px-3.5 text-right">Kadar Diskaun (%)</th>
-                      <th className="py-3 px-3.5 text-center">Tindakan</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {tiers.map((t) => {
-                      const isEditing = editingTierId === t.id;
-                      return (
-                        <tr key={t.id} className="hover:bg-slate-50/60 transition-colors">
-                          <td className="py-3.5 px-3.5 font-bold text-slate-900">{t.tier_label}</td>
-                          <td className="py-3.5 px-3.5 font-mono text-slate-600">
-                            {t.min_qty} {t.max_qty ? `- ${t.max_qty} helai` : 'helai ke atas (Tanpa had)'}
-                          </td>
-                          <td className="py-3.5 px-3.5 text-right font-mono font-bold text-emerald-600">
-                            {isEditing ? (
-                              <input
-                                type="number"
-                                min="0"
-                                max="100"
-                                value={tierDiscountInput}
-                                onChange={(e) => setTierDiscountInput(Number(e.target.value))}
-                                className="w-16 px-2 py-1 bg-white border border-[#00BDFF] rounded-lg text-right text-xs font-mono font-bold"
-                              />
-                            ) : (
-                              `${t.discount_percentage}%`
-                            )}
-                          </td>
-                          <td className="py-3.5 px-3.5 text-center">
-                            <div className="flex items-center justify-center gap-1">
+            {/* TAB 3: QUANTITY TIER DISCOUNTS */}
+            {activeTab === 'volume_tiers' && (
+              <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-800 pb-3">
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Diskaun Kuantiti Pukal (Volume Tiers)</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">Peratusan diskaun automatik mengikut jumlah tempahan baju.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setTierModalData({
+                      tier_label: '',
+                      min_qty: 1,
+                      max_qty: null,
+                      discount_percentage: 0,
+                    })}
+                    className="px-4 py-2 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer self-start sm:self-auto"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Tambah Tier Diskaun</span>
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-zinc-800">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50/80 dark:bg-zinc-800/80 text-slate-500 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200 dark:border-zinc-700">
+                      <tr>
+                        <th className="py-3 px-3.5">Label Tier</th>
+                        <th className="py-3 px-3.5">Julat Kuantiti</th>
+                        <th className="py-3 px-3.5 text-right">Kadar Diskaun (%)</th>
+                        <th className="py-3 px-3.5 text-center">Status</th>
+                        <th className="py-3 px-3.5 text-center">Tindakan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+                      {tiers.map((t) => {
+                        const isEditing = editingTierId === t.id;
+                        return (
+                          <tr key={t.id} className="hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-colors">
+                            <td className="py-3.5 px-3.5 font-bold text-slate-900 dark:text-zinc-100">{t.tier_label}</td>
+                            <td className="py-3.5 px-3.5 font-mono text-slate-600 dark:text-zinc-400">
+                              {t.min_qty} - {t.max_qty ? `${t.max_qty} helai` : 'Ke atas'}
+                            </td>
+                            <td className="py-3.5 px-3.5 text-right font-mono font-bold text-emerald-600">
                               {isEditing ? (
+                                <input
+                                  type="number"
+                                  value={tierDiscountInput}
+                                  onChange={(e) => setTierDiscountInput(Number(e.target.value))}
+                                  className="w-16 px-2 py-1 bg-white dark:bg-zinc-800 border border-[#00BDFF] rounded-lg text-right text-xs font-mono font-bold"
+                                />
+                              ) : (
+                                `${t.discount_percentage}% OFF`
+                              )}
+                            </td>
+                            <td className="py-3.5 px-3.5 text-center">
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400">
+                                Aktif
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-3.5 text-center">
+                              <div className="flex items-center justify-center gap-1.5">
+                                {isEditing ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveTierInline(t.id)}
+                                    className="p-1 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 cursor-pointer"
+                                  >
+                                    <Check className="w-3.5 h-3.5" />
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingTierId(t.id);
+                                      setTierDiscountInput(t.discount_percentage);
+                                    }}
+                                    className="p-1 rounded-full text-slate-400 hover:text-[#00BDFF] hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
+                                    title="Edit Diskaun"
+                                  >
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
                                 <button
                                   type="button"
-                                  onClick={() => handleSaveTierInline(t.id)}
-                                  className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors"
-                                  title="Simpan"
+                                  onClick={() => setTierModalData(t)}
+                                  className="p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
                                 >
-                                  <Check className="w-3.5 h-3.5" />
+                                  <SlidersHorizontal className="w-3.5 h-3.5" />
                                 </button>
-                              ) : (
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setEditingTierId(t.id);
-                                    setTierDiscountInput(t.discount_percentage);
+                                    if (confirm(`Padam tier ${t.tier_label}?`)) deleteQuantityTier(t.id);
                                   }}
-                                  className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors"
-                                  title="Ubah Diskaun"
+                                  className="p-1 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
                                 >
-                                  <Edit3 className="w-3.5 h-3.5" />
+                                  <Trash2 className="w-3.5 h-3.5" />
                                 </button>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => setTierModalData(t)}
-                                className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10.5px] font-semibold transition-colors"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (confirm(`Padam tier "${t.tier_label}"?`)) {
-                                    deleteQuantityTier(t.id);
-                                  }
-                                }}
-                                className="w-7 h-7 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors"
-                                title="Padam Tier"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: DTF DIMENSIONS */}
-          {activeTab === 'dtf_dims' && (
-            <div className="p-6 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">Dimensi & Saiz Cetakan DTF</h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Kadar harga cetakan stiker DTF sahaja vs siap baju cotton</p>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setDtfModalData({
-                    name: '',
-                    code: '',
-                    dimensions_desc: 'A4 (21 x 29.7 cm)',
-                    base_price: 10,
-                    garment_included_base_price: 25,
-                    is_meter_rate: false,
-                    is_active: true,
-                  })}
-                  className="px-3.5 py-2 rounded-xl bg-[#00BDFF] hover:bg-sky-600 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Saiz DTF</span>
-                </button>
               </div>
+            )}
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/80 text-slate-500 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
-                    <tr>
-                      <th className="py-3 px-3.5">Nama & Dimensi</th>
-                      <th className="py-3 px-3.5 text-right">Filem Sahaja</th>
-                      <th className="py-3 px-3.5 text-right">Siap Baju Cotton</th>
-                      <th className="py-3 px-3.5 text-center">Status</th>
-                      <th className="py-3 px-3.5 text-center">Tindakan</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {dtfDimensions.map((d) => {
-                      const isEditing = editingDtfId === d.id;
-                      return (
-                        <tr key={d.id} className="hover:bg-slate-50/60 transition-colors">
-                          <td className="py-3.5 px-3.5">
-                            <span className="font-bold text-slate-900 block">{d.name}</span>
-                            <span className="text-[11px] text-slate-400">{d.dimensions_desc}</span>
-                          </td>
-                          <td className="py-3.5 px-3.5 text-right font-mono font-bold text-slate-900">
-                            {isEditing ? (
-                              <input
-                                type="number"
-                                step="0.5"
-                                value={dtfBasePriceInput}
-                                onChange={(e) => setDtfBasePriceInput(Number(e.target.value))}
-                                className="w-16 px-1.5 py-1 bg-white border border-[#00BDFF] rounded text-right font-mono"
-                              />
-                            ) : (
-                              formatCurrency(d.base_price)
-                            )}
-                          </td>
-                          <td className="py-3.5 px-3.5 text-right font-mono font-bold text-sky-600">
-                            {isEditing ? (
-                              <input
-                                type="number"
-                                step="0.5"
-                                value={dtfGarmentPriceInput}
-                                onChange={(e) => setDtfGarmentPriceInput(Number(e.target.value))}
-                                className="w-16 px-1.5 py-1 bg-white border border-[#00BDFF] rounded text-right font-mono"
-                              />
-                            ) : (
-                              formatCurrency(d.garment_included_base_price)
-                            )}
-                          </td>
-                          <td className="py-3.5 px-3.5 text-center">
-                            <button
-                              type="button"
-                              onClick={() => updateDtfDimension(d.id, { is_active: !d.is_active })}
-                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
-                                d.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-400'
-                              }`}
-                            >
-                              {d.is_active ? 'Aktif' : 'Nyahaktif'}
-                            </button>
-                          </td>
-                          <td className="py-3.5 px-3.5 text-center">
-                            <div className="flex items-center justify-center gap-1">
+            {/* TAB 4: DTF DIMENSIONS */}
+            {activeTab === 'dtf_dims' && (
+              <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-800 pb-3">
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Format & Dimensi Cetakan DTF</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">Penetapan harga untuk filem DTF sahaja atau cetakan siap t-shirt.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setDtfModalData({
+                      name: '',
+                      dimensions_desc: '',
+                      base_price: 10,
+                      garment_included_base_price: 25,
+                      is_meter_rate: false,
+                      description: '',
+                      is_active: true,
+                    })}
+                    className="px-4 py-2 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer self-start sm:self-auto"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Tambah Saiz DTF</span>
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-zinc-800">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50/80 dark:bg-zinc-800/80 text-slate-500 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200 dark:border-zinc-700">
+                      <tr>
+                        <th className="py-3 px-3.5">Format Saiz</th>
+                        <th className="py-3 px-3.5">Ukuran</th>
+                        <th className="py-3 px-3.5 text-right">Filem Sahaja</th>
+                        <th className="py-3 px-3.5 text-right">Siap Baju (Cotton)</th>
+                        <th className="py-3 px-3.5 text-center">Status</th>
+                        <th className="py-3 px-3.5 text-center">Tindakan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+                      {dtfDimensions.map((d) => {
+                        const isEditing = editingDtfId === d.id;
+                        return (
+                          <tr key={d.id} className="hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-colors">
+                            <td className="py-3.5 px-3.5 font-bold text-slate-900 dark:text-zinc-100">{d.name}</td>
+                            <td className="py-3.5 px-3.5 font-mono text-slate-500">{d.dimensions_desc}</td>
+                            <td className="py-3.5 px-3.5 text-right font-mono font-bold text-slate-900 dark:text-zinc-100">
                               {isEditing ? (
+                                <input
+                                  type="number"
+                                  step="0.5"
+                                  value={dtfBasePriceInput}
+                                  onChange={(e) => setDtfBasePriceInput(Number(e.target.value))}
+                                  className="w-16 px-2 py-1 bg-white dark:bg-zinc-800 border border-[#00BDFF] rounded-lg text-right text-xs font-mono font-bold"
+                                />
+                              ) : (
+                                formatCurrency(d.base_price)
+                              )}
+                            </td>
+                            <td className="py-3.5 px-3.5 text-right font-mono font-bold text-sky-600">
+                              {isEditing ? (
+                                <input
+                                  type="number"
+                                  step="0.5"
+                                  value={dtfGarmentPriceInput}
+                                  onChange={(e) => setDtfGarmentPriceInput(Number(e.target.value))}
+                                  className="w-16 px-2 py-1 bg-white dark:bg-zinc-800 border border-[#00BDFF] rounded-lg text-right text-xs font-mono font-bold"
+                                />
+                              ) : (
+                                formatCurrency(d.garment_included_base_price)
+                              )}
+                            </td>
+                            <td className="py-3.5 px-3.5 text-center">
+                              <button
+                                type="button"
+                                onClick={() => updateDtfDimension(d.id, { is_active: !d.is_active })}
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                                  d.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-slate-100 dark:bg-zinc-800 text-slate-400'
+                                }`}
+                              >
+                                {d.is_active ? 'Aktif' : 'Nyahaktif'}
+                              </button>
+                            </td>
+                            <td className="py-3.5 px-3.5 text-center">
+                              <div className="flex items-center justify-center gap-1.5">
+                                {isEditing ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveDtfInline(d.id)}
+                                    className="p-1 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 cursor-pointer"
+                                  >
+                                    <Check className="w-3.5 h-3.5" />
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingDtfId(d.id);
+                                      setDtfBasePriceInput(d.base_price);
+                                      setDtfGarmentPriceInput(d.garment_included_base_price);
+                                    }}
+                                    className="p-1 rounded-full text-slate-400 hover:text-[#00BDFF] hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
+                                  >
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
                                 <button
                                   type="button"
-                                  onClick={() => handleSaveDtfInline(d.id)}
-                                  className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors"
-                                  title="Simpan"
+                                  onClick={() => setDtfModalData(d)}
+                                  className="p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
                                 >
-                                  <Check className="w-3.5 h-3.5" />
+                                  <SlidersHorizontal className="w-3.5 h-3.5" />
                                 </button>
-                              ) : (
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setEditingDtfId(d.id);
-                                    setDtfBasePriceInput(d.base_price);
-                                    setDtfGarmentPriceInput(d.garment_included_base_price);
+                                    if (confirm(`Padam dimensi ${d.name}?`)) deleteDtfDimension(d.id);
                                   }}
-                                  className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors"
-                                  title="Ubah Harga"
+                                  className="p-1 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
                                 >
-                                  <Edit3 className="w-3.5 h-3.5" />
+                                  <Trash2 className="w-3.5 h-3.5" />
                                 </button>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => setDtfModalData(d)}
-                                className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10.5px] font-semibold transition-colors"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (confirm(`Padam saiz DTF "${d.name}"?`)) {
-                                    deleteDtfDimension(d.id);
-                                  }
-                                }}
-                                className="w-7 h-7 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors"
-                                title="Padam DTF"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* TAB 5: SIMULATOR */}
-          {activeTab === 'simulator' && (
-            <div className="p-6 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-5">
-              <div className="border-b border-slate-100 pb-3">
-                <h2 className="text-base font-bold text-slate-900">Simulator Formula Harga Kilang</h2>
-                <p className="text-xs text-slate-500 mt-0.5">Uji kiraan sebut harga secara langsung berdasarkan formula dan tiering semasa</p>
-              </div>
+            {/* TAB 5: PRICE SIMULATOR */}
+            {activeTab === 'simulator' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                {/* Form Controls */}
+                <div className="lg:col-span-7 bg-white dark:bg-zinc-900 p-5 sm:p-6 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-5">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
+                    <div>
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-1.5">
+                        <Calculator className="w-4 h-4 text-[#00BDFF]" />
+                        <span>Simulator Sebut Harga Kilang</span>
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-0.5">Uji formula harga secara masa nyata mengikut spesifikasi tempahan.</p>
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Simulator Inputs */}
-                <div className="space-y-3.5 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
-                  <div className="flex gap-2">
+                  {/* Mode Selector */}
+                  <div className="flex items-center bg-slate-100 dark:bg-zinc-800 p-1 rounded-full border border-slate-200 dark:border-zinc-700">
                     <button
                       type="button"
                       onClick={() => setSimMode('sublimation')}
-                      className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                        simMode === 'sublimation' ? 'bg-[#00BDFF] text-white shadow-xs' : 'bg-white text-slate-600 border border-slate-200'
+                      className={`flex-1 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        simMode === 'sublimation'
+                          ? 'bg-[#00BDFF] text-white shadow-xs'
+                          : 'text-slate-600 dark:text-zinc-400 hover:text-[#00BDFF]'
                       }`}
                     >
-                      Sublimasi Penuh
+                      Jersi Sublimasi Penuh
                     </button>
                     <button
                       type="button"
                       onClick={() => setSimMode('dtf')}
-                      className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                        simMode === 'dtf' ? 'bg-[#00BDFF] text-white shadow-xs' : 'bg-white text-slate-600 border border-slate-200'
+                      className={`flex-1 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        simMode === 'dtf'
+                          ? 'bg-[#00BDFF] text-white shadow-xs'
+                          : 'text-slate-600 dark:text-zinc-400 hover:text-[#00BDFF]'
                       }`}
                     >
-                      Cetakan DTF
+                      Cetakan Baju DTF
                     </button>
                   </div>
 
+                  {/* Specific Controls */}
                   {simMode === 'sublimation' ? (
-                    <>
+                    <div className="space-y-4 text-xs">
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-700 block mb-1">Fabrik</label>
+                        <label className="font-bold text-slate-700 dark:text-zinc-300 block mb-1.5">Pilihan Fabrik</label>
                         <select
                           value={simFabricId}
                           onChange={(e) => setSimFabricId(e.target.value)}
-                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 font-medium text-slate-800 dark:text-zinc-100"
                         >
                           {fabrics.map((f) => (
                             <option key={f.id} value={f.id}>
-                              {f.name} ({formatCurrency(f.sublimation_base_price)})
+                              {f.name} ({f.weight_gsm} GSM) - RM {f.sublimation_base_price.toFixed(2)}
                             </option>
                           ))}
                         </select>
                       </div>
 
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-700 block mb-1">Pola Potongan</label>
+                        <label className="font-bold text-slate-700 dark:text-zinc-300 block mb-1.5">Pola & Kolar</label>
                         <select
                           value={simCutId}
                           onChange={(e) => setSimCutId(e.target.value)}
-                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 font-medium text-slate-800 dark:text-zinc-100"
                         >
                           {cuts.map((c) => (
                             <option key={c.id} value={c.id}>
-                              {c.name} (+{formatCurrency(c.cut_add_on_price)})
+                              {c.name} {c.cut_add_on_price > 0 ? `(+RM ${c.cut_add_on_price.toFixed(2)})` : '(Percuma)'}
                             </option>
                           ))}
                         </select>
                       </div>
-                    </>
+                    </div>
                   ) : (
-                    <>
+                    <div className="space-y-4 text-xs">
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-700 block mb-1">Dimensi DTF</label>
+                        <label className="font-bold text-slate-700 dark:text-zinc-300 block mb-1.5">Dimensi DTF</label>
                         <select
                           value={simDtfId}
                           onChange={(e) => setSimDtfId(e.target.value)}
-                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 font-medium text-slate-800 dark:text-zinc-100"
                         >
                           {dtfDimensions.map((d) => (
                             <option key={d.id} value={d.id}>
@@ -858,161 +925,211 @@ export default function AdminPricingRulesPage() {
                       </div>
 
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-700 block mb-1">Pakej DTF</label>
-                        <select
-                          value={simDtfType}
-                          onChange={(e) => setSimDtfType(e.target.value as any)}
-                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900"
-                        >
-                          <option value="with_garment">Baju Cotton 24s + Cetakan Siap</option>
-                          <option value="film_only">Filem Stiker Sahaja</option>
-                        </select>
+                        <label className="font-bold text-slate-700 dark:text-zinc-300 block mb-1.5">Pakej DTF</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setSimDtfType('film_only')}
+                            className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                              simDtfType === 'film_only'
+                                ? 'border-[#00BDFF] bg-sky-50 dark:bg-sky-950/40 text-[#00BDFF]'
+                                : 'border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800'
+                            }`}
+                          >
+                            <span className="font-bold block">Filem Sahaja</span>
+                            <span className="text-[10px] text-slate-500">Customer bawa baju sendiri</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSimDtfType('with_garment')}
+                            className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                              simDtfType === 'with_garment'
+                                ? 'border-[#00BDFF] bg-sky-50 dark:bg-sky-950/40 text-[#00BDFF]'
+                                : 'border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800'
+                            }`}
+                          >
+                            <span className="font-bold block">Siap Baju Cotton</span>
+                            <span className="text-[10px] text-slate-500">Termasuk 100% Combed Cotton</span>
+                          </button>
+                        </div>
                       </div>
-                    </>
+                    </div>
                   )}
 
-                  <div>
-                    <label className="text-[11px] font-semibold text-slate-700 block mb-1">
-                      Kuantiti Tempahan: <span className="font-mono font-bold text-slate-900">{simQuantity} helai</span>
-                    </label>
+                  {/* Quantity Slider */}
+                  <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
+                    <div className="flex items-center justify-between text-xs">
+                      <label className="font-bold text-slate-700 dark:text-zinc-300">Kuantiti Tempahan</label>
+                      <span className="font-mono font-bold text-slate-900 dark:text-zinc-100 bg-slate-100 dark:bg-zinc-800 px-3 py-1 rounded-full">
+                        {simQuantity} Helai
+                      </span>
+                    </div>
                     <input
                       type="range"
                       min="1"
                       max="500"
                       value={simQuantity}
                       onChange={(e) => setSimQuantity(Number(e.target.value))}
-                      className="w-full accent-[#00BDFF]"
+                      className="w-full accent-[#00BDFF] cursor-pointer"
                     />
+                    <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                      <span>1 helai</span>
+                      <span>50 helai</span>
+                      <span>150 helai</span>
+                      <span>300 helai</span>
+                      <span>500+ helai</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Simulator Result Output */}
-                <div className="bg-sky-50/70 p-5 rounded-2xl border border-sky-100 flex flex-col justify-between space-y-4">
-                  <div className="space-y-2 text-xs">
-                    <div className="flex items-center justify-between text-slate-600">
-                      <span>Harga Seunit Asas:</span>
-                      <span className="font-mono font-bold text-slate-900">{formatCurrency(simQuote.rawUnitPrice)}</span>
+                {/* Live Quote Output Card */}
+                <div className="lg:col-span-5 bg-gradient-to-br from-slate-900 to-slate-950 text-white p-6 rounded-2xl shadow-xl flex flex-col justify-between space-y-6 relative overflow-hidden">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#00BDFF] uppercase tracking-wider">
+                        Hasil Sebut Harga Automatik
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-white">
+                        Masa Nyata
+                      </span>
                     </div>
-                    <div className="flex items-center justify-between text-slate-600">
-                      <span>Tier Kuantiti:</span>
-                      <span className="font-bold text-slate-900">{simQuote.tierLabel}</span>
+
+                    <div className="pt-2">
+                      <span className="text-xs text-slate-400 block">Jumlah Anggaran Sebut Harga</span>
+                      <span className="text-3xl sm:text-4xl font-black text-[#00BDFF] font-mono">
+                        {formatCurrency(simQuote.finalTotal)}
+                      </span>
+                      <span className="text-xs text-slate-300 font-mono mt-1 block">
+                        Kadar Seunit: <strong className="text-white">{formatCurrency(simQuote.finalUnitPrice)}</strong> / helai
+                      </span>
                     </div>
-                    {simQuote.discountPercentage > 0 && (
-                      <div className="flex items-center justify-between text-emerald-600 font-semibold">
-                        <span>Diskaun ({simQuote.discountPercentage}%):</span>
-                        <span className="font-mono">-{formatCurrency(simQuote.unitDiscountAmount)}/helai</span>
+
+                    {/* Breakdown */}
+                    <div className="pt-4 border-t border-white/10 space-y-2 text-xs">
+                      <div className="flex justify-between text-slate-300">
+                        <span>Harga Asas Seunit:</span>
+                        <span className="font-mono">{formatCurrency(simQuote.rawUnitPrice)}</span>
                       </div>
-                    )}
-                    <div className="flex items-center justify-between text-slate-600">
-                      <span>Harga Seunit Bersih:</span>
-                      <span className="font-mono font-bold text-slate-900">{formatCurrency(simQuote.finalUnitPrice)}</span>
+                      <div className="flex justify-between text-slate-300">
+                        <span>Diskaun Pukal Dikenakan:</span>
+                        <span className="font-mono text-emerald-400 font-bold">
+                          {simQuote.discountPercentage > 0 ? `-${simQuote.discountPercentage}% OFF (${formatCurrency(simQuote.totalSavings)})` : 'Tiada'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-slate-300">
+                        <span>Tier Kuantiti Aktif:</span>
+                        <span className="font-bold text-white">{simQuote.tierLabel}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-300">
+                        <span>Deposit 50% Diperlukan:</span>
+                        <span className="font-mono text-[#00BDFF] font-bold">
+                          {formatCurrency(simQuote.finalTotal * 0.5)}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-sky-200">
-                    <div className="text-[11px] text-slate-500 font-medium">Jumlah Anggaran ({simQuantity} helai):</div>
-                    <div className="text-2xl font-black text-[#00BDFF] font-mono mt-0.5">
-                      {formatCurrency(simQuote.finalTotal)}
-                    </div>
-                    {simQuote.totalSavings > 0 && (
-                      <div className="text-[11px] text-emerald-600 font-medium mt-0.5">
-                        Jimat sehingga {formatCurrency(simQuote.totalSavings)}
-                      </div>
-                    )}
+                  <div className="p-3.5 bg-white/5 rounded-xl border border-white/10 text-[11px] text-slate-400 flex items-start gap-2">
+                    <Sparkles className="w-4 h-4 text-[#00BDFF] shrink-0 mt-0.5" />
+                    <span>
+                      Formula ini diselaraskan secara automatik dengan Borang Tempahan Kustom yang diakses oleh pelanggan awam.
+                    </span>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </main>
+            )}
+
+          </div>
+        </div>
       </div>
 
-      {/* MODAL: FABRIC (ADD / EDIT) */}
+      {/* ----------------- MODALS ----------------- */}
+
+      {/* MODAL: FABRIC MATERIAL (ADD / EDIT) */}
       {fabricModalData && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <form onSubmit={handleSaveFabricModal} className="w-full max-w-md bg-white rounded-3xl p-6 space-y-4 shadow-2xl border border-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-bold text-slate-900">
+          <form onSubmit={handleSaveFabricModal} className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                 {fabricModalData.id ? 'Edit Fabrik' : 'Tambah Fabrik Baru'}
               </h3>
-              <button type="button" onClick={() => setFabricModalData(null)} className="text-slate-400 hover:text-slate-700">
+              <button type="button" onClick={() => setFabricModalData(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Nama Fabrik *</label>
+                <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Nama Fabrik *</label>
                 <input
                   type="text"
                   required
                   value={fabricModalData.name || ''}
                   onChange={(e) => setFabricModalData({ ...fabricModalData, name: e.target.value })}
-                  placeholder="cth: Drifit Milano Pro"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                  placeholder="cth: Microfiber Eyelet Premium"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Berat GSM *</label>
+                  <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Berat GSM *</label>
                   <input
                     type="number"
                     required
                     value={fabricModalData.weight_gsm || 160}
                     onChange={(e) => setFabricModalData({ ...fabricModalData, weight_gsm: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl font-mono"
                   />
                 </div>
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Harga Asas (RM) *</label>
-                  <input
-                    type="number"
-                    step="0.5"
-                    required
-                    value={fabricModalData.sublimation_base_price || 30}
-                    onChange={(e) => setFabricModalData({ ...fabricModalData, sublimation_base_price: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono"
-                  />
+                  <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Pengudaraan *</label>
+                  <select
+                    value={fabricModalData.breathability || 'High'}
+                    onChange={(e) => setFabricModalData({ ...fabricModalData, breathability: e.target.value as any })}
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl"
+                  >
+                    <option value="High">High</option>
+                    <option value="Ultra-High">Ultra-High</option>
+                    <option value="Medium">Medium</option>
+                  </select>
                 </div>
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Ciri Pengudaraan</label>
-                <select
-                  value={fabricModalData.breathability || 'High'}
-                  onChange={(e) => setFabricModalData({ ...fabricModalData, breathability: e.target.value as any })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
-                >
-                  <option value="Standard">Standard</option>
-                  <option value="High">High</option>
-                  <option value="Ultra Breathable">Ultra Breathable</option>
-                </select>
+                <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Harga Asas Sublimasi (RM) *</label>
+                <input
+                  type="number"
+                  step="0.5"
+                  required
+                  value={fabricModalData.sublimation_base_price || 35}
+                  onChange={(e) => setFabricModalData({ ...fabricModalData, sublimation_base_price: Number(e.target.value) })}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl font-mono text-[#00BDFF] font-bold"
+                />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Penerangan / Ciri Material</label>
+                <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Deskripsi Ringkas</label>
                 <textarea
+                  rows={2}
                   value={fabricModalData.description || ''}
                   onChange={(e) => setFabricModalData({ ...fabricModalData, description: e.target.value })}
-                  placeholder="Tekstur kain, kesesuaian sukan..."
-                  rows={2}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                  placeholder="Kain serap peluh cepat kering, sesuai sukan aktif."
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl"
                 />
               </div>
 
               <div className="flex items-center gap-4 pt-1">
-                <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+                <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-zinc-300">
                   <input
                     type="checkbox"
-                    checked={Boolean(fabricModalData.is_popular)}
+                    checked={fabricModalData.is_popular || false}
                     onChange={(e) => setFabricModalData({ ...fabricModalData, is_popular: e.target.checked })}
                     className="rounded accent-[#00BDFF]"
                   />
-                  <span>Label Popular</span>
+                  <span>Tag Popular</span>
                 </label>
-
-                <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+                <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-zinc-300">
                   <input
                     type="checkbox"
                     checked={fabricModalData.is_active ?? true}
@@ -1024,17 +1141,17 @@ export default function AdminPricingRulesPage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
               <button
                 type="button"
                 onClick={() => setFabricModalData(null)}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold"
+                className="px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 text-xs font-semibold cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-[#00BDFF] hover:bg-sky-600 text-white text-xs font-bold"
+                className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold cursor-pointer"
               >
                 Simpan Fabrik
               </button>
@@ -1043,57 +1160,57 @@ export default function AdminPricingRulesPage() {
         </div>
       )}
 
-      {/* MODAL: CUT (ADD / EDIT) */}
+      {/* MODAL: APPAREL CUT (ADD / EDIT) */}
       {cutModalData && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <form onSubmit={handleSaveCutModal} className="w-full max-w-md bg-white rounded-3xl p-6 space-y-4 shadow-2xl border border-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-bold text-slate-900">
-                {cutModalData.id ? 'Edit Pola Potongan' : 'Tambah Pola Potongan Baru'}
+          <form onSubmit={handleSaveCutModal} className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
+                {cutModalData.id ? 'Edit Pola / Kolar' : 'Tambah Pola / Kolar Baru'}
               </h3>
-              <button type="button" onClick={() => setCutModalData(null)} className="text-slate-400 hover:text-slate-700">
+              <button type="button" onClick={() => setCutModalData(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Nama Pola / Kolar *</label>
+                <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Nama Pola / Kolar *</label>
                 <input
                   type="text"
                   required
                   value={cutModalData.name || ''}
                   onChange={(e) => setCutModalData({ ...cutModalData, name: e.target.value })}
-                  placeholder="cth: Raglan Collar V-Neck"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                  placeholder="cth: Kolar Berkolar V-Neck"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Add-On Caj (RM) *</label>
+                <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Caj Tambahan (RM) *</label>
                 <input
                   type="number"
                   step="0.5"
                   required
                   value={cutModalData.cut_add_on_price || 0}
                   onChange={(e) => setCutModalData({ ...cutModalData, cut_add_on_price: Number(e.target.value) })}
-                  placeholder="0 jika tiada caj tambahan"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl font-mono text-[#00BDFF] font-bold"
                 />
+                <span className="text-[11px] text-slate-400 mt-0.5 block">Letak 0 jika tiada caj tambahan.</span>
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Penerangan</label>
+                <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Deskripsi Ringkas</label>
                 <textarea
+                  rows={2}
                   value={cutModalData.description || ''}
                   onChange={(e) => setCutModalData({ ...cutModalData, description: e.target.value })}
-                  placeholder="Ciri jahitan kolar atau lengan..."
-                  rows={2}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                  placeholder="Potongan standard leher bulat atau kolar polo."
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl"
                 />
               </div>
 
-              <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700 pt-1">
+              <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-zinc-300 pt-1">
                 <input
                   type="checkbox"
                   checked={cutModalData.is_active ?? true}
@@ -1104,17 +1221,17 @@ export default function AdminPricingRulesPage() {
               </label>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
               <button
                 type="button"
                 onClick={() => setCutModalData(null)}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold"
+                className="px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 text-xs font-semibold cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-[#00BDFF] hover:bg-sky-600 text-white text-xs font-bold"
+                className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold cursor-pointer"
               >
                 Simpan Pola
               </button>
@@ -1126,55 +1243,55 @@ export default function AdminPricingRulesPage() {
       {/* MODAL: QUANTITY TIER (ADD / EDIT) */}
       {tierModalData && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <form onSubmit={handleSaveTierModal} className="w-full max-w-md bg-white rounded-3xl p-6 space-y-4 shadow-2xl border border-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-bold text-slate-900">
+          <form onSubmit={handleSaveTierModal} className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                 {tierModalData.id ? 'Edit Tier Diskaun' : 'Tambah Tier Diskaun Baru'}
               </h3>
-              <button type="button" onClick={() => setTierModalData(null)} className="text-slate-400 hover:text-slate-700">
+              <button type="button" onClick={() => setTierModalData(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Nama / Label Tier *</label>
+                <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Nama / Label Tier *</label>
                 <input
                   type="text"
                   required
                   value={tierModalData.tier_label || ''}
                   onChange={(e) => setTierModalData({ ...tierModalData, tier_label: e.target.value })}
                   placeholder="cth: Pukal Kelab 30-49 helai"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Min Kuantiti *</label>
+                  <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Min Kuantiti *</label>
                   <input
                     type="number"
                     min="1"
                     required
                     value={tierModalData.min_qty || 1}
                     onChange={(e) => setTierModalData({ ...tierModalData, min_qty: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl font-mono"
                   />
                 </div>
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Maks Kuantiti (Kosongkan jika tiada had)</label>
+                  <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Maks Kuantiti</label>
                   <input
                     type="number"
                     value={tierModalData.max_qty ?? ''}
                     onChange={(e) => setTierModalData({ ...tierModalData, max_qty: e.target.value ? Number(e.target.value) : null })}
                     placeholder="Tiada had"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl font-mono"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Kadar Diskaun (%) *</label>
+                <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Kadar Diskaun (%) *</label>
                 <input
                   type="number"
                   min="0"
@@ -1182,22 +1299,22 @@ export default function AdminPricingRulesPage() {
                   required
                   value={tierModalData.discount_percentage || 0}
                   onChange={(e) => setTierModalData({ ...tierModalData, discount_percentage: Number(e.target.value) })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-emerald-600 font-bold"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl font-mono text-emerald-600 font-bold"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
               <button
                 type="button"
                 onClick={() => setTierModalData(null)}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold"
+                className="px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 text-xs font-semibold cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-[#00BDFF] hover:bg-sky-600 text-white text-xs font-bold"
+                className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold cursor-pointer"
               >
                 Simpan Tier
               </button>
@@ -1206,70 +1323,70 @@ export default function AdminPricingRulesPage() {
         </div>
       )}
 
-      {/* MODAL: DTF (ADD / EDIT) */}
+      {/* MODAL: DTF DIMENSION (ADD / EDIT) */}
       {dtfModalData && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <form onSubmit={handleSaveDtfModal} className="w-full max-w-md bg-white rounded-3xl p-6 space-y-4 shadow-2xl border border-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-bold text-slate-900">
+          <form onSubmit={handleSaveDtfModal} className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                 {dtfModalData.id ? 'Edit Saiz DTF' : 'Tambah Saiz DTF Baru'}
               </h3>
-              <button type="button" onClick={() => setDtfModalData(null)} className="text-slate-400 hover:text-slate-700">
+              <button type="button" onClick={() => setDtfModalData(null)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Nama Format DTF *</label>
+                <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Nama Format DTF *</label>
                 <input
                   type="text"
                   required
                   value={dtfModalData.name || ''}
                   onChange={(e) => setDtfModalData({ ...dtfModalData, name: e.target.value })}
                   placeholder="cth: A3 Large Print"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Dimensi / Ukuran *</label>
+                <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Dimensi / Ukuran *</label>
                 <input
                   type="text"
                   required
                   value={dtfModalData.dimensions_desc || ''}
                   onChange={(e) => setDtfModalData({ ...dtfModalData, dimensions_desc: e.target.value })}
                   placeholder="cth: 29.7 x 42 cm"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Harga Filem Sahaja (RM) *</label>
+                  <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Harga Filem Sahaja (RM) *</label>
                   <input
                     type="number"
                     step="0.5"
                     required
                     value={dtfModalData.base_price || 10}
                     onChange={(e) => setDtfModalData({ ...dtfModalData, base_price: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl font-mono"
                   />
                 </div>
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Harga Siap Baju (RM) *</label>
+                  <label className="font-semibold text-slate-700 dark:text-zinc-300 block mb-1">Harga Siap Baju (RM) *</label>
                   <input
                     type="number"
                     step="0.5"
                     required
                     value={dtfModalData.garment_included_base_price || 25}
                     onChange={(e) => setDtfModalData({ ...dtfModalData, garment_included_base_price: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-sky-600 font-bold"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl font-mono text-[#00BDFF] font-bold"
                   />
                 </div>
               </div>
 
-              <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700 pt-1">
+              <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-zinc-300 pt-1">
                 <input
                   type="checkbox"
                   checked={dtfModalData.is_active ?? true}
@@ -1280,17 +1397,17 @@ export default function AdminPricingRulesPage() {
               </label>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
               <button
                 type="button"
                 onClick={() => setDtfModalData(null)}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold"
+                className="px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 text-xs font-semibold cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-[#00BDFF] hover:bg-sky-600 text-white text-xs font-bold"
+                className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold cursor-pointer"
               >
                 Simpan Saiz DTF
               </button>

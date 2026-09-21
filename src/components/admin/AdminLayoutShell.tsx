@@ -194,7 +194,9 @@ export default function AdminLayoutShell({
         pathname.startsWith('/admin/payment-settings') ||
         pathname.startsWith('/admin/ads-generator') ||
         pathname.startsWith('/admin/cms') ||
-        pathname.startsWith('/admin/whatsapp-hub') ? (
+        pathname.startsWith('/admin/whatsapp-hub') ||
+        pathname.startsWith('/admin/customers') ||
+        pathname.startsWith('/admin/pricing-rules') ? (
           <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white relative">
             <main className="flex-1 h-full overflow-hidden p-0">
               {children}
