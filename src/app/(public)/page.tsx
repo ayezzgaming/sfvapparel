@@ -1076,9 +1076,10 @@ export default function HomePage() {
         <div className="flex flex-col space-y-3.5">
           <div className="flex justify-between items-start">
             <div className="space-y-1.5 max-w-[240px]">
-              <div className="inline-flex items-center">
+              <div className="inline-flex items-center space-x-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo/SVFapparel-logo.svg" alt="SVF Apparel" className="h-6 w-auto object-contain shrink-0" />
+                <img src="/logo.svg" alt="SFV APPAREL" className="h-6 w-auto object-contain shrink-0" />
+                <span className="text-sm font-black tracking-tight text-slate-900 leading-none">SFV APPAREL</span>
               </div>
               <p className="text-[11.5px] text-slate-500 leading-snug">
                 {companySettings.tagline}

@@ -188,7 +188,7 @@ function LoginForm() {
           <ChevronLeft className="w-4 h-4" />
           <span>Kembali</span>
         </Link>
-        <span className="text-[11px] font-medium text-slate-400">SVF Apparel</span>
+        <span className="text-[11px] font-medium text-slate-400">SFV APPAREL</span>
       </div>
 
       {/* Center Container */}

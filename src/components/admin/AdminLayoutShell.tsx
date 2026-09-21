@@ -61,13 +61,17 @@ export default function AdminLayoutShell({
           </button>
 
           {/* Logo & Brand Name */}
-          <Link href="/admin" className="flex items-center hover:opacity-90 transition-opacity">
+          <Link href="/admin" className="flex items-center space-x-2.5 hover:opacity-90 transition-opacity">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/logo/SVFapparel-logo.svg"
-              alt="SVF Apparel"
+              src="/logo.svg"
+              alt="SFV APPAREL"
               className="h-7.5 sm:h-8 w-auto object-contain shrink-0"
             />
+            <div className="flex flex-col">
+              <span className="text-sm font-black tracking-tight text-slate-900 leading-none">SFV APPAREL</span>
+              <span className="text-[9px] font-bold text-[#0052FF] tracking-wider uppercase">Admin Portal</span>
+            </div>
           </Link>
 
           {/* Breadcrumb if inside child page */}
