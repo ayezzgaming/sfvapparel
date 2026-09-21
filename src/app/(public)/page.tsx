@@ -434,24 +434,43 @@ export default function HomePage() {
                 );
               })}
 
-              {/* Banner Carousel Indicator Dots (Clean Frosted Glass) */}
+              {/* Hero Banner Auto-Timer / Play Loading Glassmorphic Ring */}
               {activeBanners.length > 1 && (
-                <div className="absolute top-3.5 right-3.5 z-30 flex items-center gap-1.5 bg-white/85 backdrop-blur-md border border-white/70 px-2.5 py-1.5 rounded-full shadow-xs">
-                  {activeBanners.map((_, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveBannerIndex(idx);
-                      }}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
-                        idx === activeBannerIndex ? 'w-4 bg-[#0052FF]' : 'w-1.5 bg-slate-300 hover:bg-slate-400'
-                      }`}
-                      aria-label={`Slide ${idx + 1}`}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveBannerIndex((prev) => (prev + 1) % activeBanners.length);
+                  }}
+                  aria-label="Slaid seterusnya"
+                  className="absolute top-3.5 right-3.5 z-30 w-7 h-7 rounded-full bg-white/85 backdrop-blur-md border border-white/70 shadow-xs flex items-center justify-center text-slate-800 hover:bg-white active:scale-90 transition-all cursor-pointer group"
+                  title="Slaid seterusnya"
+                >
+                  <svg className="w-5 h-5 -rotate-90 pointer-events-none" viewBox="0 0 24 24">
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9"
+                      fill="none"
+                      stroke="#E2E8F0"
+                      strokeWidth="2"
                     />
-                  ))}
-                </div>
+                    <circle
+                      key={`banner-ring-${activeBannerIndex}`}
+                      cx="12"
+                      cy="12"
+                      r="9"
+                      fill="none"
+                      stroke="#0052FF"
+                      strokeWidth="2"
+                      strokeDasharray="56.54"
+                      strokeDashoffset="56.54"
+                      strokeLinecap="round"
+                      className="animate-banner-progress"
+                    />
+                  </svg>
+                  <Play className="w-2.5 h-2.5 fill-[#0052FF] text-[#0052FF] ml-0.5 absolute pointer-events-none group-hover:scale-110 transition-transform" />
+                </button>
               )}
             </>
           )}
@@ -469,16 +488,16 @@ export default function HomePage() {
         >
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0 flex-1">
-              {/* Soft Animated Icon */}
+              {/* Soft Animated Icon with smooth swap entrance */}
               <div 
-                key={`icon-${currentTrust.id}`}
-                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${currentTheme.iconBg} flex items-center justify-center shrink-0 shadow-xs transition-transform duration-300 group-hover:scale-105`}
+                key={`icon-${currentTrust.id}-${activeTrustIndex}`}
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${currentTheme.iconBg} flex items-center justify-center shrink-0 shadow-xs transition-all duration-300 group-hover:scale-105 animate-trust-swap`}
               >
                 <TrustIcon className="w-5 h-5 stroke-[2.2]" />
               </div>
 
-              {/* Text content with soft typography & tag */}
-              <div key={`text-${currentTrust.id}`} className="min-w-0 flex-1">
+              {/* Text content with smooth crossfade typography */}
+              <div key={`text-${currentTrust.id}-${activeTrustIndex}`} className="min-w-0 flex-1 animate-trust-swap">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-[12px] sm:text-[13px] font-bold text-slate-900 tracking-tight leading-tight">
                     {currentTrust.title}
