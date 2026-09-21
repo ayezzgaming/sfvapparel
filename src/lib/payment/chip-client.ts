@@ -24,11 +24,9 @@ const DEFAULT_CHIP_CONFIG: PaymentGatewayConfig = {
  */
 let cachedConfig: PaymentGatewayConfig | null = null;
 
-export function getChipBaseUrl(isSandbox: boolean): string {
+export function getChipBaseUrl(isSandbox?: boolean): string {
   // CHIP Gateway Base API URL
-  return isSandbox
-    ? 'https://gate.staging.chip-in.asia/api/v1'
-    : 'https://gate.chip-in.asia/api/v1';
+  return 'https://gate.chip-in.asia/api/v1';
 }
 
 /**
