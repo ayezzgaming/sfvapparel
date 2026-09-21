@@ -1264,10 +1264,10 @@ export default function CustomizePage() {
                 <button
                   type="button"
                   onClick={() => setIsCourierDropdownOpen((prev) => !prev)}
-                  className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-left flex items-center justify-between gap-2"
+                  className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-left flex items-center justify-between gap-2.5 hover:border-slate-300 transition-colors"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <CourierLogo type={selectedCourier.logoType} className="w-6 h-6 shrink-0" />
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <CourierLogo type={selectedCourier.logoType} className="w-8 h-8 shrink-0" />
                     <div className="min-w-0">
                       <div className="text-xs font-semibold text-slate-900 truncate">{selectedCourier.name}</div>
                       <div className="text-[10px] text-slate-400 truncate">{selectedCourier.estimatedDays}</div>
@@ -1292,12 +1292,12 @@ export default function CustomizePage() {
                             setSelectedCourierId(courier.id);
                             setIsCourierDropdownOpen(false);
                           }}
-                          className={`p-2.5 flex items-center justify-between gap-2 cursor-pointer ${
+                          className={`p-2.5 flex items-center justify-between gap-2.5 cursor-pointer transition-colors ${
                             isSelected ? 'bg-sky-50 text-sky-900' : 'hover:bg-slate-50 text-slate-800'
                           }`}
                         >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <CourierLogo type={courier.logoType} className="w-6 h-6 shrink-0" />
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <CourierLogo type={courier.logoType} className="w-8 h-8 shrink-0" />
                             <div className="min-w-0">
                               <div className="text-xs font-medium truncate">{courier.name}</div>
                               <div className="text-[10px] text-slate-400">{courier.estimatedDays}</div>
@@ -1441,9 +1441,16 @@ export default function CustomizePage() {
             </div>
 
             <div className="space-y-2 text-xs">
-              <div className="p-2.5 bg-slate-50 rounded-xl space-y-1">
+              <div className="p-2.5 bg-slate-50 rounded-xl space-y-1.5">
                 <div className="font-semibold text-slate-900">{design.title}</div>
-                <div className="text-slate-500">{totalQuantity} helai &bull; {selectedCourier.name}</div>
+                <div className="flex items-center gap-2 text-slate-500 text-xs">
+                  <span>{totalQuantity} helai</span>
+                  <span>&bull;</span>
+                  <div className="inline-flex items-center gap-1.5">
+                    <CourierLogo type={selectedCourier.logoType} className="w-5 h-5 shrink-0" />
+                    <span className="font-medium text-slate-700">{selectedCourier.shortName || selectedCourier.name}</span>
+                  </div>
+                </div>
               </div>
 
               <div className="p-2.5 bg-slate-50 rounded-xl space-y-1">
