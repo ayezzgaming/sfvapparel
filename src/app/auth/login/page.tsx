@@ -132,13 +132,24 @@ function LoginForm() {
     }
   };
 
+  const isVerifyingRef = useRef(false);
+
   // STEP 2: Verify OTP
   const handleVerifyOtp = async (otpCode: string, targetPhone?: string) => {
+    if (isVerifyingRef.current) return;
+    isVerifyingRef.current = true;
     setError('');
     setIsLoading(true);
 
     try {
       const activePhone = targetPhone || normalizedPhone;
+      if (!activePhone || !otpCode || otpCode.length !== 6) {
+        setError('Kod OTP tidak lengkap.');
+        setIsLoading(false);
+        isVerifyingRef.current = false;
+        return;
+      }
+
       const res = await fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -166,18 +177,19 @@ function LoginForm() {
 
       // Existing customer: successfully logged in
       await refresh();
-      router.push(destination);
+      window.location.href = destination;
     } catch {
       setError('Ralat sambungan. Sila cuba lagi.');
     } finally {
       setIsLoading(false);
+      isVerifyingRef.current = false;
     }
   };
 
   // STEP 3: Complete Profile for New Customer
   const handleCompleteProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
+    if (!name.trim() || isLoading) {
       setError('Sila masukkan nama penuh anda.');
       return;
     }
@@ -203,7 +215,7 @@ function LoginForm() {
       }
 
       await refresh();
-      router.push(destination);
+      window.location.href = destination;
     } catch {
       setError('Ralat sambungan.');
     } finally {
@@ -212,7 +224,7 @@ function LoginForm() {
   };
 
   const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
+    if (!/^\d*$/.test(value) || isLoading) return;
     const newOtp = [...otp];
     newOtp[index] = value.slice(-1);
     setOtp(newOtp);
@@ -222,8 +234,9 @@ function LoginForm() {
       otpRefs.current[index + 1]?.focus();
     }
 
-    if (newOtp.every((d) => d) && value) {
-      handleVerifyOtp(newOtp.join(''));
+    const fullCode = newOtp.join('');
+    if (fullCode.length === 6 && newOtp.every(Boolean) && !isVerifyingRef.current) {
+      handleVerifyOtp(fullCode);
     }
   };
 
@@ -235,7 +248,7 @@ function LoginForm() {
 
   const handleOtpPaste = (e: React.ClipboardEvent) => {
     const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    if (pasted.length === 6) {
+    if (pasted.length === 6 && !isVerifyingRef.current) {
       setOtp(pasted.split(''));
       handleVerifyOtp(pasted);
     }

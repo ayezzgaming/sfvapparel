@@ -52,17 +52,18 @@ export default function HistoryPage() {
 
   // Filter orders by authenticated customer from Database
   const customerOrders = useMemo(() => {
-    if (!isAuthenticated || !customer) return [];
-    const phone = customer.whatsapp || '';
+    if (!isAuthenticated || !customer || !Array.isArray(orders)) return [];
+    const phone = String(customer.whatsapp || '');
     const cleanPhone = phone.replace(/[\s\-\+\(\)]/g, '');
 
     return orders.filter((o) => {
+      if (!o) return false;
       if (o.customer_id && customer.id && o.customer_id === customer.id) return true;
       if (o.customer_phone && cleanPhone) {
-        const orderPhoneClean = o.customer_phone.replace(/[\s\-\+\(\)]/g, '');
-        if (orderPhoneClean.includes(cleanPhone.slice(-8)) || cleanPhone.includes(orderPhoneClean.slice(-8))) return true;
+        const orderPhoneClean = String(o.customer_phone).replace(/[\s\-\+\(\)]/g, '');
+        if (orderPhoneClean && (orderPhoneClean.includes(cleanPhone.slice(-8)) || cleanPhone.includes(orderPhoneClean.slice(-8)))) return true;
       }
-      if (customer.email && o.customer_email && o.customer_email.toLowerCase() === customer.email.toLowerCase()) return true;
+      if (customer.email && o.customer_email && String(o.customer_email).toLowerCase() === String(customer.email).toLowerCase()) return true;
       return false;
     });
   }, [orders, isAuthenticated, customer]);
