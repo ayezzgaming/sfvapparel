@@ -130,16 +130,18 @@ const renderPlatformIcon = (platform: CmsTestimonial['platform']) => {
       return (
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
           <defs>
-            <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#f09433" />
-              <stop offset="25%" stopColor="#e6683c" />
-              <stop offset="50%" stopColor="#dc2743" />
-              <stop offset="75%" stopColor="#cc2366" />
-              <stop offset="100%" stopColor="#bc1888" />
-            </linearGradient>
+            <radialGradient id="ig-radial-logo" cx="30%" cy="107%" r="130%" fx="30%" fy="107%">
+              <stop offset="0%" stopColor="#fdf497" />
+              <stop offset="5%" stopColor="#fdf497" />
+              <stop offset="45%" stopColor="#fd5949" />
+              <stop offset="60%" stopColor="#d6249f" />
+              <stop offset="90%" stopColor="#285AEB" />
+            </radialGradient>
           </defs>
-          <rect width="24" height="24" rx="6" fill="url(#ig-grad)"/>
-          <path d="M12 7.02c-2.75 0-4.98 2.23-4.98 4.98s2.23 4.98 4.98 4.98 4.98-2.23 4.98-4.98-2.23-4.98-4.98-4.98zm0 8.24c-1.8 0-3.26-1.46-3.26-3.26s1.46-3.26 3.26-3.26 3.26 1.46 3.26 3.26-1.46 3.26-3.26 3.26zm6.34-8.42c0 .64-.52 1.16-1.16 1.16-.64 0-1.16-.52-1.16-1.16 0-.64.52-1.16 1.16-1.16.64 0 1.16.52 1.16 1.16zm2.66 1.18c-.06-1.26-.35-2.38-1.27-3.3-.92-.92-2.04-1.21-3.3-1.27C15.15 3.4 11.85 3.4 10.57 3.45c-1.26.06-2.38.35-3.3 1.27-.92.92-1.21 2.04-1.27 3.3C3.95 9.3 3.95 12.6 4 13.88c.06 1.26.35 2.38 1.27 3.3.92.92 2.04 1.21 3.3 1.27 1.28.05 4.58.05 5.86 0 1.26-.06 2.38-.35 3.3-1.27.92-.92 1.21-2.04 1.27-3.3.05-1.28.05-4.58 0-5.86zm-1.88 9.08c-.28.7-.82 1.24-1.52 1.52-1.01.4-3.41.31-4.6.31s-3.59.09-4.6-.31c-.7-.28-1.24-.82-1.52-1.52-.4-1.01-.31-3.41-.31-4.6s-.09-3.59.31-4.6c.28-.7.82-1.24 1.52-1.52 1.01-.4 3.41-.31 4.6-.31s3.59-.09 4.6.31c.7.28 1.24.82 1.52 1.52.4 1.01.31 3.41.31 4.6s.09 3.59-.31 4.6z" fill="#FFFFFF"/>
+          <rect width="24" height="24" rx="6" fill="url(#ig-radial-logo)" />
+          <rect x="5" y="5" width="14" height="14" rx="4" fill="none" stroke="#FFFFFF" strokeWidth="1.6" />
+          <circle cx="12" cy="12" r="3.3" fill="none" stroke="#FFFFFF" strokeWidth="1.6" />
+          <circle cx="15.8" cy="8.2" r="1.05" fill="#FFFFFF" />
         </svg>
       );
   }
