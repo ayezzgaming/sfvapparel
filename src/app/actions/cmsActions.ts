@@ -22,10 +22,10 @@ import {
   INITIAL_CMS_POLICIES,
 } from '@/lib/store/seed-data';
 
-// Helper to validate UUID
+// Helper to validate UUID format (any version, including custom 0x-prefixed seed UUIDs)
 function isValidUuid(id?: string): boolean {
   if (!id) return false;
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 }
 
 const SEED_UUID_MAP: Record<string, string> = {
