@@ -403,8 +403,8 @@ export default function HomePage() {
          ========================================================================= */}
       <div className="w-full bg-[#F2F2F7] pt-3 pb-8 px-4 space-y-6">
         {/* 1. DYNAMIC HERO SECTION WITH MULTI-SLIDE BANNER */}
-        <div className="relative w-full h-[240px] rounded-3xl overflow-hidden shadow-md shadow-slate-300/40 group">
-          {isLoadingCms || !currentBanner ? (
+        <div className="relative w-full h-[240px] rounded-3xl overflow-hidden shadow-md shadow-slate-300/40 bg-slate-900 group">
+          {isLoadingCms || activeBanners.length === 0 ? (
             /* Skeleton sementara data dimuatkan */
             <div className="w-full h-full bg-slate-200 animate-pulse">
               <div className="absolute inset-x-4 bottom-4 space-y-2">
@@ -415,66 +415,81 @@ export default function HomePage() {
             </div>
           ) : (
             <>
-          {/* Full-bleed Natural Photo */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={currentBanner.image_url}
-            alt={currentBanner.title}
-            key={currentBanner.id}
-            className="w-full h-full object-cover object-[center_22%] group-hover:scale-103 transition-all duration-700 animate-in fade-in"
-          />
+              {/* Stacked All Banner Layers for Silky Smooth Cross-Fade & Zero Black Flash */}
+              {activeBanners.map((banner, index) => {
+                const isActive = index === activeBannerIndex;
+                return (
+                  <div
+                    key={banner.id}
+                    className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+                      isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+                    }`}
+                  >
+                    {/* Full-bleed Natural Photo */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={banner.image_url}
+                      alt={banner.title}
+                      className={`w-full h-full object-cover object-[center_22%] transition-transform duration-[7000ms] ease-out ${
+                        isActive ? 'scale-105' : 'scale-100'
+                      }`}
+                    />
 
-          {/* Clean Subtle Bottom-Only Gradient */}
-          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/80 via-black/25 to-transparent pointer-events-none" />
+                    {/* Clean Subtle Bottom-Only Gradient */}
+                    <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
 
-          {/* Top Status Pill */}
-          <div className="absolute top-3.5 left-3.5 z-10 flex items-center gap-2">
-            <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-black/35 backdrop-blur-md text-white shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10.5px] font-medium tracking-wide text-white/95">
-                {currentBanner.status_pill}
-              </span>
-            </div>
-          </div>
+                    {/* Top Status Pill */}
+                    <div className="absolute top-3.5 left-3.5 z-20 flex items-center gap-2">
+                      <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-black/35 backdrop-blur-md text-white shadow-xs">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-[10.5px] font-medium tracking-wide text-white/95">
+                          {banner.status_pill}
+                        </span>
+                      </div>
+                    </div>
 
-          {/* Banner Carousel Indicator Dots (if multi-slide) */}
-          {activeBanners.length > 1 && (
-            <div className="absolute top-3.5 right-3.5 z-10 flex items-center gap-1.5 bg-black/35 backdrop-blur-md px-2 py-1 rounded-full">
-              {activeBanners.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveBannerIndex(idx)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    idx === activeBannerIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/40'
-                  }`}
-                />
-              ))}
-            </div>
+                    {/* Bottom Content Directly Over Gradient */}
+                    <div className="absolute inset-x-4 bottom-4 flex items-end justify-between z-20">
+                      <div className="space-y-0.5 pr-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-300 block font-semibold">
+                          {banner.tag_text}
+                        </span>
+                        <h1 className="text-[17px] font-bold text-white tracking-tight leading-tight drop-shadow-xs">
+                          {banner.title}
+                        </h1>
+                      </div>
+
+                      {/* Action Capsule Button */}
+                      <Link
+                        href={banner.button_link || '/catalog'}
+                        className="px-4 py-2 rounded-full bg-white hover:bg-slate-100 active:scale-95 text-slate-900 text-xs font-semibold tracking-tight shadow-md transition-all flex items-center space-x-1 shrink-0"
+                      >
+                        <span>{banner.button_text}</span>
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-700" />
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Banner Carousel Indicator Dots (if multi-slide) */}
+              {activeBanners.length > 1 && (
+                <div className="absolute top-3.5 right-3.5 z-30 flex items-center gap-1.5 bg-black/35 backdrop-blur-md px-2 py-1 rounded-full">
+                  {activeBanners.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setActiveBannerIndex(idx)}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        idx === activeBannerIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/40'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           )}
-
-          {/* Bottom Content Directly Over Gradient */}
-          <div className="absolute inset-x-4 bottom-4 flex items-end justify-between z-10">
-            <div className="space-y-0.5 pr-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-300 block font-semibold">
-                {currentBanner.tag_text}
-              </span>
-              <h1 className="text-[17px] font-bold text-white tracking-tight leading-tight drop-shadow-xs">
-                {currentBanner.title}
-              </h1>
-            </div>
-
-            {/* Action Capsule Button */}
-            <Link
-              href={currentBanner.button_link}
-              className="px-4 py-2 rounded-full bg-white hover:bg-slate-100 active:scale-95 text-slate-900 text-xs font-semibold tracking-tight shadow-md transition-all flex items-center space-x-1 shrink-0"
-            >
-              <span>{currentBanner.button_text}</span>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-700" />
-            </Link>
-          </div>
-          </>
-        )}
-      </div>
+        </div>
 
         {/* 1.5 VALUE PROPOSITION / TRUST CARD SWAP (Compact, Soft Color & Auto-Slide) */}
         <div 
