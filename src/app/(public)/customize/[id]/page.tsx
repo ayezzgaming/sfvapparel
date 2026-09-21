@@ -161,6 +161,7 @@ export default function CustomizePage() {
   const [logoList, setLogoList] = useState<CustomLogoItem[]>([]);
 
   // Senarai Nama & Nombor (Pilihan: Upload Fail ATAU Tulis Manual Berkolom)
+  const [hasNamesAndNumbers, setHasNamesAndNumbers] = useState(false);
   const rosterInputRef = useRef<HTMLInputElement>(null);
   const [rosterMode, setRosterMode] = useState<'upload' | 'manual'>('manual');
   const [rosterFileName, setRosterFileName] = useState<string>('');
@@ -536,9 +537,11 @@ export default function CustomizePage() {
       Object.entries(sizing).filter(([key, qty]) => activeSizeKeys.includes(key) && Number(qty) > 0)
     );
 
-    const rosterInfo = rosterMode === 'upload' && rosterFileName
-      ? `Fail Senarai Nama: ${rosterFileName}`
-      : formattedManualRosterString;
+    const rosterInfo = !hasNamesAndNumbers
+      ? 'Tanpa Cetakan Nama & Nombor (Kosong)'
+      : (rosterMode === 'upload' && rosterFileName
+        ? `Fail Senarai Nama: ${rosterFileName}`
+        : formattedManualRosterString);
 
     const logoInfo = logoList.length > 0
       ? logoList.map((l, i) => `${i + 1}. ${l.fileName} [${l.placement === 'Lain-lain (Khas)' ? (l.customPlacement || 'Khas') : l.placement}]`).join('\n')
@@ -972,6 +975,29 @@ export default function CustomizePage() {
             <span className="text-slate-500">Jumlah Kuantiti:</span>
             <span className="font-semibold text-slate-900 font-mono">{totalQuantity} helai</span>
           </div>
+
+          {/* Toggle: Senarai Nama & Nombor Pemain */}
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+            <div>
+              <div className="text-xs font-semibold text-slate-800">Senarai Nama & Nombor</div>
+              <div className="text-[10px] text-slate-400">Aktifkan jika perlukan nama/nombor khas pada jersi</div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={hasNamesAndNumbers}
+              onClick={() => setHasNamesAndNumbers((prev) => !prev)}
+              className={`w-10 h-6 rounded-full transition-colors relative focus:outline-none p-0.5 ${
+                hasNamesAndNumbers ? 'bg-sky-500' : 'bg-slate-200'
+              }`}
+            >
+              <div
+                className={`w-5 h-5 rounded-full bg-white shadow-xs transition-transform ${
+                  hasNamesAndNumbers ? 'translate-x-4' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
         </div>
 
         {/* 3. Logo Pasukan & Penaja */}
@@ -1054,110 +1080,115 @@ export default function CustomizePage() {
           </button>
         </div>
 
-        {/* 4. Senarai Nama & Nombor */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 space-y-3">
-          <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            4. Senarai Nama & Nombor <span className="text-slate-400 font-normal lowercase">(pilihan)</span>
-          </h3>
+        {/* 4. Senarai Nama & Nombor (Hanya jika diaktifkan pada toggle) */}
+        {hasNamesAndNumbers && (
+          <div className="bg-white rounded-2xl p-4 border border-slate-200/80 space-y-3 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                4. Senarai Nama & Nombor
+              </h3>
+              <span className="text-[10px] text-slate-400 font-mono">{totalQuantity} helai</span>
+            </div>
 
-          <div className="bg-slate-100 p-0.5 rounded-xl flex items-center">
-            <button
-              type="button"
-              onClick={() => setRosterMode('manual')}
-              className={`flex-1 py-1 text-xs rounded-lg font-medium transition-all ${
-                rosterMode === 'manual' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
-              }`}
-            >
-              Manual
-            </button>
-            <button
-              type="button"
-              onClick={() => setRosterMode('upload')}
-              className={`flex-1 py-1 text-xs rounded-lg font-medium transition-all ${
-                rosterMode === 'upload' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
-              }`}
-            >
-              Muat Naik
-            </button>
-          </div>
+            <div className="bg-slate-100 p-0.5 rounded-xl flex items-center">
+              <button
+                type="button"
+                onClick={() => setRosterMode('manual')}
+                className={`flex-1 py-1 text-xs rounded-lg font-medium transition-all ${
+                  rosterMode === 'manual' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
+                }`}
+              >
+                Isi Manual
+              </button>
+              <button
+                type="button"
+                onClick={() => setRosterMode('upload')}
+                className={`flex-1 py-1 text-xs rounded-lg font-medium transition-all ${
+                  rosterMode === 'upload' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
+                }`}
+              >
+                Muat Naik Fail
+              </button>
+            </div>
 
-          {rosterMode === 'upload' ? (
-            <div className="space-y-2">
-              <input
-                ref={rosterInputRef}
-                type="file"
-                accept=".xlsx,.xls,.csv,.doc,.docx,.pdf,.txt"
-                onChange={handleRosterChange}
-                className="hidden"
-              />
-              {rosterFileName ? (
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <FileText className="w-4 h-4 text-sky-500 shrink-0" />
-                    <span className="text-xs text-slate-900 truncate">{rosterFileName}</span>
+            {rosterMode === 'upload' ? (
+              <div className="space-y-2">
+                <input
+                  ref={rosterInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv,.doc,.docx,.pdf,.txt"
+                  onChange={handleRosterChange}
+                  className="hidden"
+                />
+                {rosterFileName ? (
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <FileText className="w-4 h-4 text-sky-500 shrink-0" />
+                      <span className="text-xs text-slate-900 truncate">{rosterFileName}</span>
+                    </div>
+                    <button type="button" onClick={handleRemoveRosterFile} className="text-slate-400 hover:text-red-500">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                  <button type="button" onClick={handleRemoveRosterFile} className="text-slate-400 hover:text-red-500">
-                    <Trash2 className="w-4 h-4" />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => rosterInputRef.current?.click()}
+                    className="w-full py-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 text-xs text-slate-600 flex items-center justify-center gap-2"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Pilih Fail (Excel/PDF)</span>
                   </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => rosterInputRef.current?.click()}
-                  className="w-full py-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 text-xs text-slate-600 flex items-center justify-center gap-2"
-                >
-                  <Upload className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Pilih Fail (Excel/PDF)</span>
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {totalQuantity === 0 ? (
-                <p className="text-xs text-slate-400 text-center py-2">Masukkan kuantiti saiz di atas terlebih dahulu.</p>
-              ) : (
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                  {(['dewasa', 'kids', 'muslimah'] as const).map((catKey) => {
-                    const catSizes = categorizedActiveSizes[catKey];
-                    if (catSizes.length === 0) return null;
-                    return (
-                      <div key={catKey} className="space-y-1">
-                        <div className="text-[10px] font-semibold text-slate-400 uppercase">
-                          {SIZE_GROUPS[catKey].title}
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {totalQuantity === 0 ? (
+                  <p className="text-xs text-slate-400 text-center py-2">Masukkan kuantiti saiz di atas terlebih dahulu.</p>
+                ) : (
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    {(['dewasa', 'kids', 'muslimah'] as const).map((catKey) => {
+                      const catSizes = categorizedActiveSizes[catKey];
+                      if (catSizes.length === 0) return null;
+                      return (
+                        <div key={catKey} className="space-y-1">
+                          <div className="text-[10px] font-semibold text-slate-400 uppercase">
+                            {SIZE_GROUPS[catKey].title}
+                          </div>
+                          {catSizes.map(({ sizeKey, qty }) => {
+                            const entries = manualRoster[sizeKey] || [];
+                            return Array.from({ length: qty }).map((_, idx) => {
+                              const rowEntry = entries[idx] || { name: '', number: '' };
+                              return (
+                                <div key={`${sizeKey}-${idx}`} className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                                  <span className="w-10 text-[10px] font-bold text-slate-600 text-center">{sizeKey}</span>
+                                  <input
+                                    type="text"
+                                    value={rowEntry.name}
+                                    onChange={(e) => handlePlayerEntryChange(sizeKey, idx, 'name', e.target.value)}
+                                    placeholder={`Nama #${idx + 1}`}
+                                    className="flex-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={rowEntry.number}
+                                    onChange={(e) => handlePlayerEntryChange(sizeKey, idx, 'number', e.target.value)}
+                                    placeholder="No"
+                                    className="w-12 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs text-center font-mono focus:outline-none"
+                                  />
+                                </div>
+                              );
+                            });
+                          })}
                         </div>
-                        {catSizes.map(({ sizeKey, qty }) => {
-                          const entries = manualRoster[sizeKey] || [];
-                          return Array.from({ length: qty }).map((_, idx) => {
-                            const rowEntry = entries[idx] || { name: '', number: '' };
-                            return (
-                              <div key={`${sizeKey}-${idx}`} className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
-                                <span className="w-10 text-[10px] font-bold text-slate-600 text-center">{sizeKey}</span>
-                                <input
-                                  type="text"
-                                  value={rowEntry.name}
-                                  onChange={(e) => handlePlayerEntryChange(sizeKey, idx, 'name', e.target.value)}
-                                  placeholder={`Nama #${idx + 1}`}
-                                  className="flex-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none"
-                                />
-                                <input
-                                  type="text"
-                                  value={rowEntry.number}
-                                  onChange={(e) => handlePlayerEntryChange(sizeKey, idx, 'number', e.target.value)}
-                                  placeholder="No"
-                                  className="w-12 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs text-center font-mono focus:outline-none"
-                                />
-                              </div>
-                            );
-                          });
-                        })}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 5. Maklumat Pelanggan & Penghantaran */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/80 space-y-3">
