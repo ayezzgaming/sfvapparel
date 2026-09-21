@@ -1097,13 +1097,12 @@ export default function HomePage() {
             </h4>
             <ul className="space-y-2 text-slate-600 text-[12px]">
               <li>
-                <button
-                  type="button"
-                  onClick={() => handleOpenPolicy('privacy')}
-                  className="hover:text-blue-600 transition-colors text-left"
+                <Link
+                  href="/privacypolicy"
+                  className="hover:text-blue-600 transition-colors block text-left"
                 >
-                  Dasar Privasi (Privacy)
-                </button>
+                  Dasar Privasi (Privacy Policy)
+                </Link>
               </li>
               <li>
                 <button
@@ -1115,22 +1114,20 @@ export default function HomePage() {
                 </button>
               </li>
               <li>
-                <button
-                  type="button"
-                  onClick={() => handleOpenPolicy('warranty')}
-                  className="hover:text-blue-600 transition-colors text-left"
+                <Link
+                  href="/refundpolicy"
+                  className="hover:text-blue-600 transition-colors block text-left"
                 >
-                  Jaminan & Pemulangan
-                </button>
+                  Jaminan & Pemulangan (Refund Policy)
+                </Link>
               </li>
               <li>
-                <button
-                  type="button"
-                  onClick={() => handleOpenPolicy('shipping')}
-                  className="hover:text-blue-600 transition-colors text-left"
+                <Link
+                  href="/shippingpolicy"
+                  className="hover:text-blue-600 transition-colors block text-left"
                 >
-                  Polisi Penghantaran
-                </button>
+                  Polisi Penghantaran (Shipping Policy)
+                </Link>
               </li>
             </ul>
           </div>
