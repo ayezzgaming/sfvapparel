@@ -492,7 +492,8 @@ export default function CustomizePage() {
     );
   }, [shippingCalculation, selectedCourierId]);
 
-  const shippingFee = selectedCourier?.rate || 0;
+  const isAddressFilled = Boolean(addrLine.trim() && addrPostcode.trim() && addrPostcode.trim().length >= 4);
+  const shippingFee = isAddressFilled ? (selectedCourier?.rate || 0) : 0;
   const grandTotalAmount = quote.finalTotal + shippingFee;
   const formattedFullAddress = [addrLine, addrPostcode, addrCity].filter(Boolean).join(', ');
 
@@ -1277,12 +1278,12 @@ export default function CustomizePage() {
               </label>
             </div>
 
-            {/* Pilihan Kurier: Clean Single Dropdown Trigger */}
+            {/* Pilihan Kurier: Disabled sehingga alamat diisi */}
             <div className="space-y-1.5 pt-1">
               <div className="flex items-center justify-between">
                 <label className="text-xs text-slate-600 block">Pilihan Kurier</label>
-                {(!addrLine.trim() || !addrPostcode.trim()) ? (
-                  <span className="text-[10px] text-slate-400">Masukkan alamat untuk kos pos</span>
+                {!isAddressFilled ? (
+                  <span className="text-[10px] text-slate-400">Isi alamat dahulu untuk pilih kurier</span>
                 ) : (
                   <span className="text-[10px] text-emerald-600 font-medium">{shippingCalculation.zoneLabel}</span>
                 )}
@@ -1290,18 +1291,25 @@ export default function CustomizePage() {
 
               <button
                 type="button"
-                onClick={() => setIsCourierPickerOpen(true)}
-                className="w-full px-3 py-2.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl text-left flex items-center justify-between gap-3 transition-colors"
+                disabled={!isAddressFilled}
+                onClick={() => isAddressFilled && setIsCourierPickerOpen(true)}
+                className={`w-full px-3 py-2.5 border rounded-xl text-left flex items-center justify-between gap-3 transition-colors ${
+                  !isAddressFilled
+                    ? 'bg-slate-100/70 border-slate-200/60 opacity-60 cursor-not-allowed'
+                    : 'bg-slate-50 hover:bg-slate-100/80 border-slate-200 cursor-pointer'
+                }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <CourierLogo type={selectedCourier.logoType} className="h-5 w-auto max-w-[70px]" />
-                  <span className="text-xs font-semibold text-slate-800 truncate">{selectedCourier.name}</span>
+                  <span className={`text-xs font-semibold truncate ${!isAddressFilled ? 'text-slate-400' : 'text-slate-800'}`}>
+                    {!isAddressFilled ? 'Pilih Kurier (Perlu Alamat)' : selectedCourier.name}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <span className="text-xs font-semibold font-mono text-slate-900">
-                    {!addrLine.trim() || !addrPostcode.trim() ? '-' : (shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee))}
+                    {!isAddressFilled ? '-' : (shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee))}
                   </span>
-                  <ChevronDown className="w-4 h-4 text-slate-400" />
+                  <ChevronDown className={`w-4 h-4 ${!isAddressFilled ? 'text-slate-300' : 'text-slate-400'}`} />
                 </div>
               </button>
             </div>
@@ -1319,11 +1327,42 @@ export default function CustomizePage() {
           </div>
         </div>
 
+        {/* 6. Ringkasan Telus (Transparent Pricing Breakdown) */}
+        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 space-y-2 text-xs">
+          <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">
+            Perincian Harga
+          </div>
+          <div className="flex justify-between text-slate-600">
+            <span>Harga Jersi ({totalQuantity} helai)</span>
+            <span className="font-mono font-medium text-slate-900">{formatCurrency(quote.finalTotal)}</span>
+          </div>
+          <div className="flex justify-between text-slate-600">
+            <span>Kos Pos {isAddressFilled ? `(${selectedCourier.shortName})` : ''}</span>
+            <span className="font-mono font-medium text-slate-900">
+              {!isAddressFilled ? (
+                <span className="text-slate-400 font-sans text-[11px]">Isi alamat dahulu</span>
+              ) : shippingFee === 0 ? (
+                'Percuma'
+              ) : (
+                formatCurrency(shippingFee)
+              )}
+            </span>
+          </div>
+          <div className="pt-2 border-t border-slate-100 flex justify-between font-bold text-slate-900 text-sm">
+            <span>Jumlah Keseluruhan</span>
+            <span className="font-mono text-sky-600">
+              {formatCurrency(grandTotalAmount)}
+            </span>
+          </div>
+        </div>
+
         {/* Cleaner Bottom Bar */}
         <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 p-3 px-4 shadow-sm pb-safe">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div className="text-[10px] text-slate-500">{totalQuantity} helai</div>
+              <div className="text-[10px] text-slate-400">
+                {totalQuantity} helai {isAddressFilled && shippingFee > 0 ? `+ pos RM${shippingFee.toFixed(2)}` : ''}
+              </div>
               <div className="text-sm font-bold text-slate-900 font-mono">
                 {formatCurrency(grandTotalAmount)}
               </div>
@@ -1345,10 +1384,9 @@ export default function CustomizePage() {
               </a>
               <button
                 type="submit"
-                disabled={totalQuantity <= 0}
-                className="h-9 px-4 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs flex items-center gap-1.5"
+                className="h-9 px-4 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
               >
-                <span>Teruskan</span>
+                <span>Semak & Tempah</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
