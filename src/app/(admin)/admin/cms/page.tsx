@@ -480,7 +480,7 @@ export default function AdminCmsPage() {
           <button
             type="button"
             onClick={() => handleOpenBannerModal()}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Tambah Slide Banner</span>
@@ -491,7 +491,7 @@ export default function AdminCmsPage() {
           <button
             type="button"
             onClick={() => handleOpenBadgeModal()}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Tambah Kelebihan</span>
@@ -502,7 +502,7 @@ export default function AdminCmsPage() {
           <button
             type="button"
             onClick={() => handleOpenServiceModal()}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Tambah Servis</span>
@@ -513,7 +513,7 @@ export default function AdminCmsPage() {
           <button
             type="button"
             onClick={() => handleOpenVideoModal()}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Tambah Video</span>
@@ -524,7 +524,7 @@ export default function AdminCmsPage() {
           <button
             type="button"
             onClick={() => handleOpenGalleryModal()}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Tambah Hasil Kilang</span>
@@ -535,7 +535,7 @@ export default function AdminCmsPage() {
           <button
             type="button"
             onClick={() => handleOpenTestiModal()}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Tambah Testimoni</span>
@@ -566,7 +566,7 @@ export default function AdminCmsPage() {
     <div className="w-full h-full overflow-hidden bg-[#f0f4f9] dark:bg-zinc-950 flex flex-col p-4 gap-3 text-slate-900 dark:text-zinc-100 font-sans select-none">
       {/* Toast Notification */}
       {saveToast && (
-        <div className="fixed top-5 right-5 z-50 bg-emerald-900 text-white px-4 py-2.5 rounded-2xl shadow-xl border border-emerald-700 flex items-center space-x-2 text-xs animate-in fade-in slide-in-from-top-2">
+        <div className="fixed top-5 right-5 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl border border-slate-700 flex items-center space-x-2 text-xs animate-in fade-in slide-in-from-top-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{saveToast}</span>
         </div>
@@ -580,7 +580,7 @@ export default function AdminCmsPage() {
             <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 tracking-tight">
               Pengurus Kandungan Web
             </span>
-            <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-full border border-blue-200/60 dark:border-blue-900">
+            <span className="text-[10px] font-semibold text-[#00BDFF] bg-sky-50 dark:bg-sky-950/50 px-2.5 py-0.5 rounded-full border border-sky-200/60 dark:border-sky-900">
               CMS Awam
             </span>
           </div>
@@ -588,7 +588,7 @@ export default function AdminCmsPage() {
 
         {/* Toolbar Kanan */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 text-xs font-semibold shadow-2xs">
+          <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 text-xs font-semibold shadow-2xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>Pangkalan Data Supabase Aktif</span>
           </div>
@@ -596,7 +596,7 @@ export default function AdminCmsPage() {
           <Link
             href="/"
             target="_blank"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 text-slate-700 dark:text-zinc-200 text-xs font-medium transition-all shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 text-slate-700 dark:text-zinc-200 text-xs font-medium transition-all shadow-2xs cursor-pointer active:scale-95"
           >
             <Eye className="w-3.5 h-3.5 text-slate-500" />
             <span className="hidden sm:inline">Lihat Web Awam</span>
@@ -630,7 +630,7 @@ export default function AdminCmsPage() {
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
                 placeholder="Cari modul CMS..."
-                className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 border border-slate-200 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-blue-400 font-medium"
+                className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 border border-slate-200 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF] font-medium"
               />
             </div>
           </div>
@@ -647,7 +647,7 @@ export default function AdminCmsPage() {
                   onClick={() => setActiveTab(sec.id)}
                   className={`w-full flex items-center justify-between p-3 rounded-2xl text-left transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-blue-50/80 dark:bg-blue-950/40 border-2 border-blue-600 ring-2 ring-blue-500/20 shadow-xs'
+                      ? 'bg-sky-50/80 dark:bg-sky-950/40 border-2 border-[#00BDFF] ring-2 ring-[#00BDFF]/20 shadow-xs'
                       : 'bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 hover:bg-slate-50/70 dark:hover:bg-zinc-800/60 shadow-2xs'
                   }`}
                 >
@@ -655,17 +655,17 @@ export default function AdminCmsPage() {
                     <div
                       className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                         isActive
-                          ? 'bg-blue-600 text-white shadow-xs'
+                          ? 'bg-[#00BDFF] text-white shadow-xs'
                           : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
                       }`}
                     >
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className={`text-xs truncate ${isActive ? 'font-bold text-blue-950 dark:text-blue-100' : 'font-semibold text-slate-800 dark:text-zinc-200'}`}>
+                      <p className={`text-xs truncate ${isActive ? 'font-bold text-sky-950 dark:text-sky-100' : 'font-semibold text-slate-800 dark:text-zinc-200'}`}>
                         {sec.label}
                       </p>
-                      <p className={`text-[10.5px] truncate mt-0.5 ${isActive ? 'text-blue-600 dark:text-blue-300 font-medium' : 'text-slate-400 dark:text-zinc-500'}`}>
+                      <p className={`text-[10.5px] truncate mt-0.5 ${isActive ? 'text-[#00BDFF] dark:text-sky-300 font-medium' : 'text-slate-400 dark:text-zinc-500'}`}>
                         {sec.desc}
                       </p>
                     </div>
@@ -675,7 +675,7 @@ export default function AdminCmsPage() {
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ml-2 ${
                         isActive
-                          ? 'bg-blue-600 text-white'
+                          ? 'bg-[#00BDFF] text-white'
                           : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400'
                       }`}
                     >
@@ -743,14 +743,14 @@ export default function AdminCmsPage() {
             {/* Contextual Internal Sub-Toggles */}
             <div className="flex items-center gap-2 shrink-0">
               {(activeTab === 'hero' || activeTab === 'badges' || activeTab === 'services' || activeTab === 'videos' || activeTab === 'gallery' || activeTab === 'testimonials') && (
-                <div className="flex items-center bg-slate-100/90 dark:bg-zinc-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
+                <div className="flex items-center bg-slate-100/90 dark:bg-zinc-800/90 p-1 rounded-full border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
                   <button
                     type="button"
                     onClick={() => setViewMode('grid')}
                     title="Paparan Grid"
-                    className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                    className={`p-1.5 rounded-full transition-colors cursor-pointer ${
                       viewMode === 'grid'
-                        ? 'bg-white text-blue-600 shadow-xs'
+                        ? 'bg-[#00BDFF] text-white shadow-xs'
                         : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400'
                     }`}
                   >
@@ -760,9 +760,9 @@ export default function AdminCmsPage() {
                     type="button"
                     onClick={() => setViewMode('list')}
                     title="Paparan Senarai"
-                    className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                    className={`p-1.5 rounded-full transition-colors cursor-pointer ${
                       viewMode === 'list'
-                        ? 'bg-white text-blue-600 shadow-xs'
+                        ? 'bg-[#00BDFF] text-white shadow-xs'
                         : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400'
                     }`}
                   >
@@ -772,7 +772,7 @@ export default function AdminCmsPage() {
               )}
 
               {activeTab === 'company' && (
-                <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-zinc-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
+                <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-zinc-800/90 p-1 rounded-full border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
                   {[
                     { id: 'basic', label: 'Asas & Jenama' },
                     { id: 'location', label: 'Alamat & Peta Lokasi' },
@@ -784,10 +784,10 @@ export default function AdminCmsPage() {
                       key={sub.id}
                       type="button"
                       onClick={() => setCompanySubTab(sub.id as any)}
-                      className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                      className={`px-3.5 py-1 rounded-full text-xs transition-all cursor-pointer ${
                         companySubTab === sub.id
-                          ? 'bg-white text-blue-600 shadow-xs font-semibold'
-                          : 'text-slate-600 hover:text-slate-900'
+                          ? 'bg-[#00BDFF] text-white shadow-xs font-semibold'
+                          : 'text-slate-600 hover:text-slate-900 font-medium'
                       }`}
                     >
                       {sub.label}
@@ -797,7 +797,7 @@ export default function AdminCmsPage() {
               )}
 
               {activeTab === 'policies' && (
-                <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-zinc-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
+                <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-zinc-800/90 p-1 rounded-full border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
                   {[
                     { id: 'privacy', label: 'Privasi' },
                     { id: 'terms', label: 'Terma' },
@@ -808,10 +808,10 @@ export default function AdminCmsPage() {
                       key={sub.id}
                       type="button"
                       onClick={() => setPolicySubTab(sub.id as any)}
-                      className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                      className={`px-3.5 py-1 rounded-full text-xs transition-all cursor-pointer ${
                         policySubTab === sub.id
-                          ? 'bg-white text-blue-600 shadow-xs font-semibold'
-                          : 'text-slate-600 hover:text-slate-900'
+                          ? 'bg-[#00BDFF] text-white shadow-xs font-semibold'
+                          : 'text-slate-600 hover:text-slate-900 font-medium'
                       }`}
                     >
                       {sub.label}
@@ -850,7 +850,7 @@ export default function AdminCmsPage() {
                     <button
                       type="button"
                       onClick={() => handleOpenBannerModal()}
-                      className="mt-3 text-xs text-blue-600 font-semibold hover:underline"
+                      className="mt-3 text-xs text-[#00BDFF] font-semibold hover:underline cursor-pointer"
                     >
                       + Tambah Slide Banner Sekarang
                     </button>
@@ -893,7 +893,7 @@ export default function AdminCmsPage() {
 
                         <div className="p-3.5 flex-1 flex flex-col justify-between space-y-3">
                           <div>
-                            <span className="text-[10px] text-blue-600 font-bold uppercase tracking-wider block">
+                            <span className="text-[10px] text-[#00BDFF] font-bold uppercase tracking-wider block">
                               {banner.tag_text}
                             </span>
                             <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100 line-clamp-1 mt-0.5">
@@ -916,7 +916,7 @@ export default function AdminCmsPage() {
                               <button
                                 type="button"
                                 onClick={() => handleOpenBannerModal(banner)}
-                                className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                className="p-1.5 rounded-full text-slate-500 hover:text-[#00BDFF] hover:bg-sky-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                                 title="Edit"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
@@ -929,7 +929,7 @@ export default function AdminCmsPage() {
                                     triggerToast('Banner dipadam');
                                   }
                                 }}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                className="p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                                 title="Padam"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -961,14 +961,14 @@ export default function AdminCmsPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenBannerModal(banner)}
-                            className="p-1.5 text-slate-500 hover:text-blue-600"
+                            className="p-1.5 rounded-full text-slate-500 hover:text-[#00BDFF] hover:bg-sky-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             type="button"
                             onClick={() => deleteHeroBanner(banner.id)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600"
+                            className="p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -986,15 +986,15 @@ export default function AdminCmsPage() {
             {activeTab === 'badges' && (
               <div className="space-y-4">
                 {/* Info Card */}
-                <div className="p-3.5 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/70 dark:border-blue-900/60 flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                <div className="p-3.5 rounded-2xl bg-sky-50/70 dark:bg-sky-950/30 border border-sky-200/70 dark:border-sky-900/60 flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-full bg-[#00BDFF] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div className="text-xs space-y-0.5">
-                    <p className="font-bold text-blue-950 dark:text-blue-100">
+                    <p className="font-bold text-sky-950 dark:text-sky-100">
                       Sorotan Nilai & Jaminan Terus Dari Kilang (Public Slider)
                     </p>
-                    <p className="text-blue-800/80 dark:text-blue-300 text-[11px] leading-relaxed">
+                    <p className="text-sky-800/80 dark:text-sky-300 text-[11px] leading-relaxed">
                       Kad ini dipaparkan betul-betul di bawah Banner Utama pada halaman depan pelanggan. Ia bertukar secara auto-slide untuk meyakinkan pelanggan tentang kelebihan kilang anda (Harga Direct Kilang, Tiada MOQ, Siap Pantas, QC Guarantee).
                     </p>
                   </div>
@@ -1042,7 +1042,7 @@ export default function AdminCmsPage() {
                               <button
                                 type="button"
                                 onClick={() => updateTrustBadge(badge.id, { is_active: !badge.is_active })}
-                                className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-full transition-colors ${
+                                className={`text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full transition-colors cursor-pointer ${
                                   badge.is_active
                                     ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
                                     : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
@@ -1068,7 +1068,7 @@ export default function AdminCmsPage() {
                                   next[idx] = temp;
                                   reorderTrustBadges(next);
                                 }}
-                                className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                                className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                                 title="Gerak Ke Atas"
                               >
                                 <ArrowUp className="w-3.5 h-3.5" />
@@ -1084,7 +1084,7 @@ export default function AdminCmsPage() {
                                   next[idx] = temp;
                                   reorderTrustBadges(next);
                                 }}
-                                className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                                className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                                 title="Gerak Ke Bawah"
                               >
                                 <ArrowDown className="w-3.5 h-3.5" />
@@ -1092,7 +1092,7 @@ export default function AdminCmsPage() {
                               <button
                                 type="button"
                                 onClick={() => handleOpenBadgeModal(badge)}
-                                className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                className="p-1.5 rounded-full text-slate-500 hover:text-[#00BDFF] hover:bg-sky-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                                 title="Edit"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
@@ -1105,7 +1105,7 @@ export default function AdminCmsPage() {
                                     triggerToast('Sorotan dipadam');
                                   }
                                 }}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                className="p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                                 title="Padam"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -1139,20 +1139,20 @@ export default function AdminCmsPage() {
                           </div>
 
                           <div className="flex items-center space-x-2 shrink-0">
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${badge.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                            <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-semibold ${badge.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
                               {badge.is_active ? 'Aktif' : 'Nyahaktif'}
                             </span>
                             <button
                               type="button"
                               onClick={() => handleOpenBadgeModal(badge)}
-                              className="p-1.5 text-slate-500 hover:text-blue-600"
+                              className="p-1.5 rounded-full text-slate-500 hover:text-[#00BDFF] hover:bg-sky-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               type="button"
                               onClick={() => deleteTrustBadge(badge.id)}
-                              className="p-1.5 text-slate-400 hover:text-rose-600"
+                              className="p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1197,10 +1197,10 @@ export default function AdminCmsPage() {
                       >
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+                            <span className="text-[10px] font-bold text-[#00BDFF] bg-sky-50 dark:bg-sky-950/50 px-2.5 py-0.5 rounded-full border border-sky-100 dark:border-sky-900">
                               {svc.category}
                             </span>
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${svc.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                            <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${svc.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
                               {svc.is_active ? 'Aktif' : 'Nyahaktif'}
                             </span>
                           </div>
@@ -1208,7 +1208,7 @@ export default function AdminCmsPage() {
                           <p className="text-[11px] text-slate-500 line-clamp-2">{svc.headline}</p>
                           <div className="pt-1">
                             <span className="text-xs font-bold text-slate-900 dark:text-zinc-100">
-                              {svc.price_prefix} <span className="text-blue-600 text-sm font-extrabold">{svc.price_amount}</span> {svc.price_unit}
+                              {svc.price_prefix} <span className="text-[#00BDFF] text-sm font-extrabold">{svc.price_amount}</span> {svc.price_unit}
                             </span>
                           </div>
                         </div>
@@ -1217,7 +1217,7 @@ export default function AdminCmsPage() {
                           <button
                             type="button"
                             onClick={() => updateService(svc.id, { is_active: !svc.is_active })}
-                            className="text-[11px] font-medium text-slate-500 hover:text-slate-800"
+                            className="text-[11px] font-medium text-slate-500 hover:text-slate-800 cursor-pointer"
                           >
                             {svc.is_active ? 'Nyahaktif' : 'Aktifkan'}
                           </button>
@@ -1225,7 +1225,7 @@ export default function AdminCmsPage() {
                             <button
                               type="button"
                               onClick={() => handleOpenServiceModal(svc)}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50"
+                              className="p-1.5 rounded-full text-slate-500 hover:text-[#00BDFF] hover:bg-sky-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
                             </button>
@@ -1237,7 +1237,7 @@ export default function AdminCmsPage() {
                                   triggerToast('Servis dipadam');
                                 }
                               }}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                              className="p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1258,14 +1258,14 @@ export default function AdminCmsPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenServiceModal(svc)}
-                            className="p-1.5 text-slate-500 hover:text-blue-600"
+                            className="p-1.5 rounded-full text-slate-500 hover:text-[#00BDFF] hover:bg-sky-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             type="button"
                             onClick={() => deleteService(svc.id)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600"
+                            className="p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1349,7 +1349,7 @@ export default function AdminCmsPage() {
                   <button
                     type="button"
                     onClick={() => triggerToast('Slogan & CTA berjaya disimpan!')}
-                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs"
+                    className="px-5 py-2.5 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer"
                   >
                     Simpan Slogan & CTA
                   </button>
@@ -1398,14 +1398,14 @@ export default function AdminCmsPage() {
                           </div>
                         </div>
                         <div className="p-3.5 space-y-2">
-                          <span className="text-[10px] font-bold text-blue-600 uppercase">{vid.category}</span>
+                          <span className="text-[10px] font-bold text-[#00BDFF] uppercase">{vid.category}</span>
                           <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100 line-clamp-1">{vid.title}</h3>
                           <p className="text-[10.5px] font-mono text-slate-400">ID: {vid.youtube_id}</p>
                           <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800">
                             <button
                               type="button"
                               onClick={() => updateProductionVideo(vid.id, { is_active: !vid.is_active })}
-                              className="text-[11px] font-medium text-slate-500"
+                              className="text-[11px] font-medium text-slate-500 hover:text-slate-800 cursor-pointer"
                             >
                               {vid.is_active ? 'Nyahaktif' : 'Aktifkan'}
                             </button>
@@ -1413,14 +1413,14 @@ export default function AdminCmsPage() {
                               <button
                                 type="button"
                                 onClick={() => handleOpenVideoModal(vid)}
-                                className="p-1.5 text-slate-500 hover:text-blue-600"
+                                className="p-1.5 rounded-full text-slate-500 hover:text-[#00BDFF] hover:bg-sky-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 type="button"
                                 onClick={() => deleteProductionVideo(vid.id)}
-                                className="p-1.5 text-slate-400 hover:text-rose-600"
+                                className="p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -1468,7 +1468,7 @@ export default function AdminCmsPage() {
                         <div className="relative aspect-square bg-slate-100 overflow-hidden">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={gal.image_url} alt="" className="w-full h-full object-cover" />
-                          <span className="absolute top-2 left-2 text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-black/60 text-white backdrop-blur-xs">
+                          <span className="absolute top-2 left-2 text-[9.5px] font-bold px-2.5 py-0.5 rounded-full bg-black/60 text-white backdrop-blur-xs">
                             {gal.tag}
                           </span>
                         </div>
@@ -1481,14 +1481,14 @@ export default function AdminCmsPage() {
                             <button
                               type="button"
                               onClick={() => handleOpenGalleryModal(gal)}
-                              className="p-1 text-slate-500 hover:text-blue-600"
+                              className="p-1.5 rounded-full text-slate-500 hover:text-[#00BDFF] hover:bg-sky-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               type="button"
                               onClick={() => deleteGalleryItem(gal.id)}
-                              className="p-1 text-slate-400 hover:text-rose-600"
+                              className="p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1566,14 +1566,14 @@ export default function AdminCmsPage() {
                             <button
                               type="button"
                               onClick={() => handleOpenTestiModal(testi)}
-                              className="p-1.5 text-slate-500 hover:text-blue-600"
+                              className="p-1.5 rounded-full text-slate-500 hover:text-[#00BDFF] hover:bg-sky-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               type="button"
                               onClick={() => deleteTestimonial(testi.id)}
-                              className="p-1.5 text-slate-400 hover:text-rose-600"
+                              className="p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1600,7 +1600,7 @@ export default function AdminCmsPage() {
                           type="text"
                           value={companySettings.company_name}
                           onChange={(e) => updateCompanySettings({ company_name: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                         />
                       </div>
                       <div className="space-y-1">
@@ -1609,7 +1609,7 @@ export default function AdminCmsPage() {
                           type="text"
                           value={companySettings.brand_name}
                           onChange={(e) => updateCompanySettings({ brand_name: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                         />
                       </div>
                     </div>
@@ -1621,7 +1621,7 @@ export default function AdminCmsPage() {
                           type="text"
                           value={companySettings.registration_number}
                           onChange={(e) => updateCompanySettings({ registration_number: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                         />
                       </div>
                       <div className="space-y-1">
@@ -1630,7 +1630,7 @@ export default function AdminCmsPage() {
                           type="text"
                           value={companySettings.tagline}
                           onChange={(e) => updateCompanySettings({ tagline: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                         />
                       </div>
                     </div>
@@ -1648,7 +1648,7 @@ export default function AdminCmsPage() {
                         value={companySettings.address}
                         onChange={(e) => updateCompanySettings({ address: e.target.value })}
                         placeholder="No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor..."
-                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-[#00BDFF] focus:border-[#00BDFF] outline-none"
                       />
                       <p className="text-[10.5px] text-slate-400">
                         Alamat ini dipaparkan di footer pelanggan, resit pesanan, dan digunakan secara automatik untuk penjanaan peta Google Maps & Waze.
@@ -1664,7 +1664,7 @@ export default function AdminCmsPage() {
                         value={companySettings.working_hours}
                         onChange={(e) => updateCompanySettings({ working_hours: e.target.value })}
                         placeholder="Isnin - Jumaat: 9.00 AM - 6.00 PM | Sabtu: 9.00 AM - 1.00 PM"
-                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-[#00BDFF] focus:border-[#00BDFF] outline-none"
                       />
                       <p className="text-[10.5px] text-slate-400">
                         Format ringkas dan kemas untuk paparan kad footer dan bottom sheet pelanggan.
@@ -1675,7 +1675,7 @@ export default function AdminCmsPage() {
                     <div className="pt-2 space-y-2">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                          <MapPin className="w-3.5 h-3.5 text-[#00BDFF]" />
                           <span>Pratonton Peta Lokasi Semasa:</span>
                         </label>
                         <div className="flex items-center gap-2">
@@ -1683,7 +1683,7 @@ export default function AdminCmsPage() {
                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(companySettings.address || '')}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:underline"
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#00BDFF] hover:underline"
                           >
                             <span>Uji Google Maps</span>
                             <ExternalLink className="w-3 h-3" />
@@ -1693,7 +1693,7 @@ export default function AdminCmsPage() {
                             href={`https://waze.com/ul?q=${encodeURIComponent(companySettings.address || '')}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:underline"
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#00BDFF] hover:underline"
                           >
                             <span>Uji Waze</span>
                             <ExternalLink className="w-3 h-3" />
@@ -1725,7 +1725,7 @@ export default function AdminCmsPage() {
                           type="text"
                           value={companySettings.whatsapp_number}
                           onChange={(e) => updateCompanySettings({ whatsapp_number: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-900 dark:text-zinc-100"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                         />
                       </div>
                       <div className="space-y-1">
@@ -1734,7 +1734,7 @@ export default function AdminCmsPage() {
                           type="text"
                           value={companySettings.phone}
                           onChange={(e) => updateCompanySettings({ phone: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-900 dark:text-zinc-100"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                         />
                       </div>
                     </div>
@@ -1746,7 +1746,7 @@ export default function AdminCmsPage() {
                           type="email"
                           value={companySettings.email}
                           onChange={(e) => updateCompanySettings({ email: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                         />
                       </div>
                       <div className="space-y-1">
@@ -1756,7 +1756,7 @@ export default function AdminCmsPage() {
                           value={companySettings.whatsapp_default_message || ''}
                           onChange={(e) => updateCompanySettings({ whatsapp_default_message: e.target.value })}
                           placeholder="cth: Hai SFV Apparel, saya ingin bertanya tentang tempahan..."
-                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                         />
                       </div>
                     </div>
@@ -1771,7 +1771,7 @@ export default function AdminCmsPage() {
                         type="text"
                         value={companySettings.telegram_catalog_url}
                         onChange={(e) => updateCompanySettings({ telegram_catalog_url: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono"
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                       />
                     </div>
                     <div className="space-y-1">
@@ -1780,7 +1780,7 @@ export default function AdminCmsPage() {
                         type="text"
                         value={companySettings.facebook_url}
                         onChange={(e) => updateCompanySettings({ facebook_url: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono"
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                       />
                     </div>
                     <div className="space-y-1">
@@ -1789,7 +1789,7 @@ export default function AdminCmsPage() {
                         type="text"
                         value={companySettings.instagram_url}
                         onChange={(e) => updateCompanySettings({ instagram_url: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono"
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                       />
                     </div>
                     <div className="space-y-1">
@@ -1798,7 +1798,7 @@ export default function AdminCmsPage() {
                         type="text"
                         value={companySettings.tiktok_url}
                         onChange={(e) => updateCompanySettings({ tiktok_url: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono"
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                       />
                     </div>
                   </div>
@@ -1812,7 +1812,7 @@ export default function AdminCmsPage() {
                         type="text"
                         value={companySettings.developer_name || ''}
                         onChange={(e) => updateCompanySettings({ developer_name: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100"
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                       />
                     </div>
                     <div className="space-y-1">
@@ -1821,7 +1821,7 @@ export default function AdminCmsPage() {
                         type="text"
                         value={companySettings.developer_url || ''}
                         onChange={(e) => updateCompanySettings({ developer_url: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono"
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 font-mono focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                       />
                     </div>
                   </div>
@@ -1831,7 +1831,7 @@ export default function AdminCmsPage() {
                   <button
                     type="button"
                     onClick={() => triggerToast('Profil syarikat berjaya disimpan!')}
-                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs"
+                    className="px-5 py-2.5 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer"
                   >
                     Simpan Profil Syarikat
                   </button>
@@ -1854,7 +1854,7 @@ export default function AdminCmsPage() {
                           type="text"
                           value={policy?.title || ''}
                           onChange={(e) => updatePolicy(policySubTab, { title: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                         />
                       </div>
 
@@ -1864,7 +1864,7 @@ export default function AdminCmsPage() {
                           rows={2}
                           value={policy?.description || ''}
                           onChange={(e) => updatePolicy(policySubTab, { description: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100"
+                          className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                         />
                       </div>
 
@@ -1877,7 +1877,7 @@ export default function AdminCmsPage() {
                               const newSecs = [...(policy?.sections || []), { heading: 'Fasal Baru', text: 'Keterangan fasal...' }];
                               updatePolicy(policySubTab, { sections: newSecs });
                             }}
-                            className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer"
+                            className="text-xs font-semibold text-[#00BDFF] hover:underline cursor-pointer"
                           >
                             + Tambah Fasal
                           </button>
@@ -1902,7 +1902,7 @@ export default function AdminCmsPage() {
                                   const updated = policy.sections.filter((_, i) => i !== idx);
                                   updatePolicy(policySubTab, { sections: updated });
                                 }}
-                                className="p-1 text-slate-400 hover:text-rose-600 shrink-0"
+                                className="p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -1911,9 +1911,9 @@ export default function AdminCmsPage() {
                               rows={2}
                               value={sec.text}
                               onChange={(e) => {
-                                const updated = [...policy.sections];
-                                updated[idx].text = e.target.value;
-                                updatePolicy(policySubTab, { sections: updated });
+                                  const updated = [...policy.sections];
+                                  updated[idx].text = e.target.value;
+                                  updatePolicy(policySubTab, { sections: updated });
                               }}
                               className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-zinc-900 rounded-lg border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200"
                             />
@@ -1925,7 +1925,7 @@ export default function AdminCmsPage() {
                         <button
                           type="button"
                           onClick={() => triggerToast('Polisi berjaya disimpan!')}
-                          className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs"
+                          className="px-5 py-2.5 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer"
                         >
                           Simpan Polisi Ini
                         </button>
@@ -1953,7 +1953,7 @@ export default function AdminCmsPage() {
               <button
                 type="button"
                 onClick={() => setIsBannerModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg leading-none"
+                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
               >
                 ✕
               </button>
@@ -1973,7 +1973,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={bannerForm.status_pill}
                     onChange={(e) => setBannerForm({ ...bannerForm, status_pill: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                     required
                   />
                 </div>
@@ -1983,7 +1983,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={bannerForm.tag_text}
                     onChange={(e) => setBannerForm({ ...bannerForm, tag_text: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                     required
                   />
                 </div>
@@ -1996,7 +1996,7 @@ export default function AdminCmsPage() {
                   value={bannerForm.title}
                   onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
                   placeholder="cth: Tempahan Jersi Sublimasi & DTF Kustom"
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                   required
                 />
               </div>
@@ -2008,7 +2008,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={bannerForm.button_text}
                     onChange={(e) => setBannerForm({ ...bannerForm, button_text: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                     required
                   />
                 </div>
@@ -2018,7 +2018,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={bannerForm.button_link}
                     onChange={(e) => setBannerForm({ ...bannerForm, button_link: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs font-mono"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs font-mono focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                     required
                   />
                 </div>
@@ -2030,9 +2030,9 @@ export default function AdminCmsPage() {
                   id="bannerActive"
                   checked={bannerForm.is_active}
                   onChange={(e) => setBannerForm({ ...bannerForm, is_active: e.target.checked })}
-                  className="rounded text-blue-600 focus:ring-blue-500"
+                  className="rounded border-slate-300 text-[#00BDFF] accent-[#00BDFF] focus:ring-[#00BDFF] w-4 h-4 cursor-pointer"
                 />
-                <label htmlFor="bannerActive" className="text-xs text-slate-700 dark:text-zinc-300">
+                <label htmlFor="bannerActive" className="text-xs text-slate-700 dark:text-zinc-300 cursor-pointer">
                   Aktifkan slide banner ini di halaman web awam
                 </label>
               </div>
@@ -2041,13 +2041,13 @@ export default function AdminCmsPage() {
                 <button
                   type="button"
                   onClick={() => setIsBannerModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                  className="px-5 py-2 rounded-full border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 cursor-pointer active:scale-95 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs"
+                  className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs cursor-pointer active:scale-95 transition-all"
                 >
                   Simpan Banner
                 </button>
@@ -2117,7 +2117,7 @@ export default function AdminCmsPage() {
                     value={badgeForm.title}
                     onChange={(e) => setBadgeForm({ ...badgeForm, title: e.target.value })}
                     placeholder="cth: Harga Direct Kilang"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-[#00BDFF] focus:border-[#00BDFF] outline-none"
                     required
                   />
                 </div>
@@ -2130,7 +2130,7 @@ export default function AdminCmsPage() {
                     value={badgeForm.pill}
                     onChange={(e) => setBadgeForm({ ...badgeForm, pill: e.target.value })}
                     placeholder="cth: Direct Kilang"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-[#00BDFF] focus:border-[#00BDFF] outline-none"
                     required
                   />
                 </div>
@@ -2146,7 +2146,7 @@ export default function AdminCmsPage() {
                   value={badgeForm.desc}
                   onChange={(e) => setBadgeForm({ ...badgeForm, desc: e.target.value })}
                   placeholder="cth: Tanpa orang tengah · Lebih jimat & telus"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-2 focus:ring-[#00BDFF] focus:border-[#00BDFF] outline-none"
                   required
                 />
               </div>
@@ -2179,7 +2179,7 @@ export default function AdminCmsPage() {
                         onClick={() => setBadgeForm({ ...badgeForm, icon_name: ic.name })}
                         className={`p-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-blue-50 dark:bg-blue-950/50 border-blue-600 text-blue-600 ring-2 ring-blue-500/20'
+                            ? 'bg-sky-50 dark:bg-sky-950/50 border-[#00BDFF] text-[#00BDFF] ring-2 ring-[#00BDFF]/20'
                             : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 hover:border-slate-300'
                         }`}
                       >
@@ -2198,7 +2198,7 @@ export default function AdminCmsPage() {
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
-                    { key: 'sky', label: 'Biru Sky', bg: 'bg-sky-500', border: 'border-sky-300' },
+                    { key: 'sky', label: 'Biru Sky', bg: 'bg-[#00BDFF]', border: 'border-sky-300' },
                     { key: 'indigo', label: 'Indigo', bg: 'bg-indigo-600', border: 'border-indigo-300' },
                     { key: 'emerald', label: 'Hijau QC', bg: 'bg-emerald-600', border: 'border-emerald-300' },
                     { key: 'amber', label: 'Kuning Emas', bg: 'bg-amber-500', border: 'border-amber-300' },
@@ -2214,7 +2214,7 @@ export default function AdminCmsPage() {
                         onClick={() => setBadgeForm({ ...badgeForm, color_theme: thm.key })}
                         className={`p-2 rounded-xl border flex items-center space-x-2 transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-blue-50/80 dark:bg-blue-950/40 border-blue-600 ring-2 ring-blue-500/20'
+                            ? 'bg-sky-50/80 dark:bg-sky-950/40 border-[#00BDFF] ring-2 ring-[#00BDFF]/20'
                             : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 hover:border-slate-300'
                         }`}
                       >
@@ -2235,7 +2235,7 @@ export default function AdminCmsPage() {
                   id="badge_active_check"
                   checked={badgeForm.is_active}
                   onChange={(e) => setBadgeForm({ ...badgeForm, is_active: e.target.checked })}
-                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                  className="rounded border-slate-300 text-[#00BDFF] accent-[#00BDFF] focus:ring-[#00BDFF] w-4 h-4 cursor-pointer"
                 />
                 <label htmlFor="badge_active_check" className="text-xs font-semibold text-slate-700 dark:text-zinc-300 cursor-pointer">
                   Aktifkan paparan sorotan ini pada halaman pelanggan
@@ -2246,13 +2246,13 @@ export default function AdminCmsPage() {
                 <button
                   type="button"
                   onClick={() => setIsBadgeModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 cursor-pointer"
+                  className="px-5 py-2 rounded-full border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 cursor-pointer active:scale-95 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs cursor-pointer"
+                  className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs cursor-pointer active:scale-95 transition-all"
                 >
                   Simpan Sorotan
                 </button>
@@ -2275,7 +2275,7 @@ export default function AdminCmsPage() {
               <button
                 type="button"
                 onClick={() => setIsServiceModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg leading-none"
+                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
               >
                 ✕
               </button>
@@ -2288,7 +2288,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={serviceForm.category}
                     onChange={(e) => setServiceForm({ ...serviceForm, category: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                     required
                   />
                 </div>
@@ -2298,7 +2298,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={serviceForm.title}
                     onChange={(e) => setServiceForm({ ...serviceForm, title: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                     required
                   />
                 </div>
@@ -2310,7 +2310,7 @@ export default function AdminCmsPage() {
                   type="text"
                   value={serviceForm.headline}
                   onChange={(e) => setServiceForm({ ...serviceForm, headline: e.target.value })}
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                   required
                 />
               </div>
@@ -2322,7 +2322,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={serviceForm.price_prefix}
                     onChange={(e) => setServiceForm({ ...serviceForm, price_prefix: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                   />
                 </div>
                 <div className="space-y-1">
@@ -2331,7 +2331,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={serviceForm.price_amount}
                     onChange={(e) => setServiceForm({ ...serviceForm, price_amount: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs font-bold text-blue-600"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs font-bold text-[#00BDFF] focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                     required
                   />
                 </div>
@@ -2341,7 +2341,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={serviceForm.price_unit}
                     onChange={(e) => setServiceForm({ ...serviceForm, price_unit: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                   />
                 </div>
               </div>
@@ -2359,9 +2359,9 @@ export default function AdminCmsPage() {
                   id="serviceActive"
                   checked={serviceForm.is_active}
                   onChange={(e) => setServiceForm({ ...serviceForm, is_active: e.target.checked })}
-                  className="rounded text-blue-600 focus:ring-blue-500"
+                  className="rounded border-slate-300 text-[#00BDFF] accent-[#00BDFF] focus:ring-[#00BDFF] w-4 h-4 cursor-pointer"
                 />
-                <label htmlFor="serviceActive" className="text-xs text-slate-700 dark:text-zinc-300">
+                <label htmlFor="serviceActive" className="text-xs text-slate-700 dark:text-zinc-300 cursor-pointer">
                   Aktifkan servis ini di halaman utama
                 </label>
               </div>
@@ -2370,13 +2370,13 @@ export default function AdminCmsPage() {
                 <button
                   type="button"
                   onClick={() => setIsServiceModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                  className="px-5 py-2 rounded-full border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 cursor-pointer active:scale-95 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs"
+                  className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs cursor-pointer active:scale-95 transition-all"
                 >
                   Simpan Servis
                 </button>
@@ -2399,7 +2399,7 @@ export default function AdminCmsPage() {
               <button
                 type="button"
                 onClick={() => setIsVideoModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg leading-none"
+                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
               >
                 ✕
               </button>
@@ -2411,7 +2411,7 @@ export default function AdminCmsPage() {
                   type="text"
                   value={videoForm.category}
                   onChange={(e) => setVideoForm({ ...videoForm, category: e.target.value })}
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                   required
                 />
               </div>
@@ -2422,7 +2422,7 @@ export default function AdminCmsPage() {
                   type="text"
                   value={videoForm.title}
                   onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })}
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                   required
                 />
               </div>
@@ -2433,7 +2433,7 @@ export default function AdminCmsPage() {
                   type="text"
                   value={videoForm.youtube_id}
                   onChange={(e) => setVideoForm({ ...videoForm, youtube_id: e.target.value })}
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs font-mono"
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs font-mono focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                   required
                 />
               </div>
@@ -2451,9 +2451,9 @@ export default function AdminCmsPage() {
                   id="videoActive"
                   checked={videoForm.is_active}
                   onChange={(e) => setVideoForm({ ...videoForm, is_active: e.target.checked })}
-                  className="rounded text-blue-600 focus:ring-blue-500"
+                  className="rounded border-slate-300 text-[#00BDFF] accent-[#00BDFF] focus:ring-[#00BDFF] w-4 h-4 cursor-pointer"
                 />
-                <label htmlFor="videoActive" className="text-xs text-slate-700 dark:text-zinc-300">
+                <label htmlFor="videoActive" className="text-xs text-slate-700 dark:text-zinc-300 cursor-pointer">
                   Aktifkan video ini di galeri web awam
                 </label>
               </div>
@@ -2462,13 +2462,13 @@ export default function AdminCmsPage() {
                 <button
                   type="button"
                   onClick={() => setIsVideoModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                  className="px-5 py-2 rounded-full border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 cursor-pointer active:scale-95 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs"
+                  className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs cursor-pointer active:scale-95 transition-all"
                 >
                   Simpan Video
                 </button>
@@ -2491,7 +2491,7 @@ export default function AdminCmsPage() {
               <button
                 type="button"
                 onClick={() => setIsGalleryModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg leading-none"
+                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
               >
                 ✕
               </button>
@@ -2504,7 +2504,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={galleryForm.title}
                     onChange={(e) => setGalleryForm({ ...galleryForm, title: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                     required
                   />
                 </div>
@@ -2514,7 +2514,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={galleryForm.category}
                     onChange={(e) => setGalleryForm({ ...galleryForm, category: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                     required
                   />
                 </div>
@@ -2527,7 +2527,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={galleryForm.fabric}
                     onChange={(e) => setGalleryForm({ ...galleryForm, fabric: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                   />
                 </div>
                 <div className="space-y-1">
@@ -2536,7 +2536,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={galleryForm.client}
                     onChange={(e) => setGalleryForm({ ...galleryForm, client: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                   />
                 </div>
               </div>
@@ -2554,9 +2554,9 @@ export default function AdminCmsPage() {
                   id="galleryActive"
                   checked={galleryForm.is_active}
                   onChange={(e) => setGalleryForm({ ...galleryForm, is_active: e.target.checked })}
-                  className="rounded text-blue-600 focus:ring-blue-500"
+                  className="rounded border-slate-300 text-[#00BDFF] accent-[#00BDFF] focus:ring-[#00BDFF] w-4 h-4 cursor-pointer"
                 />
-                <label htmlFor="galleryActive" className="text-xs text-slate-700 dark:text-zinc-300">
+                <label htmlFor="galleryActive" className="text-xs text-slate-700 dark:text-zinc-300 cursor-pointer">
                   Pamerkan di galeri hasil kilang muka depan
                 </label>
               </div>
@@ -2565,13 +2565,13 @@ export default function AdminCmsPage() {
                 <button
                   type="button"
                   onClick={() => setIsGalleryModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                  className="px-5 py-2 rounded-full border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 cursor-pointer active:scale-95 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs"
+                  className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs cursor-pointer active:scale-95 transition-all"
                 >
                   Simpan Portfolio
                 </button>
@@ -2594,7 +2594,7 @@ export default function AdminCmsPage() {
               <button
                 type="button"
                 onClick={() => setIsTestiModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg leading-none"
+                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
               >
                 ✕
               </button>
@@ -2607,7 +2607,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={testiForm.name}
                     onChange={(e) => setTestiForm({ ...testiForm, name: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                     required
                   />
                 </div>
@@ -2617,7 +2617,7 @@ export default function AdminCmsPage() {
                     type="text"
                     value={testiForm.location}
                     onChange={(e) => setTestiForm({ ...testiForm, location: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                   />
                 </div>
               </div>
@@ -2628,7 +2628,7 @@ export default function AdminCmsPage() {
                   <select
                     value={testiForm.platform}
                     onChange={(e) => setTestiForm({ ...testiForm, platform: e.target.value as any })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                   >
                     <option value="google">Google Review</option>
                     <option value="tiktok">TikTok</option>
@@ -2641,7 +2641,7 @@ export default function AdminCmsPage() {
                   <select
                     value={testiForm.rating}
                     onChange={(e) => setTestiForm({ ...testiForm, rating: Number(e.target.value) })}
-                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                   >
                     <option value={5}>⭐⭐⭐⭐⭐ (5 Bintang)</option>
                     <option value={4}>⭐⭐⭐⭐ (4 Bintang)</option>
@@ -2656,7 +2656,7 @@ export default function AdminCmsPage() {
                   rows={3}
                   value={testiForm.review}
                   onChange={(e) => setTestiForm({ ...testiForm, review: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 text-xs focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
                   required
                 />
               </div>
@@ -2667,9 +2667,9 @@ export default function AdminCmsPage() {
                   id="testiActive"
                   checked={testiForm.is_active}
                   onChange={(e) => setTestiForm({ ...testiForm, is_active: e.target.checked })}
-                  className="rounded text-blue-600 focus:ring-blue-500"
+                  className="rounded border-slate-300 text-[#00BDFF] accent-[#00BDFF] focus:ring-[#00BDFF] w-4 h-4 cursor-pointer"
                 />
-                <label htmlFor="testiActive" className="text-xs text-slate-700 dark:text-zinc-300">
+                <label htmlFor="testiActive" className="text-xs text-slate-700 dark:text-zinc-300 cursor-pointer">
                   Pamerkan ulasan ini di web awam
                 </label>
               </div>
@@ -2678,13 +2678,13 @@ export default function AdminCmsPage() {
                 <button
                   type="button"
                   onClick={() => setIsTestiModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                  className="px-5 py-2 rounded-full border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 cursor-pointer active:scale-95 transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs"
+                  className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs cursor-pointer active:scale-95 transition-all"
                 >
                   Simpan Testimoni
                 </button>
