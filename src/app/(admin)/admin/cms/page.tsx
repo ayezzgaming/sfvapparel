@@ -101,11 +101,11 @@ export default function AdminCmsPage() {
   const [editingBanner, setEditingBanner] = useState<CmsHeroBanner | null>(null);
   const [bannerForm, setBannerForm] = useState({
     image_url: '',
-    status_pill: 'Kilang Beroperasi',
-    tag_text: 'Koleksi Rasmi 2026',
+    status_pill: '',
+    tag_text: '',
     title: '',
-    button_text: 'Katalog',
-    button_link: '/catalog',
+    button_text: '',
+    button_link: '',
     is_active: true,
   });
 
@@ -124,12 +124,12 @@ export default function AdminCmsPage() {
     } else {
       setEditingBanner(null);
       setBannerForm({
-        image_url: '/hero1.png',
-        status_pill: 'Kilang Beroperasi',
-        tag_text: 'Koleksi Rasmi 2026',
-        title: 'Studio Jersi & DTF Kustom',
-        button_text: 'Katalog',
-        button_link: '/catalog',
+        image_url: '',
+        status_pill: '',
+        tag_text: '',
+        title: '',
+        button_text: '',
+        button_link: '',
         is_active: true,
       });
     }
