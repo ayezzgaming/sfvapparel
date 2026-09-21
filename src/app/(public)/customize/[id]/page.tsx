@@ -116,7 +116,6 @@ export default function CustomizePage() {
     return designs.find((d) => d && d.id === designId) || designs[0] || null;
   }, [designs, designId]);
 
-  const [activeView, setActiveView] = useState<'front' | 'back'>('front');
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
 
   const isDtf = design?.print_type === 'dtf';
@@ -503,7 +502,7 @@ export default function CustomizePage() {
     setValidationError(null);
 
     if (totalQuantity <= 0) {
-      setValidationError('Sila masukkan kuantiti sekurang-kurangnya 1 helai di bahagian 2. Kuantiti.');
+      setValidationError('Sila masukkan kuantiti sekurang-kurangnya 1 helai di bahagian Kuantiti Saiz.');
       return;
     }
 
@@ -566,7 +565,7 @@ export default function CustomizePage() {
       print_type: techniqueMode,
       design_id: design?.id,
       design_title: `${design?.title || 'Jersi Kustom'}${teamName ? ` (${teamName})` : ''}`,
-      mockup_url: activeView === 'front' ? design?.mockup_front_url : (design?.mockup_back_url || design?.mockup_front_url),
+      mockup_url: design?.mockup_front_url || design?.mockup_back_url || '',
       fabric_material_id: techniqueMode === 'sublimation' ? selectedFabric?.id : undefined,
       fabric_name: techniqueMode === 'sublimation' ? selectedFabric?.name : undefined,
       apparel_cut_id: techniqueMode === 'sublimation' ? selectedCut?.id : undefined,
@@ -740,34 +739,10 @@ export default function CustomizePage() {
           <div className="relative aspect-square w-full rounded-xl bg-slate-50 overflow-hidden border border-slate-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={
-                activeView === 'front'
-                  ? design.mockup_front_url
-                  : (design.mockup_back_url || design.mockup_front_url)
-              }
+              src={design.mockup_front_url || design.mockup_back_url || ''}
               alt={design.title}
               className="w-full h-full object-contain p-2"
             />
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-slate-900/80 backdrop-blur-md p-0.5 rounded-full flex items-center gap-1 shadow-sm">
-              <button
-                type="button"
-                onClick={() => setActiveView('front')}
-                className={`px-3 py-1 rounded-full text-[10px] font-medium transition-all ${
-                  activeView === 'front' ? 'bg-white text-slate-900 shadow-xs' : 'text-white/80'
-                }`}
-              >
-                Depan
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveView('back')}
-                className={`px-3 py-1 rounded-full text-[10px] font-medium transition-all ${
-                  activeView === 'back' ? 'bg-white text-slate-900 shadow-xs' : 'text-white/80'
-                }`}
-              >
-                Belakang
-              </button>
-            </div>
           </div>
 
           <div className="flex items-center justify-between pt-1">
@@ -803,10 +778,10 @@ export default function CustomizePage() {
           </div>
         </div>
 
-        {/* 1. Spesifikasi Fabrik & Potongan */}
+        {/* Spesifikasi Fabrik & Potongan */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/80 space-y-3">
           <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            1. Spesifikasi Pakaian
+            Spesifikasi Pakaian
           </h3>
 
           {techniqueMode === 'sublimation' ? (
@@ -892,11 +867,11 @@ export default function CustomizePage() {
           )}
         </div>
 
-        {/* 2. Kuantiti Mengikut Saiz */}
+        {/* Kuantiti Mengikut Saiz */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/80 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-              2. Kuantiti Saiz
+              Kuantiti Saiz
             </h3>
             <button
               type="button"
@@ -1001,11 +976,11 @@ export default function CustomizePage() {
           </div>
         </div>
 
-        {/* 3. Logo Pasukan & Penaja */}
+        {/* Logo Pasukan & Penaja */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/80 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-              3. Logo & Penaja <span className="text-slate-400 font-normal lowercase">(pilihan)</span>
+              Logo & Penaja <span className="text-slate-400 font-normal lowercase">(pilihan)</span>
             </h3>
             <span className="text-[10px] text-slate-400 font-mono">PNG / JPG / PDF</span>
           </div>
@@ -1081,12 +1056,12 @@ export default function CustomizePage() {
           </button>
         </div>
 
-        {/* 4. Senarai Nama & Nombor (Hanya jika diaktifkan pada toggle) */}
+        {/* Senarai Nama & Nombor (Hanya jika diaktifkan pada toggle) */}
         {hasNamesAndNumbers && (
           <div className="bg-white rounded-2xl p-4 border border-slate-200/80 space-y-3 animate-in fade-in duration-200">
             <div className="flex items-center justify-between">
               <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                4. Senarai Nama & Nombor
+                Senarai Nama & Nombor
               </h3>
               <span className="text-[10px] text-slate-400 font-mono">{totalQuantity} helai</span>
             </div>
@@ -1191,16 +1166,16 @@ export default function CustomizePage() {
           </div>
         )}
 
-        {/* 5. Maklumat Pelanggan & Penghantaran */}
+        {/* Maklumat Pelanggan & Penghantaran */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200/80 space-y-3">
           <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            5. Maklumat & Penghantaran
+            Maklumat & Penghantaran
           </h3>
 
           {totalQuantity === 0 && (
             <div className="p-3 bg-amber-50/90 border border-amber-200/80 rounded-xl text-amber-800 text-xs flex items-center gap-2">
               <Info className="w-4 h-4 text-amber-600 shrink-0" />
-              <span>Sila pilih saiz & kuantiti di <strong>Bahagian 2</strong> untuk mengaktifkan pengisian alamat dan kurier.</span>
+              <span>Sila pilih saiz & kuantiti di bahagian <strong>Kuantiti Saiz</strong> untuk mengaktifkan pengisian alamat dan kurier.</span>
             </div>
           )}
 
