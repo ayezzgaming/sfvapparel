@@ -367,20 +367,16 @@ export default function HomePage() {
           SECTION 1: HERO & PILIHAN SERVIS (iOS Canvas Tint - Kad Putih Timbul & Jelas)
          ========================================================================= */}
       <div className="w-full bg-[#F2F2F7] pt-3 pb-8 px-4 space-y-6">
-        {/* 1. DYNAMIC HERO SECTION WITH MULTI-SLIDE BANNER */}
-        <div className="relative w-full h-[240px] rounded-3xl overflow-hidden shadow-md shadow-slate-300/40 bg-slate-900 group">
+        {/* 1. DYNAMIC HERO SECTION WITH MULTI-SLIDE BANNER (Liquid Frosted Glass Design) */}
+        <div className="relative w-full h-[255px] sm:h-[280px] rounded-[28px] sm:rounded-[32px] overflow-hidden shadow-md shadow-slate-200/60 border border-white/80 bg-slate-100 group">
           {isLoadingCms && activeBanners.length === 0 ? (
             /* Skeleton sementara data dimuatkan */
-            <div className="w-full h-full bg-slate-200 animate-pulse">
-              <div className="absolute inset-x-4 bottom-4 space-y-2">
-                <div className="h-2.5 bg-slate-300 rounded w-1/4" />
-                <div className="h-5 bg-slate-300 rounded w-2/3" />
-                <div className="h-7 bg-slate-300 rounded-xl w-28 mt-2" />
-              </div>
+            <div className="w-full h-full bg-slate-200/80 animate-pulse">
+              <div className="absolute inset-x-4 bottom-4 h-16 bg-white/70 backdrop-blur-md rounded-2xl" />
             </div>
           ) : (
             <>
-              {/* Stacked All Banner Layers for Silky Smooth Cross-Fade & Zero Black Flash */}
+              {/* Stacked All Banner Layers for Silky Smooth Cross-Fade */}
               {activeBanners.map((banner, index) => {
                 const isActive = index === activeBannerIndex;
                 const isFirst = index === 0;
@@ -391,7 +387,7 @@ export default function HomePage() {
                       isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
                     }`}
                   >
-                    {/* Full-bleed Natural Photo */}
+                    {/* Full-bleed Natural Photo (No dark overlay) */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={banner.image_url}
@@ -399,59 +395,60 @@ export default function HomePage() {
                       loading={isFirst ? 'eager' : 'lazy'}
                       decoding="async"
                       {...(isFirst ? { fetchPriority: 'high' } : {})}
-                      className={`w-full h-full object-cover object-[center_22%] transition-transform duration-[7000ms] ease-out ${
+                      className={`w-full h-full object-cover object-[center_20%] transition-transform duration-[7000ms] ease-out ${
                         isActive ? 'scale-105' : 'scale-100'
                       }`}
                     />
 
-                    {/* Clean Subtle Bottom-Only Gradient */}
-                    <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
-
-                    {/* Top Status Pill */}
+                    {/* Top Status Pill - Clean Light Frosted Glass */}
                     <div className="absolute top-3.5 left-3.5 z-20 flex items-center gap-2">
-                      <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-black/35 backdrop-blur-md text-white shadow-xs">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <span className="text-[10.5px] font-medium tracking-wide text-white/95">
+                      <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-slate-800 shadow-xs">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[11px] font-semibold tracking-tight text-slate-800">
                           {banner.status_pill}
                         </span>
                       </div>
                     </div>
 
-                    {/* Bottom Content Directly Over Gradient */}
-                    <div className="absolute inset-x-4 bottom-4 flex items-end justify-between z-20">
-                      <div className="space-y-0.5 pr-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-300 block font-semibold">
-                          {banner.tag_text}
-                        </span>
-                        <h1 className="text-[17px] font-bold text-white tracking-tight leading-tight drop-shadow-xs">
+                    {/* Bottom Frosted Glass Panel - Light iOS Liquid Glass Theme */}
+                    <div className="absolute inset-x-0 bottom-0 z-20 bg-white/80 backdrop-blur-xl border-t border-white/80 px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between shadow-xs">
+                      <div className="space-y-0.5 pr-3 min-w-0">
+                        <h1 className="text-[15px] sm:text-[17px] font-bold text-slate-900 tracking-tight leading-tight truncate">
                           {banner.title}
                         </h1>
+                        <p className="text-[11px] sm:text-xs font-medium text-slate-500 truncate">
+                          {banner.tag_text}
+                        </p>
                       </div>
 
                       {/* Action Capsule Button */}
                       <Link
                         href={banner.button_link || '/catalog'}
-                        className="px-4 py-2 rounded-full bg-white hover:bg-slate-100 active:scale-95 text-slate-900 text-xs font-semibold tracking-tight shadow-md transition-all flex items-center space-x-1 shrink-0"
+                        className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 active:scale-95 text-white text-xs font-semibold tracking-tight shadow-sm transition-all flex items-center space-x-1 shrink-0"
                       >
                         <span>{banner.button_text}</span>
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-700" />
+                        <ChevronRight className="w-3.5 h-3.5 text-white/90" />
                       </Link>
                     </div>
                   </div>
                 );
               })}
 
-              {/* Banner Carousel Indicator Dots (if multi-slide) */}
+              {/* Banner Carousel Indicator Dots (Clean Frosted Glass) */}
               {activeBanners.length > 1 && (
-                <div className="absolute top-3.5 right-3.5 z-30 flex items-center gap-1.5 bg-black/35 backdrop-blur-md px-2 py-1 rounded-full">
+                <div className="absolute top-3.5 right-3.5 z-30 flex items-center gap-1.5 bg-white/85 backdrop-blur-md border border-white/70 px-2.5 py-1.5 rounded-full shadow-xs">
                   {activeBanners.map((_, idx) => (
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => setActiveBannerIndex(idx)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveBannerIndex(idx);
+                      }}
                       className={`h-1.5 rounded-full transition-all duration-300 ${
-                        idx === activeBannerIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/40'
+                        idx === activeBannerIndex ? 'w-4 bg-[#0052FF]' : 'w-1.5 bg-slate-300 hover:bg-slate-400'
                       }`}
+                      aria-label={`Slide ${idx + 1}`}
                     />
                   ))}
                 </div>

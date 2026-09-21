@@ -873,7 +873,7 @@ export default function AdminCmsPage() {
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                           />
                           <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/60 text-white backdrop-blur-xs">
+                            <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-white/90 text-slate-800 backdrop-blur-md border border-white/70 shadow-xs">
                               {banner.status_pill}
                             </span>
                           </div>
