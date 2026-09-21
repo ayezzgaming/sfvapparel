@@ -50,6 +50,8 @@ import {
   saveQuantityTierDb,
   deleteQuantityTierDb,
 } from '@/app/actions/pricingActions';
+import { getCustomersDb } from '@/app/actions/customerActions';
+import { getOrdersDb, saveOrderDb, updateOrderStatusDb, deleteOrderDb } from '@/app/actions/orderActions';
 import {
   INITIAL_APPAREL_CUTS,
   INITIAL_CUSTOMERS,
@@ -213,7 +215,25 @@ async function fetchAndSyncAllDb() {
       })
       .catch((e) => console.error('Error fetching pricing data from DB:', e));
 
-    await Promise.all([designsPromise, cmsPromise, pricingPromise]);
+    // 4. Fetch Customers directly from Database
+    const customersPromise = getCustomersDb()
+      .then((res) => {
+        if (res.success && Array.isArray(res.customers)) {
+          storeState = { ...storeState, customers: res.customers };
+        }
+      })
+      .catch((e) => console.error('Error fetching customers from DB:', e));
+
+    // 5. Fetch Orders directly from Database
+    const ordersPromise = getOrdersDb()
+      .then((res) => {
+        if (res.success && Array.isArray(res.orders)) {
+          storeState = { ...storeState, orders: res.orders };
+        }
+      })
+      .catch((e) => console.error('Error fetching orders from DB:', e));
+
+    await Promise.all([designsPromise, cmsPromise, pricingPromise, customersPromise, ordersPromise]);
   } finally {
     storeState = { ...storeState, isLoadingDesigns: false, isLoadingCms: false };
     notify();
@@ -305,13 +325,14 @@ export function useAppStore() {
     [state.favorites]
   );
 
-  const addOrder = useCallback((orderData: Omit<Order, 'id' | 'order_number' | 'created_at' | 'updated_at'>) => {
+  const addOrder = useCallback(async (orderData: Omit<Order, 'id' | 'order_number' | 'created_at' | 'updated_at'>) => {
     initStoreIfNeeded();
     const timestamp = Date.now();
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const tempId = `ord-${timestamp}`;
     const newOrder: Order = {
       ...orderData,
-      id: `ord-${timestamp}`,
+      id: tempId,
       order_number: `ORD-${randomSuffix}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -320,18 +341,38 @@ export function useAppStore() {
     const next = [newOrder, ...storeState.orders];
     storeState = { ...storeState, orders: next };
     notify();
+
+    try {
+      const res = await saveOrderDb(orderData);
+      if (res.success && res.order) {
+        storeState = {
+          ...storeState,
+          orders: storeState.orders.map((o) => (o.id === tempId ? res.order! : o)),
+        };
+        notify();
+        return res.order;
+      }
+    } catch (e) {
+      console.error('[app-store] Failed to save order to DB:', e);
+    }
     return newOrder;
   }, []);
 
-  const deleteOrder = useCallback((orderId: string) => {
+  const deleteOrder = useCallback(async (orderId: string) => {
     initStoreIfNeeded();
     const next = storeState.orders.filter((o) => o.id !== orderId);
     storeState = { ...storeState, orders: next };
     notify();
+
+    try {
+      await deleteOrderDb(orderId);
+    } catch (e) {
+      console.error('[app-store] Failed to delete order from DB:', e);
+    }
   }, []);
 
   const updateOrderStatus = useCallback(
-    (orderId: string, status: OrderStatus, trackingNumber?: string, notes?: string) => {
+    async (orderId: string, status: OrderStatus, trackingNumber?: string, notes?: string) => {
       initStoreIfNeeded();
       const next = storeState.orders.map((o) =>
         o.id === orderId
@@ -346,6 +387,12 @@ export function useAppStore() {
       );
       storeState = { ...storeState, orders: next };
       notify();
+
+      try {
+        await updateOrderStatusDb(orderId, status, trackingNumber, notes);
+      } catch (e) {
+        console.error('[app-store] Failed to update order in DB:', e);
+      }
     },
     []
   );

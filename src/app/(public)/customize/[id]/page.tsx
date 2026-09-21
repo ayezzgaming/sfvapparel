@@ -48,7 +48,7 @@ export default function CustomizePage() {
   const router = useRouter();
   const params = useParams();
   const designId = params.id as string;
-  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { customer, isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -142,6 +142,19 @@ export default function CustomizePage() {
   const [customerPhone, setCustomerPhone] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
   const [additionalNotes, setAdditionalNotes] = useState('');
+
+  // Autofill customer details if authenticated
+  useEffect(() => {
+    if (customer) {
+      if (customer.full_name) setCustomerName(customer.full_name);
+      if (customer.whatsapp) setCustomerPhone(customer.whatsapp);
+      if (customer.company_or_team) setTeamName(customer.company_or_team);
+      if (customer.address) {
+        const fullAddr = [customer.address, customer.postal_code, customer.city].filter(Boolean).join(', ');
+        setShippingAddress(fullAddr);
+      }
+    }
+  }, [customer]);
 
   // Modal Ringkasan Tempahan (Order Summary) & Status
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
@@ -291,7 +304,7 @@ export default function CustomizePage() {
   };
 
   // Sahkan & Hantar Tempahan (Simpan ke Sistem + Buka WhatsApp)
-  const handleConfirmAndSendOrder = () => {
+  const handleConfirmAndSendOrder = async () => {
     setIsSubmitting(true);
 
     const activeSizingBreakdown = Object.fromEntries(
@@ -314,9 +327,10 @@ export default function CustomizePage() {
     ].filter(Boolean).join('\n\n');
 
     // 1. Catat ke Sistem Database
-    const newOrder = addOrder({
+    const newOrder = await addOrder({
+      customer_id: customer?.id,
       customer_name: customerName.trim(),
-      customer_email: `${customerName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+      customer_email: customer?.email || `${customerName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
       customer_phone: customerPhone.trim(),
       print_type: techniqueMode,
       design_id: design?.id,
