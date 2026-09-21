@@ -127,8 +127,10 @@ interface AppStoreState {
   isLoadingCms: boolean;
 }
 
+// NOTE: storeState MUST start identical to serverSnapshot to avoid React hydration mismatch.
+// Seed data is injected only in initStoreIfNeeded() which runs client-side only.
 let storeState: AppStoreState = {
-  designs: [], // Pure Supabase DB data
+  designs: [],
   fabrics: INITIAL_FABRIC_MATERIALS,
   cuts: INITIAL_APPAREL_CUTS,
   dtfDimensions: INITIAL_DTF_DIMENSIONS,
@@ -136,7 +138,7 @@ let storeState: AppStoreState = {
   customers: [],
   orders: [],
   favorites: [],
-  heroBanners: INITIAL_CMS_HERO_BANNERS,
+  heroBanners: [], // Must match serverSnapshot to avoid hydration mismatch
   trustBadges: INITIAL_CMS_TRUST_BADGES,
   services: INITIAL_CMS_SERVICES,
   productionVideos: [],
@@ -272,8 +274,10 @@ function initStoreIfNeeded() {
   if (typeof window === 'undefined' || storeState.isInitialized) return;
   purgeLegacyLocalCmsKeys();
 
+  // Inject seed data as client-side fallbacks (safe here — only runs in browser)
   storeState = {
     ...storeState,
+    heroBanners: INITIAL_CMS_HERO_BANNERS,
     isInitialized: true,
   };
 
