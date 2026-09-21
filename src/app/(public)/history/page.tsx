@@ -59,11 +59,9 @@ function HistoryContent() {
   const paymentQuery = searchParams.get('payment');
   const orderNumberQuery = searchParams.get('order_number');
 
-  // Sync DB on return from payment gateway
+  // Sync DB on mount and on return from payment gateway
   useEffect(() => {
-    if (paymentQuery) {
-      refreshAllDb?.();
-    }
+    refreshAllDb?.();
   }, [paymentQuery, refreshAllDb]);
 
   // Filter orders by authenticated customer from Database

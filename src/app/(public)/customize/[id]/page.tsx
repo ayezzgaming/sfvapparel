@@ -10,7 +10,7 @@ import {
   calculateDtfPrice, 
   formatCurrency 
 } from '@/lib/pricing-calculator';
-import { SizingMatrix } from '@/types/database';
+import { Order, SizingMatrix } from '@/types/database';
 import SizeChartModal from '@/components/public/SizeChartModal';
 import CourierLogo from '@/components/ui/CourierLogo';
 import { lookupMalaysiaPostcode } from '@/lib/malaysia-postcode';
@@ -566,39 +566,48 @@ export default function CustomizePage() {
     ].filter(Boolean).join('\n\n');
 
     // 1. Catat ke Sistem Database
-    const newOrder = await addOrder({
-      customer_id: customer?.id,
-      customer_name: customerName.trim(),
-      customer_email: customer?.email || `${customerName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
-      customer_phone: customerPhone.trim(),
-      print_type: techniqueMode,
-      design_id: design?.id,
-      design_title: `${design?.title || 'Jersi Kustom'}${teamName ? ` (${teamName})` : ''}`,
-      mockup_url: design?.mockup_front_url || design?.mockup_back_url || '',
-      fabric_material_id: techniqueMode === 'sublimation' ? selectedFabric?.id : undefined,
-      fabric_name: techniqueMode === 'sublimation' ? selectedFabric?.name : undefined,
-      apparel_cut_id: techniqueMode === 'sublimation' ? selectedCut?.id : undefined,
-      cut_name: techniqueMode === 'sublimation' ? selectedCut?.name : undefined,
-      dtf_dimension_id: techniqueMode === 'dtf' ? selectedDimension?.id : undefined,
-      dtf_dimension_name: techniqueMode === 'dtf' ? selectedDimension?.name : undefined,
-      dtf_option_type: techniqueMode === 'dtf' ? dtfOptionType : undefined,
-      sizing_breakdown: activeSizingBreakdown,
-      total_quantity: totalQuantity,
-      raw_unit_price: quote.rawUnitPrice,
-      discount_percentage: quote.discountPercentage,
-      final_unit_price: quote.finalUnitPrice,
-      total_amount: grandTotalAmount,
-      deposit_amount: depositAmount,
-      balance_amount: paymentTypeSelected === 'deposit_50' ? balanceAmount : 0,
-      paid_amount: 0,
-      payment_type_selected: paymentTypeSelected,
-      payment_status: 'unpaid',
-      payment_method: paymentMode === 'chip_online' ? 'chip_gateway' : 'whatsapp_manual',
-      status: 'pending_proof',
-      production_notes: fullNotes,
-      shipping_address: formattedFullAddress || 'Ambil Sendiri di Kilang SFV Apparel',
-      shipping_courier: `${selectedCourier.name} (${shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)})`,
-    });
+    let newOrder: Order;
+    try {
+      newOrder = await addOrder({
+        customer_id: customer?.id,
+        customer_name: customerName.trim(),
+        customer_email: customer?.email || `${customerName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+        customer_phone: customerPhone.trim(),
+        print_type: techniqueMode,
+        design_id: design?.id,
+        design_title: `${design?.title || 'Jersi Kustom'}${teamName ? ` (${teamName})` : ''}`,
+        mockup_url: design?.mockup_front_url || design?.mockup_back_url || '',
+        fabric_material_id: techniqueMode === 'sublimation' ? selectedFabric?.id : undefined,
+        fabric_name: techniqueMode === 'sublimation' ? selectedFabric?.name : undefined,
+        apparel_cut_id: techniqueMode === 'sublimation' ? selectedCut?.id : undefined,
+        cut_name: techniqueMode === 'sublimation' ? selectedCut?.name : undefined,
+        dtf_dimension_id: techniqueMode === 'dtf' ? selectedDimension?.id : undefined,
+        dtf_dimension_name: techniqueMode === 'dtf' ? selectedDimension?.name : undefined,
+        dtf_option_type: techniqueMode === 'dtf' ? dtfOptionType : undefined,
+        sizing_breakdown: activeSizingBreakdown,
+        total_quantity: totalQuantity,
+        raw_unit_price: quote.rawUnitPrice,
+        discount_percentage: quote.discountPercentage,
+        final_unit_price: quote.finalUnitPrice,
+        total_amount: grandTotalAmount,
+        deposit_amount: depositAmount,
+        balance_amount: paymentTypeSelected === 'deposit_50' ? balanceAmount : 0,
+        paid_amount: 0,
+        payment_type_selected: paymentTypeSelected,
+        payment_status: 'unpaid',
+        payment_method: paymentMode === 'chip_online' ? 'chip_gateway' : 'whatsapp_manual',
+        status: 'pending_proof',
+        production_notes: fullNotes,
+        shipping_address: formattedFullAddress || 'Ambil Sendiri di Kilang SFV Apparel',
+        shipping_courier: `${selectedCourier.name} (${shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)})`,
+      });
+    } catch (err: unknown) {
+      console.error('Failed to create order in database:', err);
+      const errMsg = err instanceof Error ? err.message : 'Gagal menyimpan pesanan ke pangkalan data.';
+      setPaymentError(errMsg);
+      setIsSubmitting(false);
+      return;
+    }
 
     // 2A. Jika memilih bayaran terus secara online melalui CHIP Gateway
     if (paymentMode === 'chip_online') {

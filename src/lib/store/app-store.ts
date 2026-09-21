@@ -357,56 +357,40 @@ export function useAppStore() {
 
   const addOrder = useCallback(async (orderData: Omit<Order, 'id' | 'order_number' | 'created_at' | 'updated_at'>) => {
     initStoreIfNeeded();
-    const now = new Date();
-    const yy = String(now.getFullYear()).slice(-2);
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const timestamp = now.getTime();
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const tempId = `ord-${timestamp}`;
-    const newOrder: Order = {
-      ...orderData,
-      id: tempId,
-      order_number: `SFV-${yy}${mm}-${randomSuffix}`,
-      created_at: now.toISOString(),
-      updated_at: now.toISOString(),
-    };
-
-    const next = [newOrder, ...storeState.orders];
-    storeState = { ...storeState, orders: next };
-    notify();
-
-    try {
-      const res = await saveOrderDb(newOrder);
-      if (res.success && res.order) {
-        storeState = {
-          ...storeState,
-          orders: storeState.orders.map((o) => (o.id === tempId ? res.order! : o)),
-        };
-        notify();
-        return res.order;
-      }
-    } catch (e) {
-      console.error('[app-store] Failed to save order to DB:', e);
+    const res = await saveOrderDb(orderData);
+    if (!res.success || !res.order) {
+      throw new Error(res.message || 'Gagal menyimpan pesanan ke pangkalan data Supabase.');
     }
-    return newOrder;
+
+    const savedOrder = res.order;
+    storeState = {
+      ...storeState,
+      orders: [savedOrder, ...storeState.orders.filter((o) => o.id !== savedOrder.id && o.order_number !== savedOrder.order_number)],
+    };
+    notify();
+    return savedOrder;
   }, []);
 
   const deleteOrder = useCallback(async (orderId: string) => {
     initStoreIfNeeded();
-    const next = storeState.orders.filter((o) => o.id !== orderId);
-    storeState = { ...storeState, orders: next };
-    notify();
-
-    try {
-      await deleteOrderDb(orderId);
-    } catch (e) {
-      console.error('[app-store] Failed to delete order from DB:', e);
+    const res = await deleteOrderDb(orderId);
+    if (!res.success) {
+      throw new Error(res.message || 'Gagal memadam pesanan dari pangkalan data.');
     }
+    storeState = {
+      ...storeState,
+      orders: storeState.orders.filter((o) => o.id !== orderId),
+    };
+    notify();
   }, []);
 
   const updateOrderStatus = useCallback(
     async (orderId: string, status: OrderStatus, trackingNumber?: string, notes?: string) => {
       initStoreIfNeeded();
+      const res = await updateOrderStatusDb(orderId, status, trackingNumber, notes);
+      if (!res.success) {
+        throw new Error(res.message || 'Gagal mengemaskini status pesanan di pangkalan data.');
+      }
       const next = storeState.orders.map((o) =>
         o.id === orderId
           ? {
@@ -420,12 +404,6 @@ export function useAppStore() {
       );
       storeState = { ...storeState, orders: next };
       notify();
-
-      try {
-        await updateOrderStatusDb(orderId, status, trackingNumber, notes);
-      } catch (e) {
-        console.error('[app-store] Failed to update order in DB:', e);
-      }
     },
     []
   );
@@ -433,6 +411,10 @@ export function useAppStore() {
   const markOrderBalancePaid = useCallback(
     async (orderId: string, paymentMethod: string = 'Manual Transfer / Cash', paymentId?: string) => {
       initStoreIfNeeded();
+      const res = await markOrderBalancePaidAction(orderId, paymentMethod, paymentId);
+      if (!res.success) {
+        throw new Error(res.message || 'Gagal melunaskan baki pesanan di pangkalan data.');
+      }
       const next = storeState.orders.map((o) =>
         o.id === orderId
           ? {
@@ -449,15 +431,6 @@ export function useAppStore() {
       );
       storeState = { ...storeState, orders: next };
       notify();
-
-      try {
-        const res = await markOrderBalancePaidAction(orderId, paymentMethod, paymentId);
-        if (!res.success) {
-          console.error('[app-store] Failed to mark order balance paid in DB:', res.message);
-        }
-      } catch (e) {
-        console.error('[app-store] Error in markOrderBalancePaid:', e);
-      }
     },
     []
   );
