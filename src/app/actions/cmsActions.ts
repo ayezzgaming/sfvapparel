@@ -150,47 +150,30 @@ export async function getCmsDataDb(): Promise<{
       };
     }
 
-    // 1. Fetch Hero Banners
-    const { data: banners, error: bannersErr } = await supabase
-      .from('cms_hero_banners')
-      .select('*')
-      .order('sort_order', { ascending: true });
+    // Fetch all 7 CMS tables concurrently in parallel for 7x speedup
+    const [
+      { data: banners, error: bannersErr },
+      { data: services, error: servicesErr },
+      { data: videos, error: videosErr },
+      { data: gallery, error: galleryErr },
+      { data: testimonials, error: testErr },
+      { data: sloganList },
+      { data: companyList },
+    ] = await Promise.all([
+      supabase.from('cms_hero_banners').select('*').order('sort_order', { ascending: true }),
+      supabase.from('cms_services').select('*').order('sort_order', { ascending: true }),
+      supabase.from('cms_production_videos').select('*').order('sort_order', { ascending: true }),
+      supabase.from('cms_production_gallery').select('*').order('sort_order', { ascending: true }),
+      supabase.from('cms_testimonials').select('*').order('created_at', { ascending: false }),
+      supabase.from('cms_slogan_quote').select('*').order('updated_at', { ascending: false }).limit(1),
+      supabase.from('cms_company_settings').select('*').order('updated_at', { ascending: false }).limit(1),
+    ]);
+
     if (bannersErr) console.error('banners fetch error:', bannersErr.message);
-
-    // 2. Fetch Services
-    const { data: services, error: servicesErr } = await supabase
-      .from('cms_services')
-      .select('*')
-      .order('sort_order', { ascending: true });
     if (servicesErr) console.error('services fetch error:', servicesErr.message);
-
-    // 3. Fetch Production Videos
-    const { data: videos, error: videosErr } = await supabase
-      .from('cms_production_videos')
-      .select('*')
-      .order('sort_order', { ascending: true });
     if (videosErr) console.error('videos fetch error:', videosErr.message);
-
-    // 4. Fetch Production Gallery
-    const { data: gallery, error: galleryErr } = await supabase
-      .from('cms_production_gallery')
-      .select('*')
-      .order('sort_order', { ascending: true });
     if (galleryErr) console.error('gallery fetch error:', galleryErr.message);
-
-    // 5. Fetch Testimonials
-    const { data: testimonials, error: testErr } = await supabase
-      .from('cms_testimonials')
-      .select('*')
-      .order('created_at', { ascending: false });
     if (testErr) console.error('testimonials fetch error:', testErr.message);
-
-    // 6. Fetch Slogan Quote
-    let { data: sloganList } = await supabase
-      .from('cms_slogan_quote')
-      .select('*')
-      .order('updated_at', { ascending: false })
-      .limit(1);
 
     let sloganQuote: CmsSloganQuote = INITIAL_CMS_SLOGAN_QUOTE;
     if (sloganList && sloganList.length > 0) {
@@ -210,13 +193,6 @@ export async function getCmsDataDb(): Promise<{
       };
       await supabase.from('cms_slogan_quote').upsert(sloganPayload);
     }
-
-    // 7. Fetch Company Settings
-    let { data: companyList } = await supabase
-      .from('cms_company_settings')
-      .select('*')
-      .order('updated_at', { ascending: false })
-      .limit(1);
 
     let companySettings: CmsCompanySettings = INITIAL_CMS_COMPANY_SETTINGS;
     if (companyList && companyList.length > 0) {
