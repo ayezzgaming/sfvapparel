@@ -177,21 +177,44 @@ function LoginForm() {
     }
   };
 
+  const handleBack = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (step === 'otp') {
+      setStep('form');
+      setOtp(['', '', '', '', '', '']);
+      setError('');
+      return;
+    }
+
+    if (redirectTo && redirectTo !== '/auth/login') {
+      router.push(redirectTo);
+    } else if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/');
+    }
+  };
+
   return (
     <div className="h-[100dvh] min-h-[100dvh] w-full bg-[#F2F2F7] flex flex-col justify-between px-4 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+1.25rem)] overflow-y-auto sparkle-scroll font-ios antialiased selection:bg-slate-200">
       {/* Top Bar / Back button */}
       <div className="w-full max-w-md mx-auto flex items-center justify-between shrink-0">
-        <Link
-          href={redirectTo}
-          className="inline-flex items-center gap-1 text-xs text-slate-600 hover:text-slate-900 active:opacity-60 transition-opacity py-1 px-2 rounded-lg"
+        <button
+          type="button"
+          onClick={handleBack}
+          aria-label="Kembali ke halaman sebelumnya"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 active:bg-slate-200/80 active:scale-95 transition-all py-2 px-2.5 -ml-2 rounded-xl cursor-pointer select-none"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
           <span>Kembali</span>
-        </Link>
-        <span className="text-xs tracking-tight text-slate-700 leading-none flex items-center">
+        </button>
+        <Link
+          href="/"
+          className="text-xs tracking-tight text-slate-700 leading-none flex items-center hover:opacity-80 transition-opacity p-1.5"
+        >
           <span className="font-extrabold text-slate-900">SFV</span>
           <span className="font-light ml-1 text-slate-500">APPAREL</span>
-        </span>
+        </Link>
       </div>
 
       {/* Center Container */}
