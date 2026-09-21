@@ -51,7 +51,7 @@ import {
   CmsTrustBadge
 } from '@/types/database';
 import ImageUploadField from '@/components/admin/ImageUploadField';
-import { BADGE_THEMES, getTrustIconComponent } from '@/app/(public)/page';
+import { BADGE_THEMES, getTrustIconComponent } from '@/lib/cms/trust-badge-utils';
 
 type CmsTabKey = 'hero' | 'badges' | 'services' | 'slogan' | 'videos' | 'gallery' | 'testimonials' | 'company' | 'policies';
 
