@@ -36,7 +36,8 @@ import {
   Check,
   Tag,
   Truck,
-  MapPin
+  MapPin,
+  AlertCircle
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { 
@@ -1487,120 +1488,95 @@ export default function CustomizePage() {
 
       {/* Streamlined Order Summary Modal */}
       {isSummaryModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl p-4 space-y-3 shadow-xl max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="text-xs font-bold text-slate-900">Ringkasan Pesanan</h3>
-              <button type="button" onClick={() => setIsSummaryModalOpen(false)} className="text-slate-400 hover:text-slate-700">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl p-5 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900">Ringkasan Pesanan</h3>
+              <button
+                type="button"
+                onClick={() => setIsSummaryModalOpen(false)}
+                className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-2 text-xs">
-              <div className="p-2.5 bg-slate-50 rounded-xl space-y-1.5">
-                <div className="font-semibold text-slate-900">{design.title}</div>
-                <div className="flex items-center gap-2 text-slate-500 text-xs">
-                  <span>{totalQuantity} helai</span>
-                  <span>&bull;</span>
-                  <div className="inline-flex items-center gap-1.5">
-                    <CourierLogo type={selectedCourier.logoType} className="h-5 w-14 shrink-0" />
-                    <span className="font-medium text-slate-700">{selectedCourier.shortName || selectedCourier.name}</span>
-                  </div>
+            <div className="space-y-3.5 text-xs">
+              {/* Grouped Order Details Card */}
+              <div className="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-100 space-y-2">
+                <div className="flex justify-between items-start gap-2">
+                  <span className="font-semibold text-slate-900 text-xs leading-snug">{design.title}</span>
+                  <span className="font-mono font-medium text-slate-500 text-[11px] shrink-0">{totalQuantity} helai</span>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1 border-t border-slate-200/50">
+                  <CourierLogo type={selectedCourier.logoType} className="h-4 w-12 shrink-0" />
+                  <span className="text-[11px] text-slate-500 font-medium truncate">
+                    {selectedCourier.shortName || selectedCourier.name} • {formattedFullAddress || 'Ambil di Kilang'}
+                  </span>
+                </div>
+
+                <div className="text-[11px] text-slate-400 truncate">
+                  {customerName} • {customerPhone}
                 </div>
               </div>
 
-              <div className="p-2.5 bg-slate-50 rounded-xl space-y-1">
-                <div className="text-slate-500">Pelanggan: <span className="font-semibold text-slate-900">{customerName} ({customerPhone})</span></div>
-                {formattedFullAddress && <div className="text-slate-500 truncate">Alamat: {formattedFullAddress}</div>}
-              </div>
-
-              {/* Pilihan Struktur Bayaran: Deposit 50% vs Bayar Penuh 100% */}
-              <div className="space-y-1.5 pt-1">
-                <span className="text-[11px] font-semibold text-slate-800 block">Pilihan Struktur Bayaran:</span>
-                <div className="grid grid-cols-2 gap-2">
+              {/* Segmented Payment Structure */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-medium text-slate-500 block">Pilihan Bayaran:</span>
+                <div className="bg-slate-100/90 p-1 rounded-xl flex gap-1">
                   <button
                     type="button"
                     onClick={() => setPaymentTypeSelected('deposit_50')}
-                    className={`p-2.5 rounded-xl border text-left transition-all ${
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 ${
                       paymentTypeSelected === 'deposit_50'
-                        ? 'bg-sky-50/90 border-sky-500 ring-1 ring-sky-500/20'
-                        : 'bg-white border-slate-200 hover:bg-slate-50'
+                        ? 'bg-white text-slate-900 font-bold shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 font-medium'
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-xs font-bold text-slate-900">Deposit 50%</span>
-                      <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-sky-100 text-sky-700 font-semibold">Disyorkan</span>
-                    </div>
-                    <div className="text-xs font-mono font-bold text-sky-600">{formatCurrency(depositAmount)}</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5 leading-tight">Baki {formatCurrency(balanceAmount)} dibayar bila siap</div>
+                    <span>Deposit 50%</span>
+                    <span className="font-mono text-[11px] opacity-80">{formatCurrency(depositAmount)}</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setPaymentTypeSelected('full_100')}
-                    className={`p-2.5 rounded-xl border text-left transition-all ${
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 ${
                       paymentTypeSelected === 'full_100'
-                        ? 'bg-sky-50/90 border-sky-500 ring-1 ring-sky-500/20'
-                        : 'bg-white border-slate-200 hover:bg-slate-50'
+                        ? 'bg-white text-slate-900 font-bold shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 font-medium'
                     }`}
                   >
-                    <div className="text-xs font-bold text-slate-900 mb-0.5">Bayaran Penuh</div>
-                    <div className="text-xs font-mono font-bold text-slate-900">{formatCurrency(grandTotalAmount)}</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5 leading-tight">Selesai 100% sekali gus</div>
+                    <span>Bayaran Penuh</span>
+                    <span className="font-mono text-[11px] opacity-80">{formatCurrency(grandTotalAmount)}</span>
                   </button>
                 </div>
               </div>
 
-              {/* Perincian Kewangan Telus */}
-              <div className="p-2.5 bg-sky-50/70 border border-sky-100 rounded-xl space-y-1">
-                <div className="flex justify-between text-slate-600">
-                  <span>Harga Jersi ({totalQuantity} helai):</span>
-                  <span className="font-mono">{formatCurrency(quote.finalTotal)}</span>
-                </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Kos Pos ({selectedCourier.shortName}):</span>
-                  <span className="font-mono">{shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)}</span>
-                </div>
-                <div className="flex justify-between text-slate-600 pt-0.5 border-t border-sky-200/60">
-                  <span>Jumlah Pesanan:</span>
-                  <span className="font-mono font-semibold text-slate-800">{formatCurrency(grandTotalAmount)}</span>
-                </div>
-                {paymentTypeSelected === 'deposit_50' ? (
-                  <>
-                    <div className="flex justify-between text-slate-500 text-[11px]">
-                      <span>Baki Semasa Siap (50%):</span>
-                      <span className="font-mono">{formatCurrency(balanceAmount)}</span>
-                    </div>
-                    <div className="border-t border-sky-200 pt-1 flex justify-between font-bold text-xs text-sky-950">
-                      <span>Perlu Dibayar Sekarang (Deposit 50%):</span>
-                      <span className="font-mono text-sky-600 text-sm">{formatCurrency(depositAmount)}</span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="border-t border-sky-200 pt-1 flex justify-between font-bold text-xs text-sky-950">
-                    <span>Perlu Dibayar Sekarang (100%):</span>
-                    <span className="font-mono text-sky-600 text-sm">{formatCurrency(grandTotalAmount)}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-1.5 pt-1">
-                <span className="text-[11px] font-semibold text-slate-800 block">Kaedah Pembayaran:</span>
-                <div className="grid grid-cols-2 gap-2">
+              {/* Segmented Payment Mode */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-medium text-slate-500 block">Kaedah Pembayaran:</span>
+                <div className="bg-slate-100/90 p-1 rounded-xl flex gap-1">
                   <button
                     type="button"
                     onClick={() => setPaymentMode('chip_online')}
-                    className={`p-2.5 rounded-xl border text-left text-xs ${
-                      paymentMode === 'chip_online' ? 'bg-sky-50 border-sky-500 font-semibold' : 'bg-white border-slate-200'
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs transition-all text-center ${
+                      paymentMode === 'chip_online'
+                        ? 'bg-white text-slate-900 font-bold shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 font-medium'
                     }`}
                   >
-                    Online Banking (CHIP)
+                    Online FPX / Kad (CHIP)
                   </button>
+
                   <button
                     type="button"
                     onClick={() => setPaymentMode('whatsapp_manual')}
-                    className={`p-2.5 rounded-xl border text-left text-xs ${
-                      paymentMode === 'whatsapp_manual' ? 'bg-emerald-50 border-emerald-500 font-semibold' : 'bg-white border-slate-200'
+                    className={`flex-1 py-2 px-3 rounded-lg text-xs transition-all text-center ${
+                      paymentMode === 'whatsapp_manual'
+                        ? 'bg-white text-slate-900 font-bold shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 font-medium'
                     }`}
                   >
                     WhatsApp Manual
@@ -1608,28 +1584,64 @@ export default function CustomizePage() {
                 </div>
               </div>
 
+              {/* Clean Financial Breakdown */}
+              <div className="pt-2 border-t border-slate-100 space-y-1.5 text-xs text-slate-600">
+                <div className="flex justify-between">
+                  <span>Harga Jersi ({totalQuantity} helai)</span>
+                  <span className="font-mono">{formatCurrency(quote.finalTotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Penghantaran ({selectedCourier.shortName || selectedCourier.name})</span>
+                  <span className="font-mono">{shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)}</span>
+                </div>
+                <div className="flex justify-between text-slate-800 font-medium pt-1 border-t border-slate-100">
+                  <span>Jumlah Keseluruhan</span>
+                  <span className="font-mono">{formatCurrency(grandTotalAmount)}</span>
+                </div>
+
+                {paymentTypeSelected === 'deposit_50' && (
+                  <div className="flex justify-between text-[11px] text-slate-400">
+                    <span>Baki bila siap dipos (50%)</span>
+                    <span className="font-mono">{formatCurrency(balanceAmount)}</span>
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-slate-200 flex justify-between items-baseline">
+                  <span className="font-semibold text-slate-900">
+                    {paymentTypeSelected === 'deposit_50' ? 'Perlu Dibayar Sekarang (Deposit 50%)' : 'Perlu Dibayar Sekarang'}
+                  </span>
+                  <span className="font-mono font-bold text-base text-slate-950">
+                    {formatCurrency(paymentTypeSelected === 'deposit_50' ? depositAmount : grandTotalAmount)}
+                  </span>
+                </div>
+              </div>
+
               {paymentError && (
-                <div className="p-2 bg-red-50 text-red-600 text-xs rounded-xl">{paymentError}</div>
+                <div className="p-2.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{paymentError}</span>
+                </div>
               )}
             </div>
 
+            {/* Action Buttons */}
             <div className="pt-2 space-y-2">
               <button
                 type="button"
                 onClick={handleConfirmAndSendOrder}
                 disabled={isSubmitting}
-                className="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:bg-slate-300 text-white text-xs font-bold transition-all"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 text-white text-xs font-bold shadow-md shadow-blue-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
               >
                 {isSubmitting
-                  ? 'Memproses...'
+                  ? 'Memproses Pesanan...'
                   : paymentMode === 'chip_online'
                   ? (paymentTypeSelected === 'deposit_50' ? `Bayar Deposit ${formatCurrency(depositAmount)}` : `Bayar Penuh ${formatCurrency(grandTotalAmount)}`)
-                  : 'Hantar ke WhatsApp'}
+                  : 'Hantar Pesanan via WhatsApp'}
               </button>
               <button
                 type="button"
                 onClick={() => setIsSummaryModalOpen(false)}
-                className="w-full py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-medium"
+                className="w-full py-2 text-center text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors"
               >
                 Batal
               </button>
