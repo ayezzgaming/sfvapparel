@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { Share, PlusSquare, CheckSquare, X } from 'lucide-react';
 
-const STORAGE_KEY = 'sfv_ios_pwa_prompt_v3';
+const STORAGE_KEY = 'sfv_ios_pwa_prompt_v4';
 
 export default function IosInstallPromptModal() {
   const [isVisible, setIsVisible] = useState(false);
@@ -77,61 +77,65 @@ export default function IosInstallPromptModal() {
 
   return (
     <aside 
-      aria-label="Panduan Pasang ke Skrin Utama"
-      className="fixed bottom-[4.8rem] inset-x-3 max-w-sm mx-auto z-50 animate-in fade-in slide-in-from-bottom-3 duration-300 pointer-events-auto select-none font-ios"
+      aria-label="Panduan Pasang PWA iOS"
+      className="fixed bottom-[5.2rem] left-1/2 -translate-x-1/2 w-[285px] z-50 animate-in fade-in slide-in-from-bottom-4 duration-300 pointer-events-auto select-none font-ios"
     >
-      {/* Apple Frosted Glass Floating Capsule */}
-      <div className="relative bg-[#1C1C1E]/95 backdrop-blur-2xl text-white rounded-2xl p-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] border border-white/10 flex items-center gap-3">
-        {/* App Icon */}
-        <div className="w-10 h-10 rounded-xl bg-black/40 border border-white/10 overflow-hidden shrink-0 flex items-center justify-center p-1 shadow-xs">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img 
-            src="/logo/svf-icon.svg" 
-            alt="SFV Apparel" 
-            className="w-full h-full object-contain rounded-lg"
-            onError={(e) => {
-              e.currentTarget.src = '/logo/svf-icon-01.svg';
-            }}
-          />
-        </div>
-
-        {/* Concise Apple Instruction */}
-        <div className="flex-1 min-w-0 pr-1">
-          <p className="text-[12px] font-semibold text-white tracking-tight leading-tight">
-            Pasang SFV Apparel
-          </p>
-          <p className="text-[11px] text-zinc-300 leading-snug mt-0.5">
-            Ketuk{' '}
-            <svg 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2.2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              className="w-3.5 h-3.5 inline-block -mt-0.5 text-[#00BDFF]"
-              aria-label="Ikon Kongsi iOS"
-            >
-              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-              <polyline points="16 6 12 2 8 6" />
-              <line x1="12" y1="2" x2="12" y2="15" />
-            </svg>
-            {' '}lalu pilih <span className="font-semibold text-white">&ldquo;Add to Home Screen&rdquo;</span>
-          </p>
-        </div>
-
+      {/* Apple Light Frosted Glass Square Card (No Logo, Monochrome Grey Icons Only) */}
+      <div className="relative bg-white/95 backdrop-blur-2xl text-slate-900 rounded-3xl p-4 shadow-[0_12px_36px_rgba(0,0,0,0.14)] border border-slate-200/90 flex flex-col items-center text-center space-y-3">
         {/* Minimalist Close Button */}
         <button
           type="button"
           onClick={handleDismiss}
           aria-label="Tutup"
-          className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 active:scale-90 text-zinc-400 hover:text-white flex items-center justify-center transition-all shrink-0 cursor-pointer"
+          className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all cursor-pointer z-10"
         >
           <X className="w-3.5 h-3.5" />
         </button>
 
-        {/* Downward Pointer indicator towards Safari Share Button */}
-        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#1C1C1E] border-r border-b border-white/10 rotate-45" />
+        {/* Header Title */}
+        <div className="pt-0.5">
+          <h3 className="text-xs font-bold text-slate-900 tracking-tight">
+            Pasang Aplikasi SFV
+          </h3>
+          <p className="text-[10.5px] text-slate-500 mt-0.5 font-medium">
+            3 langkah pantas ke Skrin Utama
+          </p>
+        </div>
+
+        {/* 3 Step Grey Icons Row (Apple Monochrome Style) */}
+        <div className="grid grid-cols-3 gap-2 w-full pt-0.5">
+          {/* Step 1 */}
+          <div className="flex flex-col items-center p-2 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+            <div className="w-8 h-8 rounded-xl bg-slate-200/70 text-slate-600 flex items-center justify-center">
+              <Share className="w-4 h-4 stroke-[2]" />
+            </div>
+            <span className="text-[9.5px] font-bold text-slate-800 leading-none">1. Ketuk</span>
+            <span className="text-[8.5px] text-slate-400 font-medium leading-tight">Kongsi</span>
+          </div>
+
+          {/* Step 2 */}
+          <div className="flex flex-col items-center p-2 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+            <div className="w-8 h-8 rounded-xl bg-slate-200/70 text-slate-600 flex items-center justify-center">
+              <PlusSquare className="w-4 h-4 stroke-[2]" />
+            </div>
+            <span className="text-[9.5px] font-bold text-slate-800 leading-none">2. Pilih</span>
+            <span className="text-[8.5px] text-slate-400 font-medium leading-tight">Tambah...</span>
+          </div>
+
+          {/* Step 3 */}
+          <div className="flex flex-col items-center p-2 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+            <div className="w-8 h-8 rounded-xl bg-slate-200/70 text-slate-600 flex items-center justify-center">
+              <CheckSquare className="w-4 h-4 stroke-[2]" />
+            </div>
+            <span className="text-[9.5px] font-bold text-slate-800 leading-none">3. Ketuk</span>
+            <span className="text-[8.5px] text-slate-400 font-medium leading-tight">Tambah</span>
+          </div>
+        </div>
+
+        {/* Animated Bouncing Pointer Arrow (pointing to Safari Share button at bottom center) */}
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce">
+          <div className="w-3.5 h-3.5 bg-white border-r border-b border-slate-200/90 rotate-45 shadow-2xs" />
+        </div>
       </div>
     </aside>
   );
