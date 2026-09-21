@@ -32,11 +32,23 @@ export async function POST(req: NextRequest) {
     let validatedCustomerPhone = customerPhone || '';
 
     if (supabase) {
-      const { data: dbOrder, error: dbErr } = await supabase
+      let { data: dbOrder, error: dbErr } = await supabase
         .from('orders')
         .select('*')
         .eq('order_number', baseOrderNumber)
         .single();
+
+      // Retry once after 350ms if order was just created by client
+      if ((dbErr || !dbOrder) && baseOrderNumber) {
+        await new Promise((r) => setTimeout(r, 350));
+        const retryResult = await supabase
+          .from('orders')
+          .select('*')
+          .eq('order_number', baseOrderNumber)
+          .single();
+        dbOrder = retryResult.data;
+        dbErr = retryResult.error;
+      }
 
       if (dbErr || !dbOrder) {
         return NextResponse.json(

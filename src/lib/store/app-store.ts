@@ -376,7 +376,7 @@ export function useAppStore() {
     notify();
 
     try {
-      const res = await saveOrderDb(orderData);
+      const res = await saveOrderDb(newOrder);
       if (res.success && res.order) {
         storeState = {
           ...storeState,
