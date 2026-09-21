@@ -17,7 +17,7 @@ let GLOBAL_TICKETS: SupportTicket[] = [];
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  return NextResponse.json({ tickets: GLOBAL_TICKETS });
+  return NextResponse.json({ success: true, tickets: GLOBAL_TICKETS });
 }
 
 export async function POST(req: Request) {

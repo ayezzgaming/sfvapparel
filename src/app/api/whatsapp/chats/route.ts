@@ -8,6 +8,7 @@ export async function GET() {
     const status = await getWahaStatus();
     if (status.status !== 'WORKING') {
       return NextResponse.json({
+        success: true,
         connected: false,
         status: status.status,
         chats: [],
@@ -16,12 +17,13 @@ export async function GET() {
 
     const chats = await getWahaChats(40);
     return NextResponse.json({
+      success: true,
       connected: true,
       status: status.status,
       chats,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Gagal memuatkan senarai perbualan';
-    return NextResponse.json({ connected: false, error: message, chats: [] }, { status: 500 });
+    return NextResponse.json({ success: false, connected: false, error: message, chats: [] }, { status: 500 });
   }
 }

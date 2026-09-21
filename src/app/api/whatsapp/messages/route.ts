@@ -9,14 +9,14 @@ export async function GET(req: Request) {
     const chatId = searchParams.get('chatId');
 
     if (!chatId) {
-      return NextResponse.json({ error: 'chatId diperlukan' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'chatId diperlukan' }, { status: 400 });
     }
 
     const messages = await getWahaMessages(chatId, 50);
-    return NextResponse.json({ messages });
+    return NextResponse.json({ success: true, messages });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Gagal memuatkan rekod mesej';
-    return NextResponse.json({ error: message, messages: [] }, { status: 500 });
+    return NextResponse.json({ success: false, error: message, messages: [] }, { status: 500 });
   }
 }
 
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const { chatId, message } = await req.json();
 
     if (!chatId || !message) {
-      return NextResponse.json({ error: 'chatId dan message diperlukan' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'chatId dan message diperlukan' }, { status: 400 });
     }
 
     const res = await sendWahaMessage(chatId, message);
