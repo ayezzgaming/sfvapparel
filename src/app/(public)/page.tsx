@@ -15,7 +15,7 @@ import {
   Zap,
   PackageCheck
 } from 'lucide-react';
-import { FaWhatsapp } from 'react-icons/fa6';
+import { FaWhatsapp, FaTiktok, FaFacebookF, FaInstagram, FaTelegram } from 'react-icons/fa6';
 import { formatWhatsAppLink } from '@/lib/whatsapp/dynamic-link';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { useAppStore } from '@/lib/store/app-store';
@@ -1037,19 +1037,19 @@ export default function HomePage() {
             {/* Social Icons */}
             <div className="flex items-center gap-1.5 pt-0.5">
               <a href={companySettings.facebook_url} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-7 h-7 rounded-full bg-white shadow-xs border border-gray-200/60 flex items-center justify-center text-slate-600 hover:text-blue-600 transition-colors active:scale-90">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                <FaFacebookF className="w-3.5 h-3.5" />
               </a>
               <a href={companySettings.instagram_url} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-7 h-7 rounded-full bg-white shadow-xs border border-gray-200/60 flex items-center justify-center text-slate-600 hover:text-pink-600 transition-colors active:scale-90">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                <FaInstagram className="w-3.5 h-3.5" />
               </a>
               <a href={companySettings.tiktok_url} target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="w-7 h-7 rounded-full bg-white shadow-xs border border-gray-200/60 flex items-center justify-center text-slate-600 hover:text-black transition-colors active:scale-90">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.89 2.88 2.89 2.89 0 0 1-2.89-2.88 2.89 2.89 0 0 1 2.89-2.88c.49 0 .94.12 1.34.34V9.75a6.22 6.22 0 0 0-1.34-.15A6.24 6.24 0 0 0 3.24 15.83a6.24 6.24 0 0 0 6.24-6.23 6.24 6.24 0 0 0 6.24-6.23V9a8.16 8.16 0 0 0 4.77 1.52v-3.35a4.83 4.83 0 0 1-.9-.48z"/></svg>
+                <FaTiktok className="w-3.5 h-3.5" />
               </a>
               <a href={companySettings.telegram_catalog_url} target="_blank" rel="noopener noreferrer" aria-label="Telegram" className="w-7 h-7 rounded-full bg-white shadow-xs border border-gray-200/60 flex items-center justify-center text-slate-600 hover:text-sky-500 transition-colors active:scale-90">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.458c.538-.196 1.006.128.832.943z"/></svg>
+                <FaTelegram className="w-3.5 h-3.5" />
               </a>
               <a href={formatWhatsAppLink(companySettings?.whatsapp_number)} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="w-7 h-7 rounded-full bg-white shadow-xs border border-gray-200/60 flex items-center justify-center text-slate-600 hover:text-emerald-600 transition-colors active:scale-90">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.122.553 4.179 1.603 5.996L0 24l6.167-1.617a12.01 12.01 0 0 0 5.864 1.516h.005c6.645 0 12.03-5.385 12.03-12.031A12.03 12.03 0 0 0 12.031 0zm0 22.028h-.004a9.99 9.99 0 0 1-5.093-1.392l-.365-.217-3.784.992 1.01-3.69-.237-.378a9.97 9.97 0 0 1-1.529-5.312C2.029 6.502 6.506 2.025 12.031 2.025c2.671 0 5.182 1.04 7.07 2.928a9.94 9.94 0 0 1 2.93 7.078c0 5.526-4.477 9.997-10 9.997zm5.485-7.496c-.3-.15-1.776-.877-2.051-.977-.276-.1-.476-.15-.676.15-.2.3-.776.977-.951 1.177-.175.2-.35.226-.651.075s-1.27-.468-2.42-1.493c-.895-.798-1.5-1.784-1.675-2.084-.175-.3-.019-.463.131-.612.135-.135.3-.35.45-.526.15-.175.2-.3.3-.5.1-.2.05-.375-.025-.525-.075-.15-.676-1.63-.926-2.232-.244-.587-.492-.507-.676-.516l-.576-.01c-.2 0-.525.075-.8.375s-1.05 1.026-1.05 2.502 1.076 2.903 1.226 3.103c.15.2 2.117 3.232 5.13 4.533.717.31 1.277.495 1.713.633.72.229 1.375.197 1.894.119.579-.087 1.776-.726 2.026-1.427.25-.701.25-1.302.175-1.427-.075-.125-.275-.2-.575-.35z"/></svg>
+                <FaWhatsapp className="w-3.5 h-3.5" />
               </a>
             </div>
           </div>
