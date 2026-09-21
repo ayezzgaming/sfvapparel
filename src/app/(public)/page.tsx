@@ -13,7 +13,10 @@ import {
   Quote,
   Building2,
   Zap,
-  PackageCheck
+  PackageCheck,
+  ZoomIn,
+  Maximize2,
+  X
 } from 'lucide-react';
 import { FaWhatsapp, FaTiktok, FaFacebookF, FaInstagram, FaTelegram } from 'react-icons/fa6';
 import { formatWhatsAppLink } from '@/lib/whatsapp/dynamic-link';
@@ -225,6 +228,10 @@ export default function HomePage() {
   const [selectedProduct, setSelectedProduct] = useState<CmsService | null>(null);
   const [isProductSheetOpen, setIsProductSheetOpen] = useState(false);
 
+  const [selectedGalleryItem, setSelectedGalleryItem] = useState<CmsProductionGalleryItem | null>(null);
+  const [isGallerySheetOpen, setIsGallerySheetOpen] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
   const [selectedStep, setSelectedStep] = useState<StepDetail>(ORDER_STEPS[0]);
   const [isStepSheetOpen, setIsStepSheetOpen] = useState(false);
 
@@ -365,6 +372,11 @@ export default function HomePage() {
   const handleOpenProduct = (product: CmsService) => {
     setSelectedProduct(product);
     setIsProductSheetOpen(true);
+  };
+
+  const handleOpenGalleryItem = (item: CmsProductionGalleryItem) => {
+    setSelectedGalleryItem(item);
+    setIsGallerySheetOpen(true);
   };
 
   const handleOpenStep = (step: StepDetail) => {
@@ -874,8 +886,11 @@ export default function HomePage() {
               return (
                 <div 
                   key={item.id}
-                  onClick={() => scrollToGallery(idx)}
-                  className={`shrink-0 w-[82vw] max-w-[320px] bg-white rounded-3xl overflow-hidden snap-center border transition-all duration-300 cursor-pointer flex flex-col justify-between ${
+                  onClick={() => {
+                    scrollToGallery(idx);
+                    handleOpenGalleryItem(item);
+                  }}
+                  className={`shrink-0 w-[82vw] max-w-[320px] bg-white rounded-3xl overflow-hidden snap-center border transition-all duration-300 cursor-pointer flex flex-col justify-between group ${
                     isActive 
                       ? 'border-[#00BDFF] shadow-md shadow-blue-500/10 ring-2 ring-blue-500/20' 
                       : 'border-slate-200/80 shadow-sm opacity-90'
@@ -886,18 +901,23 @@ export default function HomePage() {
                     <img 
                       src={item.image_url} 
                       alt={item.title} 
-                      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                     />
                     <div className="absolute top-3 left-3">
                       <span className="bg-white/95 backdrop-blur-md text-[#00BDFF] font-bold text-[10px] px-2.5 py-1 rounded-full shadow-xs border border-blue-100/60">
                         {item.tag}
                       </span>
                     </div>
+
+                    {/* Zoom / Preview Hint Badge */}
+                    <div className="absolute top-3 right-3 bg-black/45 backdrop-blur-md text-white p-1.5 rounded-full shadow-xs group-hover:bg-[#00BDFF] transition-colors">
+                      <ZoomIn className="w-3.5 h-3.5" />
+                    </div>
                   </div>
 
                   <div className="p-4 space-y-2 flex-1 flex flex-col justify-between bg-white">
                     <div>
-                      <h3 className="font-bold text-[15px] text-slate-900 leading-snug">
+                      <h3 className="font-bold text-[15px] text-slate-900 leading-snug group-hover:text-[#00BDFF] transition-colors">
                         {item.title}
                       </h3>
                       <p className="text-[12px] text-slate-500 mt-1 line-clamp-1">
@@ -909,16 +929,17 @@ export default function HomePage() {
                       <span className="text-[11px] font-medium text-slate-400">
                         {item.client}
                       </span>
-                      <a
-                        href={formatWhatsAppLink(companySettings?.whatsapp_number, `Hai SFV Apparel, saya berminat dengan hasil produksi *${item.title}*`)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenGalleryItem(item);
+                        }}
                         className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[#00BDFF] hover:text-blue-700 transition-colors"
                       >
-                        <FaWhatsapp className="w-3.5 h-3.5 text-[#25D366]" />
-                        <span>Tempah Seperti Ini</span>
-                      </a>
+                        <ZoomIn className="w-3.5 h-3.5 text-[#00BDFF]" />
+                        <span>Lihat Perincian</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1381,6 +1402,129 @@ export default function HomePage() {
             </div>
           </div>
         </SwipeableBottomSheet>
+      )}
+
+      {/* =========================================================================
+          DYNAMIC PRODUCTION GALLERY DETAIL & ZOOM PREVIEW SHEET MODAL
+         ========================================================================= */}
+      {selectedGalleryItem && (
+        <SwipeableBottomSheet
+          isOpen={isGallerySheetOpen}
+          onClose={() => setIsGallerySheetOpen(false)}
+          title={selectedGalleryItem.title}
+        >
+          <div className="space-y-4 select-none font-ios pb-2">
+            {/* High-Res Image Preview Box with Zoom Hint */}
+            <div 
+              onClick={() => setIsLightboxOpen(true)}
+              className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-slate-900 shadow-md border border-slate-200/80 cursor-zoom-in group"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={selectedGalleryItem.image_url}
+                alt={selectedGalleryItem.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md text-[#00BDFF] text-[11px] font-bold px-3 py-1 rounded-full shadow-sm border border-sky-100">
+                {selectedGalleryItem.tag}
+              </div>
+
+              <div className="absolute bottom-3 right-3 bg-black/65 backdrop-blur-md text-white text-[11px] font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
+                <ZoomIn className="w-3.5 h-3.5 text-white" />
+                <span>Ketuk untuk Skrin Penuh</span>
+              </div>
+            </div>
+
+            {/* Details Summary Card */}
+            <div className="space-y-3 p-4 rounded-2xl bg-slate-50 border border-slate-200/70">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#00BDFF]">
+                  Hasil Produksi Sebenar
+                </span>
+                <h3 className="text-base font-bold text-slate-900 tracking-tight leading-snug mt-0.5">
+                  {selectedGalleryItem.title}
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/60 text-xs">
+                <div>
+                  <span className="text-[10px] text-slate-400 font-medium block">Jenis Fabrik & Kemasan</span>
+                  <span className="font-bold text-slate-800">{selectedGalleryItem.fabric || 'Microfiber Sublimasi'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 font-medium block">Pelanggan / Kelab</span>
+                  <span className="font-bold text-slate-800">{selectedGalleryItem.client || 'Tempahan Kustom'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-1 space-y-2">
+              <a
+                href={formatWhatsAppLink(
+                  companySettings?.whatsapp_number,
+                  `Hai SFV Apparel, saya telah melihat hasil produksi *${selectedGalleryItem.title}* (${selectedGalleryItem.fabric}). Saya berminat untuk menempah seperti ini!`
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md shadow-emerald-500/20 active:scale-[0.98] transition-all"
+              >
+                <FaWhatsapp className="w-4 h-4 text-white" />
+                <span>Tempah Rekaan Seperti Ini di WhatsApp</span>
+              </a>
+
+              <button
+                type="button"
+                onClick={() => setIsGallerySheetOpen(false)}
+                className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs text-center active:scale-[0.98] transition-all"
+              >
+                Tutup Maklumat
+              </button>
+            </div>
+          </div>
+        </SwipeableBottomSheet>
+      )}
+
+      {/* =========================================================================
+          FULLSCREEN LIGHTBOX IMAGE ZOOM MODAL
+         ========================================================================= */}
+      {isLightboxOpen && selectedGalleryItem && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-4 animate-in fade-in duration-200 font-ios"
+          onClick={() => setIsLightboxOpen(false)}
+        >
+          {/* Header */}
+          <div className="flex justify-between items-center text-white pt-2 px-2 z-10">
+            <div>
+              <span className="text-[10px] font-bold text-[#00BDFF] uppercase tracking-wider block">
+                {selectedGalleryItem.tag}
+              </span>
+              <h4 className="font-bold text-sm leading-tight">{selectedGalleryItem.title}</h4>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsLightboxOpen(false)}
+              className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center active:scale-90 transition-all cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Full Screen Image */}
+          <div className="flex-1 flex items-center justify-center p-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={selectedGalleryItem.image_url}
+              alt={selectedGalleryItem.title}
+              className="max-w-full max-h-[82vh] object-contain rounded-2xl shadow-2xl"
+            />
+          </div>
+
+          {/* Footer note */}
+          <div className="text-center pb-4 text-xs text-slate-400 z-10 font-medium">
+            Ketuk di mana-mana untuk menutup Paparan Zoom Penuh
+          </div>
+        </div>
       )}
 
     </div>
