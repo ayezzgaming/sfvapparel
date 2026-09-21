@@ -19,16 +19,15 @@ import {
   FileText, 
   CheckCircle2, 
   Trash2, 
-  Send,
-  Paperclip,
-  Plus,
-  X,
-  Sparkles,
-  ArrowRight,
-  ShieldCheck,
-  Info,
-  CreditCard,
-  Loader2
+  Paperclip, 
+  Plus, 
+  X, 
+  ArrowRight, 
+  Info, 
+  CreditCard, 
+  Loader2,
+  Check,
+  Tag
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { 
@@ -39,18 +38,53 @@ import { useAuth } from '@/hooks/useAuth';
 
 const DEFAULT_STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
 
-const POPULAR_EXTRA_SIZES = [
-  '5XL', '6XL', '7XL', '8XL',
-  'Kid 24', 'Kid 26', 'Kid 28', 'Kid 30', 'Kid 32',
-  'Muslimah S', 'Muslimah M', 'Muslimah L', 'Muslimah XL', 'Muslimah 2XL',
-  'Baby 1-2y', 'Baby 3-4y'
+const SIZE_GROUPS = {
+  dewasa: {
+    id: 'dewasa',
+    title: 'Dewasa (Unisex)',
+    sizes: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL', '7XL', '8XL']
+  },
+  kids: {
+    id: 'kids',
+    title: 'Kanak-Kanak (Kids)',
+    sizes: ['Kid 24 (1-2y)', 'Kid 26 (3-4y)', 'Kid 28 (5-6y)', 'Kid 30 (7-8y)', 'Kid 32 (9-10y)', 'Kid 34 (11-12y)']
+  },
+  muslimah: {
+    id: 'muslimah',
+    title: 'Muslimah (Labuh)',
+    sizes: ['Muslimah S', 'Muslimah M', 'Muslimah L', 'Muslimah XL', 'Muslimah 2XL', 'Muslimah 3XL', 'Muslimah 4XL', 'Muslimah 5XL']
+  }
+};
+
+const LOGO_PLACEMENT_OPTIONS = [
+  'Dada Kiri (Logo Pasukan)',
+  'Dada Kanan',
+  'Dada Tengah (Sponsor Utama)',
+  'Lengan Kiri',
+  'Lengan Kanan',
+  'Belakang Atas',
+  'Belakang Bawah',
+  'Lain-lain (Khas)'
 ];
+
+interface CustomLogoItem {
+  id: string;
+  fileName: string;
+  previewUrl: string | null;
+  placement: string;
+  customPlacement?: string;
+}
+
+interface PlayerEntry {
+  name: string;
+  number: string;
+}
 
 export default function CustomizePage() {
   const router = useRouter();
   const params = useParams();
   const designId = params.id as string;
-  const { customer, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { customer, isAuthenticated, isLoading: isAuthLoading, updateAddress } = useAuth();
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -79,7 +113,7 @@ export default function CustomizePage() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-10 h-10 border-2 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-slate-500">Memuat...</p>
+          <p className="text-sm text-slate-500">Memuatkan...</p>
         </div>
       </div>
     );
@@ -110,39 +144,33 @@ export default function CustomizePage() {
   );
   const [dtfOptionType, setDtfOptionType] = useState<'film_only' | 'with_garment'>('with_garment');
 
-  // Dynamic Sizing Management
+  // Dynamic Sizing Management (Semua mula dari 0 / kosong agar tidak keliru)
   const [activeSizeKeys, setActiveSizeKeys] = useState<string[]>(DEFAULT_STANDARD_SIZES);
-  const [sizing, setSizing] = useState<SizingMatrix>({
-    XS: 0,
-    S: 2,
-    M: 6,
-    L: 8,
-    XL: 4,
-    '2XL': 0,
-    '3XL': 0,
-    '4XL': 0,
-  });
+  const [sizing, setSizing] = useState<SizingMatrix>(
+    Object.fromEntries(DEFAULT_STANDARD_SIZES.map((s) => [s, 0]))
+  );
 
-  // Modal / Popover Tambah Saiz Kustom
+  // Modal Pilihan Saiz Berkelompok (Dewasa, Kids, Muslimah)
   const [isAddSizeModalOpen, setIsAddSizeModalOpen] = useState(false);
+  const [sizeModalTab, setSizeModalTab] = useState<'dewasa' | 'kids' | 'muslimah'>('dewasa');
   const [customSizeInput, setCustomSizeInput] = useState('');
 
-  // Logo / Sponsor Files
+  // Logo / Sponsor Files (Multi-logo support)
   const logoInputRef = useRef<HTMLInputElement>(null);
-  const [logoFileName, setLogoFileName] = useState<string>('');
-  const [logoFilePreview, setLogoFilePreview] = useState<string | null>(null);
+  const [logoList, setLogoList] = useState<CustomLogoItem[]>([]);
 
-  // Senarai Nama & Nombor (Pilihan: Upload Fail ATAU Tulis Manual)
+  // Senarai Nama & Nombor (Pilihan: Upload Fail ATAU Tulis Manual Berkolom)
   const rosterInputRef = useRef<HTMLInputElement>(null);
-  const [rosterMode, setRosterMode] = useState<'upload' | 'manual'>('upload');
+  const [rosterMode, setRosterMode] = useState<'upload' | 'manual'>('manual');
   const [rosterFileName, setRosterFileName] = useState<string>('');
-  const [rosterManualText, setRosterManualText] = useState<string>('');
+  const [manualRoster, setManualRoster] = useState<Record<string, PlayerEntry[]>>({});
 
-  // Maklumat Pelanggan & Tempahan
+  // Maklumat Pelanggan & Tempahan (Autofill dari profil)
   const [teamName, setTeamName] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
+  const [saveAddressToProfile, setSaveAddressToProfile] = useState<boolean>(true);
   const [additionalNotes, setAdditionalNotes] = useState('');
 
   // Autofill customer details if authenticated
@@ -169,6 +197,7 @@ export default function CustomizePage() {
     totalAmount: number;
   } | null>(null);
 
+  // Kiraan Jumlah Kuantiti
   const totalQuantity = useMemo(() => {
     return Object.entries(sizing).reduce((sum, [key, qty]) => {
       if (activeSizeKeys.includes(key)) {
@@ -179,9 +208,10 @@ export default function CustomizePage() {
   }, [sizing, activeSizeKeys]);
 
   const handleSizeChange = (size: string, val: number) => {
+    const cleanVal = Math.max(0, val);
     setSizing((prev) => ({
       ...prev,
-      [size]: Math.max(0, val),
+      [size]: cleanVal,
     }));
   };
 
@@ -192,16 +222,35 @@ export default function CustomizePage() {
       delete next[sizeKeyToRemove];
       return next;
     });
+    setManualRoster((prev) => {
+      const next = { ...prev };
+      delete next[sizeKeyToRemove];
+      return next;
+    });
   };
 
-  const handleAddSizeKey = (newKey: string) => {
+  const handleToggleSizeKey = (keyToAdd: string) => {
+    const trimmed = keyToAdd.trim();
+    if (!trimmed) return;
+    if (activeSizeKeys.includes(trimmed)) {
+      handleRemoveSizeKey(trimmed);
+    } else {
+      setActiveSizeKeys((prev) => [...prev, trimmed]);
+      setSizing((prev) => ({
+        ...prev,
+        [trimmed]: prev[trimmed] || 0,
+      }));
+    }
+  };
+
+  const handleAddCustomSize = (newKey: string) => {
     const trimmed = newKey.trim();
     if (!trimmed) return;
     if (!activeSizeKeys.includes(trimmed)) {
       setActiveSizeKeys((prev) => [...prev, trimmed]);
       setSizing((prev) => ({
         ...prev,
-        [trimmed]: prev[trimmed] || 1,
+        [trimmed]: 0,
       }));
     }
     setCustomSizeInput('');
@@ -250,28 +299,70 @@ export default function CustomizePage() {
     tiers,
   ]);
 
-  // Handle Logo File
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setLogoFileName(file.name);
+  // Handle Multi Logo Files
+  const handleLogoFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file, idx) => {
+      const id = `logo-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+      const defaultPlacement = logoList.length === 0 && idx === 0 
+        ? 'Dada Kiri (Logo Pasukan)' 
+        : logoList.length === 1 || idx === 1 
+        ? 'Dada Tengah (Sponsor Utama)' 
+        : 'Dada Kanan';
+
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
-        reader.onload = () => setLogoFilePreview(reader.result as string);
+        reader.onload = () => {
+          setLogoList((prev) => [
+            ...prev,
+            {
+              id,
+              fileName: file.name,
+              previewUrl: reader.result as string,
+              placement: defaultPlacement,
+              customPlacement: '',
+            },
+          ]);
+        };
         reader.readAsDataURL(file);
       } else {
-        setLogoFilePreview(null);
+        setLogoList((prev) => [
+          ...prev,
+          {
+            id,
+            fileName: file.name,
+            previewUrl: null,
+            placement: defaultPlacement,
+            customPlacement: '',
+          },
+        ]);
       }
-    }
-  };
+    });
 
-  const handleRemoveLogo = () => {
-    setLogoFileName('');
-    setLogoFilePreview(null);
     if (logoInputRef.current) logoInputRef.current.value = '';
   };
 
-  // Handle Roster File
+  const handleRemoveLogoItem = (id: string) => {
+    setLogoList((prev) => prev.filter((l) => l.id !== id));
+  };
+
+  const handleUpdateLogoPlacement = (id: string, placement: string, customPlacement?: string) => {
+    setLogoList((prev) =>
+      prev.map((l) =>
+        l.id === id
+          ? {
+              ...l,
+              placement,
+              customPlacement: customPlacement !== undefined ? customPlacement : l.customPlacement,
+            }
+          : l
+      )
+    );
+  };
+
+  // Handle Roster File Upload
   const handleRosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -284,13 +375,74 @@ export default function CustomizePage() {
     if (rosterInputRef.current) rosterInputRef.current.value = '';
   };
 
+  // Handle Manual Roster Entry Update
+  const handlePlayerEntryChange = (sizeKey: string, index: number, field: 'name' | 'number', value: string) => {
+    setManualRoster((prev) => {
+      const list = [...(prev[sizeKey] || [])];
+      while (list.length <= index) {
+        list.push({ name: '', number: '' });
+      }
+      list[index] = { ...list[index], [field]: value };
+      return { ...prev, [sizeKey]: list };
+    });
+  };
+
+  // Kategorikan saiz aktif yang mempunyai kuantiti > 0 untuk paparan borang nama
+  const categorizedActiveSizes = useMemo(() => {
+    const result = {
+      dewasa: [] as { sizeKey: string; qty: number }[],
+      kids: [] as { sizeKey: string; qty: number }[],
+      muslimah: [] as { sizeKey: string; qty: number }[],
+    };
+
+    activeSizeKeys.forEach((key) => {
+      const qty = sizing[key] || 0;
+      if (qty > 0) {
+        const lower = key.toLowerCase();
+        if (lower.startsWith('kid') || lower.startsWith('baby') || lower.startsWith('kanak')) {
+          result.kids.push({ sizeKey: key, qty });
+        } else if (lower.startsWith('muslimah')) {
+          result.muslimah.push({ sizeKey: key, qty });
+        } else {
+          result.dewasa.push({ sizeKey: key, qty });
+        }
+      }
+    });
+
+    return result;
+  }, [activeSizeKeys, sizing]);
+
+  // Format manual roster string untuk nota pesanan dan WhatsApp
+  const formattedManualRosterString = useMemo(() => {
+    const rows: string[] = [];
+    let counter = 1;
+
+    activeSizeKeys.forEach((sizeKey) => {
+      const qty = sizing[sizeKey] || 0;
+      const entries = manualRoster[sizeKey] || [];
+      for (let i = 0; i < qty; i++) {
+        const item = entries[i];
+        const nameText = item?.name?.trim() || '';
+        const numText = item?.number?.trim() || '';
+        if (nameText || numText) {
+          rows.push(`${counter}. [${sizeKey}] ${numText ? `#${numText} ` : ''}${nameText}`);
+        } else {
+          rows.push(`${counter}. [${sizeKey}] (Kosong / Tanpa Nama)`);
+        }
+        counter++;
+      }
+    });
+
+    return rows.length > 0 ? rows.join('\n') : 'Tiada senarai nama';
+  }, [activeSizeKeys, sizing, manualRoster]);
+
   // Buka Ringkasan Pesanan (Order Summary)
   const handleOpenProcessSummary = (e: React.FormEvent) => {
     e.preventDefault();
     setValidationError(null);
 
     if (totalQuantity <= 0) {
-      setValidationError('Sila masukkan kuantiti sekurang-kurangnya 1 helai.');
+      setValidationError('Sila masukkan kuantiti sekurang-kurangnya 1 helai di bahagian 2. Kuantiti.');
       return;
     }
 
@@ -312,24 +464,29 @@ export default function CustomizePage() {
     setIsSubmitting(true);
     setPaymentError(null);
 
+    // Kemaskini alamat ke profil jika ditanda
+    if (saveAddressToProfile && shippingAddress.trim()) {
+      updateAddress({ address: shippingAddress.trim() }).catch(() => {});
+    }
+
     const activeSizingBreakdown = Object.fromEntries(
       Object.entries(sizing).filter(([key, qty]) => activeSizeKeys.includes(key) && Number(qty) > 0)
     );
 
     const rosterInfo = rosterMode === 'upload' && rosterFileName
       ? `Fail Senarai Nama: ${rosterFileName}`
-      : rosterManualText.trim()
-      ? `Senarai Nama:\n${rosterManualText.trim()}`
-      : 'Tiada senarai nama';
+      : formattedManualRosterString;
 
-    const logoInfo = logoFileName ? `Fail Logo: ${logoFileName}` : 'Tiada fail logo (Bincang di WA)';
+    const logoInfo = logoList.length > 0
+      ? logoList.map((l, i) => `${i + 1}. ${l.fileName} [${l.placement === 'Lain-lain (Khas)' ? (l.customPlacement || 'Khas') : l.placement}]`).join('\n')
+      : 'Tiada fail logo (Bincang di WA)';
 
     const fullNotes = [
       teamName ? `Pasukan: ${teamName}` : '',
       `[Kaedah Bayaran]: ${paymentMode === 'chip_online' ? 'CHIP Gateway (FPX/Kad/e-Wallet)' : 'Manual / WhatsApp'}`,
-      `[Logo]: ${logoInfo}`,
-      `[Senarai Nama]: ${rosterInfo}`,
-      additionalNotes ? `Nota: ${additionalNotes}` : '',
+      `[Logo & Penaja]:\n${logoInfo}`,
+      `[Senarai Nama & Nombor]:\n${rosterInfo}`,
+      additionalNotes ? `Nota Khas: ${additionalNotes}` : '',
     ].filter(Boolean).join('\n\n');
 
     // 1. Catat ke Sistem Database
@@ -382,7 +539,6 @@ export default function CustomizePage() {
         const data = await res.json();
 
         if (data.success && data.checkoutUrl) {
-          // Beralih ke halaman pembayaran selamat CHIP
           window.location.href = data.checkoutUrl;
           return;
         } else {
@@ -418,8 +574,8 @@ export default function CustomizePage() {
       discountPercentage: quote.discountPercentage,
       finalUnitPrice: quote.finalUnitPrice,
       totalAmount: quote.finalTotal,
-      logoStatus: logoFileName ? `Fail ${logoFileName}` : 'Tiada fail logo (Akan dihantar di WhatsApp)',
-      rosterStatus: rosterMode === 'upload' && rosterFileName ? `Fail ${rosterFileName}` : (rosterManualText.trim() ? rosterManualText.trim() : 'Tiada'),
+      logoStatus: logoList.length > 0 ? `${logoList.length} Fail Logo/Penaja Dimuat Naik` : 'Tiada fail logo (Akan dihantar di WhatsApp)',
+      rosterStatus: rosterMode === 'upload' && rosterFileName ? `Fail ${rosterFileName}` : formattedManualRosterString,
       notes: additionalNotes.trim() || undefined,
       shippingAddress: shippingAddress.trim() || undefined,
     });
@@ -428,12 +584,10 @@ export default function CustomizePage() {
       setIsSubmitting(false);
       setIsSummaryModalOpen(false);
 
-      // Buka WhatsApp di tab baharu jika disokong
       if (typeof window !== 'undefined' && waUrl && waUrl !== '#') {
         window.open(waUrl, '_blank');
       }
 
-      // Tunjukkan modal berjaya
       setOrderSuccessModal({
         orderNumber: newOrder.order_number,
         totalAmount: quote.finalTotal,
@@ -453,47 +607,55 @@ export default function CustomizePage() {
   }
 
   return (
-    <div className="min-h-full bg-[#F8FAFC] font-ios select-none pb-36">
-      {/* 1. Header Navigasi Bersih */}
-      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 py-3 flex items-center justify-between shadow-2xs">
-        <Link
-          href="/catalog"
-          className="flex items-center text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+    <div className="min-h-screen bg-[#F2F2F7] pb-32 font-ios select-none">
+      {/* 1. Header Navigasi */}
+      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-slate-200/80 px-4 py-3 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="p-1.5 -ml-1.5 rounded-full hover:bg-slate-100 active:scale-95 transition-all text-slate-700"
+          aria-label="Kembali"
         >
-          <ChevronLeft className="w-4 h-4 mr-0.5" />
-          <span>Katalog</span>
-        </Link>
-        <h1 className="text-xs font-bold text-slate-900 truncate max-w-[180px]">
-          Borang Tempahan Kustom
-        </h1>
-        <div className="w-6" />
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+
+        <div className="text-center min-w-0 px-2">
+          <h1 className="text-xs font-bold text-slate-900 truncate">
+            Borang Tempahan Kustom
+          </h1>
+          <p className="text-[10.5px] text-slate-500 truncate">
+            {design.title}
+          </p>
+        </div>
+
+        <div className="w-7" />
       </div>
 
-      <form onSubmit={handleOpenProcessSummary} className="space-y-4 px-4 pt-4">
-        {/* Validation Alert */}
-        {validationError && (
-          <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between animate-in fade-in duration-200">
+      {/* Validation Error Banner */}
+      {validationError && (
+        <div className="max-w-md mx-auto px-4 pt-3">
+          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-2xl flex items-center gap-2 animate-in fade-in">
+            <Info className="w-4 h-4 text-rose-500 shrink-0" />
             <span>{validationError}</span>
-            <button
-              type="button"
-              onClick={() => setValidationError(null)}
-              className="text-rose-500 font-bold p-1"
-            >
-              <X className="w-4 h-4" />
-            </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* 2. Visual Pratonton Corak Jersi (Clean Minimalist Card) */}
+      {/* Main Form Body */}
+      <form onSubmit={handleOpenProcessSummary} className="max-w-md mx-auto px-4 pt-3 space-y-4">
+        
+        {/* 2. Visual Mockup Corak Pilihan */}
         <div className="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-xs space-y-3">
-          <div className="relative aspect-[4/3] w-full rounded-2xl bg-slate-100 overflow-hidden">
-            <Image
-              src={activeView === 'front' ? (design.mockup_front_url || design.thumbnail_url) : (design.mockup_back_url || design.mockup_front_url)}
+          <div className="relative aspect-square w-full rounded-2xl bg-slate-100 overflow-hidden border border-slate-100">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={
+                activeView === 'front'
+                  ? design.mockup_front_url
+                  : (design.mockup_back_url || design.mockup_front_url)
+              }
               alt={design.title}
-              fill
-              sizes="(max-width: 640px) 100vw, 420px"
-              className="object-cover"
-              priority
+              className="w-full h-full object-contain p-2"
             />
 
             {/* Toggle Pandangan Depan / Belakang */}
@@ -563,18 +725,18 @@ export default function CustomizePage() {
           </div>
         </div>
 
-        {/* 3. Konfigurasi Spesifikasi (Jenis Fabrik & Pola Potongan - Combobox) */}
+        {/* 3. Konfigurasi Spesifikasi (Jenis Fabrik & Pola Potongan - Ringkas & Mudah Dibaca) */}
         <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
               1. Fabrik & Pola Potongan
             </h3>
-            <span className="text-[10.5px] text-slate-400 font-medium">Asas Kiraan Harga</span>
+            <span className="text-[10.5px] text-slate-400 font-medium">Asas Kiraan</span>
           </div>
 
           {techniqueMode === 'sublimation' ? (
             <div className="space-y-3.5">
-              {/* Combobox: Jenis Fabrik */}
+              {/* Combobox: Jenis Fabrik (Format Padat) */}
               <div>
                 <label className="text-[11px] font-semibold text-slate-700 block mb-1.5">
                   Jenis Fabrik (Material)
@@ -587,7 +749,7 @@ export default function CustomizePage() {
                   >
                     {fabrics.filter((f) => f.is_active).map((fabric) => (
                       <option key={fabric.id} value={fabric.id}>
-                        {fabric.name} ({fabric.weight_gsm} GSM - {fabric.breathability}) &bull; {formatCurrency(fabric.sublimation_base_price)}
+                        {fabric.name} ({fabric.weight_gsm} GSM)
                       </option>
                     ))}
                   </select>
@@ -597,7 +759,7 @@ export default function CustomizePage() {
                 </div>
               </div>
 
-              {/* Combobox: Pola Potongan Kolar & Lengan */}
+              {/* Combobox: Pola Potongan Kolar & Lengan (Format Padat) */}
               <div>
                 <label className="text-[11px] font-semibold text-slate-700 block mb-1.5">
                   Pola Potongan Kolar & Lengan
@@ -610,7 +772,7 @@ export default function CustomizePage() {
                   >
                     {cuts.filter((c) => c.is_active).map((cut) => (
                       <option key={cut.id} value={cut.id}>
-                        {cut.name} {cut.cut_add_on_price > 0 ? `(+${formatCurrency(cut.cut_add_on_price)})` : '(Termasuk)'}
+                        {cut.name} {cut.cut_add_on_price > 0 ? `(+${formatCurrency(cut.cut_add_on_price)})` : ''}
                       </option>
                     ))}
                   </select>
@@ -620,21 +782,21 @@ export default function CustomizePage() {
                 </div>
               </div>
 
-              {/* Ringkasan Formula Harga Asas Seunit */}
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 text-[11px] text-slate-600 flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <div className="font-semibold text-slate-800">
-                    Kiraan Seunit: {formatCurrency(selectedFabric?.sublimation_base_price || 0)} (Fabrik) + {formatCurrency(selectedCut?.cut_add_on_price || 0)} (Pola)
-                  </div>
-                  <div className="text-[10px] text-slate-500">
-                    Diskaun kuantiti dikira automatik mengikut jumlah helai.
-                  </div>
+              {/* Ringkasan Harga Asas Seunit (Bersih & Ringkas Tanpa Teks Berulang) */}
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-slate-800 block">
+                    Harga Asas Tempahan
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    Termasuk fabrik & pola potongan standard
+                  </span>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs font-bold text-slate-900 font-mono">
+                  <div className="text-xs font-black text-slate-900 font-mono">
                     {formatCurrency((selectedFabric?.sublimation_base_price || 0) + (selectedCut?.cut_add_on_price || 0))}
                   </div>
-                  <div className="text-[9.5px] text-slate-400">Harga Asas / helai</div>
+                  <div className="text-[9.5px] text-slate-400">/ helai</div>
                 </div>
               </div>
             </div>
@@ -653,7 +815,7 @@ export default function CustomizePage() {
                   >
                     {dtfDimensions.filter((d) => d.is_active).map((dim) => (
                       <option key={dim.id} value={dim.id}>
-                        {dim.name} ({dim.dimensions_desc}) &bull; {formatCurrency(dtfOptionType === 'with_garment' ? dim.garment_included_base_price : dim.base_price)}
+                        {dim.name} ({dim.dimensions_desc})
                       </option>
                     ))}
                   </select>
@@ -686,14 +848,14 @@ export default function CustomizePage() {
           )}
         </div>
 
-        {/* 4. Pemilihan Saiz & Kuantiti Dinamik + Butang Tambah Saiz */}
+        {/* 4. Pemilihan Saiz & Kuantiti (Mula dengan 0 / Kosong & Modal Saiz Berkelompok) */}
         <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3.5">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                 2. Kuantiti Mengikut Saiz
               </h3>
-              <p className="text-[10px] text-slate-400">Tambah atau kurangkan kuantiti saiz yang diperlukan</p>
+              <p className="text-[10px] text-slate-400">Masukkan jumlah helai bagi saiz yang diperlukan</p>
             </div>
             
             {/* Butang Toggle Carta Saiz (Size Chart) */}
@@ -768,7 +930,7 @@ export default function CustomizePage() {
               className="p-2 rounded-2xl border-2 border-dashed border-slate-200 hover:border-[#00BDFF] bg-slate-50/50 flex flex-col items-center justify-center space-y-1 text-slate-500 hover:text-[#00BDFF] transition-all cursor-pointer min-h-[64px]"
             >
               <Plus className="w-4 h-4" />
-              <span className="text-[10px] font-bold">+ Saiz</span>
+              <span className="text-[10px] font-bold">+ Pilihan Saiz</span>
             </button>
           </div>
 
@@ -778,72 +940,120 @@ export default function CustomizePage() {
           </div>
         </div>
 
-        {/* 5. Muat Naik Logo / Sponsor */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              3. Logo Pasukan & Penaja (Opsional)
-            </h3>
-            <span className="text-[10.5px] text-slate-400">PNG / JPG / PDF / AI</span>
+        {/* 5. Muat Naik Logo / Sponsor (Multi-Logo dengan Pilihan Kedudukan) */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-baseline gap-1.5 min-w-0">
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                3. Logo Pasukan & Penaja
+              </h3>
+              <span className="text-[10px] text-slate-400 font-normal lowercase tracking-normal">
+                (opsional)
+              </span>
+            </div>
+            <span className="text-[9.5px] text-slate-400 font-mono shrink-0 whitespace-nowrap">
+              PNG, JPG, PDF, AI
+            </span>
           </div>
 
           <input
             ref={logoInputRef}
             type="file"
+            multiple
             accept="image/*,.pdf,.ai,.eps,.zip"
-            onChange={handleLogoChange}
+            onChange={handleLogoFilesChange}
             className="hidden"
             id="logo-upload-input"
           />
 
-          {logoFileName ? (
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-              <div className="flex items-center gap-2.5 min-w-0">
-                {logoFilePreview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={logoFilePreview}
-                    alt="Logo Preview"
-                    className="w-10 h-10 rounded-xl object-contain bg-white border border-slate-200 shrink-0 p-1"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center shrink-0">
-                    <Paperclip className="w-5 h-5" />
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <span className="text-xs font-semibold text-slate-900 block truncate">
-                    {logoFileName}
-                  </span>
-                  <span className="text-[10px] text-emerald-600 font-medium">
-                    &bull; Fail logo dipilih
-                  </span>
-                </div>
-              </div>
+          {/* Senarai Logo yang Telah Dimuat Naik */}
+          {logoList.length > 0 && (
+            <div className="space-y-2.5">
+              {logoList.map((logoItem, idx) => (
+                <div 
+                  key={logoItem.id} 
+                  className="p-3 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {logoItem.previewUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={logoItem.previewUrl}
+                          alt="Logo Preview"
+                          className="w-9 h-9 rounded-xl object-contain bg-white border border-slate-200 shrink-0 p-1"
+                        />
+                      ) : (
+                        <div className="w-9 h-9 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center shrink-0">
+                          <Paperclip className="w-4 h-4" />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold text-slate-900 block truncate">
+                          {idx + 1}. {logoItem.fileName}
+                        </span>
+                        <span className="text-[10px] text-emerald-600 font-medium">
+                          &bull; Fail dipilih
+                        </span>
+                      </div>
+                    </div>
 
-              <button
-                type="button"
-                onClick={handleRemoveLogo}
-                className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 active:scale-90 transition-all shrink-0"
-                title="Buang logo"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveLogoItem(logoItem.id)}
+                      className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-50 active:scale-90 transition-all shrink-0"
+                      title="Buang logo ini"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Pilihan Kedudukan Logo */}
+                  <div className="flex items-center gap-2 pt-1 border-t border-slate-200/60">
+                    <span className="text-[10px] font-semibold text-slate-500 shrink-0">
+                      Kedudukan:
+                    </span>
+                    <select
+                      value={logoItem.placement}
+                      onChange={(e) => handleUpdateLogoPlacement(logoItem.id, e.target.value)}
+                      className="flex-1 px-2.5 py-1 bg-white border border-slate-200 rounded-xl text-[11px] font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00BDFF]"
+                    >
+                      {LOGO_PLACEMENT_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Input Khas jika pilih Lain-lain */}
+                  {logoItem.placement === 'Lain-lain (Khas)' && (
+                    <input
+                      type="text"
+                      value={logoItem.customPlacement || ''}
+                      onChange={(e) => handleUpdateLogoPlacement(logoItem.id, logoItem.placement, e.target.value)}
+                      placeholder="Nyatakan kedudukan logo (cth: Di leher belakang)"
+                      className="w-full px-2.5 py-1 bg-white border border-slate-200 rounded-xl text-[11px] text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#00BDFF]"
+                    />
+                  )}
+                </div>
+              ))}
             </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => logoInputRef.current?.click()}
-              className="w-full p-4 rounded-2xl border-2 border-dashed border-slate-200 hover:border-[#00BDFF] bg-slate-50/50 flex flex-col items-center justify-center space-y-1 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
-            >
-              <Upload className="w-5 h-5 text-slate-400" />
-              <span className="text-xs font-semibold">Pilih fail logo atau penaja</span>
-              <span className="text-[10px] text-slate-400">Atau anda boleh hantar di WhatsApp kemudian</span>
-            </button>
           )}
+
+          {/* Butang Tambah Logo */}
+          <button
+            type="button"
+            onClick={() => logoInputRef.current?.click()}
+            className="w-full p-3.5 rounded-2xl border-2 border-dashed border-slate-200 hover:border-[#00BDFF] bg-slate-50/50 flex flex-col items-center justify-center space-y-0.5 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+          >
+            <Upload className="w-4 h-4 text-slate-400" />
+            <span className="text-xs font-semibold">
+              {logoList.length > 0 ? '+ Tambah Logo / Penaja Lain' : 'Pilih fail logo atau penaja'}
+            </span>
+            <span className="text-[10px] text-slate-400">Boleh pilih lebih dari satu fail</span>
+          </button>
         </div>
 
-        {/* 6. Senarai Nama & Nombor Pemain (Pilihan: Upload Fail ATAU Tulis Manual) */}
+        {/* 6. Senarai Nama & Nombor Pemain (Kolom Isian Automatik Mengikut Saiz & Kategori) */}
         <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3.5">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
@@ -851,8 +1061,19 @@ export default function CustomizePage() {
             </h3>
           </div>
 
-          {/* Tab Pilihan: Upload Fail / Tulis Manual */}
+          {/* Tab Pilihan: Tulis Manual (Kolom) / Upload Fail */}
           <div className="bg-slate-100 p-1 rounded-xl flex items-center">
+            <button
+              type="button"
+              onClick={() => setRosterMode('manual')}
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                rosterMode === 'manual'
+                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              Tulis Kolom Isian
+            </button>
             <button
               type="button"
               onClick={() => setRosterMode('upload')}
@@ -863,17 +1084,6 @@ export default function CustomizePage() {
               }`}
             >
               Muat Naik Fail (Excel/Doc)
-            </button>
-            <button
-              type="button"
-              onClick={() => setRosterMode('manual')}
-              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                rosterMode === 'manual'
-                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              Tulis Manual
             </button>
           </div>
 
@@ -891,7 +1101,7 @@ export default function CustomizePage() {
               {rosterFileName ? (
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#00BDFF] flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#00BDFF] flex items-center justify-center shrink-0">
                       <FileText className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
@@ -907,7 +1117,7 @@ export default function CustomizePage() {
                   <button
                     type="button"
                     onClick={handleRemoveRosterFile}
-                    className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 active:scale-90 transition-all shrink-0"
+                    className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-50 active:scale-90 transition-all shrink-0"
                     title="Buang fail"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -926,19 +1136,89 @@ export default function CustomizePage() {
               )}
             </div>
           ) : (
-            <div>
-              <textarea
-                value={rosterManualText}
-                onChange={(e) => setRosterManualText(e.target.value)}
-                placeholder="Contoh format:&#10;1. 07 - AMIR (L)&#10;2. 10 - ZAKI (M)&#10;3. 09 - HAKIM (XL)"
-                rows={4}
-                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF] font-mono leading-relaxed"
-              />
+            <div className="space-y-3">
+              {totalQuantity === 0 ? (
+                /* Arahan jika belum memilih kuantiti saiz */
+                <div className="p-4 rounded-2xl bg-sky-50/70 border border-sky-200/60 text-slate-600 space-y-1.5 text-center">
+                  <Info className="w-5 h-5 text-[#00BDFF] mx-auto" />
+                  <p className="text-xs font-semibold text-slate-800">
+                    Sila masukkan kuantiti saiz baju di Langkah 2 terlebih dahulu
+                  </p>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Kolom isian nama & nombor pemain akan dijana secara automatik mengikut jumlah kuantiti dan saiz yang anda tetapkan.
+                  </p>
+                </div>
+              ) : (
+                /* Kolom Isian Terjana Automatik Dikelompokkan Mengikut Kategori */
+                <div className="space-y-4">
+                  {(['dewasa', 'kids', 'muslimah'] as const).map((catKey) => {
+                    const catSizes = categorizedActiveSizes[catKey];
+                    if (catSizes.length === 0) return null;
+
+                    const catTitle = SIZE_GROUPS[catKey].title;
+                    let localCounter = 0;
+
+                    return (
+                      <div key={catKey} className="space-y-2">
+                        <div className="flex items-center justify-between px-1">
+                          <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">
+                            {catTitle}
+                          </span>
+                          <span className="text-[10px] font-semibold text-slate-400">
+                            {catSizes.reduce((s, c) => s + c.qty, 0)} helai
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          {catSizes.map(({ sizeKey, qty }) => {
+                            const entries = manualRoster[sizeKey] || [];
+                            return Array.from({ length: qty }).map((_, idx) => {
+                              localCounter++;
+                              const rowEntry = entries[idx] || { name: '', number: '' };
+                              return (
+                                <div
+                                  key={`${sizeKey}-${idx}`}
+                                  className="flex items-center gap-2 p-2 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs"
+                                >
+                                  {/* Badge Saiz */}
+                                  <div className="w-16 px-2 py-1.5 rounded-xl bg-white border border-slate-200 text-center shrink-0">
+                                    <span className="text-[10.5px] font-bold text-slate-800 block truncate" title={sizeKey}>
+                                      {sizeKey}
+                                    </span>
+                                  </div>
+
+                                  {/* Input Nama Pemain */}
+                                  <input
+                                    type="text"
+                                    value={rowEntry.name}
+                                    onChange={(e) => handlePlayerEntryChange(sizeKey, idx, 'name', e.target.value)}
+                                    placeholder={`Nama Baju #${idx + 1}`}
+                                    className="flex-1 min-w-0 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 text-xs focus:outline-none focus:ring-1 focus:ring-[#00BDFF]"
+                                  />
+
+                                  {/* Input Nombor Jersi */}
+                                  <input
+                                    type="text"
+                                    value={rowEntry.number}
+                                    onChange={(e) => handlePlayerEntryChange(sizeKey, idx, 'number', e.target.value)}
+                                    placeholder="No."
+                                    className="w-14 px-2 py-1.5 rounded-xl bg-white border border-slate-200 text-center font-mono font-bold text-slate-900 placeholder:text-slate-400 text-xs focus:outline-none focus:ring-1 focus:ring-[#00BDFF] shrink-0"
+                                  />
+                                </div>
+                              );
+                            });
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* 7. Maklumat Pelanggan & Penghantaran */}
+        {/* 7. Maklumat Pelanggan & Penghantaran (Autofill Profil & Simpan Alamat) */}
         <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3.5">
           <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
             5. Maklumat Pelanggan & Penghantaran
@@ -960,7 +1240,7 @@ export default function CustomizePage() {
 
             <div>
               <label className="text-[11px] font-semibold text-slate-700 block mb-1">
-                Nama Wakil Pelanggan *
+                Nama Wakil Pelanggan <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -974,7 +1254,7 @@ export default function CustomizePage() {
 
             <div>
               <label className="text-[11px] font-semibold text-slate-700 block mb-1">
-                Nombor Telefon / WhatsApp *
+                Nombor Telefon / WhatsApp <span className="text-rose-500">*</span>
               </label>
               <input
                 type="tel"
@@ -997,18 +1277,32 @@ export default function CustomizePage() {
                 rows={2}
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]"
               />
+              
+              {/* Checkbox Simpan Alamat ke Profil */}
+              <label className="inline-flex items-center gap-2 cursor-pointer mt-2 select-none">
+                <input
+                  type="checkbox"
+                  checked={saveAddressToProfile}
+                  onChange={(e) => setSaveAddressToProfile(e.target.checked)}
+                  className="rounded text-[#00BDFF] focus:ring-[#00BDFF] w-4 h-4 cursor-pointer"
+                />
+                <span className="text-[11px] text-slate-600 font-medium">
+                  Simpan alamat ini ke profil akaun saya untuk pesanan akan datang
+                </span>
+              </label>
             </div>
 
+            {/* Nota Tambahan Berbentuk Textarea */}
             <div>
               <label className="text-[11px] font-semibold text-slate-700 block mb-1">
                 Nota Tambahan
               </label>
-              <input
-                type="text"
+              <textarea
+                rows={3}
                 value={additionalNotes}
                 onChange={(e) => setAdditionalNotes(e.target.value)}
-                placeholder="cth: Rujukan warna Pantone, kolar warna hitam"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]"
+                placeholder="cth: Rujukan kod warna Pantone, leher jenis V-neck, atau sebarang arahan khas untuk pereka kami..."
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF] leading-relaxed"
               />
             </div>
           </div>
@@ -1067,13 +1361,13 @@ export default function CustomizePage() {
         </div>
       </form>
 
-      {/* Modal Tambah Saiz Dinamik */}
+      {/* Modal Tambah Pilihan Saiz Berkelompok (Dewasa, Kids, Muslimah) */}
       {isAddSizeModalOpen && (
         <div className="fixed inset-0 z-[2000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 font-ios">
           <div className="w-full max-w-sm bg-white rounded-3xl p-5 space-y-4 shadow-2xl border border-slate-200">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900">
-                Tambah Level Saiz
+                Pilihan Saiz Baju
               </h3>
               <button
                 type="button"
@@ -1084,53 +1378,89 @@ export default function CustomizePage() {
               </button>
             </div>
 
-            {/* Pilihan Pantas Saiz Popular */}
+            {/* Tabs Kelompok: Dewasa / Kids / Muslimah */}
+            <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1">
+              {(['dewasa', 'kids', 'muslimah'] as const).map((tabKey) => (
+                <button
+                  key={tabKey}
+                  type="button"
+                  onClick={() => setSizeModalTab(tabKey)}
+                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                    sizeModalTab === tabKey
+                      ? 'bg-white text-blue-600 shadow-2xs font-bold'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  {tabKey === 'dewasa' ? 'Dewasa' : tabKey === 'kids' ? 'Kanak-Kanak' : 'Muslimah'}
+                </button>
+              ))}
+            </div>
+
+            {/* Senarai Saiz Mengikut Tab Kelompok */}
             <div>
               <label className="text-[11px] font-semibold text-slate-600 block mb-2">
-                Pilihan Saiz Tambahan Popular:
+                Tekan untuk aktifkan / padam saiz:
               </label>
-              <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto pr-1">
-                {POPULAR_EXTRA_SIZES.filter((s) => !activeSizeKeys.includes(s)).map((extraSize) => (
-                  <button
-                    key={extraSize}
-                    type="button"
-                    onClick={() => handleAddSizeKey(extraSize)}
-                    className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-[#00BDFF] hover:text-white text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
-                  >
-                    + {extraSize}
-                  </button>
-                ))}
+              <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
+                {SIZE_GROUPS[sizeModalTab].sizes.map((sz) => {
+                  const isSelected = activeSizeKeys.includes(sz);
+                  return (
+                    <button
+                      key={sz}
+                      type="button"
+                      onClick={() => handleToggleSizeKey(sz)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#00BDFF] text-white shadow-2xs'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      {isSelected && <Check className="w-3 h-3" />}
+                      <span>{sz}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Input Saiz Kustom Manual */}
-            <div className="pt-2 border-t border-slate-100">
-              <label className="text-[11px] font-semibold text-slate-600 block mb-1.5">
-                Atau Taip Nama Saiz Sendiri:
+            <div className="pt-2 border-t border-slate-100 space-y-1.5">
+              <label className="text-[11px] font-semibold text-slate-600 block">
+                Atau Tambah Saiz Tersuai Sendiri:
               </label>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={customSizeInput}
                   onChange={(e) => setCustomSizeInput(e.target.value)}
-                  placeholder="cth: 5XL / Kid 34 / Muslimah"
+                  placeholder="cth: 9XL / Bayi 6-12m"
                   className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
-                      handleAddSizeKey(customSizeInput);
+                      handleAddCustomSize(customSizeInput);
                     }
                   }}
                 />
                 <button
                   type="button"
-                  onClick={() => handleAddSizeKey(customSizeInput)}
+                  onClick={() => handleAddCustomSize(customSizeInput)}
                   disabled={!customSizeInput.trim()}
                   className="px-4 py-2 rounded-xl bg-[#00BDFF] hover:bg-sky-600 disabled:bg-slate-200 text-white text-xs font-bold transition-all cursor-pointer"
                 >
                   Tambah
                 </button>
               </div>
+            </div>
+
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => setIsAddSizeModalOpen(false)}
+                className="w-full py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all cursor-pointer text-center"
+              >
+                Selesai
+              </button>
             </div>
           </div>
         </div>
@@ -1212,15 +1542,15 @@ export default function CustomizePage() {
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Fail Logo:</span>
+                  <span className="text-slate-400">Logo Dimuat Naik:</span>
                   <span className="font-medium text-slate-900 truncate max-w-[180px]">
-                    {logoFileName || 'Tiada (Hantar di WhatsApp)'}
+                    {logoList.length > 0 ? `${logoList.length} fail logo/penaja` : 'Tiada'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Senarai Nama:</span>
                   <span className="font-medium text-slate-900 truncate max-w-[180px]">
-                    {rosterMode === 'upload' && rosterFileName ? rosterFileName : (rosterManualText ? 'Tulis Manual' : 'Tiada')}
+                    {rosterMode === 'upload' && rosterFileName ? rosterFileName : 'Borang Kolom Isian'}
                   </span>
                 </div>
               </div>
