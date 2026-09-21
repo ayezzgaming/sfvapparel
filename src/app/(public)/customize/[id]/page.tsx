@@ -496,7 +496,7 @@ export default function CustomizePage() {
     );
   }, [shippingCalculation, selectedCourierId]);
 
-  const isAddressFilled = Boolean(totalQuantity > 0 && addrLine.trim() && addrPostcode.trim() && addrPostcode.trim().length >= 4);
+  const isAddressFilled = Boolean(totalQuantity > 0 && addrLine.trim() && addrPostcode.trim().length === 5);
   const shippingFee = (totalQuantity > 0 && isAddressFilled) ? (selectedCourier?.rate || 0) : 0;
   const grandTotalAmount = totalQuantity > 0 ? (quote.finalTotal + shippingFee) : 0;
   const depositAmount = Math.round(grandTotalAmount * 0.5 * 100) / 100;
@@ -1243,7 +1243,7 @@ export default function CustomizePage() {
                     disabled={totalQuantity === 0}
                     value={addrPostcode}
                     onChange={(e) => handlePostcodeChange(e.target.value)}
-                    placeholder="Poskod"
+                    placeholder="Poskod (5 digit)"
                     maxLength={5}
                     className={`w-full px-3 py-2 border rounded-xl text-xs font-mono transition-colors ${
                       totalQuantity === 0
@@ -1298,6 +1298,10 @@ export default function CustomizePage() {
                 <label className="text-xs text-slate-600 block">Pilihan Kurier</label>
                 {totalQuantity === 0 ? (
                   <span className="text-[10px] text-slate-400">Pilih kuantiti jersi dahulu</span>
+                ) : addrPostcode.trim().length > 0 && addrPostcode.trim().length < 5 ? (
+                  <span className="text-[10px] text-amber-600 font-medium">Lengkapkan 5 digit poskod</span>
+                ) : !addrLine.trim() ? (
+                  <span className="text-[10px] text-slate-400">Isi nama jalan / alamat penuh</span>
                 ) : !isAddressFilled ? (
                   <span className="text-[10px] text-slate-400">Isi alamat dahulu untuk pilih kurier</span>
                 ) : (
