@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getCmsDataDb } from '@/app/actions/cmsActions';
+import { getCmsDataDb, deleteHeroBannerDb } from '@/app/actions/cmsActions';
 import { getServiceSupabase } from '@/lib/supabase/serverClient';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    // Test 1: Direct Supabase query
     const sb = getServiceSupabase();
     let directBanners = null;
     let directError = null;
@@ -17,7 +16,6 @@ export async function GET() {
       directError = error?.message;
     }
 
-    // Test 2: Through getCmsDataDb Server Action logic
     const cmsResult = await getCmsDataDb();
 
     return NextResponse.json({
@@ -31,7 +29,7 @@ export async function GET() {
         hasSbClient: !!sb,
         bannersCount: directBanners?.length ?? 0,
         error: directError,
-        bannerTitles: directBanners?.map((b: { title: string }) => b.title) ?? [],
+        banners: directBanners?.map((b: { id: string; title: string }) => ({ id: b.id, title: b.title })) ?? [],
       },
       cmsAction: {
         success: cmsResult.success,
@@ -44,7 +42,26 @@ export async function GET() {
   } catch (err) {
     return NextResponse.json({
       error: err instanceof Error ? err.message : 'Unknown error',
-      stack: err instanceof Error ? err.stack : null,
     }, { status: 500 });
+  }
+}
+
+// POST /api/admin/cms-debug  { "id": "<bannerId>" }  => test delete via Server Action
+export async function POST(req: Request) {
+  try {
+    const { id } = await req.json();
+    if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    
+    const result = await deleteHeroBannerDb(id);
+    
+    const sb = getServiceSupabase();
+    const { data: remaining } = sb ? await sb.from('cms_hero_banners').select('id, title') : { data: [] };
+    
+    return NextResponse.json({
+      deleteResult: result,
+      remaining: remaining?.map((b: { id: string; title: string }) => ({ id: b.id, title: b.title })) ?? [],
+    });
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Unknown error' }, { status: 500 });
   }
 }
