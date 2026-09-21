@@ -42,8 +42,11 @@ import {
 import {
   getMasterPricingDb,
   saveFabricDb,
+  deleteFabricDb,
   saveCutDb,
+  deleteCutDb,
   saveDtfDimensionDb,
+  deleteDtfDimensionDb,
 } from '@/app/actions/pricingActions';
 import {
   INITIAL_APPAREL_CUTS,
@@ -401,6 +404,18 @@ export function useAppStore() {
   }, []);
 
   // Master Pricing Mutators (Pure Cloud DB)
+  const addFabric = useCallback(async (fabric: Omit<FabricMaterial, 'id'>) => {
+    initStoreIfNeeded();
+    const id = `mat-${Date.now()}`;
+    const newFabric: FabricMaterial = { ...fabric, id };
+    const next = [...storeState.fabrics, newFabric];
+    storeState = { ...storeState, fabrics: next };
+    notify();
+
+    saveFabricDb(newFabric).catch((e) => console.error('Error adding fabric to DB:', e));
+    return newFabric;
+  }, []);
+
   const updateFabric = useCallback(async (id: string, updates: Partial<FabricMaterial>) => {
     initStoreIfNeeded();
     const next = storeState.fabrics.map((f) => (f.id === id ? { ...f, ...updates } : f));
@@ -411,6 +426,27 @@ export function useAppStore() {
     if (target) {
       saveFabricDb(target).catch((e) => console.error('Error saving fabric to DB:', e));
     }
+  }, []);
+
+  const deleteFabric = useCallback(async (id: string) => {
+    initStoreIfNeeded();
+    const next = storeState.fabrics.filter((f) => f.id !== id);
+    storeState = { ...storeState, fabrics: next };
+    notify();
+
+    deleteFabricDb(id).catch((e) => console.error('Error deleting fabric from DB:', e));
+  }, []);
+
+  const addCut = useCallback(async (cut: Omit<ApparelCut, 'id'>) => {
+    initStoreIfNeeded();
+    const id = `cut-${Date.now()}`;
+    const newCut: ApparelCut = { ...cut, id };
+    const next = [...storeState.cuts, newCut];
+    storeState = { ...storeState, cuts: next };
+    notify();
+
+    saveCutDb(newCut).catch((e) => console.error('Error adding cut to DB:', e));
+    return newCut;
   }, []);
 
   const updateCut = useCallback(async (id: string, updates: Partial<ApparelCut>) => {
@@ -425,6 +461,27 @@ export function useAppStore() {
     }
   }, []);
 
+  const deleteCut = useCallback(async (id: string) => {
+    initStoreIfNeeded();
+    const next = storeState.cuts.filter((c) => c.id !== id);
+    storeState = { ...storeState, cuts: next };
+    notify();
+
+    deleteCutDb(id).catch((e) => console.error('Error deleting cut from DB:', e));
+  }, []);
+
+  const addDtfDimension = useCallback(async (dim: Omit<DtfDimension, 'id'>) => {
+    initStoreIfNeeded();
+    const id = `dtf-${Date.now()}`;
+    const newDim: DtfDimension = { ...dim, id };
+    const next = [...storeState.dtfDimensions, newDim];
+    storeState = { ...storeState, dtfDimensions: next };
+    notify();
+
+    saveDtfDimensionDb(newDim).catch((e) => console.error('Error adding DTF dim to DB:', e));
+    return newDim;
+  }, []);
+
   const updateDtfDimension = useCallback(async (id: string, updates: Partial<DtfDimension>) => {
     initStoreIfNeeded();
     const next = storeState.dtfDimensions.map((d) => (d.id === id ? { ...d, ...updates } : d));
@@ -437,12 +494,39 @@ export function useAppStore() {
     }
   }, []);
 
+  const deleteDtfDimension = useCallback(async (id: string) => {
+    initStoreIfNeeded();
+    const next = storeState.dtfDimensions.filter((d) => d.id !== id);
+    storeState = { ...storeState, dtfDimensions: next };
+    notify();
+
+    deleteDtfDimensionDb(id).catch((e) => console.error('Error deleting DTF dim from DB:', e));
+  }, []);
+
+  const addQuantityTier = useCallback((tier: Omit<QuantityTierDiscount, 'id'>) => {
+    initStoreIfNeeded();
+    const id = `tier-${Date.now()}`;
+    const newTier: QuantityTierDiscount = { ...tier, id };
+    const next = [...storeState.tiers, newTier].sort((a, b) => a.min_qty - b.min_qty);
+    storeState = { ...storeState, tiers: next };
+    notify();
+    return newTier;
+  }, []);
+
   const updateQuantityTier = useCallback((id: string, updates: Partial<QuantityTierDiscount>) => {
     initStoreIfNeeded();
-    const next = storeState.tiers.map((t) => (t.id === id ? { ...t, ...updates } : t));
+    const next = storeState.tiers.map((t) => (t.id === id ? { ...t, ...updates } : t)).sort((a, b) => a.min_qty - b.min_qty);
     storeState = { ...storeState, tiers: next };
     notify();
   }, []);
+
+  const deleteQuantityTier = useCallback((id: string) => {
+    initStoreIfNeeded();
+    const next = storeState.tiers.filter((t) => t.id !== id);
+    storeState = { ...storeState, tiers: next };
+    notify();
+  }, []);
+
 
   // ==========================================
   // CMS MUTATORS (Pure Cloud Database - No LocalStorage)
@@ -850,10 +934,18 @@ export function useAppStore() {
     addDesign,
     updateDesign,
     deleteDesign,
+    addFabric,
     updateFabric,
+    deleteFabric,
+    addCut,
     updateCut,
+    deleteCut,
+    addDtfDimension,
     updateDtfDimension,
+    deleteDtfDimension,
+    addQuantityTier,
     updateQuantityTier,
+    deleteQuantityTier,
     addHeroBanner,
     updateHeroBanner,
     deleteHeroBanner,

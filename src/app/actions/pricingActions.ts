@@ -209,3 +209,55 @@ export async function saveDtfDimensionDb(dim: DtfDimension): Promise<{ success: 
     return { success: false, message: msg };
   }
 }
+
+/**
+ * Delete Fabric Material
+ */
+export async function deleteFabricDb(id: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
+
+    const { error } = await supabase.from('fabric_materials').delete().eq('id', id);
+    if (error) return { success: false, message: error.message };
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Gagal memadam jenis kain.';
+    return { success: false, message: msg };
+  }
+}
+
+/**
+ * Delete Apparel Cut
+ */
+export async function deleteCutDb(id: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
+
+    const { error } = await supabase.from('apparel_cuts').delete().eq('id', id);
+    if (error) return { success: false, message: error.message };
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Gagal memadam potongan jersi.';
+    return { success: false, message: msg };
+  }
+}
+
+/**
+ * Delete DTF Dimension
+ */
+export async function deleteDtfDimensionDb(id: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
+
+    const { error } = await supabase.from('dtf_dimensions').delete().eq('id', id);
+    if (error) return { success: false, message: error.message };
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Gagal memadam saiz DTF.';
+    return { success: false, message: msg };
+  }
+}
+

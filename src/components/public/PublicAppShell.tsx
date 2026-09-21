@@ -35,14 +35,15 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
 
   const isHome = pathname === '/' || pathname === '';
-  const isCatalog = pathname.startsWith('/catalog') || pathname.startsWith('/customize');
+  const isCatalog = pathname.startsWith('/catalog');
+  const isCustomize = pathname.startsWith('/customize');
   const isHistory = pathname.startsWith('/history');
   const isProfile = pathname.startsWith('/profile');
 
   const activeOrders = orders.filter((o) => o.status !== 'delivered' && o.status !== 'cancelled');
   const activeOrdersCount = activeOrders.length;
   const favoritesCount = favorites.length;
-  const shouldHideBottomNav = isBottomSheetOpen;
+  const shouldHideBottomNav = isBottomSheetOpen || isCustomize;
 
   // Theme computations
   const headerBg = themeSettings?.header_bg || '#FFFFFF';
@@ -67,69 +68,71 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
         {/* 2. MASTER CONTAINER APLIKASI (Fixed 100% height of the pinned frame) */}
         <div className="w-full max-w-md h-full bg-white shadow-2xl flex flex-col overflow-hidden relative overscroll-none touch-pan-y select-none">
           
-          {/* Header / Navbar (Clean White Apple-Grade Polish) */}
-          <header 
-            className="shrink-0 z-40 px-4 py-3 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] flex items-center justify-between border-b border-slate-200/80 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.03)] select-none touch-none transition-colors"
-            style={{ touchAction: 'none' }}
-          >
-            {/* Brand Logo */}
-            <Link href="/" draggable={false} className="inline-flex items-center select-none active:opacity-75 transition-opacity group">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/logo/SVFapparel-logo.svg"
-                alt="SVF Apparel"
-                height={32}
-                style={{ maxHeight: '32px', height: '32px', width: 'auto' }}
-                className="h-7 sm:h-8 w-auto max-h-8 object-contain shrink-0 pointer-events-none group-active:scale-95 transition-transform"
-              />
-            </Link>
+          {/* Header / Navbar (Hidden on customize page to avoid double headers) */}
+          {!isCustomize && (
+            <header 
+              className="shrink-0 z-40 px-4 py-3 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] flex items-center justify-between border-b border-slate-200/80 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.03)] select-none touch-none transition-colors"
+              style={{ touchAction: 'none' }}
+            >
+              {/* Brand Logo */}
+              <Link href="/" draggable={false} className="inline-flex items-center select-none active:opacity-75 transition-opacity group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo/SVFapparel-logo.svg"
+                  alt="SVF Apparel"
+                  height={32}
+                  style={{ maxHeight: '32px', height: '32px', width: 'auto' }}
+                  className="h-7 sm:h-8 w-auto max-h-8 object-contain shrink-0 pointer-events-none group-active:scale-95 transition-transform"
+                />
+              </Link>
 
-            {/* Header Action Icons (Sleek, Clean & No Heavy Base Circles) */}
-            <div className="flex items-center space-x-1">
-              <button
-                type="button"
-                onClick={() => setIsFavoritesOpen(true)}
-                aria-label="Senarai Pilihan Kegemaran"
-                className="w-8 h-8 relative transition-all active:scale-90 flex items-center justify-center text-slate-700 hover:text-[#00BDFF] cursor-pointer touch-manipulation"
-              >
-                <Heart className="w-4.5 h-4.5 stroke-[2]" />
-                {favoritesCount > 0 && (
-                  <span className="absolute top-0 right-0 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF3B30] text-white text-[8.5px] font-bold flex items-center justify-center shadow-xs ring-1.5 ring-white leading-none pointer-events-none animate-in zoom-in-75">
-                    {favoritesCount > 99 ? '99+' : favoritesCount}
-                  </span>
-                )}
-              </button>
+              {/* Header Action Icons (Sleek, Clean & No Heavy Base Circles) */}
+              <div className="flex items-center space-x-1">
+                <button
+                  type="button"
+                  onClick={() => setIsFavoritesOpen(true)}
+                  aria-label="Senarai Pilihan Kegemaran"
+                  className="w-8 h-8 relative transition-all active:scale-90 flex items-center justify-center text-slate-700 hover:text-[#00BDFF] cursor-pointer touch-manipulation"
+                >
+                  <Heart className="w-4.5 h-4.5 stroke-[2]" />
+                  {favoritesCount > 0 && (
+                    <span className="absolute top-0 right-0 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF3B30] text-white text-[8.5px] font-bold flex items-center justify-center shadow-xs ring-1.5 ring-white leading-none pointer-events-none animate-in zoom-in-75">
+                      {favoritesCount > 99 ? '99+' : favoritesCount}
+                    </span>
+                  )}
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setIsBagOpen(true)}
-                aria-label="Bakul Pesanan Aktif"
-                className="w-8 h-8 relative transition-all active:scale-90 flex items-center justify-center text-slate-700 hover:text-[#00BDFF] cursor-pointer touch-manipulation"
-              >
-                <ShoppingBag className="w-4.5 h-4.5 stroke-[2]" />
-                {activeOrdersCount > 0 && (
-                  <span className="absolute top-0 right-0 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF3B30] text-white text-[8.5px] font-bold flex items-center justify-center shadow-xs ring-1.5 ring-white leading-none pointer-events-none animate-in zoom-in-75">
-                    {activeOrdersCount > 99 ? '99+' : activeOrdersCount}
-                  </span>
-                )}
-              </button>
-            </div>
-          </header>
+                <button
+                  type="button"
+                  onClick={() => setIsBagOpen(true)}
+                  aria-label="Bakul Pesanan Aktif"
+                  className="w-8 h-8 relative transition-all active:scale-90 flex items-center justify-center text-slate-700 hover:text-[#00BDFF] cursor-pointer touch-manipulation"
+                >
+                  <ShoppingBag className="w-4.5 h-4.5 stroke-[2]" />
+                  {activeOrdersCount > 0 && (
+                    <span className="absolute top-0 right-0 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF3B30] text-white text-[8.5px] font-bold flex items-center justify-center shadow-xs ring-1.5 ring-white leading-none pointer-events-none animate-in zoom-in-75">
+                      {activeOrdersCount > 99 ? '99+' : activeOrdersCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </header>
+          )}
 
-          {/* Scrollable Main Content (Locked when bottom sheet is open) */}
+          {/* Scrollable Main Content (Locked ONLY when bottom sheet is open, NOT on customize) */}
           <main className={`flex-1 w-full sparkle-scroll bg-[#F2F2F7] ${
-            shouldHideBottomNav ? 'overflow-hidden pointer-events-none' : 'overflow-y-auto overscroll-y-contain'
+            isBottomSheetOpen ? 'overflow-hidden pointer-events-none' : 'overflow-y-auto overscroll-y-contain'
           }`}>
             {children}
           </main>
 
-          {/* iOS Bottom Tab Bar (With Modern Center Raised Circular Button) */}
+          {/* iOS Bottom Tab Bar (Hidden when bottom sheet is open OR on customize page) */}
           <nav 
             className={`shrink-0 z-40 w-full border-t px-2 pt-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.65rem)] flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.05)] select-none touch-none overscroll-none transition-all duration-300 ease-in-out transform ${
               isBottomNavDark ? 'border-blue-600/40' : 'border-slate-200/80 backdrop-blur-xl'
             } ${
               shouldHideBottomNav
-                ? 'translate-y-full opacity-0 pointer-events-none'
+                ? 'translate-y-full opacity-0 pointer-events-none hidden'
                 : 'translate-y-0 opacity-100'
             }`}
             style={{ 
