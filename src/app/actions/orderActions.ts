@@ -91,6 +91,13 @@ export async function saveOrderDb(orderData: Partial<Order>): Promise<{ success:
       discount_percentage: orderData.discount_percentage || 0,
       final_unit_price: orderData.final_unit_price || 0,
       total_amount: orderData.total_amount || 0,
+      deposit_amount: orderData.deposit_amount !== undefined ? orderData.deposit_amount : Math.round((orderData.total_amount || 0) * 0.5 * 100) / 100,
+      balance_amount: orderData.balance_amount !== undefined ? orderData.balance_amount : ((orderData.total_amount || 0) - (orderData.deposit_amount !== undefined ? orderData.deposit_amount : Math.round((orderData.total_amount || 0) * 0.5 * 100) / 100)),
+      paid_amount: orderData.paid_amount || 0,
+      payment_type_selected: orderData.payment_type_selected || 'deposit_50',
+      payment_status: orderData.payment_status || 'unpaid',
+      payment_method: orderData.payment_method || null,
+      payment_id: orderData.payment_id || null,
       status: orderData.status || 'pending_proof',
       production_notes: orderData.production_notes || null,
       shipping_address: orderData.shipping_address || null,
@@ -112,6 +119,54 @@ export async function saveOrderDb(orderData: Partial<Order>): Promise<{ success:
     return { success: true, order: data as Order };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to save order';
+    return { success: false, message };
+  }
+}
+
+export async function markOrderBalancePaidAction(
+  orderId: string,
+  paymentMethod: string = 'Manual Transfer / Cash',
+  paymentId?: string
+): Promise<{ success: boolean; message?: string }> {
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) return { success: false, message: 'Database connection failed.' };
+
+    const { data: currentOrder, error: fetchErr } = await supabase
+      .from('orders')
+      .select('total_amount, paid_amount')
+      .eq('id', orderId)
+      .single();
+
+    if (fetchErr || !currentOrder) {
+      return { success: false, message: 'Pesanan tidak dijumpai.' };
+    }
+
+    const totalAmount = Number(currentOrder.total_amount) || 0;
+
+    const updates: Record<string, unknown> = {
+      payment_status: 'paid',
+      balance_amount: 0,
+      paid_amount: totalAmount,
+      balance_paid_at: new Date().toISOString(),
+      balance_payment_method: paymentMethod,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (paymentId) updates.balance_payment_id = paymentId;
+
+    const { error } = await supabase
+      .from('orders')
+      .update(updates)
+      .eq('id', orderId);
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, message: 'Baki pesanan berjaya dilunaskan.' };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Ralat melunaskan baki pesanan';
     return { success: false, message };
   }
 }

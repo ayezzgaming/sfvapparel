@@ -208,6 +208,7 @@ export default function CustomizePage() {
 
   // Modal Ringkasan Tempahan (Order Summary) & Status
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+  const [paymentTypeSelected, setPaymentTypeSelected] = useState<'deposit_50' | 'full_100'>('deposit_50');
   const [paymentMode, setPaymentMode] = useState<'chip_online' | 'whatsapp_manual'>('chip_online');
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -215,6 +216,9 @@ export default function CustomizePage() {
   const [orderSuccessModal, setOrderSuccessModal] = useState<{
     orderNumber: string;
     totalAmount: number;
+    depositAmount?: number;
+    balanceAmount?: number;
+    paymentType?: 'deposit_50' | 'full_100';
   } | null>(null);
 
   // Kiraan Jumlah Kuantiti
@@ -494,6 +498,9 @@ export default function CustomizePage() {
   const isAddressFilled = Boolean(totalQuantity > 0 && addrLine.trim() && addrPostcode.trim() && addrPostcode.trim().length >= 4);
   const shippingFee = (totalQuantity > 0 && isAddressFilled) ? (selectedCourier?.rate || 0) : 0;
   const grandTotalAmount = totalQuantity > 0 ? (quote.finalTotal + shippingFee) : 0;
+  const depositAmount = Math.round(grandTotalAmount * 0.5 * 100) / 100;
+  const balanceAmount = grandTotalAmount - depositAmount;
+  const payableNowAmount = paymentTypeSelected === 'deposit_50' ? depositAmount : grandTotalAmount;
   const formattedFullAddress = [addrLine, addrPostcode, addrCity].filter(Boolean).join(', ');
 
   // Buka Ringkasan Pesanan (Order Summary)
@@ -549,6 +556,7 @@ export default function CustomizePage() {
 
     const fullNotes = [
       teamName ? `Pasukan: ${teamName}` : '',
+      `[Struktur Bayaran]: ${paymentTypeSelected === 'deposit_50' ? `Deposit 50% (Bayar RM${depositAmount.toFixed(2)}, Baki RM${balanceAmount.toFixed(2)} semasa siap)` : `Bayaran Penuh 100% (RM${grandTotalAmount.toFixed(2)})`}`,
       `[Kaedah Bayaran]: ${paymentMode === 'chip_online' ? 'CHIP Gateway (FPX/Kad/e-Wallet)' : 'Manual / WhatsApp'}`,
       `[Pilihan Kurier]: ${selectedCourier.name} (${shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)})`,
       `[Logo & Penaja]:\n${logoInfo}`,
@@ -579,7 +587,11 @@ export default function CustomizePage() {
       discount_percentage: quote.discountPercentage,
       final_unit_price: quote.finalUnitPrice,
       total_amount: grandTotalAmount,
-      payment_status: paymentMode === 'chip_online' ? 'pending' : 'unpaid',
+      deposit_amount: depositAmount,
+      balance_amount: paymentTypeSelected === 'deposit_50' ? balanceAmount : 0,
+      paid_amount: 0,
+      payment_type_selected: paymentTypeSelected,
+      payment_status: 'unpaid',
       payment_method: paymentMode === 'chip_online' ? 'chip_gateway' : 'whatsapp_manual',
       status: 'pending_proof',
       production_notes: fullNotes,
@@ -590,16 +602,17 @@ export default function CustomizePage() {
     // 2A. Jika memilih bayaran terus secara online melalui CHIP Gateway
     if (paymentMode === 'chip_online') {
       try {
+        const chipOrderNumber = paymentTypeSelected === 'deposit_50' ? `${newOrder.order_number}-DP` : newOrder.order_number;
         const res = await fetch('/api/payment/chip/create-purchase', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            orderNumber: newOrder.order_number,
+            orderNumber: chipOrderNumber,
             customerName: customerName.trim(),
             customerEmail: customer?.email || `${customerName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
             customerPhone: customerPhone.trim(),
-            totalAmount: grandTotalAmount,
-            itemsDescription: `${design?.title || 'Jersi Kustom'} (${totalQuantity} helai) + Kurier ${selectedCourier.shortName}`,
+            totalAmount: payableNowAmount,
+            itemsDescription: `${design?.title || 'Jersi Kustom'} (${totalQuantity} helai) [${paymentTypeSelected === 'deposit_50' ? 'Deposit 50%' : 'Bayaran Penuh 100%'}]`,
           }),
         });
 
@@ -643,7 +656,7 @@ export default function CustomizePage() {
       totalAmount: grandTotalAmount,
       logoStatus: logoList.length > 0 ? `${logoList.length} Fail Logo/Penaja Dimuat Naik` : 'Tiada fail logo (Akan dihantar di WhatsApp)',
       rosterStatus: rosterMode === 'upload' && rosterFileName ? `Fail ${rosterFileName}` : formattedManualRosterString,
-      notes: additionalNotes.trim() || undefined,
+      notes: `${paymentTypeSelected === 'deposit_50' ? `[Deposit 50%]: RM${depositAmount.toFixed(2)} (Baki RM${balanceAmount.toFixed(2)} bila siap)` : `[Bayaran Penuh 100%]: RM${grandTotalAmount.toFixed(2)}`}\n${additionalNotes.trim() || ''}`.trim() || undefined,
       shippingAddress: formattedFullAddress || undefined,
       shippingCourier: selectedCourier.name,
       shippingFee: shippingFee,
@@ -660,6 +673,9 @@ export default function CustomizePage() {
       setOrderSuccessModal({
         orderNumber: newOrder.order_number,
         totalAmount: grandTotalAmount,
+        depositAmount: depositAmount,
+        balanceAmount: balanceAmount,
+        paymentType: paymentTypeSelected,
       });
     }, 400);
   };
@@ -1498,23 +1514,78 @@ export default function CustomizePage() {
                 {formattedFullAddress && <div className="text-slate-500 truncate">Alamat: {formattedFullAddress}</div>}
               </div>
 
-              <div className="p-2.5 bg-sky-50 rounded-xl space-y-1">
-                <div className="flex justify-between text-slate-600">
-                  <span>Subtotal:</span>
-                  <span className="font-mono">{formatCurrency(quote.finalTotal)}</span>
-                </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Poskod / Penghantaran:</span>
-                  <span className="font-mono">{shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)}</span>
-                </div>
-                <div className="border-t border-sky-200 pt-1 flex justify-between font-bold">
-                  <span>Jumlah:</span>
-                  <span className="font-mono text-sky-600">{formatCurrency(grandTotalAmount)}</span>
+              {/* Pilihan Struktur Bayaran: Deposit 50% vs Bayar Penuh 100% */}
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[11px] font-semibold text-slate-800 block">Pilihan Struktur Bayaran:</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentTypeSelected('deposit_50')}
+                    className={`p-2.5 rounded-xl border text-left transition-all ${
+                      paymentTypeSelected === 'deposit_50'
+                        ? 'bg-sky-50/90 border-sky-500 ring-1 ring-sky-500/20'
+                        : 'bg-white border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-xs font-bold text-slate-900">Deposit 50%</span>
+                      <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-sky-100 text-sky-700 font-semibold">Disyorkan</span>
+                    </div>
+                    <div className="text-xs font-mono font-bold text-sky-600">{formatCurrency(depositAmount)}</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5 leading-tight">Baki {formatCurrency(balanceAmount)} dibayar bila siap</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentTypeSelected('full_100')}
+                    className={`p-2.5 rounded-xl border text-left transition-all ${
+                      paymentTypeSelected === 'full_100'
+                        ? 'bg-sky-50/90 border-sky-500 ring-1 ring-sky-500/20'
+                        : 'bg-white border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="text-xs font-bold text-slate-900 mb-0.5">Bayaran Penuh</div>
+                    <div className="text-xs font-mono font-bold text-slate-900">{formatCurrency(grandTotalAmount)}</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5 leading-tight">Selesai 100% sekali gus</div>
+                  </button>
                 </div>
               </div>
 
+              {/* Perincian Kewangan Telus */}
+              <div className="p-2.5 bg-sky-50/70 border border-sky-100 rounded-xl space-y-1">
+                <div className="flex justify-between text-slate-600">
+                  <span>Harga Jersi ({totalQuantity} helai):</span>
+                  <span className="font-mono">{formatCurrency(quote.finalTotal)}</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Kos Pos ({selectedCourier.shortName}):</span>
+                  <span className="font-mono">{shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)}</span>
+                </div>
+                <div className="flex justify-between text-slate-600 pt-0.5 border-t border-sky-200/60">
+                  <span>Jumlah Pesanan:</span>
+                  <span className="font-mono font-semibold text-slate-800">{formatCurrency(grandTotalAmount)}</span>
+                </div>
+                {paymentTypeSelected === 'deposit_50' ? (
+                  <>
+                    <div className="flex justify-between text-slate-500 text-[11px]">
+                      <span>Baki Semasa Siap (50%):</span>
+                      <span className="font-mono">{formatCurrency(balanceAmount)}</span>
+                    </div>
+                    <div className="border-t border-sky-200 pt-1 flex justify-between font-bold text-xs text-sky-950">
+                      <span>Perlu Dibayar Sekarang (Deposit 50%):</span>
+                      <span className="font-mono text-sky-600 text-sm">{formatCurrency(depositAmount)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="border-t border-sky-200 pt-1 flex justify-between font-bold text-xs text-sky-950">
+                    <span>Perlu Dibayar Sekarang (100%):</span>
+                    <span className="font-mono text-sky-600 text-sm">{formatCurrency(grandTotalAmount)}</span>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-1.5 pt-1">
-                <span className="text-[11px] font-semibold text-slate-800 block">Kaedah Bayaran:</span>
+                <span className="text-[11px] font-semibold text-slate-800 block">Kaedah Pembayaran:</span>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -1547,9 +1618,13 @@ export default function CustomizePage() {
                 type="button"
                 onClick={handleConfirmAndSendOrder}
                 disabled={isSubmitting}
-                className="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:bg-slate-300 text-white text-xs font-bold"
+                className="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:bg-slate-300 text-white text-xs font-bold transition-all"
               >
-                {isSubmitting ? 'Memproses...' : (paymentMode === 'chip_online' ? 'Bayar Sekarang' : 'Hantar ke WhatsApp')}
+                {isSubmitting
+                  ? 'Memproses...'
+                  : paymentMode === 'chip_online'
+                  ? (paymentTypeSelected === 'deposit_50' ? `Bayar Deposit ${formatCurrency(depositAmount)}` : `Bayar Penuh ${formatCurrency(grandTotalAmount)}`)
+                  : 'Hantar ke WhatsApp'}
               </button>
               <button
                 type="button"
@@ -1633,8 +1708,26 @@ export default function CustomizePage() {
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="w-full max-w-sm bg-white rounded-2xl p-5 text-center space-y-3 shadow-xl">
             <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
-            <h3 className="text-sm font-bold text-slate-900">Tempahan Berjaya!</h3>
-            <p className="text-xs text-slate-500">No. Pesanan: {orderSuccessModal.orderNumber}</p>
+            <h3 className="text-sm font-bold text-slate-900">Tempahan Berjaya Disimpan!</h3>
+            <p className="text-xs text-slate-500">No. Pesanan: <span className="font-mono font-semibold text-slate-800">{orderSuccessModal.orderNumber}</span></p>
+            <div className="p-3 bg-slate-50 rounded-xl text-xs space-y-1 text-left">
+              <div className="flex justify-between text-slate-600">
+                <span>Jumlah Pesanan:</span>
+                <span className="font-mono font-bold text-slate-900">{formatCurrency(orderSuccessModal.totalAmount)}</span>
+              </div>
+              {orderSuccessModal.paymentType === 'deposit_50' && (
+                <>
+                  <div className="flex justify-between text-slate-600">
+                    <span>Deposit 50%:</span>
+                    <span className="font-mono font-semibold text-sky-600">{formatCurrency(orderSuccessModal.depositAmount || 0)}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span>Baki Semasa Siap:</span>
+                    <span className="font-mono font-semibold text-amber-600">{formatCurrency(orderSuccessModal.balanceAmount || 0)}</span>
+                  </div>
+                </>
+              )}
+            </div>
             <button
               type="button"
               onClick={() => {
@@ -1643,7 +1736,7 @@ export default function CustomizePage() {
               }}
               className="w-full py-2.5 rounded-xl bg-sky-500 text-white text-xs font-bold"
             >
-              Lihat Sejarah Pesanan
+              Lihat Status di Sejarah Pesanan
             </button>
           </div>
         </div>

@@ -55,7 +55,7 @@ import {
   deleteQuantityTierDb,
 } from '@/app/actions/pricingActions';
 import { getCustomersDb } from '@/app/actions/customerActions';
-import { getOrdersDb, saveOrderDb, updateOrderStatusDb, deleteOrderDb } from '@/app/actions/orderActions';
+import { getOrdersDb, saveOrderDb, updateOrderStatusDb, deleteOrderDb, markOrderBalancePaidAction } from '@/app/actions/orderActions';
 import {
   INITIAL_APPAREL_CUTS,
   INITIAL_CUSTOMERS,
@@ -425,6 +425,38 @@ export function useAppStore() {
         await updateOrderStatusDb(orderId, status, trackingNumber, notes);
       } catch (e) {
         console.error('[app-store] Failed to update order in DB:', e);
+      }
+    },
+    []
+  );
+
+  const markOrderBalancePaid = useCallback(
+    async (orderId: string, paymentMethod: string = 'Manual Transfer / Cash', paymentId?: string) => {
+      initStoreIfNeeded();
+      const next = storeState.orders.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              payment_status: 'paid' as const,
+              balance_amount: 0,
+              paid_amount: o.total_amount,
+              balance_paid_at: new Date().toISOString(),
+              balance_payment_method: paymentMethod,
+              balance_payment_id: paymentId,
+              updated_at: new Date().toISOString(),
+            }
+          : o
+      );
+      storeState = { ...storeState, orders: next };
+      notify();
+
+      try {
+        const res = await markOrderBalancePaidAction(orderId, paymentMethod, paymentId);
+        if (!res.success) {
+          console.error('[app-store] Failed to mark order balance paid in DB:', res.message);
+        }
+      } catch (e) {
+        console.error('[app-store] Error in markOrderBalancePaid:', e);
       }
     },
     []
@@ -1142,6 +1174,7 @@ export function useAppStore() {
     addOrder,
     deleteOrder,
     updateOrderStatus,
+    markOrderBalancePaid,
     addDesign,
     updateDesign,
     deleteDesign,

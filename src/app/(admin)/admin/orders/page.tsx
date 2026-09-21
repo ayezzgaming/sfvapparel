@@ -17,7 +17,9 @@ import {
   Package,
   Clock,
   Truck,
-  Send
+  Send,
+  CreditCard,
+  AlertCircle
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 
@@ -34,7 +36,7 @@ const STATUS_LIST: { status: OrderStatus; label: string; color: string }[] = [
 ];
 
 export default function AdminOrdersPage() {
-  const { orders, updateOrderStatus } = useAppStore();
+  const { orders, updateOrderStatus, markOrderBalancePaid } = useAppStore();
 
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [filterType, setFilterType] = useState<'all' | 'sublimation' | 'dtf'>('all');
@@ -48,6 +50,7 @@ export default function AdminOrdersPage() {
   const [newNotes, setNewNotes] = useState('');
   const [updateSaved, setUpdateSaved] = useState(false);
   const [isSendingWa, setIsSendingWa] = useState(false);
+  const [isMarkingBalancePaid, setIsMarkingBalancePaid] = useState(false);
   const [waToast, setWaToast] = useState<{ success: boolean; message: string } | null>(null);
 
   const handleSendWhatsAppNotification = async () => {
@@ -63,9 +66,15 @@ export default function AdminOrdersPage() {
     let message = `Hai *${activeOrder.customer_name}*, pesanan jersi anda (*${activeOrder.order_number}* - ${activeOrder.design_title}) kini telah dikemaskini kepada: *${statusLabel}*.`;
     
     if (newTracking.trim()) {
-      message += `\n\n📦 *Nombor Penjejakan Pos*: ${newTracking.trim()}`;
+      message += `\n\nNombor Penjejakan Pos: ${newTracking.trim()}`;
     }
-    message += `\n\nTerima kasih kerana menempah dengan SFV Apparel! ✨`;
+
+    // Auto add settlement reminder if ready to ship and deposit only
+    if (newStatus === 'ready_to_ship' && activeOrder.payment_status === 'deposit_paid' && (activeOrder.balance_amount || 0) > 0) {
+      message += `\n\nStatus Pengeluaran: Jersi anda telah selesai diproses di kilang. Sila buat bayaran baki pelunasan 50% sebanyak *RM ${(activeOrder.balance_amount || (activeOrder.total_amount * 0.5)).toFixed(2)}* untuk pelepasan penghantaran kurier.`;
+    }
+
+    message += `\n\nTerima kasih kerana menempah dengan SFV Apparel!`;
 
     try {
       const res = await fetch('/api/whatsapp/send', {
@@ -87,6 +96,30 @@ export default function AdminOrdersPage() {
       setWaToast({ success: false, message: 'Ralat sambungan API WhatsApp' });
     } finally {
       setIsSendingWa(false);
+      setTimeout(() => setWaToast(null), 4000);
+    }
+  };
+
+  const handleMarkBalancePaid = async () => {
+    if (!activeOrder) return;
+    if (!confirm(`Sahkan penerimaan bayaran baki penuh bagi pesanan ${activeOrder.order_number}?`)) return;
+
+    setIsMarkingBalancePaid(true);
+    try {
+      await markOrderBalancePaid(activeOrder.id, 'Manual / Cash / Bank Transfer');
+      setActiveOrder((prev) => prev ? {
+        ...prev,
+        payment_status: 'paid',
+        balance_amount: 0,
+        paid_amount: prev.total_amount,
+        balance_paid_at: new Date().toISOString(),
+      } : null);
+      setWaToast({ success: true, message: 'Baki pesanan berjaya ditandakan sebagai Lunas 100%!' });
+    } catch (err) {
+      console.error(err);
+      setWaToast({ success: false, message: 'Ralat mengemaskini status bayaran baki.' });
+    } finally {
+      setIsMarkingBalancePaid(false);
       setTimeout(() => setWaToast(null), 4000);
     }
   };
@@ -250,8 +283,8 @@ export default function AdminOrdersPage() {
                   <th className="py-3.5 px-4 font-medium">Pelanggan</th>
                   <th className="py-3.5 px-4 font-medium">Rekaan</th>
                   <th className="py-3.5 px-4 font-medium">Kuantiti</th>
-                  <th className="py-3.5 px-4 font-medium">Jumlah</th>
-                  <th className="py-3.5 px-4 font-medium">Status</th>
+                  <th className="py-3.5 px-4 font-medium">Bayaran & Jumlah</th>
+                  <th className="py-3.5 px-4 font-medium">Status Pengeluaran</th>
                   <th className="py-3.5 px-4 text-right font-medium">Tindakan</th>
                 </tr>
               </thead>
@@ -312,9 +345,30 @@ export default function AdminOrdersPage() {
                           {ord.total_quantity} helai
                         </td>
 
-                        {/* Jumlah */}
-                        <td className="py-3.5 px-4 whitespace-nowrap font-mono text-sm font-medium text-slate-900">
-                          {formatCurrency(ord.total_amount)}
+                        {/* Bayaran & Jumlah */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <div className="space-y-0.5">
+                            <span className="font-mono text-sm font-medium text-slate-900 block">
+                              {formatCurrency(ord.total_amount)}
+                            </span>
+                            {ord.payment_status === 'paid' ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                Lunas 100%
+                              </span>
+                            ) : ord.payment_status === 'deposit_paid' ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800">
+                                DP 50% (Baki: {formatCurrency(ord.balance_amount || (ord.total_amount * 0.5))})
+                              </span>
+                            ) : ord.payment_status === 'deposit_pending' || ord.payment_status === 'balance_pending' ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
+                                Menunggu Bayaran
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700">
+                                Belum Bayar
+                              </span>
+                            )}
+                          </div>
                         </td>
 
                         {/* Status */}
@@ -395,9 +449,25 @@ export default function AdminOrdersPage() {
                       <span>Kuantiti:</span>
                       <span className="font-medium text-slate-800">{ord.total_quantity} helai</span>
                     </div>
-                    <div className="flex justify-between text-slate-600 pt-1 border-t border-slate-200/60">
+                    <div className="flex justify-between items-center text-slate-600 pt-1 border-t border-slate-200/60">
                       <span>Jumlah:</span>
                       <span className="font-medium font-mono text-slate-900">{formatCurrency(ord.total_amount)}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-0.5">
+                      <span className="text-slate-500">Bayaran:</span>
+                      {ord.payment_status === 'paid' ? (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-1.5 py-0.5 rounded">
+                          Lunas 100%
+                        </span>
+                      ) : ord.payment_status === 'deposit_paid' ? (
+                        <span className="text-[10px] font-bold text-sky-700 bg-sky-100/80 px-1.5 py-0.5 rounded">
+                          DP 50% Dibayar
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-medium text-slate-600 bg-slate-200/80 px-1.5 py-0.5 rounded">
+                          Belum Bayar
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -483,6 +553,71 @@ export default function AdminOrdersPage() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Payment & Settlement Summary Card */}
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-900 uppercase tracking-wider">
+                  Status Pembayaran & Pelunasan
+                </span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                  activeOrder.payment_status === 'paid'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : activeOrder.payment_status === 'deposit_paid'
+                    ? 'bg-sky-100 text-sky-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {activeOrder.payment_status === 'paid'
+                    ? 'Lunas 100%'
+                    : activeOrder.payment_status === 'deposit_paid'
+                    ? 'Deposit 50% Diterima'
+                    : 'Menunggu Bayaran'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs pt-1">
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <span className="text-[10px] text-slate-400 uppercase block font-medium">Jumlah Pesanan</span>
+                  <span className="font-mono font-bold text-slate-900 text-sm">{formatCurrency(activeOrder.total_amount)}</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <span className="text-[10px] text-slate-400 uppercase block font-medium">Deposit 50%</span>
+                  <span className="font-mono font-bold text-slate-900 text-sm">
+                    {formatCurrency(activeOrder.deposit_amount || (activeOrder.total_amount * 0.5))}
+                  </span>
+                  <span className={`text-[9px] font-bold block mt-0.5 ${activeOrder.deposit_paid_at || activeOrder.payment_status === 'deposit_paid' || activeOrder.payment_status === 'paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    {activeOrder.deposit_paid_at || activeOrder.payment_status === 'deposit_paid' || activeOrder.payment_status === 'paid' ? 'Selesai Dibayar' : 'Belum Diterima'}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 col-span-2 sm:col-span-1">
+                  <span className="text-[10px] text-slate-400 uppercase block font-medium">Baki Pelunasan 50%</span>
+                  <span className="font-mono font-bold text-slate-900 text-sm">
+                    {formatCurrency(activeOrder.balance_amount || (activeOrder.total_amount * 0.5))}
+                  </span>
+                  <span className={`text-[9px] font-bold block mt-0.5 ${activeOrder.balance_paid_at || activeOrder.payment_status === 'paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    {activeOrder.balance_paid_at || activeOrder.payment_status === 'paid' ? 'Lunas Sepenuhnya' : 'Belum Lunas'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Action button if deposit is paid but balance is not yet cleared */}
+              {activeOrder.payment_status === 'deposit_paid' && (activeOrder.balance_amount || 0) > 0 && (
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-3">
+                  <p className="text-[11px] text-slate-500">
+                    Pelanggan telah membayar melalui cash / bank transfer luar talian?
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleMarkBalancePaid}
+                    disabled={isMarkingBalancePaid}
+                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0 shadow-xs active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    <span>{isMarkingBalancePaid ? 'Mengemaskini...' : 'Tanda Baki Lunas (Manual/Cash)'}</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Sizing Breakdown */}

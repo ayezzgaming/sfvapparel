@@ -78,7 +78,7 @@ export async function createChipPurchaseAction(
 }
 
 /**
- * Server Action: Update Order Payment Status in Database
+ * Server Action: Update Order Payment Status in Database with Downpayment & Balance Support
  */
 export async function updateOrderPaymentStatusDb(
   orderNumber: string,
@@ -90,25 +90,76 @@ export async function updateOrderPaymentStatusDb(
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Database connection failed' };
 
+    const baseOrderNumber = orderNumber.replace(/-(DP|BAL)$/i, '');
+    const isBalancePayment = /-BAL$/i.test(orderNumber);
+    const isDepositPayment = /-DP$/i.test(orderNumber);
+
+    // Dapatkan data pesanan sedia ada
+    const { data: currentOrder, error: fetchErr } = await supabase
+      .from('orders')
+      .select('id, total_amount, deposit_amount, balance_amount, paid_amount, payment_type_selected, status')
+      .eq('order_number', baseOrderNumber)
+      .single();
+
+    if (fetchErr || !currentOrder) {
+      console.warn('[updateOrderPaymentStatusDb] Pesanan tidak dijumpai:', baseOrderNumber);
+    }
+
+    const totalAmount = Number(currentOrder?.total_amount) || 0;
+    const depositAmount = Number(currentOrder?.deposit_amount) || (Math.round(totalAmount * 0.5 * 100) / 100);
+
     const updatePayload: Record<string, unknown> = {
-      payment_status: paymentStatus,
       updated_at: new Date().toISOString(),
     };
 
-    if (paymentId) updatePayload.payment_id = paymentId;
-    if (paymentMethod) updatePayload.payment_method = paymentMethod;
     if (paymentStatus === 'paid') {
-      updatePayload.paid_at = new Date().toISOString();
-      updatePayload.status = 'proof_approved'; // Auto-advance from pending_proof once paid
+      if (isBalancePayment) {
+        // Pelunasan baki 50%
+        updatePayload.payment_status = 'paid';
+        updatePayload.balance_paid_at = new Date().toISOString();
+        updatePayload.balance_amount = 0;
+        updatePayload.paid_amount = totalAmount;
+        if (paymentId) updatePayload.balance_payment_id = paymentId;
+        if (paymentMethod) updatePayload.balance_payment_method = paymentMethod;
+      } else if (isDepositPayment || currentOrder?.payment_type_selected === 'deposit_50') {
+        // Pembayaran deposit 50%
+        updatePayload.payment_status = 'deposit_paid';
+        updatePayload.deposit_paid_at = new Date().toISOString();
+        updatePayload.deposit_amount = depositAmount;
+        updatePayload.balance_amount = totalAmount - depositAmount;
+        updatePayload.paid_amount = depositAmount;
+        if (paymentId) updatePayload.deposit_payment_id = paymentId;
+        if (paymentMethod) updatePayload.deposit_payment_method = paymentMethod;
+        // Majukan status ke proof_approved secara automatik
+        if (currentOrder?.status === 'pending_proof') {
+          updatePayload.status = 'proof_approved';
+        }
+      } else {
+        // Bayaran Penuh 100%
+        updatePayload.payment_status = 'paid';
+        updatePayload.paid_at = new Date().toISOString();
+        updatePayload.paid_amount = totalAmount;
+        updatePayload.balance_amount = 0;
+        if (paymentId) updatePayload.payment_id = paymentId;
+        if (paymentMethod) updatePayload.payment_method = paymentMethod;
+        if (currentOrder?.status === 'pending_proof') {
+          updatePayload.status = 'proof_approved';
+        }
+      }
+    } else {
+      updatePayload.payment_status = paymentStatus;
+      if (paymentId) updatePayload.payment_id = paymentId;
+      if (paymentMethod) updatePayload.payment_method = paymentMethod;
     }
 
     const { error } = await supabase
       .from('orders')
       .update(updatePayload)
-      .eq('order_number', orderNumber);
+      .eq('order_number', baseOrderNumber);
 
     if (error) {
       console.warn('[updateOrderPaymentStatusDb] Supabase update warning:', error.message);
+      return { success: false, message: error.message };
     }
 
     return { success: true };

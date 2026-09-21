@@ -11,7 +11,14 @@ export type OrderStatus =
   | 'delivered'
   | 'cancelled';
 
-export type PaymentStatus = 'unpaid' | 'pending' | 'paid' | 'failed' | 'refunded';
+export type PaymentStatus =
+  | 'unpaid'
+  | 'deposit_pending'
+  | 'deposit_paid'
+  | 'balance_pending'
+  | 'paid'
+  | 'failed'
+  | 'refunded';
 
 export interface PaymentGatewayConfig {
   id: string;
@@ -135,18 +142,28 @@ export interface Order {
   sizing_breakdown: SizingMatrix;
   total_quantity: number;
   
-  // Pricing
+  // Pricing & Downpayment Breakdown
   raw_unit_price: number;
   discount_percentage: number;
   final_unit_price: number;
   total_amount: number;
+  deposit_amount?: number;
+  balance_amount?: number;
+  paid_amount?: number;
+  payment_type_selected?: 'deposit_50' | 'full_100';
   
-  // Payment Gateway
+  // Payment Gateway & Settlement
   payment_status?: PaymentStatus;
   payment_method?: string;
   payment_id?: string;
   payment_checkout_url?: string;
   paid_at?: string;
+  deposit_paid_at?: string;
+  deposit_payment_id?: string;
+  deposit_payment_method?: string;
+  balance_paid_at?: string;
+  balance_payment_id?: string;
+  balance_payment_method?: string;
 
   // Status & Shipping
   status: OrderStatus;
