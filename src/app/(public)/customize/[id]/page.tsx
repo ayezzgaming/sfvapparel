@@ -115,20 +115,6 @@ export default function CustomizePage() {
     return designs.find((d) => d && d.id === designId) || designs[0] || null;
   }, [designs, designId]);
 
-  // Show loading spinner while checking auth or initializing designs
-  if (isAuthLoading || (!isInitialized && (!designs || designs.length === 0))) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center font-ios">
-        <div className="text-center">
-          <div className="w-10 h-10 border-2 border-[#00BDFF] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-xs font-medium text-slate-500">Memuatkan butiran tempahan...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) return null;
-
   const [activeView, setActiveView] = useState<'front' | 'back'>('front');
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
 
@@ -137,6 +123,15 @@ export default function CustomizePage() {
   const [techniqueMode, setTechniqueMode] = useState<'sublimation' | 'dtf'>(
     isDtf ? 'dtf' : 'sublimation'
   );
+
+  // Sync techniqueMode if design print_type changes
+  useEffect(() => {
+    if (design?.print_type === 'dtf') {
+      setTechniqueMode('dtf');
+    } else if (design?.print_type === 'sublimation') {
+      setTechniqueMode('sublimation');
+    }
+  }, [design?.print_type]);
 
   // Sublimasi: Fabrik & Potongan
   const [selectedFabricId, setSelectedFabricId] = useState<string>(
@@ -666,13 +661,41 @@ export default function CustomizePage() {
     }, 400);
   };
 
+  // 1. Loading state while checking auth or loading designs
+  if (isAuthLoading || (!isInitialized && (!designs || designs.length === 0))) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center font-ios">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-[#00BDFF] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-xs font-medium text-slate-500">Memuatkan butiran tempahan...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Auth guard: if not authenticated, show brief verifying spinner while redirecting
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center font-ios">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-slate-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+          <p className="text-xs text-slate-500">Mengesahkan akaun anda...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Design guard: if design not found
   if (!design) {
     return (
-      <div className="p-10 text-center font-ios">
-        <p className="text-xs text-slate-500">Corak tidak dijumpai.</p>
-        <Link href="/catalog" className="text-xs font-semibold text-[#00BDFF] mt-2 inline-block">
-          &larr; Kembali ke Katalog
-        </Link>
+      <div className="min-h-screen bg-[#F2F2F7] flex items-center justify-center p-6 text-center font-ios">
+        <div className="max-w-sm bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+          <p className="text-sm font-bold text-slate-800">Corak Tidak Dijumpai</p>
+          <p className="text-xs text-slate-500">Corak yang anda pilih tidak wujud atau tidak aktif.</p>
+          <Link href="/catalog" className="inline-block px-4 py-2 rounded-xl bg-[#00BDFF] text-white text-xs font-semibold mt-2">
+            &larr; Kembali ke Katalog
+          </Link>
+        </div>
       </div>
     );
   }
