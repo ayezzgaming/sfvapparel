@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '@/lib/store/app-store';
 import { formatCurrency } from '@/lib/pricing-calculator';
 import { Order, OrderStatus } from '@/types/database';
@@ -22,9 +22,11 @@ import {
   AlertCircle,
   FileText,
   Printer,
-  Trash2
+  Trash2,
+  RefreshCw
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
+import { getOrdersDb } from '@/app/actions/orderActions';
 import OrderInvoiceModal from '@/components/invoice/OrderInvoiceModal';
 
 const STATUS_LIST: { status: OrderStatus; label: string; color: string }[] = [
@@ -42,6 +44,8 @@ const STATUS_LIST: { status: OrderStatus; label: string; color: string }[] = [
 export default function AdminOrdersPage() {
   const { orders, updateOrderStatus, markOrderBalancePaid, deleteOrder } = useAppStore();
 
+  const [liveOrders, setLiveOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [filterType, setFilterType] = useState<'all' | 'sublimation' | 'dtf'>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -59,6 +63,34 @@ export default function AdminOrdersPage() {
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
 
+  // Authoritative Database Fetch directly from Supabase
+  const fetchLiveOrders = async () => {
+    setIsLoading(true);
+    try {
+      const res = await getOrdersDb();
+      if (res.success && Array.isArray(res.orders)) {
+        setLiveOrders(res.orders);
+      } else if (orders.length > 0) {
+        setLiveOrders(orders);
+      }
+    } catch (e) {
+      console.error('[AdminOrdersPage] Fetch error:', e);
+      if (orders.length > 0) setLiveOrders(orders);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveOrders();
+  }, []);
+
+  useEffect(() => {
+    if (orders.length > 0 && liveOrders.length === 0) {
+      setLiveOrders(orders);
+    }
+  }, [orders]);
+
   const handleDeleteOrder = async (orderId: string, orderNumber: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
 
@@ -70,6 +102,7 @@ export default function AdminOrdersPage() {
     setIsDeletingId(orderId);
     try {
       await deleteOrder(orderId);
+      setLiveOrders((prev) => prev.filter((o) => o.id !== orderId && o.order_number !== orderId));
       if (activeOrder?.id === orderId) {
         setActiveOrder(null);
       }
@@ -154,8 +187,10 @@ export default function AdminOrdersPage() {
     }
   };
 
+  const allOrders = liveOrders.length > 0 ? liveOrders : orders;
+
   const filteredOrders = useMemo(() => {
-    return orders.filter((ord) => {
+    return allOrders.filter((ord) => {
       if (filterType !== 'all' && ord.print_type !== filterType) return false;
       if (filterStatus !== 'all' && ord.status !== filterStatus) return false;
       if (searchQuery.trim()) {
@@ -167,7 +202,7 @@ export default function AdminOrdersPage() {
       }
       return true;
     });
-  }, [orders, filterType, filterStatus, searchQuery]);
+  }, [allOrders, filterType, filterStatus, searchQuery]);
 
   const handleOpenDetail = (ord: Order) => {
     setActiveOrder(ord);
@@ -182,6 +217,18 @@ export default function AdminOrdersPage() {
     if (!activeOrder) return;
 
     updateOrderStatus(activeOrder.id, newStatus, newTracking, newNotes);
+    setLiveOrders((prev) =>
+      prev.map((o) =>
+        o.id === activeOrder.id
+          ? {
+              ...o,
+              status: newStatus,
+              tracking_number: newTracking || o.tracking_number,
+              production_notes: newNotes || o.production_notes,
+            }
+          : o
+      )
+    );
     setUpdateSaved(true);
     setTimeout(() => {
       setUpdateSaved(false);
@@ -203,6 +250,15 @@ export default function AdminOrdersPage() {
         </div>
 
         <div className="flex items-center space-x-2">
+          <button
+            type="button"
+            onClick={fetchLiveOrders}
+            disabled={isLoading}
+            className="p-2 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-slate-900 active:rotate-180 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+            title="Segar semula pesanan langsung dari pangkalan data"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-600' : ''}`} />
+          </button>
           <span className="text-xs text-slate-600 bg-white border border-slate-200 px-3.5 py-1.5 rounded-full font-medium shadow-xs">
             {filteredOrders.length} Pesanan
           </span>
