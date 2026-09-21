@@ -295,7 +295,7 @@ export const INITIAL_CMS_HERO_BANNERS = [
   },
   {
     id: 'hero-2',
-    image_url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&auto=format&fit=crop&q=80',
+    image_url: '/images/prod_sportswear.webp',
     status_pill: 'Sublimasi Penuh HD',
     tag_text: 'Sukan, E-Sukan & Korporat',
     title: 'Jersi Sublimasi Kustom Berkualiti',
@@ -306,7 +306,7 @@ export const INITIAL_CMS_HERO_BANNERS = [
   },
   {
     id: 'hero-3',
-    image_url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=1200&auto=format&fit=crop&q=80',
+    image_url: '/images/prod_tshirt.webp',
     status_pill: 'Tiada Minimum Order',
     tag_text: 'Kapas 100% & Dakwat Jepun',
     title: 'Cetakan Baju DTF Berkualiti Tinggi',

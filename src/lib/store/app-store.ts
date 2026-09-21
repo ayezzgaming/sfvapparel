@@ -136,7 +136,7 @@ let storeState: AppStoreState = {
   customers: [],
   orders: [],
   favorites: [],
-  heroBanners: [],
+  heroBanners: INITIAL_CMS_HERO_BANNERS,
   trustBadges: INITIAL_CMS_TRUST_BADGES,
   services: INITIAL_CMS_SERVICES,
   productionVideos: [],
@@ -203,7 +203,7 @@ async function fetchAndSyncAllDb() {
 
           storeState = {
             ...storeState,
-            heroBanners: Array.isArray(heroBanners) ? heroBanners : [],
+            heroBanners: Array.isArray(heroBanners) && heroBanners.length > 0 ? heroBanners : storeState.heroBanners,
             trustBadges: Array.isArray(trustBadges) && trustBadges.length > 0 ? trustBadges : storeState.trustBadges,
             services: Array.isArray(services) && services.length > 0 ? services : storeState.services,
             productionVideos: Array.isArray(productionVideos) ? productionVideos : [],

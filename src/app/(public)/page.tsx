@@ -1085,27 +1085,27 @@ export default function HomePage() {
         <div className="grid grid-cols-2 gap-6 pt-5 border-t border-gray-200/70 text-xs">
           <div className="space-y-2.5">
             <h4 className="font-bold text-[11px] uppercase tracking-wider text-slate-900">
-              Perkhidmatan
+              Services
             </h4>
             <ul className="space-y-2 text-slate-600 text-[12px]">
               <li>
                 <Link href="/catalog?type=sublimation" className="hover:text-blue-600 transition-colors block">
-                  Jersi Sublimasi Penuh
+                  Sublimation Jersey
                 </Link>
               </li>
               <li>
                 <Link href="/catalog?type=dtf" className="hover:text-blue-600 transition-colors block">
-                  Cetakan DTF Premium
+                  DTF Printing
                 </Link>
               </li>
               <li>
                 <Link href="/catalog?type=embroidery" className="hover:text-blue-600 transition-colors block">
-                  Sulaman Berkomputer
+                  Embroidery
                 </Link>
               </li>
               <li>
                 <Link href="/history" className="hover:text-blue-600 transition-colors block">
-                  Semak Status Pesanan
+                  Track Order
                 </Link>
               </li>
             </ul>
@@ -1113,7 +1113,7 @@ export default function HomePage() {
 
           <div className="space-y-2.5">
             <h4 className="font-bold text-[11px] uppercase tracking-wider text-slate-900">
-              Polisi & Bantuan
+              Policies & Help
             </h4>
             <ul className="space-y-2 text-slate-600 text-[12px]">
               <li>
@@ -1121,7 +1121,7 @@ export default function HomePage() {
                   href="/privacypolicy"
                   className="hover:text-blue-600 transition-colors block text-left"
                 >
-                  Dasar Privasi (Privacy Policy)
+                  Privacy Policy
                 </Link>
               </li>
               <li>
@@ -1130,7 +1130,7 @@ export default function HomePage() {
                   onClick={() => handleOpenPolicy('terms')}
                   className="hover:text-blue-600 transition-colors text-left"
                 >
-                  Terma & Syarat (Terms)
+                  Terms of Service
                 </button>
               </li>
               <li>
@@ -1138,7 +1138,7 @@ export default function HomePage() {
                   href="/refundpolicy"
                   className="hover:text-blue-600 transition-colors block text-left"
                 >
-                  Jaminan & Pemulangan (Refund Policy)
+                  Refund Policy
                 </Link>
               </li>
               <li>
@@ -1146,7 +1146,7 @@ export default function HomePage() {
                   href="/shippingpolicy"
                   className="hover:text-blue-600 transition-colors block text-left"
                 >
-                  Polisi Penghantaran (Shipping Policy)
+                  Shipping Policy
                 </Link>
               </li>
             </ul>
