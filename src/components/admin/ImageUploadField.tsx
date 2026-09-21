@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { UploadCloud, Link as LinkIcon, Image as ImageIcon, X, RefreshCw, Check } from 'lucide-react';
+import { compressImageFile } from '@/lib/utils/imageCompressor';
 
 interface ImageUploadFieldProps {
   label: string;
@@ -27,64 +28,25 @@ export default function ImageUploadField({
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const compressAndSetImage = (file: File) => {
+  const compressAndSetImage = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       alert('Sila pilih fail imej (PNG, JPG, WEBP, SVG).');
       return;
     }
 
     setIsProcessing(true);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      
-      // If it's an SVG, keep raw
-      if (file.type === 'image/svg+xml') {
-        onChange(result);
-        setIsProcessing(false);
-        return;
-      }
-
-      // Resize/compress to max 1200px wide for optimal local storage and fast rendering
-      const img = new Image();
-      img.onload = () => {
-        const maxWidth = 1200;
-        const maxHeight = 1200;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
-          }
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-          onChange(compressedDataUrl);
-        } else {
-          onChange(result);
-        }
-        setIsProcessing(false);
-      };
-      img.onerror = () => {
-        onChange(result);
-        setIsProcessing(false);
-      };
-      img.src = result;
-    };
-    reader.readAsDataURL(file);
+    try {
+      const compressedDataUrl = await compressImageFile(file, {
+        maxWidth: 1200,
+        maxHeight: 1200,
+        quality: 0.85,
+      });
+      onChange(compressedDataUrl);
+    } catch {
+      alert('Gagal memproses fail imej.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

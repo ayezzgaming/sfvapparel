@@ -205,6 +205,7 @@ const renderPlatformIcon = (platform: CmsTestimonial['platform']) => {
 
 export default function HomePage() {
   const {
+    isLoadingCms,
     heroBanners,
     services,
     productionVideos,
@@ -393,17 +394,7 @@ export default function HomePage() {
   const currentTrust = TRUST_BADGES[activeTrustIndex];
   const TrustIcon = currentTrust.icon;
 
-  const currentBanner = activeBanners[activeBannerIndex] || activeBanners[0] || {
-    id: 'default',
-    image_url: '/hero1.png',
-    status_pill: 'Kilang Beroperasi',
-    tag_text: 'Koleksi Rasmi 2026',
-    title: 'Studio Jersi & DTF',
-    button_text: 'Katalog',
-    button_link: '/catalog',
-    sort_order: 1,
-    is_active: true,
-  };
+  const currentBanner = activeBanners[activeBannerIndex] || activeBanners[0] || null;
 
   return (
     <div className="w-full select-none font-ios">
@@ -413,6 +404,17 @@ export default function HomePage() {
       <div className="w-full bg-[#F2F2F7] pt-3 pb-8 px-4 space-y-6">
         {/* 1. DYNAMIC HERO SECTION WITH MULTI-SLIDE BANNER */}
         <div className="relative w-full h-[240px] rounded-3xl overflow-hidden shadow-md shadow-slate-300/40 group">
+          {isLoadingCms || !currentBanner ? (
+            /* Skeleton sementara data dimuatkan */
+            <div className="w-full h-full bg-slate-200 animate-pulse">
+              <div className="absolute inset-x-4 bottom-4 space-y-2">
+                <div className="h-2.5 bg-slate-300 rounded w-1/4" />
+                <div className="h-5 bg-slate-300 rounded w-2/3" />
+                <div className="h-7 bg-slate-300 rounded-xl w-28 mt-2" />
+              </div>
+            </div>
+          ) : (
+            <>
           {/* Full-bleed Natural Photo */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -470,7 +472,9 @@ export default function HomePage() {
               <ChevronRight className="w-3.5 h-3.5 text-slate-700" />
             </Link>
           </div>
-        </div>
+          </>
+        )}
+      </div>
 
         {/* 1.5 VALUE PROPOSITION / TRUST CARD SWAP (Compact, Soft Color & Auto-Slide) */}
         <div 
@@ -556,66 +560,83 @@ export default function HomePage() {
 
           {/* Card Produk Dinamik */}
           <div className="flex items-stretch gap-4 overflow-x-auto snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar -mx-4 px-4 pt-1 pb-4">
-            {activeServices.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => handleOpenProduct(item)}
-                className="rounded-3xl overflow-hidden bg-white w-[235px] flex-shrink-0 snap-start border border-black/[0.07] shadow-md shadow-slate-300/40 cursor-pointer select-none active:scale-[0.98] hover:shadow-lg transition-all flex flex-col justify-between"
-              >
-                {/* Bagian Gambar */}
-                <div className="relative w-full h-48 bg-slate-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.image_url}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
+            {isLoadingCms ? (
+              [1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="rounded-3xl overflow-hidden bg-white w-[235px] flex-shrink-0 border border-black/[0.07] shadow-md shadow-slate-300/40 p-4 space-y-3 animate-pulse"
+                >
+                  <div className="w-full h-44 bg-slate-200 rounded-2xl" />
+                  <div className="h-4 bg-slate-200 rounded w-3/4" />
+                  <div className="h-3 bg-slate-100 rounded w-1/2" />
+                  <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
+                    <div className="h-4 bg-slate-200 rounded w-16" />
+                    <div className="w-9 h-9 rounded-full bg-slate-200" />
+                  </div>
                 </div>
-
-                {/* Bagian Konten */}
-                <div className="p-4 flex flex-col justify-between flex-1">
-                  <div>
-                    <h3 className="font-bold text-[17px] text-slate-900 leading-snug">
-                      {item.title}
-                    </h3>
-                    <p className="text-slate-500 text-[13px] mt-1 line-clamp-1">
-                      {item.highlight}
-                    </p>
+              ))
+            ) : (
+              activeServices.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => handleOpenProduct(item)}
+                  className="rounded-3xl overflow-hidden bg-white w-[235px] flex-shrink-0 snap-start border border-black/[0.07] shadow-md shadow-slate-300/40 cursor-pointer select-none active:scale-[0.98] hover:shadow-lg transition-all flex flex-col justify-between"
+                >
+                  {/* Bagian Gambar */}
+                  <div className="relative w-full h-48 bg-slate-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.image_url}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
 
-                  {/* Baris Harga & Butang Interaktif */}
-                  <div className="mt-4 pt-2.5 border-t border-slate-100 flex justify-between items-center">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#00BDFF]">
-                        {item.price_prefix || 'Bermula'}
-                      </span>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-[17px] font-black text-slate-900 tracking-tight leading-none">
-                          {item.price_amount}
-                        </span>
-                        {item.price_unit && (
-                          <span className="text-[11px] font-medium text-slate-400">
-                            {item.price_unit}
-                          </span>
-                        )}
-                      </div>
+                  {/* Bagian Konten */}
+                  <div className="p-4 flex flex-col justify-between flex-1">
+                    <div>
+                      <h3 className="font-bold text-[17px] text-slate-900 leading-snug">
+                        {item.title}
+                      </h3>
+                      <p className="text-slate-500 text-[13px] mt-1 line-clamp-1">
+                        {item.highlight}
+                      </p>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenProduct(item);
-                      }}
-                      aria-label={`Pilih ${item.title}`}
-                      className="w-9 h-9 rounded-full bg-blue-50 hover:bg-[#00BDFF] text-[#00BDFF] hover:text-white flex items-center justify-center transition-all active:scale-90 shadow-xs border border-blue-100"
-                    >
-                      <Plus className="w-5 h-5 stroke-[2.2]" />
-                    </button>
+                    {/* Baris Harga & Butang Interaktif */}
+                    <div className="mt-4 pt-2.5 border-t border-slate-100 flex justify-between items-center">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#00BDFF]">
+                          {item.price_prefix || 'Bermula'}
+                        </span>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-[17px] font-black text-slate-900 tracking-tight leading-none">
+                            {item.price_amount}
+                          </span>
+                          {item.price_unit && (
+                            <span className="text-[11px] font-medium text-slate-400">
+                              {item.price_unit}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenProduct(item);
+                        }}
+                        aria-label={`Pilih ${item.title}`}
+                        className="w-9 h-9 rounded-full bg-blue-50 hover:bg-[#00BDFF] text-[#00BDFF] hover:text-white flex items-center justify-center transition-all active:scale-90 shadow-xs border border-blue-100"
+                      >
+                        <Plus className="w-5 h-5 stroke-[2.2]" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -737,56 +758,68 @@ export default function HomePage() {
           className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar" 
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {activeVideos.map((video) => (
-            <div 
-              key={video.id}
-              className="relative shrink-0 w-[72vw] max-w-[270px] aspect-[9/15] rounded-[28px] overflow-hidden bg-slate-900 snap-center shadow-lg shadow-slate-900/10 border border-slate-200/80 transition-transform active:scale-[0.98]"
-            >
-              {activeVideo === video.id ? (
-                <iframe 
-                  className="absolute inset-0 w-full h-full"
-                  src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1&controls=1&modestbranding=1&rel=0&playsinline=1`} 
-                  title={video.title}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              ) : (
-                <div 
-                  className="relative w-full h-full cursor-pointer group"
-                  onClick={() => setActiveVideo(video.id)}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
-                    src={video.thumbnail_url} 
-                    alt={video.title} 
-                    className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
+          {isLoadingCms ? (
+            [1, 2].map((i) => (
+              <div
+                key={i}
+                className="shrink-0 w-[72vw] max-w-[270px] aspect-[9/15] rounded-[28px] bg-slate-200 animate-pulse flex flex-col justify-end p-4 space-y-2"
+              >
+                <div className="h-3 bg-slate-300 rounded w-1/3" />
+                <div className="h-5 bg-slate-300 rounded w-3/4" />
+              </div>
+            ))
+          ) : (
+            activeVideos.map((video) => (
+              <div 
+                key={video.id}
+                className="relative shrink-0 w-[72vw] max-w-[270px] aspect-[9/15] rounded-[28px] overflow-hidden bg-slate-900 snap-center shadow-lg shadow-slate-900/10 border border-slate-200/80 transition-transform active:scale-[0.98]"
+              >
+                {activeVideo === video.id ? (
+                  <iframe 
+                    className="absolute inset-0 w-full h-full"
+                    src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1&controls=1&modestbranding=1&rel=0&playsinline=1`} 
+                    title={video.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
                   />
-                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/35 to-transparent pointer-events-none" />
+                ) : (
+                  <div 
+                    className="relative w-full h-full cursor-pointer group"
+                    onClick={() => setActiveVideo(video.id)}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={video.thumbnail_url} 
+                      alt={video.title} 
+                      className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
+                    />
+                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/35 to-transparent pointer-events-none" />
 
-                  {/* Play Button */}
-                  <div className="absolute inset-0 flex items-center justify-center z-10">
-                    <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-white/35 group-hover:bg-[#00BDFF] backdrop-blur-xl border border-white/70 shadow-[0_8px_30px_rgba(0,0,0,0.3)] flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110">
-                      <Play className="w-7 h-7 sm:w-8 sm:h-8 ml-1 fill-white text-white drop-shadow-md" />
+                    {/* Play Button */}
+                    <div className="absolute inset-0 flex items-center justify-center z-10">
+                      <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-white/35 group-hover:bg-[#00BDFF] backdrop-blur-xl border border-white/70 shadow-[0_8px_30px_rgba(0,0,0,0.3)] flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110">
+                        <Play className="w-7 h-7 sm:w-8 sm:h-8 ml-1 fill-white text-white drop-shadow-md" />
+                      </div>
+                    </div>
+
+                    <div className="absolute inset-x-0 bottom-0 p-4 pb-5 z-10">
+                      <span className="bg-[#00BDFF] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider mb-1.5 inline-block shadow-sm">
+                        {video.category}
+                      </span>
+                      <h3 className="text-white font-bold text-[15px] sm:text-[16px] leading-snug drop-shadow-md">
+                        {video.title}
+                      </h3>
+                      <p className="text-white/80 text-[11px] font-medium mt-1 flex items-center gap-1 group-hover:text-white transition-colors">
+                        <span>Tonton rakaman</span>
+                        <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      </p>
                     </div>
                   </div>
-
-                  <div className="absolute inset-x-0 bottom-0 p-4 pb-5 z-10">
-                    <span className="bg-[#00BDFF] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider mb-1.5 inline-block shadow-sm">
-                      {video.category}
-                    </span>
-                    <h3 className="text-white font-bold text-[15px] sm:text-[16px] leading-snug drop-shadow-md">
-                      {video.title}
-                    </h3>
-                    <p className="text-white/80 text-[11px] font-medium mt-1 flex items-center gap-1 group-hover:text-white transition-colors">
-                      <span>Tonton rakaman</span>
-                      <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -809,61 +842,74 @@ export default function HomePage() {
           className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar" 
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {activeGallery.map((item, idx) => {
-            const isActive = idx === activeGalleryIndex;
-            return (
-              <div 
-                key={item.id}
-                onClick={() => scrollToGallery(idx)}
-                className={`shrink-0 w-[82vw] max-w-[320px] bg-white rounded-3xl overflow-hidden snap-center border transition-all duration-300 cursor-pointer flex flex-col justify-between ${
-                  isActive 
-                    ? 'border-[#00BDFF] shadow-md shadow-blue-500/10 ring-2 ring-blue-500/20' 
-                    : 'border-slate-200/80 shadow-sm opacity-90'
-                }`}
+          {isLoadingCms ? (
+            [1, 2].map((i) => (
+              <div
+                key={i}
+                className="shrink-0 w-[82vw] max-w-[320px] bg-white rounded-3xl overflow-hidden border border-slate-200/80 p-4 space-y-3 animate-pulse"
               >
-                <div className="relative w-full aspect-[4/3.2] bg-slate-100 overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
-                    src={item.image_url} 
-                    alt={item.title} 
-                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" 
-                  />
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-white/95 backdrop-blur-md text-[#00BDFF] font-bold text-[10px] px-2.5 py-1 rounded-full shadow-xs border border-blue-100/60">
-                      {item.tag}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-4 space-y-2 flex-1 flex flex-col justify-between bg-white">
-                  <div>
-                    <h3 className="font-bold text-[15px] text-slate-900 leading-snug">
-                      {item.title}
-                    </h3>
-                    <p className="text-[12px] text-slate-500 mt-1 line-clamp-1">
-                      {item.fabric}
-                    </p>
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-slate-400">
-                      {item.client}
-                    </span>
-                    <a
-                      href={formatWhatsAppLink(companySettings?.whatsapp_number, `Hai SFV Apparel, saya berminat dengan hasil produksi *${item.title}*`)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[#00BDFF] hover:text-blue-700 transition-colors"
-                    >
-                      <FaWhatsapp className="w-3.5 h-3.5 text-[#25D366]" />
-                      <span>Tempah Seperti Ini</span>
-                    </a>
-                  </div>
-                </div>
+                <div className="w-full aspect-[4/3.2] bg-slate-200 rounded-2xl" />
+                <div className="h-4 bg-slate-200 rounded w-2/3" />
+                <div className="h-3 bg-slate-100 rounded w-1/3" />
               </div>
-            );
-          })}
+            ))
+          ) : (
+            activeGallery.map((item, idx) => {
+              const isActive = idx === activeGalleryIndex;
+              return (
+                <div 
+                  key={item.id}
+                  onClick={() => scrollToGallery(idx)}
+                  className={`shrink-0 w-[82vw] max-w-[320px] bg-white rounded-3xl overflow-hidden snap-center border transition-all duration-300 cursor-pointer flex flex-col justify-between ${
+                    isActive 
+                      ? 'border-[#00BDFF] shadow-md shadow-blue-500/10 ring-2 ring-blue-500/20' 
+                      : 'border-slate-200/80 shadow-sm opacity-90'
+                  }`}
+                >
+                  <div className="relative w-full aspect-[4/3.2] bg-slate-100 overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={item.image_url} 
+                      alt={item.title} 
+                      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" 
+                    />
+                    <div className="absolute top-3 left-3">
+                      <span className="bg-white/95 backdrop-blur-md text-[#00BDFF] font-bold text-[10px] px-2.5 py-1 rounded-full shadow-xs border border-blue-100/60">
+                        {item.tag}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 space-y-2 flex-1 flex flex-col justify-between bg-white">
+                    <div>
+                      <h3 className="font-bold text-[15px] text-slate-900 leading-snug">
+                        {item.title}
+                      </h3>
+                      <p className="text-[12px] text-slate-500 mt-1 line-clamp-1">
+                        {item.fabric}
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-slate-400">
+                        {item.client}
+                      </span>
+                      <a
+                        href={formatWhatsAppLink(companySettings?.whatsapp_number, `Hai SFV Apparel, saya berminat dengan hasil produksi *${item.title}*`)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[#00BDFF] hover:text-blue-700 transition-colors"
+                      >
+                        <FaWhatsapp className="w-3.5 h-3.5 text-[#25D366]" />
+                        <span>Tempah Seperti Ini</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
 
         <div className="flex justify-center items-center gap-1.5 pt-2">

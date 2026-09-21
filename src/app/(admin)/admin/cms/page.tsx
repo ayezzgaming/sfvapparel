@@ -746,7 +746,20 @@ export default function AdminCmsPage() {
                ========================================================================= */}
             {activeTab === 'hero' && (
               <div className="space-y-4">
-                {heroBanners.length === 0 ? (
+                {isLoadingCms ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden animate-pulse">
+                        <div className="aspect-video bg-slate-200 dark:bg-zinc-700" />
+                        <div className="p-3.5 space-y-2">
+                          <div className="h-2.5 bg-slate-200 dark:bg-zinc-700 rounded w-1/3" />
+                          <div className="h-3 bg-slate-200 dark:bg-zinc-700 rounded w-3/4" />
+                          <div className="h-2 bg-slate-100 dark:bg-zinc-800 rounded w-1/2 mt-2" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : heroBanners.length === 0 ? (
                   <div className="text-center py-12 bg-slate-50 dark:bg-zinc-800/30 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800 p-6">
                     <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                     <p className="text-xs font-medium text-slate-600 dark:text-zinc-300">Tiada slide banner aktif</p>
@@ -888,7 +901,18 @@ export default function AdminCmsPage() {
                ========================================================================= */}
             {activeTab === 'services' && (
               <div className="space-y-4">
-                {services.length === 0 ? (
+                {isLoadingCms ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 p-4 space-y-3 animate-pulse">
+                        <div className="h-3 bg-slate-200 rounded w-1/3" />
+                        <div className="h-4 bg-slate-200 rounded w-2/3" />
+                        <div className="h-3 bg-slate-100 rounded w-full" />
+                        <div className="h-4 bg-slate-200 rounded w-1/4" />
+                      </div>
+                    ))}
+                  </div>
+                ) : services.length === 0 ? (
                   <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200 p-6">
                     <Layers className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                     <p className="text-xs font-medium text-slate-600">Tiada servis dikonfigurasikan</p>
@@ -1069,7 +1093,19 @@ export default function AdminCmsPage() {
                ========================================================================= */}
             {activeTab === 'videos' && (
               <div className="space-y-4">
-                {productionVideos.length === 0 ? (
+                {isLoadingCms ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 overflow-hidden animate-pulse">
+                        <div className="aspect-video bg-slate-200" />
+                        <div className="p-3.5 space-y-2">
+                          <div className="h-3 bg-slate-200 rounded w-1/2" />
+                          <div className="h-2.5 bg-slate-100 rounded w-1/3" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : productionVideos.length === 0 ? (
                   <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200 p-6">
                     <Video className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                     <p className="text-xs font-medium text-slate-600">Tiada video produksi aktif</p>
@@ -1134,7 +1170,19 @@ export default function AdminCmsPage() {
                ========================================================================= */}
             {activeTab === 'gallery' && (
               <div className="space-y-4">
-                {productionGallery.length === 0 ? (
+                {isLoadingCms ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 overflow-hidden animate-pulse">
+                        <div className="aspect-square bg-slate-200" />
+                        <div className="p-2.5 space-y-2">
+                          <div className="h-3 bg-slate-200 rounded w-2/3" />
+                          <div className="h-2 bg-slate-100 rounded w-1/2" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : productionGallery.length === 0 ? (
                   <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200 p-6">
                     <Sparkles className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                     <p className="text-xs font-medium text-slate-600">Tiada portfolio galeri aktif</p>
@@ -1189,7 +1237,20 @@ export default function AdminCmsPage() {
                ========================================================================= */}
             {activeTab === 'testimonials' && (
               <div className="space-y-4">
-                {testimonials.length === 0 ? (
+                {isLoadingCms ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 p-4 space-y-3 animate-pulse">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-7 h-7 rounded-full bg-slate-200" />
+                          <div className="h-3 bg-slate-200 rounded w-24" />
+                        </div>
+                        <div className="h-3 bg-slate-100 rounded w-full" />
+                        <div className="h-3 bg-slate-100 rounded w-3/4" />
+                      </div>
+                    ))}
+                  </div>
+                ) : testimonials.length === 0 ? (
                   <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200 p-6">
                     <Star className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                     <p className="text-xs font-medium text-slate-600">Tiada testimoni pelanggan</p>

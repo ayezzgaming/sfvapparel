@@ -23,6 +23,7 @@ import {
   getAiConfigDb,
   saveAiConfigDb
 } from '@/app/actions/adsPlatformActions';
+import { compressImageFile } from '@/lib/utils/imageCompressor';
 import { formatCurrency } from '@/lib/pricing-calculator';
 import {
   Copy,
@@ -258,16 +259,23 @@ export default function AdminAdsGeneratorPage() {
     setShowKeyModal(false);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setCustomImage(event.target?.result as string);
+      try {
+        const compressed = await compressImageFile(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.85 });
+        setCustomImage(compressed);
         setCustomTitle(file.name.replace(/\.[^/.]+$/, ''));
         setSelectedDesignId(null);
-      };
-      reader.readAsDataURL(file);
+      } catch {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setCustomImage(event.target?.result as string);
+          setCustomTitle(file.name.replace(/\.[^/.]+$/, ''));
+          setSelectedDesignId(null);
+        };
+        reader.readAsDataURL(file);
+      }
     }
     setShowAttachMenu(false);
   };

@@ -452,10 +452,17 @@ export default function AdminCatalogPage() {
 
           {/* Scrollable list */}
           <div className="flex-1 min-h-0 overflow-y-auto pr-1 pb-2">
-            {isLoadingDesigns && designs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-48 text-center space-y-3 text-slate-400 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/60 dark:border-zinc-800 p-6 animate-pulse">
-                <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
-                <p className="text-xs font-medium text-slate-600 dark:text-zinc-300">Menyegerak dengan database...</p>
+            {isLoadingDesigns ? (
+              <div className="grid grid-cols-2 gap-2.5 pt-0.5">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="rounded-2xl overflow-hidden border border-slate-200/80 bg-white dark:bg-zinc-900 animate-pulse">
+                    <div className="aspect-square bg-slate-200 dark:bg-zinc-800" />
+                    <div className="p-2.5 space-y-1.5">
+                      <div className="h-3 bg-slate-200 dark:bg-zinc-800 rounded w-3/4" />
+                      <div className="h-2 bg-slate-100 dark:bg-zinc-800/60 rounded w-1/2" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : filteredDesigns.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 text-center space-y-2 text-slate-400 bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800 p-4">
