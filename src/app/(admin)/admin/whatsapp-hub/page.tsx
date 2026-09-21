@@ -179,6 +179,65 @@ function formatWhatsAppText(text: string): React.ReactNode {
   });
 }
 
+function formatContactPhone(phone: string): string {
+  if (!phone) return '';
+  const clean = phone.replace(/@.*$/, '').replace(/[^0-9]/g, '');
+  
+  // Exclude internal WhatsApp LIDs (13+ digits not starting with standard MSISDN)
+  if (phone.includes('@lid') || (clean.length >= 13 && !clean.startsWith('60') && !clean.startsWith('62') && !clean.startsWith('65') && !clean.startsWith('1'))) {
+    return '';
+  }
+
+  // Malaysia: 601xxxxxxxxx -> +60 1x-xxx xxxx
+  if (clean.startsWith('60')) {
+    const num = clean.slice(2);
+    if (num.startsWith('1')) {
+      return `+60 ${num.slice(0, 2)}-${num.slice(2, 5)} ${num.slice(5)}`;
+    }
+    return `+60 ${num.slice(0, 1)}-${num.slice(1)}`;
+  }
+
+  // Indonesia: 628xxxxxxxxxxx -> +62 8xx-xxxx-xxxx
+  if (clean.startsWith('62')) {
+    const num = clean.slice(2);
+    if (num.length >= 9) {
+      return `+62 ${num.slice(0, 3)}-${num.slice(3, 7)}-${num.slice(7)}`;
+    }
+    return `+62 ${num}`;
+  }
+
+  // Singapore: 65xxxxxxxx -> +65 xxxx xxxx
+  if (clean.startsWith('65') && clean.length === 10) {
+    return `+65 ${clean.slice(2, 6)} ${clean.slice(6)}`;
+  }
+
+  // General international format
+  if (clean.length >= 8 && clean.length <= 13) {
+    return `+${clean.slice(0, 2)} ${clean.slice(2, 6)} ${clean.slice(6)}`;
+  }
+
+  return clean ? `+${clean}` : '';
+}
+
+const AVATAR_GRADIENTS = [
+  'from-sky-500 to-blue-600',
+  'from-teal-500 to-emerald-600',
+  'from-indigo-500 to-violet-600',
+  'from-amber-500 to-orange-600',
+  'from-pink-500 to-rose-600',
+  'from-cyan-500 to-blue-500',
+  'from-purple-500 to-indigo-600',
+];
+
+function getAvatarGradient(name: string): string {
+  if (!name) return 'from-slate-600 to-slate-700';
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
+}
+
 export default function WhatsAppHubPage() {
   const { companySettings } = useAppStore();
 
@@ -589,15 +648,35 @@ export default function WhatsAppHubPage() {
           ) : (
             <div className="flex-1 min-h-0 flex overflow-hidden relative">
               
-              {/* LEFT PANEL: CONTACTS LIST (Collapsible) */}
+              {/* LEFT PANEL: CONTACTS LIST (WhatsApp Web Standard Style) */}
               <div
-                className={`shrink-0 transition-all duration-300 ease-in-out border-r border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col h-full overflow-hidden ${
-                  isLeftPanelCollapsed ? 'w-0 border-r-0 overflow-hidden' : 'w-72 sm:w-80 md:w-88'
+                className={`shrink-0 transition-all duration-300 ease-in-out border-r border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col h-full overflow-hidden ${
+                  isLeftPanelCollapsed ? 'w-0 border-r-0 overflow-hidden' : 'w-80 sm:w-88 md:w-96'
                 }`}
               >
                 {/* Search & Category Filter Header */}
-                <div className="p-3 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/50 space-y-2 shrink-0">
-                  <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-zinc-800 rounded-full text-[11px] font-semibold border border-slate-200/60 dark:border-zinc-700/60">
+                <div className="p-3 border-b border-slate-100 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 space-y-2.5 shrink-0">
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={chatSearch}
+                      onChange={(e) => setChatSearch(e.target.value)}
+                      placeholder="Cari nama atau mesej..."
+                      className="w-full pl-9 pr-3 py-1.5 rounded-full bg-slate-100/90 dark:bg-zinc-800 border-none text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40 placeholder:text-slate-400 transition-all"
+                    />
+                    {chatSearch && (
+                      <button
+                        type="button"
+                        onClick={() => setChatSearch('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-zinc-800/90 rounded-full text-[11px] font-semibold">
                     <button
                       type="button"
                       onClick={() => setChatCategoryFilter('all')}
@@ -632,28 +711,17 @@ export default function WhatsAppHubPage() {
                       🔒 Peribadi ({privateCount})
                     </button>
                   </div>
-
-                  <div className="relative">
-                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      value={chatSearch}
-                      onChange={(e) => setChatSearch(e.target.value)}
-                      placeholder="Cari perbualan..."
-                      className="w-full pl-8 pr-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40 placeholder:text-slate-400 shadow-2xs"
-                    />
-                  </div>
                 </div>
 
                 {/* Contacts List */}
-                <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-zinc-800 sparkle-scroll">
+                <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-zinc-800/60 sparkle-scroll">
                   {filteredChats.length === 0 ? (
-                    <div className="p-8 text-center space-y-2">
-                      <MessageSquare className="w-6 h-6 text-slate-300 mx-auto" />
-                      <p className="text-xs text-slate-400">
+                    <div className="p-10 text-center space-y-2">
+                      <MessageSquare className="w-7 h-7 text-slate-300 mx-auto" />
+                      <p className="text-xs text-slate-400 font-medium">
                         {chatCategoryFilter === 'private'
                           ? 'Tiada perbualan ditandakan sebagai peribadi.'
-                          : 'Tiada perbualan aktif.'}
+                          : 'Tiada perbualan aktif ditemui.'}
                       </p>
                     </div>
                   ) : (
@@ -661,55 +729,63 @@ export default function WhatsAppHubPage() {
                       const isSelected = selectedChat?.id === chat.id;
                       const isBotPaused = pausedChatIds[chat.id];
                       const isPrivate = !!privateChatIds[chat.id];
+                      const formattedPhone = formatContactPhone(chat.phone);
+                      const avatarGradient = getAvatarGradient(chat.name);
 
                       return (
                         <div
                           key={chat.id}
                           onClick={() => setSelectedChat(chat)}
-                          className={`p-3.5 flex items-start gap-3 cursor-pointer transition-all ${
+                          className={`px-3.5 py-3 flex items-start gap-3 cursor-pointer transition-all ${
                             isSelected 
                               ? 'bg-sky-50/90 dark:bg-sky-950/40 border-l-4 border-[#00BDFF]' 
                               : 'hover:bg-slate-50/80 dark:hover:bg-zinc-800/40 bg-white dark:bg-zinc-900'
                           }`}
                         >
-                          <div className={`w-9 h-9 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs ${
-                            isPrivate 
-                              ? 'bg-gradient-to-tr from-slate-600 to-slate-700' 
-                              : 'bg-gradient-to-tr from-slate-800 to-slate-900'
+                          <div className={`w-10 h-10 rounded-full text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs bg-gradient-to-tr ${
+                            isPrivate ? 'from-slate-600 to-slate-700' : avatarGradient
                           }`}>
                             {chat.name.charAt(0).toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100 truncate">
+                            <div className="flex items-center justify-between gap-1">
+                              <h4 className="text-[13px] font-semibold text-slate-900 dark:text-zinc-100 truncate">
                                 {chat.name}
                               </h4>
                               {chat.lastMessage && (
-                                <span className="text-[10px] text-slate-400 font-mono">
+                                <span className="text-[10px] text-slate-400 shrink-0">
                                   {new Date(chat.lastMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center justify-between mt-0.5">
-                              <p className="text-[11px] text-slate-400 font-mono truncate">
-                                +{chat.phone}
+
+                            <div className="flex items-center justify-between mt-0.5 gap-1">
+                              <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">
+                                {formattedPhone ? (
+                                  <span className="font-mono">{formattedPhone}</span>
+                                ) : isPrivate ? (
+                                  'Perbualan Peribadi'
+                                ) : (
+                                  'Pelanggan WhatsApp'
+                                )}
                               </p>
                               {isPrivate ? (
-                                <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 flex items-center gap-0.5">
+                                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 shrink-0">
                                   🔒 Peribadi
                                 </span>
                               ) : isBotPaused ? (
-                                <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium">
+                                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium shrink-0">
                                   Staf CS
                                 </span>
                               ) : (
-                                <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200 font-medium">
+                                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200 font-medium shrink-0">
                                   Bot AI
                                 </span>
                               )}
                             </div>
+
                             {chat.lastMessage && (
-                              <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate mt-0.5">
+                              <p className="text-[11.5px] text-slate-500 dark:text-zinc-400 truncate mt-1 leading-snug">
                                 {chat.lastMessage.fromMe && <span className="font-semibold text-slate-700 dark:text-zinc-300">Anda: </span>}
                                 {stripWhatsAppFormatting(chat.lastMessage.body)}
                               </p>
@@ -722,8 +798,8 @@ export default function WhatsAppHubPage() {
                 </div>
               </div>
 
-              {/* RIGHT PANEL: CHAT CONVERSATION */}
-              <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden bg-[#efeae2]/50 dark:bg-zinc-950 relative">
+              {/* RIGHT PANEL: CHAT CONVERSATION (WhatsApp Web Clean Standard) */}
+              <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden bg-[#efeae2]/65 dark:bg-[#0c1317] relative">
                 
                 {/* FLOATING CAPSULE TOGGLE HANDLE (LEFT EDGE OF RIGHT PANEL) */}
                 <button
@@ -745,14 +821,14 @@ export default function WhatsAppHubPage() {
                     {/* Active Chat Top Bar */}
                     <div className="p-3 px-5 bg-white dark:bg-zinc-900 border-b border-slate-200/80 dark:border-zinc-800 flex items-center justify-between shrink-0 shadow-2xs">
                       <div className="flex items-center space-x-3">
-                        <div className={`w-9 h-9 rounded-full text-white font-bold text-xs flex items-center justify-center shadow-xs ${
-                          privateChatIds[selectedChat.id] ? 'bg-slate-600' : 'bg-[#00BDFF]'
+                        <div className={`w-10 h-10 rounded-full text-white font-bold text-xs flex items-center justify-center shadow-xs bg-gradient-to-tr ${
+                          privateChatIds[selectedChat.id] ? 'from-slate-600 to-slate-700' : getAvatarGradient(selectedChat.name)
                         }`}>
                           {selectedChat.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
+                            <h3 className="text-[13.5px] font-bold text-slate-900 dark:text-zinc-100">
                               {selectedChat.name}
                             </h3>
                             {privateChatIds[selectedChat.id] ? (
@@ -771,8 +847,14 @@ export default function WhatsAppHubPage() {
                               </span>
                             )}
                           </div>
-                          <p className="text-[10.5px] text-slate-400 font-mono">
-                            +{selectedChat.phone}
+                          <p className="text-[11px] text-slate-400">
+                            {formatContactPhone(selectedChat.phone) ? (
+                              <span className="font-mono">{formatContactPhone(selectedChat.phone)}</span>
+                            ) : privateChatIds[selectedChat.id] ? (
+                              'Perbualan Peribadi'
+                            ) : (
+                              'Pelanggan WhatsApp • Aktif'
+                            )}
                           </p>
                         </div>
                       </div>
@@ -821,15 +903,17 @@ export default function WhatsAppHubPage() {
                           </button>
                         )}
 
-                        <a
-                          href={`https://wa.me/${selectedChat.phone}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3.5 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          <span>WhatsApp Web</span>
-                        </a>
+                        {formatContactPhone(selectedChat.phone) && (
+                          <a
+                            href={`https://wa.me/${selectedChat.phone.replace(/[^0-9]/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3.5 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/80 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            <span>WhatsApp Web</span>
+                          </a>
+                        )}
                       </div>
                     </div>
 
@@ -844,7 +928,7 @@ export default function WhatsAppHubPage() {
 
                     {/* Messages Body */}
                     <div className="flex-1 overflow-y-auto p-4 sm:p-6 sparkle-scroll">
-                      <div className="max-w-3xl mx-auto w-full space-y-3.5">
+                      <div className="max-w-2xl lg:max-w-3xl mx-auto w-full space-y-2.5">
                         {loadingMessages ? (
                           <div className="py-16 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
                             <RefreshCw className="w-5 h-5 animate-spin text-[#00BDFF]" />
@@ -865,10 +949,10 @@ export default function WhatsAppHubPage() {
                                 className={`flex ${msg.fromMe ? 'justify-end' : 'justify-start'}`}
                               >
                                 <div
-                                  className={`max-w-[85%] sm:max-w-[75%] lg:max-w-[68%] rounded-2xl px-4 py-2.5 text-[12.5px] shadow-xs space-y-1.5 transition-all select-text ${
+                                  className={`max-w-[80%] sm:max-w-[70%] lg:max-w-[62%] rounded-2xl px-3.5 py-2 text-[12.5px] shadow-2xs space-y-1 transition-all select-text ${
                                     msg.fromMe
-                                      ? 'bg-[#D9FDD3] dark:bg-[#005C4B] text-[#111B21] dark:text-[#E9EDEF] border border-[#C2EBBB] dark:border-[#005C4B] rounded-tr-xs'
-                                      : 'bg-white dark:bg-zinc-900 text-[#111B21] dark:text-[#E9EDEF] border border-slate-200/90 dark:border-zinc-800 rounded-tl-xs'
+                                      ? 'bg-[#D9FDD3] dark:bg-[#005C4B] text-[#111B21] dark:text-[#E9EDEF] border border-[#BBEAB3]/50 dark:border-[#005C4B] rounded-tr-xs'
+                                      : 'bg-white dark:bg-[#202C33] text-[#111B21] dark:text-[#E9EDEF] border border-black/5 dark:border-white/5 rounded-tl-xs'
                                   }`}
                                 >
                                   {vcard ? (
@@ -886,13 +970,13 @@ export default function WhatsAppHubPage() {
                                         <div className="min-w-0 flex-1">
                                           <p className="font-bold text-xs truncate">{vcard.name}</p>
                                           <p className={`text-[10px] font-mono truncate ${msg.fromMe ? 'text-emerald-800' : 'text-slate-500'}`}>
-                                            {vcard.phone ? `+${vcard.phone}` : 'Kad Kenalan'}
+                                            {formatContactPhone(vcard.phone) || (vcard.phone ? `+${vcard.phone}` : 'Kad Kenalan')}
                                           </p>
                                         </div>
                                       </div>
                                       {vcard.phone && (
                                         <a
-                                          href={`https://wa.me/${vcard.phone}`}
+                                          href={`https://wa.me/${vcard.phone.replace(/[^0-9]/g, '')}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           className={`inline-flex items-center justify-center gap-1.5 w-full py-1.5 rounded-full font-semibold text-[11px] transition-colors ${
@@ -921,21 +1005,21 @@ export default function WhatsAppHubPage() {
 
                                     if (isImage) {
                                       return (
-                                        <div className="space-y-1.5">
+                                        <div className="space-y-1">
                                           {msg.mediaUrl ? (
                                             <div 
                                               onClick={() => setPreviewImage(msg.mediaUrl!)}
-                                              className="relative group rounded-xl overflow-hidden border border-black/10 dark:border-white/10 cursor-pointer max-w-sm bg-black/5 hover:opacity-95 transition-all shadow-xs"
+                                              className="relative group rounded-xl overflow-hidden border border-black/5 dark:border-white/5 cursor-pointer max-w-[280px] sm:max-w-[320px] bg-black/5 hover:opacity-95 transition-all shadow-xs"
                                             >
                                               <img 
                                                 src={msg.mediaUrl} 
                                                 alt="WhatsApp Media" 
-                                                className="max-h-72 w-auto max-w-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-[1.02]"
+                                                className="max-h-72 w-auto object-cover rounded-xl transition-transform duration-300 group-hover:scale-[1.02]"
                                                 loading="lazy"
                                               />
                                               <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white text-xs font-semibold backdrop-blur-[2px]">
                                                 <Maximize2 className="w-4 h-4" />
-                                                <span>Klik Lihat Gambar Penuh</span>
+                                                <span>Lihat Gambar Penuh</span>
                                               </div>
                                             </div>
                                           ) : (
@@ -944,7 +1028,7 @@ export default function WhatsAppHubPage() {
                                                 ? 'bg-emerald-100/50 border-emerald-300/50 text-[#111B21]'
                                                 : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-100'
                                             }`}>
-                                              <div className="w-9 h-9 rounded-lg bg-[#00BDFF]/10 text-[#00BDFF] flex items-center justify-center shrink-0">
+                                              <div className="w-8 h-8 rounded-lg bg-[#00BDFF]/10 text-[#00BDFF] flex items-center justify-center shrink-0">
                                                 <ImageIcon className="w-4 h-4" />
                                               </div>
                                               <div className="min-w-0 flex-1">
@@ -956,7 +1040,7 @@ export default function WhatsAppHubPage() {
                                             </div>
                                           )}
                                           {msg.body && !msg.body.startsWith('[Gambar]') && !msg.body.startsWith('[Media') && (
-                                            <div className="leading-relaxed whitespace-pre-wrap break-words pt-1">
+                                            <div className="leading-relaxed whitespace-pre-wrap break-words pt-1 px-0.5">
                                               {formatWhatsAppText(msg.body)}
                                             </div>
                                           )}
@@ -966,8 +1050,8 @@ export default function WhatsAppHubPage() {
 
                                     if (isAudio) {
                                       return (
-                                        <div className="space-y-1.5">
-                                          <div className={`p-2.5 rounded-xl border flex flex-col gap-2 min-w-[240px] max-w-sm ${
+                                        <div className="space-y-1">
+                                          <div className={`p-2.5 rounded-xl border flex flex-col gap-2 min-w-[220px] max-w-sm ${
                                             msg.fromMe
                                               ? 'bg-emerald-100/50 border-emerald-300/50 text-[#111B21]'
                                               : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-100'
@@ -983,7 +1067,7 @@ export default function WhatsAppHubPage() {
                                             )}
                                           </div>
                                           {msg.body && !msg.body.startsWith('[Mesej Suara') && !msg.body.startsWith('[Audio') && !msg.body.startsWith('[Media') && (
-                                            <div className="leading-relaxed whitespace-pre-wrap break-words">
+                                            <div className="leading-relaxed whitespace-pre-wrap break-words px-0.5">
                                               {formatWhatsAppText(msg.body)}
                                             </div>
                                           )}
@@ -993,12 +1077,12 @@ export default function WhatsAppHubPage() {
 
                                     if (isVideo) {
                                       return (
-                                        <div className="space-y-1.5">
+                                        <div className="space-y-1">
                                           {msg.mediaUrl ? (
-                                            <video controls src={msg.mediaUrl} className="max-h-72 rounded-xl max-w-sm border border-black/10 shadow-xs" />
+                                            <video controls src={msg.mediaUrl} className="max-h-72 rounded-xl max-w-[320px] border border-black/10 shadow-xs" />
                                           ) : null}
                                           {msg.body && !msg.body.startsWith('[Video') && !msg.body.startsWith('[Media') && (
-                                            <div className="leading-relaxed whitespace-pre-wrap break-words">
+                                            <div className="leading-relaxed whitespace-pre-wrap break-words px-0.5">
                                               {formatWhatsAppText(msg.body)}
                                             </div>
                                           )}
@@ -1008,14 +1092,14 @@ export default function WhatsAppHubPage() {
 
                                     if (isDocOrOther) {
                                       return (
-                                        <div className="space-y-1.5">
+                                        <div className="space-y-1">
                                           <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 ${
                                             msg.fromMe
                                               ? 'bg-emerald-100/50 border-emerald-300/50 text-[#111B21]'
                                               : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-100'
                                           }`}>
                                             <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                              <div className="w-9 h-9 rounded-lg bg-[#00BDFF]/10 text-[#00BDFF] flex items-center justify-center shrink-0">
+                                              <div className="w-8 h-8 rounded-lg bg-[#00BDFF]/10 text-[#00BDFF] flex items-center justify-center shrink-0">
                                                 <FileText className="w-4 h-4" />
                                               </div>
                                               <div className="min-w-0 flex-1">
@@ -1031,15 +1115,15 @@ export default function WhatsAppHubPage() {
                                                 download={msg.mediaFilename || 'lampiran-whatsapp'}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="p-2 rounded-full bg-white dark:bg-zinc-700 hover:bg-[#00BDFF] hover:text-white border border-slate-200 dark:border-zinc-600 transition-colors shadow-2xs shrink-0 cursor-pointer"
+                                                className="p-1.5 rounded-full bg-white dark:bg-zinc-700 hover:bg-[#00BDFF] hover:text-white border border-slate-200 dark:border-zinc-600 transition-colors shadow-2xs shrink-0 cursor-pointer"
                                                 title="Muat Turun Fail"
                                               >
-                                                <Download className="w-4 h-4" />
+                                                <Download className="w-3.5 h-3.5" />
                                               </a>
                                             )}
                                           </div>
                                           {msg.body && !msg.body.startsWith('[Lampiran') && !msg.body.startsWith('[Media') && msg.body !== msg.mediaFilename && (
-                                            <div className="leading-relaxed whitespace-pre-wrap break-words">
+                                            <div className="leading-relaxed whitespace-pre-wrap break-words px-0.5">
                                               {formatWhatsAppText(msg.body)}
                                             </div>
                                           )}
@@ -1048,13 +1132,13 @@ export default function WhatsAppHubPage() {
                                     }
 
                                     return (
-                                      <div className="leading-relaxed whitespace-pre-wrap break-words">
+                                      <div className="leading-relaxed whitespace-pre-wrap break-words px-0.5">
                                         {formatWhatsAppText(msg.body)}
                                       </div>
                                     );
                                   })()}
 
-                                  <div className={`flex items-center justify-end gap-1 text-[10px] font-mono ${
+                                  <div className={`flex items-center justify-end gap-1 text-[10px] font-mono pt-0.5 ${
                                     msg.fromMe ? 'text-[#54656f] dark:text-[#8696a0]' : 'text-slate-400'
                                   }`}>
                                     <span>
@@ -1072,8 +1156,8 @@ export default function WhatsAppHubPage() {
                     </div>
 
                     {/* Quick Templates Bar */}
-                    <div className="px-4 py-2 bg-white/95 dark:bg-zinc-900/95 border-t border-slate-200/70 dark:border-zinc-800 overflow-x-auto flex items-center gap-2 scrollbar-none shrink-0">
-                      <div className="max-w-3xl mx-auto w-full flex items-center gap-2">
+                    <div className="px-4 py-2 bg-white dark:bg-zinc-900 border-t border-slate-200/70 dark:border-zinc-800 overflow-x-auto flex items-center gap-2 scrollbar-none shrink-0">
+                      <div className="max-w-2xl lg:max-w-3xl mx-auto w-full flex items-center gap-2">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
                           <Sparkles className="w-3 h-3 text-[#00BDFF]" />
                           Templat:
@@ -1093,13 +1177,13 @@ export default function WhatsAppHubPage() {
 
                     {/* Reply Form */}
                     <div className="p-3 bg-white dark:bg-zinc-900 border-t border-slate-200/80 dark:border-zinc-800 shrink-0">
-                      <form onSubmit={handleSendReply} className="max-w-3xl mx-auto w-full flex items-center gap-2">
+                      <form onSubmit={handleSendReply} className="max-w-2xl lg:max-w-3xl mx-auto w-full flex items-center gap-2">
                         <input
                           type="text"
                           value={replyText}
                           onChange={(e) => setReplyText(e.target.value)}
                           placeholder="Tulis mesej balasan (staf mengambil alih perbualan)..."
-                          className="flex-1 px-4 py-2 rounded-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40"
+                          className="flex-1 px-4 py-2 rounded-full bg-slate-100/90 dark:bg-zinc-800 border-none text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40"
                         />
                         <button
                           type="submit"

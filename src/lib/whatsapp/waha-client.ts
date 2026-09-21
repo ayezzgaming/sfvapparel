@@ -208,7 +208,11 @@ export async function getWahaChats(limit: number = 50): Promise<WahaChatSummary[
       if (!chatId || chatId.includes('status@broadcast')) return null;
 
       const isGroup = !!c.isGroup || chatId.includes('@g.us');
-      const phone = chatId.split('@')[0] || '';
+      const isLid = chatId.includes('@lid');
+      const rawUser = chatId.split('@')[0] || '';
+      
+      const contactObj = c.contact as Record<string, unknown> | undefined;
+      const phone = !isLid ? rawUser : (contactObj?.number as string) || '';
       
       const lastMsgObj = c.lastMessage as Record<string, unknown> | undefined;
       const lastMsgData = lastMsgObj?._data as Record<string, unknown> | undefined;
@@ -217,9 +221,11 @@ export async function getWahaChats(limit: number = 50): Promise<WahaChatSummary[
       const lastMsgTime = rawTime > 10000000000 ? rawTime : rawTime * 1000;
       const lastMsgFromMe = !!(lastMsgObj?.fromMe || (lastMsgData?.id as Record<string, unknown>)?.fromMe);
 
+      const resolvedName = (c.name as string) || (c.pushname as string) || (contactObj?.pushname as string) || (contactObj?.name as string) || (phone ? `+${phone}` : 'Pelanggan WhatsApp');
+
       return {
         id: chatId,
-        name: (c.name as string) || phone || 'Pelanggan WhatsApp',
+        name: resolvedName,
         phone,
         unreadCount: Number(c.unreadCount) || 0,
         isGroup,
