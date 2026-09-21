@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import { 
   ChevronRight, 
   ShoppingBag,
@@ -45,14 +46,25 @@ const TIMELINE_STEPS = [
 ];
 
 export default function HistoryPage() {
-  const { orders, deleteOrder, companySettings } = useAppStore();
+  const { orders, deleteOrder, companySettings, refreshAllDb } = useAppStore();
   const { isAuthenticated, customer, isLoading } = useAuth();
+  const searchParams = useSearchParams();
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderSheetOpen, setIsOrderSheetOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isPayingBalance, setIsPayingBalance] = useState(false);
   const [balanceError, setBalanceError] = useState<string | null>(null);
+
+  const paymentQuery = searchParams.get('payment');
+  const orderNumberQuery = searchParams.get('order_number');
+
+  // Sync DB on return from payment gateway
+  useEffect(() => {
+    if (paymentQuery) {
+      refreshAllDb?.();
+    }
+  }, [paymentQuery, refreshAllDb]);
 
   // Filter orders by authenticated customer from Database
   const customerOrders = useMemo(() => {
@@ -137,6 +149,31 @@ export default function HistoryPage() {
     <div className="w-full min-h-full pt-3 pb-16 space-y-4 select-none font-ios bg-[#F2F2F7]">
       <div className="px-5 space-y-3.5 pt-1">
         
+        {/* Payment Gateway Callback Status Notification */}
+        {paymentQuery === 'success' && (
+          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-start gap-3 shadow-xs">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="text-xs space-y-0.5">
+              <p className="font-bold">Pembayaran Berjaya Diterima!</p>
+              <p className="text-emerald-700 leading-relaxed">
+                {orderNumberQuery ? `Transaksi untuk pesanan ${orderNumberQuery} telah disahkan.` : 'Transaksi anda telah disahkan.'} Pihak kilang sedang menyemak mockup dan memulakan jadual pengeluaran.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {(paymentQuery === 'failed' || paymentQuery === 'cancelled') && (
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3 shadow-xs">
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="text-xs space-y-0.5">
+              <p className="font-bold">Pembayaran Tidak Selesai</p>
+              <p className="text-amber-700 leading-relaxed">
+                Sesi pembayaran dalam talian telah dibatalkan atau tidak berjaya. Anda boleh mencuba semula melalui butang perincian pesanan di bawah atau hubungi kami melalui WhatsApp.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* State 1: Guest / Not Logged In */}
         {!isAuthenticated ? (
           <div className="bg-white rounded-3xl p-8 text-center shadow-xs space-y-3 border border-slate-200/60 my-4">

@@ -97,7 +97,7 @@ export async function updateOrderPaymentStatusDb(
     // Dapatkan data pesanan sedia ada
     const { data: currentOrder, error: fetchErr } = await supabase
       .from('orders')
-      .select('id, total_amount, deposit_amount, balance_amount, paid_amount, payment_type_selected, status')
+      .select('id, total_amount, deposit_amount, balance_amount, paid_amount, payment_type_selected, payment_status, deposit_paid_at, status')
       .eq('order_number', baseOrderNumber)
       .single();
 
@@ -122,17 +122,22 @@ export async function updateOrderPaymentStatusDb(
         if (paymentId) updatePayload.balance_payment_id = paymentId;
         if (paymentMethod) updatePayload.balance_payment_method = paymentMethod;
       } else if (isDepositPayment || currentOrder?.payment_type_selected === 'deposit_50') {
-        // Pembayaran deposit 50%
-        updatePayload.payment_status = 'deposit_paid';
-        updatePayload.deposit_paid_at = new Date().toISOString();
-        updatePayload.deposit_amount = depositAmount;
-        updatePayload.balance_amount = totalAmount - depositAmount;
-        updatePayload.paid_amount = depositAmount;
-        if (paymentId) updatePayload.deposit_payment_id = paymentId;
-        if (paymentMethod) updatePayload.deposit_payment_method = paymentMethod;
-        // Majukan status ke proof_approved secara automatik
-        if (currentOrder?.status === 'pending_proof') {
-          updatePayload.status = 'proof_approved';
+        // If already paid 100%, do not regress to deposit_paid
+        if (currentOrder?.payment_status === 'paid') {
+          updatePayload.payment_status = 'paid';
+        } else {
+          // Pembayaran deposit 50%
+          updatePayload.payment_status = 'deposit_paid';
+          updatePayload.deposit_paid_at = new Date().toISOString();
+          updatePayload.deposit_amount = depositAmount;
+          updatePayload.balance_amount = totalAmount - depositAmount;
+          updatePayload.paid_amount = depositAmount;
+          if (paymentId) updatePayload.deposit_payment_id = paymentId;
+          if (paymentMethod) updatePayload.deposit_payment_method = paymentMethod;
+          // Majukan status ke proof_approved secara automatik
+          if (currentOrder?.status === 'pending_proof') {
+            updatePayload.status = 'proof_approved';
+          }
         }
       } else {
         // Bayaran Penuh 100%
@@ -147,7 +152,19 @@ export async function updateOrderPaymentStatusDb(
         }
       }
     } else {
-      updatePayload.payment_status = paymentStatus;
+      // If a balance settlement session was failed/cancelled, do NOT wipe out existing deposit_paid status!
+      if (isBalancePayment) {
+        if (currentOrder?.payment_status === 'deposit_paid' || currentOrder?.deposit_paid_at) {
+          updatePayload.payment_status = 'deposit_paid';
+        } else {
+          updatePayload.payment_status = paymentStatus;
+        }
+      } else {
+        // Only update if not already paid
+        if (currentOrder?.payment_status !== 'paid') {
+          updatePayload.payment_status = paymentStatus;
+        }
+      }
       if (paymentId) updatePayload.payment_id = paymentId;
       if (paymentMethod) updatePayload.payment_method = paymentMethod;
     }
