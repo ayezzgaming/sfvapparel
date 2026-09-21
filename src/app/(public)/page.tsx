@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { 
   Play,
@@ -239,6 +240,11 @@ export default function HomePage() {
   const [isPolicySheetOpen, setIsPolicySheetOpen] = useState(false);
 
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // -------------------------------------------------------------
   // HERO BANNER AUTO-SWAP SLIDER STATE & TIMER
@@ -1486,12 +1492,16 @@ export default function HomePage() {
       )}
 
       {/* =========================================================================
-          FULLSCREEN LIGHTBOX IMAGE ZOOM MODAL
+          FULLSCREEN LIGHTBOX IMAGE ZOOM MODAL (PORTAL AT z-[2000] TO OVERLAY BOTTOM SHEET)
          ========================================================================= */}
-      {isLightboxOpen && selectedGalleryItem && (
+      {mounted && isLightboxOpen && selectedGalleryItem && createPortal(
         <div 
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-4 animate-in fade-in duration-200 font-ios"
+          className="fixed inset-0 z-[2000] bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-4 animate-in fade-in duration-200 font-ios select-none touch-none"
           onClick={() => setIsLightboxOpen(false)}
+          onTouchMove={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
           {/* Header */}
           <div className="flex justify-between items-center text-white pt-2 px-2 z-10">
@@ -1499,12 +1509,16 @@ export default function HomePage() {
               <span className="text-[10px] font-bold text-[#00BDFF] uppercase tracking-wider block">
                 {selectedGalleryItem.tag}
               </span>
-              <h4 className="font-bold text-sm leading-tight">{selectedGalleryItem.title}</h4>
+              <h4 className="font-bold text-sm leading-tight text-white">{selectedGalleryItem.title}</h4>
             </div>
             <button
               type="button"
-              onClick={() => setIsLightboxOpen(false)}
-              className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center active:scale-90 transition-all cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsLightboxOpen(false);
+              }}
+              aria-label="Tutup Skrin Penuh"
+              className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center active:scale-90 transition-all cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -1517,14 +1531,16 @@ export default function HomePage() {
               src={selectedGalleryItem.image_url}
               alt={selectedGalleryItem.title}
               className="max-w-full max-h-[82vh] object-contain rounded-2xl shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
             />
           </div>
 
           {/* Footer note */}
           <div className="text-center pb-4 text-xs text-slate-400 z-10 font-medium">
-            Ketuk di mana-mana untuk menutup Paparan Zoom Penuh
+            Ketuk di luar gambar atau tekan &times; untuk kembali ke maklumat
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
