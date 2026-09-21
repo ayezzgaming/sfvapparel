@@ -287,7 +287,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 <Link
                   href="/history"
                   onClick={() => setIsBagOpen(false)}
-                  className="w-full bg-slate-900 text-white font-medium py-3.5 rounded-xl text-center active:bg-slate-800 transition-colors flex items-center justify-center text-xs"
+                  className="w-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white font-bold py-3.5 rounded-2xl text-center active:scale-[0.98] transition-all flex items-center justify-center text-xs tracking-wide shadow-md shadow-blue-500/20"
                 >
                   <span>Buka Pengurusan Pesanan Penuh</span>
                 </Link>
@@ -295,7 +295,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 <Link
                   href={`/auth/login?redirect=${encodeURIComponent(pathname)}`}
                   onClick={() => setIsBagOpen(false)}
-                  className="w-full bg-slate-900 text-white font-medium py-3.5 rounded-xl text-center active:bg-slate-800 transition-colors flex items-center justify-center gap-2 text-xs"
+                  className="w-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white font-bold py-3.5 rounded-2xl text-center active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs tracking-wide shadow-md shadow-blue-500/20"
                 >
                   <LogIn className="w-3.5 h-3.5" />
                   <span>Log Masuk Untuk Semak Pesanan</span>
@@ -396,7 +396,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 <Link
                   href="/catalog"
                   onClick={() => setIsFavoritesOpen(false)}
-                  className="w-full bg-slate-900 text-white font-medium py-3.5 rounded-xl text-center active:bg-slate-800 transition-colors flex items-center justify-center text-xs"
+                  className="w-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white font-bold py-3.5 rounded-2xl text-center active:scale-[0.98] transition-all flex items-center justify-center text-xs tracking-wide shadow-md shadow-blue-500/20"
                 >
                   <span>Terokai Katalog</span>
                 </Link>
@@ -404,7 +404,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 <Link
                   href={`/auth/login?redirect=${encodeURIComponent(pathname)}`}
                   onClick={() => setIsFavoritesOpen(false)}
-                  className="w-full bg-slate-900 text-white font-medium py-3.5 rounded-xl text-center active:bg-slate-800 transition-colors flex items-center justify-center gap-2 text-xs"
+                  className="w-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white font-bold py-3.5 rounded-2xl text-center active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs tracking-wide shadow-md shadow-blue-500/20"
                 >
                   <LogIn className="w-3.5 h-3.5" />
                   <span>Log Masuk Untuk Akses Kegemaran</span>
@@ -463,7 +463,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                     <Link
                       href={`/customize/${design.id}`}
                       onClick={() => setIsFavoritesOpen(false)}
-                      className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-medium active:bg-slate-800 transition-colors shadow-2xs"
+                      className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-[#0052FF] hover:bg-blue-100 font-bold text-xs active:scale-95 transition-all border border-blue-100"
                     >
                       Tempah
                     </Link>

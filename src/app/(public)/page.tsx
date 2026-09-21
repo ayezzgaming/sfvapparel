@@ -1292,44 +1292,54 @@ export default function HomePage() {
       )}
 
       {/* =========================================================================
-          ORDER STEP DETAILS BOTTOM SHEET MODAL
+      {/* =========================================================================
+          ORDER STEP DETAILS BOTTOM SHEET MODAL (CLEAN & SPACIOUS)
          ========================================================================= */}
       <SwipeableBottomSheet
         isOpen={isStepSheetOpen}
         onClose={() => setIsStepSheetOpen(false)}
-        title={`Langkah ${selectedStep.step}: ${selectedStep.title}`}
+        showCloseButton={false}
+        badge={
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] text-[11px] font-bold border border-blue-100">
+            Langkah {selectedStep.step}
+          </span>
+        }
+        title={selectedStep.title}
       >
-        <div className="space-y-5 select-none font-ios pb-2">
-          <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-100/80 space-y-1.5">
-            <h3 className="text-sm font-bold text-slate-900">
-              {selectedStep.detailTitle}
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              {selectedStep.detailDesc}
-            </p>
+        <div className="space-y-4 select-none font-ios pb-1">
+          {/* Clean Description Card */}
+          <div className="p-4 rounded-2xl bg-slate-50/90 border border-slate-200/70 text-[13px] text-slate-600 leading-relaxed">
+            {selectedStep.detailDesc}
           </div>
 
-          <div className="space-y-2.5">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Perincian Penting
-            </h4>
-            <div className="space-y-2">
-              {selectedStep.points.map((pt, i) => (
-                <div key={i} className="flex items-start gap-2.5 text-xs text-slate-700">
-                  <div className="w-4 h-4 rounded-full bg-blue-100 text-[#00BDFF] flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
-                    ✓
+          {/* Clean Key Points */}
+          {selectedStep.points && selectedStep.points.length > 0 && (
+            <div className="space-y-2 pt-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block px-0.5">
+                Perincian Penting
+              </span>
+              <div className="space-y-2.5">
+                {selectedStep.points.map((pt, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-100 shadow-2xs text-[12.5px] text-slate-700 leading-relaxed"
+                  >
+                    <div className="w-5 h-5 rounded-full bg-blue-50 text-[#0052FF] border border-blue-100 flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">
+                      ✓
+                    </div>
+                    <span className="font-medium">{pt}</span>
                   </div>
-                  <span className="leading-snug">{pt}</span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
+          {/* Action Button - SFV Brand Blue Gradient (Never Black) */}
           <div className="pt-2">
             <button
               type="button"
               onClick={() => setIsStepSheetOpen(false)}
-              className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs text-center active:scale-[0.98] transition-all shadow-sm"
+              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs tracking-wide text-center active:scale-[0.98] transition-all shadow-md shadow-blue-500/20"
             >
               Faham & Tutup
             </button>
@@ -1344,18 +1354,19 @@ export default function HomePage() {
         <SwipeableBottomSheet
           isOpen={isPolicySheetOpen}
           onClose={() => setIsPolicySheetOpen(false)}
+          showCloseButton={false}
           title={policies[selectedPolicyKey].title}
         >
-          <div className="space-y-4 select-none font-ios pb-2 text-xs">
-            <div className="p-3 rounded-xl bg-blue-50 text-slate-700 leading-relaxed border border-blue-100/60">
+          <div className="space-y-4 select-none font-ios pb-1 text-xs">
+            <div className="p-4 rounded-2xl bg-blue-50/80 text-slate-700 text-[12.5px] leading-relaxed border border-blue-100/70">
               {policies[selectedPolicyKey].description}
             </div>
 
-            <div className="space-y-3.5 max-h-[50vh] overflow-y-auto pr-1">
+            <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
               {policies[selectedPolicyKey].sections?.map((sec, idx) => (
-                <div key={idx} className="space-y-1">
+                <div key={idx} className="p-3.5 rounded-xl bg-white border border-slate-100 shadow-2xs space-y-1">
                   <h4 className="font-bold text-slate-900 text-xs">{sec.heading}</h4>
-                  <p className="text-slate-600 leading-relaxed">{sec.text}</p>
+                  <p className="text-slate-600 leading-relaxed text-[12px]">{sec.text}</p>
                 </div>
               ))}
             </div>
@@ -1364,7 +1375,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setIsPolicySheetOpen(false)}
-                className="w-full py-3 rounded-xl bg-slate-900 text-white font-bold text-xs text-center"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs text-center active:scale-[0.98] transition-all shadow-md shadow-blue-500/20"
               >
                 Tutup Maklumat
               </button>

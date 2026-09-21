@@ -218,7 +218,7 @@ export default function ProfilePage() {
           <div className="pt-1">
             <Link
               href="/auth/login?redirect=/profile"
-              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-slate-900 text-white text-xs font-medium active:scale-95 transition-all shadow-xs"
+              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white text-xs font-bold active:scale-95 transition-all shadow-md shadow-blue-500/20"
             >
               <LogIn className="w-3.5 h-3.5" />
               <span>Log Masuk / Daftar</span>
@@ -395,44 +395,46 @@ export default function ProfilePage() {
 
       {/* 5. Inset Group 4: LOG KELUAR */}
       {isAuthenticated && (
-        <div className="space-y-1.5">
-          <div className="bg-white rounded-2xl overflow-hidden shadow-2xs border border-slate-200/60">
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="w-full flex items-center justify-between px-4 py-3.5 text-rose-600 hover:bg-rose-50/50 active:bg-rose-100/50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-                  <LogOut className="w-4 h-4 stroke-[1.75]" />
-                </div>
-                <span className="text-[13.5px] font-medium">
-                  {isLoggingOut ? 'Sedang Log Keluar...' : 'Log Keluar Akaun'}
-                </span>
-              </div>
-              <ChevronRight className="w-4 h-4 text-rose-300 shrink-0" />
-            </button>
-          </div>
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="w-full py-3.5 px-4 rounded-2xl bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 active:bg-rose-100 font-semibold text-xs tracking-tight shadow-xs transition-all flex items-center justify-center gap-2"
+          >
+            {isLoggingOut ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-rose-500" />
+                <span>Mendaftar Keluar...</span>
+              </>
+            ) : (
+              <>
+                <LogOut className="w-4 h-4" />
+                <span>Log Keluar Akaun ({formatPhone(customer?.whatsapp)})</span>
+              </>
+            )}
+          </button>
         </div>
       )}
 
-      {/* 6. Footer Info */}
-      <div className="pt-2 text-center">
-        <p className="text-[10px] text-slate-400 font-medium tracking-tight">
-          SFV Apparel App v1.2.0 • Beroperasi di Malaysia
+      {/* Footer Info */}
+      <div className="pt-4 pb-8 text-center space-y-1">
+        <p className="text-[11px] font-medium text-slate-400">
+          SFV APPAREL • SF Ventures Marketing
+        </p>
+        <p className="text-[10px] text-slate-300">
+          Versi 2.4.0 (PWA Live Build)
         </p>
       </div>
 
       {/* =========================================================================
-          MODAL KEMASKINI PROFIL (SWIPEABLE iOS BOTTOM SHEET)
+          MODAL KEMASKINI PROFIL (NAMA & EMEL)
          ========================================================================= */}
       <SwipeableBottomSheet
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
-        maxHeight="max-h-[85vh]"
         title="Kemaskini Profil"
-        subtitle="Maklumat rasmi akaun pengguna anda"
+        subtitle="Maklumat rasmi invois dan resit tempahan"
       >
         <form onSubmit={handleSaveProfile} className="space-y-4 pt-1">
           {profileMsg && (
@@ -447,6 +449,7 @@ export default function ProfilePage() {
           )}
 
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden divide-y divide-slate-100">
+            {/* Nama */}
             <div className="px-4 py-3">
               <label className="block text-[11px] font-medium text-slate-400 mb-0.5">
                 Nama Penuh
@@ -457,26 +460,14 @@ export default function ProfilePage() {
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder="Nama anda"
                 required
-                className="w-full text-xs text-slate-900 placeholder-slate-300 bg-transparent focus:outline-none font-medium"
-              />
-            </div>
-
-            <div className="px-4 py-3">
-              <label className="block text-[11px] font-medium text-slate-400 mb-0.5">
-                Nama Pasukan / Syarikat (Pilihan)
-              </label>
-              <input
-                type="text"
-                value={editTeam}
-                onChange={(e) => setEditTeam(e.target.value)}
-                placeholder="Contoh: Kelab Futsal Harimau"
                 className="w-full text-xs text-slate-900 placeholder-slate-300 bg-transparent focus:outline-none"
               />
             </div>
 
+            {/* Emel */}
             <div className="px-4 py-3">
               <label className="block text-[11px] font-medium text-slate-400 mb-0.5">
-                Alamat Emel
+                Alamat Emel (Untuk Salinan Invois)
               </label>
               <input
                 type="email"
@@ -491,11 +482,11 @@ export default function ProfilePage() {
           <button
             type="submit"
             disabled={isSavingProfile || !editName.trim()}
-            className="w-full py-3 px-4 rounded-xl bg-slate-900 text-white font-medium text-xs tracking-tight shadow-xs hover:bg-slate-800 active:bg-slate-950 disabled:opacity-40 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs tracking-wide shadow-md shadow-blue-500/20 disabled:opacity-40 transition-all flex items-center justify-center gap-2"
           >
             {isSavingProfile ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
                 <span>Menyimpan ke Pangkalan Data...</span>
               </>
             ) : (
@@ -586,11 +577,11 @@ export default function ProfilePage() {
           <button
             type="submit"
             disabled={isSavingAddress || !addrLine.trim()}
-            className="w-full py-3 px-4 rounded-xl bg-slate-900 text-white font-medium text-xs tracking-tight shadow-xs hover:bg-slate-800 active:bg-slate-950 disabled:opacity-40 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs tracking-wide shadow-md shadow-blue-500/20 disabled:opacity-40 transition-all flex items-center justify-center gap-2"
           >
             {isSavingAddress ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
                 <span>Menyimpan ke Pangkalan Data...</span>
               </>
             ) : (
@@ -611,7 +602,7 @@ export default function ProfilePage() {
           <button
             type="button"
             onClick={() => setIsSizeChartOpen(false)}
-            className="w-full bg-slate-900 text-white font-medium py-3 rounded-xl text-center active:bg-slate-800 transition-colors text-xs"
+            className="w-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold py-3.5 rounded-2xl text-center active:scale-[0.98] transition-all shadow-md shadow-blue-500/20 text-xs tracking-wide"
           >
             Tutup Panduan Saiz
           </button>

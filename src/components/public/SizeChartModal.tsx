@@ -158,7 +158,7 @@ export default function SizeChartModal({ isOpen, onClose }: SizeChartModalProps)
         <button
           type="button"
           onClick={onClose}
-          className="w-full py-2.5 rounded-xl bg-slate-900 text-white font-semibold text-xs active:scale-[0.98] transition-all cursor-pointer"
+          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs tracking-wide shadow-md shadow-blue-500/20 active:scale-[0.98] transition-all cursor-pointer"
         >
           Faham & Tutup
         </button>

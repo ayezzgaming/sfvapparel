@@ -105,7 +105,7 @@ export default function HistoryPage() {
             <div className="pt-2">
               <Link
                 href="/auth/login?redirect=/history"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white text-xs font-medium shadow-xs active:scale-95 transition-all"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white text-xs font-bold shadow-md shadow-blue-500/20 active:scale-95 transition-all"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 <span>Log Masuk / Daftar</span>
@@ -125,7 +125,7 @@ export default function HistoryPage() {
             <div className="pt-2">
               <Link
                 href="/catalog"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-medium active:bg-slate-800 transition-colors"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white text-xs font-bold active:scale-95 transition-all shadow-md shadow-blue-500/20"
               >
                 <span>Lihat Katalog</span>
                 <ChevronRight className="w-3.5 h-3.5" />
