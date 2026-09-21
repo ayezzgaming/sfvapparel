@@ -19,6 +19,7 @@ import {
 } from '@/lib/shipping-calculator';
 import { 
   ChevronLeft, 
+  ChevronDown,
   Ruler, 
   Upload, 
   FileText, 
@@ -181,6 +182,7 @@ export default function CustomizePage() {
 
   // Pilihan Kurier & Kos Penghantaran
   const [selectedCourierId, setSelectedCourierId] = useState<string>('jnt');
+  const [isCourierDropdownOpen, setIsCourierDropdownOpen] = useState(false);
 
   // Autofill customer details if authenticated
   useEffect(() => {
@@ -781,27 +783,24 @@ export default function CustomizePage() {
           </div>
         </div>
 
-        {/* 3. Konfigurasi Spesifikasi (Jenis Fabrik & Pola Potongan - Ringkas & Mudah Dibaca) */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              1. Fabrik & Pola Potongan
-            </h3>
-            <span className="text-[10.5px] text-slate-400 font-medium">Asas Kiraan</span>
-          </div>
+        {/* 3. Konfigurasi Spesifikasi (Jenis Fabrik & Pola Potongan) */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3.5">
+          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            1. Fabrik & Pola Potongan
+          </h3>
 
           {techniqueMode === 'sublimation' ? (
-            <div className="space-y-3.5">
-              {/* Combobox: Jenis Fabrik (Format Padat) */}
+            <div className="space-y-3">
+              {/* Combobox: Jenis Fabrik */}
               <div>
-                <label className="text-[11px] font-semibold text-slate-700 block mb-1.5">
-                  Jenis Fabrik (Material)
+                <label className="text-xs font-medium text-slate-700 block mb-1">
+                  Jenis Fabrik
                 </label>
                 <div className="relative">
                   <select
                     value={selectedFabricId}
                     onChange={(e) => setSelectedFabricId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 appearance-none focus:outline-none focus:ring-2 focus:ring-[#00BDFF] pr-9"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 appearance-none focus:outline-none focus:border-sky-500 focus:bg-white transition-all pr-9"
                   >
                     {fabrics.filter((f) => f.is_active).map((fabric) => (
                       <option key={fabric.id} value={fabric.id}>
@@ -809,22 +808,22 @@ export default function CustomizePage() {
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">
-                    ▼
+                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                    <ChevronDown className="w-4 h-4" />
                   </div>
                 </div>
               </div>
 
-              {/* Combobox: Pola Potongan Kolar & Lengan (Format Padat) */}
+              {/* Combobox: Pola Potongan Kolar & Lengan */}
               <div>
-                <label className="text-[11px] font-semibold text-slate-700 block mb-1.5">
-                  Pola Potongan Kolar & Lengan
+                <label className="text-xs font-medium text-slate-700 block mb-1">
+                  Pola Potongan
                 </label>
                 <div className="relative">
                   <select
                     value={selectedCutId}
                     onChange={(e) => setSelectedCutId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 appearance-none focus:outline-none focus:ring-2 focus:ring-[#00BDFF] pr-9"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 appearance-none focus:outline-none focus:border-sky-500 focus:bg-white transition-all pr-9"
                   >
                     {cuts.filter((c) => c.is_active).map((cut) => (
                       <option key={cut.id} value={cut.id}>
@@ -832,42 +831,32 @@ export default function CustomizePage() {
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">
-                    ▼
+                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                    <ChevronDown className="w-4 h-4" />
                   </div>
                 </div>
               </div>
 
-              {/* Ringkasan Harga Asas Seunit (Bersih & Ringkas Tanpa Teks Berulang) */}
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between">
-                <div>
-                  <span className="text-xs font-bold text-slate-800 block">
-                    Harga Asas Tempahan
-                  </span>
-                  <span className="text-[10px] text-slate-400">
-                    Termasuk fabrik & pola potongan standard
-                  </span>
-                </div>
-                <div className="text-right">
-                  <div className="text-xs font-black text-slate-900 font-mono">
-                    {formatCurrency((selectedFabric?.sublimation_base_price || 0) + (selectedCut?.cut_add_on_price || 0))}
-                  </div>
-                  <div className="text-[9.5px] text-slate-400">/ helai</div>
-                </div>
+              {/* Ringkasan Asas Seunit */}
+              <div className="flex items-center justify-between pt-1 px-0.5 text-xs text-slate-500">
+                <span>Harga Asas Tempahan:</span>
+                <span className="font-semibold text-slate-900 font-mono">
+                  {formatCurrency((selectedFabric?.sublimation_base_price || 0) + (selectedCut?.cut_add_on_price || 0))} / helai
+                </span>
               </div>
             </div>
           ) : (
-            <div className="space-y-3.5">
+            <div className="space-y-3">
               {/* Combobox: Saiz Cetakan DTF */}
               <div>
-                <label className="text-[11px] font-semibold text-slate-700 block mb-1.5">
-                  Dimensi / Saiz Cetakan DTF
+                <label className="text-xs font-medium text-slate-700 block mb-1">
+                  Saiz Cetakan DTF
                 </label>
                 <div className="relative">
                   <select
                     value={selectedDtfDimId}
                     onChange={(e) => setSelectedDtfDimId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 appearance-none focus:outline-none focus:ring-2 focus:ring-[#00BDFF] pr-9"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 appearance-none focus:outline-none focus:border-sky-500 focus:bg-white transition-all pr-9"
                   >
                     {dtfDimensions.filter((d) => d.is_active).map((dim) => (
                       <option key={dim.id} value={dim.id}>
@@ -875,28 +864,28 @@ export default function CustomizePage() {
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">
-                    ▼
+                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                    <ChevronDown className="w-4 h-4" />
                   </div>
                 </div>
               </div>
 
               {/* Combobox: Pakej Baju DTF */}
               <div>
-                <label className="text-[11px] font-semibold text-slate-700 block mb-1.5">
-                  Pakej Pesanan DTF
+                <label className="text-xs font-medium text-slate-700 block mb-1">
+                  Pakej Pesanan
                 </label>
                 <div className="relative">
                   <select
                     value={dtfOptionType}
                     onChange={(e) => setDtfOptionType(e.target.value as 'with_garment' | 'film_only')}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 appearance-none focus:outline-none focus:ring-2 focus:ring-[#00BDFF] pr-9"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 appearance-none focus:outline-none focus:border-sky-500 focus:bg-white transition-all pr-9"
                   >
                     <option value="with_garment">Baju Cotton 24s + Cetakan DTF Siap</option>
                     <option value="film_only">Filem Stiker DTF Sahaja (Tanpa Baju)</option>
                   </select>
-                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">
-                    ▼
+                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                    <ChevronDown className="w-4 h-4" />
                   </div>
                 </div>
               </div>
@@ -904,21 +893,17 @@ export default function CustomizePage() {
           )}
         </div>
 
-        {/* 4. Pemilihan Saiz & Kuantiti (Mula dengan Kosong & Butang Tambah Icon Sahaja) */}
+        {/* 4. Pemilihan Saiz & Kuantiti */}
         <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3.5">
           <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                2. Kuantiti Mengikut Saiz
-              </h3>
-              <p className="text-[10px] text-slate-400">Pilih saiz dan tentukan bilangan helai</p>
-            </div>
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              2. Kuantiti Mengikut Saiz
+            </h3>
             
-            {/* Butang Toggle Carta Saiz (Size Chart) */}
             <button
               type="button"
               onClick={() => setIsSizeChartOpen(true)}
-              className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#00BDFF] hover:text-sky-700 active:scale-95 transition-all bg-sky-50 px-2.5 py-1 rounded-xl border border-sky-100 cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-sky-600 hover:text-sky-700 transition-colors cursor-pointer"
             >
               <Ruler className="w-3.5 h-3.5" />
               <span>Carta Saiz</span>
@@ -926,25 +911,22 @@ export default function CustomizePage() {
           </div>
 
           {activeSizeKeys.length === 0 ? (
-            /* Keadaan Kosong (Zero selected): Hanya butang + bersih */
+            /* Keadaan Kosong: Butang + bersih */
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
-              <div className="space-y-0.5">
-                <span className="text-xs font-bold text-slate-800 block">Belum Ada Saiz Dipilih</span>
-                <span className="text-[10.5px] text-slate-400">Tekan butang + untuk memilih saiz (Dewasa / Kids / Muslimah)</span>
-              </div>
+              <span className="text-xs text-slate-500">Tekan butang + untuk tambah pilihan saiz</span>
 
               <button
                 type="button"
                 onClick={() => setIsAddSizeModalOpen(true)}
-                className="w-10 h-10 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white flex items-center justify-center shadow-md shadow-blue-500/20 active:scale-90 transition-all cursor-pointer shrink-0"
-                title="Tambah Pilihan Saiz"
-                aria-label="Tambah Pilihan Saiz"
+                className="w-9 h-9 rounded-xl bg-[#00BDFF] hover:bg-sky-600 text-white flex items-center justify-center shadow-sm active:scale-95 transition-all cursor-pointer shrink-0"
+                title="Tambah Saiz"
+                aria-label="Tambah Saiz"
               >
                 <Plus className="w-5 h-5 stroke-[2.5]" />
               </button>
             </div>
           ) : (
-            /* Grid Matriks Saiz Dinamik yang telah dipilih */
+            /* Grid Saiz Dinamik */
             <div className="grid grid-cols-4 gap-2">
               {activeSizeKeys.map((sizeKey) => {
                 const qty = sizing[sizeKey] || 0;
@@ -995,7 +977,7 @@ export default function CustomizePage() {
                 );
               })}
 
-              {/* Butang Tambah Saiz Ikon Sahaja (Tanpa Teks) */}
+              {/* Butang Tambah Saiz Icon Sahaja */}
               <button
                 type="button"
                 onClick={() => setIsAddSizeModalOpen(true)}
@@ -1009,25 +991,18 @@ export default function CustomizePage() {
           )}
 
           <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
-            <span className="text-slate-500 font-medium">Jumlah Keseluruhan:</span>
+            <span className="text-slate-500 font-medium">Jumlah Kuantiti:</span>
             <span className="font-bold text-slate-900 font-mono text-sm">{totalQuantity} helai</span>
           </div>
         </div>
 
-        {/* 5. Muat Naik Logo / Sponsor (Multi-Logo dengan Pilihan Kedudukan) */}
+        {/* 5. Muat Naik Logo / Sponsor */}
         <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3.5">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-baseline gap-1.5 min-w-0">
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                3. Logo Pasukan & Penaja
-              </h3>
-              <span className="text-[10px] text-slate-400 font-normal lowercase tracking-normal">
-                (opsional)
-              </span>
-            </div>
-            <span className="text-[9.5px] text-slate-400 font-mono shrink-0 whitespace-nowrap">
-              PNG, JPG, PDF, AI
-            </span>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              3. Logo Pasukan & Penaja <span className="text-[10px] text-slate-400 font-normal lowercase">(pilihan)</span>
+            </h3>
+            <span className="text-[10px] text-slate-400 font-mono">PNG / JPG / PDF / AI</span>
           </div>
 
           <input
@@ -1042,11 +1017,11 @@ export default function CustomizePage() {
 
           {/* Senarai Logo yang Telah Dimuat Naik */}
           {logoList.length > 0 && (
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {logoList.map((logoItem, idx) => (
                 <div 
                   key={logoItem.id} 
-                  className="p-3 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-2"
+                  className="p-2.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -1055,28 +1030,23 @@ export default function CustomizePage() {
                         <img
                           src={logoItem.previewUrl}
                           alt="Logo Preview"
-                          className="w-9 h-9 rounded-xl object-contain bg-white border border-slate-200 shrink-0 p-1"
+                          className="w-8 h-8 rounded-lg object-contain bg-white border border-slate-200 shrink-0 p-0.5"
                         />
                       ) : (
-                        <div className="w-9 h-9 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center shrink-0">
-                          <Paperclip className="w-4 h-4" />
+                        <div className="w-8 h-8 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center shrink-0">
+                          <Paperclip className="w-3.5 h-3.5" />
                         </div>
                       )}
-                      <div className="min-w-0">
-                        <span className="text-xs font-bold text-slate-900 block truncate">
-                          {idx + 1}. {logoItem.fileName}
-                        </span>
-                        <span className="text-[10px] text-emerald-600 font-medium">
-                          &bull; Fail dipilih
-                        </span>
-                      </div>
+                      <span className="text-xs font-medium text-slate-900 truncate">
+                        {idx + 1}. {logoItem.fileName}
+                      </span>
                     </div>
 
                     <button
                       type="button"
                       onClick={() => handleRemoveLogoItem(logoItem.id)}
-                      className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-50 active:scale-90 transition-all shrink-0"
-                      title="Buang logo ini"
+                      className="p-1 rounded-lg text-slate-400 hover:text-rose-500 transition-colors shrink-0"
+                      title="Buang logo"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -1084,13 +1054,13 @@ export default function CustomizePage() {
 
                   {/* Pilihan Kedudukan Logo */}
                   <div className="flex items-center gap-2 pt-1 border-t border-slate-200/60">
-                    <span className="text-[10px] font-semibold text-slate-500 shrink-0">
+                    <span className="text-[10.5px] font-medium text-slate-500 shrink-0">
                       Kedudukan:
                     </span>
                     <select
                       value={logoItem.placement}
                       onChange={(e) => handleUpdateLogoPlacement(logoItem.id, e.target.value)}
-                      className="flex-1 px-2.5 py-1 bg-white border border-slate-200 rounded-xl text-[11px] font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#00BDFF]"
+                      className="flex-1 px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:border-sky-500"
                     >
                       {LOGO_PLACEMENT_OPTIONS.map((opt) => (
                         <option key={opt} value={opt}>{opt}</option>
@@ -1104,8 +1074,8 @@ export default function CustomizePage() {
                       type="text"
                       value={logoItem.customPlacement || ''}
                       onChange={(e) => handleUpdateLogoPlacement(logoItem.id, logoItem.placement, e.target.value)}
-                      placeholder="Nyatakan kedudukan logo (cth: Di leher belakang)"
-                      className="w-full px-2.5 py-1 bg-white border border-slate-200 rounded-xl text-[11px] text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#00BDFF]"
+                      placeholder="Nyatakan kedudukan logo khas"
+                      className="w-full px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-sky-500"
                     />
                   )}
                 </div>
@@ -1117,47 +1087,42 @@ export default function CustomizePage() {
           <button
             type="button"
             onClick={() => logoInputRef.current?.click()}
-            className="w-full p-3.5 rounded-2xl border-2 border-dashed border-slate-200 hover:border-[#00BDFF] bg-slate-50/50 flex flex-col items-center justify-center space-y-0.5 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+            className="w-full p-3 rounded-2xl border-2 border-dashed border-slate-200 hover:border-sky-400 bg-slate-50/50 flex items-center justify-center gap-2 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer text-xs font-medium"
           >
             <Upload className="w-4 h-4 text-slate-400" />
-            <span className="text-xs font-semibold">
-              {logoList.length > 0 ? '+ Tambah Logo / Penaja Lain' : 'Pilih fail logo atau penaja'}
-            </span>
-            <span className="text-[10px] text-slate-400">Boleh pilih lebih dari satu fail</span>
+            <span>{logoList.length > 0 ? '+ Tambah Fail Logo Lain' : 'Muat naik fail logo / penaja'}</span>
           </button>
         </div>
 
-        {/* 6. Senarai Nama & Nombor Pemain (Kolom Isian Automatik Mengikut Saiz & Kategori) */}
+        {/* 6. Senarai Nama & Nombor Pemain */}
         <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3.5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              4. Senarai Nama & Nombor Pemain
-            </h3>
-          </div>
+          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            4. Senarai Nama & Nombor <span className="text-[10px] text-slate-400 font-normal lowercase">(pilihan)</span>
+          </h3>
 
-          {/* Tab Pilihan: Tulis Manual (Kolom) / Upload Fail */}
+          {/* Tab Pilihan: Tulis Manual / Upload Fail */}
           <div className="bg-slate-100 p-1 rounded-xl flex items-center">
             <button
               type="button"
               onClick={() => setRosterMode('manual')}
-              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all ${
                 rosterMode === 'manual'
                   ? 'bg-white text-slate-900 shadow-2xs font-bold'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
-              Tulis Kolom Isian
+              Isian Kolom
             </button>
             <button
               type="button"
               onClick={() => setRosterMode('upload')}
-              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all ${
                 rosterMode === 'upload'
                   ? 'bg-white text-slate-900 shadow-2xs font-bold'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
-              Muat Naik Fail (Excel/Doc)
+              Muat Naik Fail
             </button>
           </div>
 
@@ -1175,23 +1140,16 @@ export default function CustomizePage() {
               {rosterFileName ? (
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#00BDFF] flex items-center justify-center shrink-0">
-                      <FileText className="w-5 h-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-xs font-semibold text-slate-900 block truncate">
-                        {rosterFileName}
-                      </span>
-                      <span className="text-[10px] text-emerald-600 font-medium">
-                        &bull; Fail senarai nama dipilih
-                      </span>
-                    </div>
+                    <FileText className="w-5 h-5 text-sky-500 shrink-0" />
+                    <span className="text-xs font-medium text-slate-900 truncate">
+                      {rosterFileName}
+                    </span>
                   </div>
 
                   <button
                     type="button"
                     onClick={handleRemoveRosterFile}
-                    className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-50 active:scale-90 transition-all shrink-0"
+                    className="p-1 rounded-lg text-slate-400 hover:text-rose-500 transition-colors shrink-0"
                     title="Buang fail"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -1201,62 +1159,46 @@ export default function CustomizePage() {
                 <button
                   type="button"
                   onClick={() => rosterInputRef.current?.click()}
-                  className="w-full p-4 rounded-2xl border-2 border-dashed border-slate-200 hover:border-[#00BDFF] bg-slate-50/50 flex flex-col items-center justify-center space-y-1 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                  className="w-full p-4 rounded-2xl border-2 border-dashed border-slate-200 hover:border-sky-400 bg-slate-50/50 flex flex-col items-center justify-center space-y-1 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
                 >
-                  <Upload className="w-5 h-5 text-slate-400" />
-                  <span className="text-xs font-semibold">Muat naik fail senarai nama pasukan</span>
-                  <span className="text-[10px] text-slate-400">Format Excel, Word, CSV, atau PDF</span>
+                  <Upload className="w-4 h-4 text-slate-400" />
+                  <span className="text-xs font-medium">Pilih fail Excel, Word, atau PDF</span>
                 </button>
               )}
             </div>
           ) : (
             <div className="space-y-3">
               {totalQuantity === 0 ? (
-                /* Arahan jika belum memilih kuantiti saiz */
-                <div className="p-4 rounded-2xl bg-sky-50/70 border border-sky-200/60 text-slate-600 space-y-1.5 text-center">
-                  <Info className="w-5 h-5 text-[#00BDFF] mx-auto" />
-                  <p className="text-xs font-semibold text-slate-800">
-                    Sila masukkan kuantiti saiz baju di Langkah 2 terlebih dahulu
-                  </p>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Kolom isian nama & nombor pemain akan dijana secara automatik mengikut jumlah kuantiti dan saiz yang anda tetapkan.
-                  </p>
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-500 text-xs text-center">
+                  Masukkan kuantiti saiz baju di atas untuk mengisi senarai nama.
                 </div>
               ) : (
-                /* Kolom Isian Terjana Automatik Dikelompokkan Mengikut Kategori */
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {(['dewasa', 'kids', 'muslimah'] as const).map((catKey) => {
                     const catSizes = categorizedActiveSizes[catKey];
                     if (catSizes.length === 0) return null;
 
                     const catTitle = SIZE_GROUPS[catKey].title;
-                    let localCounter = 0;
 
                     return (
-                      <div key={catKey} className="space-y-2">
-                        <div className="flex items-center justify-between px-1">
-                          <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">
-                            {catTitle}
-                          </span>
-                          <span className="text-[10px] font-semibold text-slate-400">
-                            {catSizes.reduce((s, c) => s + c.qty, 0)} helai
-                          </span>
+                      <div key={catKey} className="space-y-1.5">
+                        <div className="text-[11px] font-bold text-slate-600 px-1">
+                          {catTitle} ({catSizes.reduce((s, c) => s + c.qty, 0)} helai)
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                           {catSizes.map(({ sizeKey, qty }) => {
                             const entries = manualRoster[sizeKey] || [];
                             return Array.from({ length: qty }).map((_, idx) => {
-                              localCounter++;
                               const rowEntry = entries[idx] || { name: '', number: '' };
                               return (
                                 <div
                                   key={`${sizeKey}-${idx}`}
-                                  className="flex items-center gap-2 p-2 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs"
+                                  className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs"
                                 >
                                   {/* Badge Saiz */}
-                                  <div className="w-16 px-2 py-1.5 rounded-xl bg-white border border-slate-200 text-center shrink-0">
-                                    <span className="text-[10.5px] font-bold text-slate-800 block truncate" title={sizeKey}>
+                                  <div className="w-14 px-1.5 py-1 rounded-lg bg-white border border-slate-200 text-center shrink-0">
+                                    <span className="text-[10.5px] font-bold text-slate-700 truncate block">
                                       {sizeKey}
                                     </span>
                                   </div>
@@ -1266,8 +1208,8 @@ export default function CustomizePage() {
                                     type="text"
                                     value={rowEntry.name}
                                     onChange={(e) => handlePlayerEntryChange(sizeKey, idx, 'name', e.target.value)}
-                                    placeholder={`Nama Baju #${idx + 1}`}
-                                    className="flex-1 min-w-0 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 text-xs focus:outline-none focus:ring-1 focus:ring-[#00BDFF]"
+                                    placeholder={`Nama baju #${idx + 1}`}
+                                    className="flex-1 min-w-0 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-900 placeholder:text-slate-300 text-xs focus:outline-none focus:border-sky-500"
                                   />
 
                                   {/* Input Nombor Jersi */}
@@ -1276,7 +1218,7 @@ export default function CustomizePage() {
                                     value={rowEntry.number}
                                     onChange={(e) => handlePlayerEntryChange(sizeKey, idx, 'number', e.target.value)}
                                     placeholder="No."
-                                    className="w-14 px-2 py-1.5 rounded-xl bg-white border border-slate-200 text-center font-mono font-bold text-slate-900 placeholder:text-slate-400 text-xs focus:outline-none focus:ring-1 focus:ring-[#00BDFF] shrink-0"
+                                    className="w-12 px-2 py-1 rounded-lg bg-white border border-slate-200 text-center font-mono font-bold text-slate-900 placeholder:text-slate-300 text-xs focus:outline-none focus:border-sky-500 shrink-0"
                                   />
                                 </div>
                               );
@@ -1292,227 +1234,227 @@ export default function CustomizePage() {
           )}
         </div>
 
-        {/* 7. Maklumat Pelanggan & Alamat Penghantaran Persis Profil */}
+        {/* 7. Maklumat Pelanggan, Alamat & Pilihan Kurier */}
         <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              5. Maklumat Pelanggan & Penghantaran
-            </h3>
-            <span className="text-[10.5px] text-slate-400 font-medium">Pengeposan</span>
-          </div>
+          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            5. Maklumat Pelanggan & Penghantaran
+          </h3>
 
           <div className="space-y-3">
-            <div>
-              <label className="text-[11px] font-semibold text-slate-700 block mb-1">
-                Nama Pasukan / Kelab (Opsional)
-              </label>
-              <input
-                type="text"
-                value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
-                placeholder="cth: Harimau Selatan FC"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]"
-              />
-            </div>
-
+            {/* Nama & WhatsApp */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-semibold text-slate-700 block mb-1">
-                  Nama Wakil Pelanggan <span className="text-rose-500">*</span>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  Nama Penuh <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="cth: Ahmad Hafiz"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]"
+                  placeholder="Nama wakil pelanggan"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition-all"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-slate-700 block mb-1">
-                  Nombor WhatsApp <span className="text-rose-500">*</span>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  No. WhatsApp <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="tel"
                   required
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="cth: 014-8599138"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]"
+                  placeholder="012-3456789"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition-all"
                 />
               </div>
             </div>
 
-            {/* Inset Alamat Penghantaran Malaysia dengan Poskod Auto-lookup */}
-            <div className="pt-2">
-              <label className="text-[11px] font-bold text-slate-900 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-[#0052FF]" />
-                <span>Alamat Penghantaran Malaysia</span>
+            {/* Nama Pasukan (Pilihan) */}
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
+                Nama Pasukan / Syarikat <span className="text-[10px] text-slate-400 font-normal">(pilihan)</span>
+              </label>
+              <input
+                type="text"
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                placeholder="cth: Harimau FC"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition-all"
+              />
+            </div>
+
+            {/* Inset Alamat Penghantaran Malaysia dengan Input Group */}
+            <div className="space-y-1.5 pt-1">
+              <label className="text-xs font-semibold text-slate-700 block">
+                Alamat Penghantaran
               </label>
 
-              <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden divide-y divide-slate-100">
-                
-                {/* Poskod (5 Digit) */}
-                <div className="px-3.5 py-2.5">
-                  <div className="flex justify-between items-center mb-0.5">
-                    <label className="block text-[10.5px] font-semibold text-slate-500">
-                      Poskod Malaysia (5 Digit)
+              <div className="border border-slate-200 rounded-2xl bg-slate-50/50 overflow-hidden divide-y divide-slate-200/80">
+                {/* Poskod & Bandar / Negeri */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-200/80 bg-white">
+                  <div className="p-2.5 sm:col-span-1">
+                    <label className="block text-[10px] font-semibold text-slate-400 mb-0.5">
+                      Poskod {isLookingUpPostcode && <span className="text-sky-500 font-normal">(Mengesahkan...)</span>}
                     </label>
-                    {isLookingUpPostcode && (
-                      <span className="text-[10px] text-[#0052FF] flex items-center gap-1 font-medium">
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        Mengesahkan kawasan...
-                      </span>
-                    )}
+                    <input
+                      type="text"
+                      value={addrPostcode}
+                      onChange={(e) => handlePostcodeChange(e.target.value)}
+                      placeholder="50450"
+                      maxLength={5}
+                      className="w-full text-xs font-semibold text-slate-900 bg-transparent focus:outline-none placeholder:text-slate-300 font-mono"
+                    />
                   </div>
-                  <input
-                    type="text"
-                    value={addrPostcode}
-                    onChange={(e) => handlePostcodeChange(e.target.value)}
-                    placeholder="Contoh: 50450 atau 40000"
-                    maxLength={5}
-                    className="w-full text-xs text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none font-mono font-bold tracking-wide"
-                  />
-                </div>
-
-                {/* Bandar & Negeri (Auto-populated from API) */}
-                <div className="px-3.5 py-2.5 bg-slate-50/60">
-                  <label className="block text-[10.5px] font-semibold text-slate-500 mb-0.5">
-                    Bandar & Negeri (Auto Pengecaman)
-                  </label>
-                  <input
-                    type="text"
-                    value={addrCity}
-                    onChange={(e) => setAddrCity(e.target.value)}
-                    placeholder="Auto diisi mengikut poskod (atau taip manual)"
-                    className="w-full text-xs text-slate-800 placeholder-slate-400 bg-transparent focus:outline-none font-medium"
-                  />
+                  <div className="p-2.5 sm:col-span-2 bg-slate-50/70">
+                    <label className="block text-[10px] font-semibold text-slate-400 mb-0.5">
+                      Bandar & Negeri (Automatik)
+                    </label>
+                    <input
+                      type="text"
+                      value={addrCity}
+                      onChange={(e) => setAddrCity(e.target.value)}
+                      placeholder="Kuala Lumpur, WP Kuala Lumpur"
+                      className="w-full text-xs text-slate-800 bg-transparent focus:outline-none placeholder:text-slate-300 font-medium"
+                    />
+                  </div>
                 </div>
 
                 {/* Alamat Jalan / Rumah */}
-                <div className="px-3.5 py-2.5">
-                  <label className="block text-[10.5px] font-semibold text-slate-500 mb-0.5">
-                    Alamat Jalan, No. Rumah / Bangunan
+                <div className="p-2.5 bg-white">
+                  <label className="block text-[10px] font-semibold text-slate-400 mb-0.5">
+                    Alamat Jalan / No. Rumah
                   </label>
                   <textarea
                     rows={2}
                     value={addrLine}
                     onChange={(e) => setAddrLine(e.target.value)}
-                    placeholder="No. 12, Jalan Kemboja 3/1, Taman..."
-                    className="w-full text-xs text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none leading-relaxed resize-none"
+                    placeholder="No. rumah, nama jalan, taman perumahan"
+                    className="w-full text-xs text-slate-900 bg-transparent focus:outline-none placeholder:text-slate-300 resize-none leading-relaxed"
                   />
                 </div>
               </div>
 
               {/* Checkbox Simpan Alamat ke Profil */}
-              <label className="inline-flex items-center gap-2 cursor-pointer mt-2 select-none">
+              <label className="inline-flex items-center gap-2 cursor-pointer pt-0.5 select-none">
                 <input
                   type="checkbox"
                   checked={saveAddressToProfile}
                   onChange={(e) => setSaveAddressToProfile(e.target.checked)}
-                  className="rounded text-[#0052FF] focus:ring-[#00BDFF] w-4 h-4 cursor-pointer"
+                  className="rounded text-sky-500 focus:ring-sky-400 w-3.5 h-3.5 cursor-pointer"
                 />
-                <span className="text-[10.5px] text-slate-600 font-medium">
-                  Simpan alamat ini ke profil akaun saya untuk pesanan akan datang
+                <span className="text-[11px] text-slate-500">
+                  Simpan alamat ini ke profil akaun saya
                 </span>
               </label>
             </div>
 
-            {/* 6. PILIHAN JASA PENGHANTARAN / KURIER DENGAN LOGO ASLI & KIRAAN ONGKOS */}
-            <div className="pt-2 space-y-2">
+            {/* Pilihan Kurier (Dropdown Rapi) */}
+            <div className="space-y-1.5 pt-1">
               <div className="flex items-center justify-between">
-                <label className="text-[11px] font-bold text-slate-900 uppercase tracking-wider block flex items-center gap-1.5">
-                  <Truck className="w-3.5 h-3.5 text-[#0052FF]" />
-                  <span>Pilihan Jasa Kurier & Penghantaran</span>
+                <label className="text-xs font-semibold text-slate-700 block">
+                  Pilihan Kurier
                 </label>
-                <span className="text-[10px] text-slate-400 font-mono">
-                  {shippingCalculation.zoneLabel} &bull; ~{shippingCalculation.estimatedWeightKg}kg
+                <span className="text-[10.5px] text-slate-400">
+                  ~{shippingCalculation.estimatedWeightKg}kg &bull; {shippingCalculation.zoneLabel}
                 </span>
               </div>
 
-              {/* Courier Option Cards */}
-              <div className="grid grid-cols-1 gap-2">
-                {shippingCalculation.couriers.map((courier) => {
-                  const isSelected = selectedCourierId === courier.id;
-                  return (
-                    <div
-                      key={courier.id}
-                      onClick={() => setSelectedCourierId(courier.id)}
-                      className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${
-                        isSelected
-                          ? 'bg-blue-50/70 border-[#00BDFF] ring-2 ring-sky-100 shadow-2xs'
-                          : 'bg-white border-slate-200/80 hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <CourierLogo type={courier.logoType} className="w-10 h-10" />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-bold text-slate-900 truncate">
-                              {courier.name}
-                            </span>
-                            {courier.serviceType === 'same_day' && (
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-orange-100 text-orange-800 shrink-0">
-                                Same Day
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[10.5px] text-slate-500 mt-0.5 truncate">
-                            {courier.estimatedDays} &bull; {courier.description}
-                          </p>
-                        </div>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsCourierDropdownOpen((prev) => !prev)}
+                  className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-left flex items-center justify-between gap-3 hover:border-slate-300 focus:outline-none transition-all shadow-2xs cursor-pointer"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <CourierLogo type={selectedCourier.logoType} className="w-8 h-8 shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-slate-900 truncate">
+                        {selectedCourier.name}
                       </div>
-
-                      <div className="text-right shrink-0">
-                        <div className="text-xs font-extrabold text-slate-900 font-mono">
-                          {courier.rate === 0 ? 'Percuma' : formatCurrency(courier.rate)}
-                        </div>
-                        <input
-                          type="radio"
-                          name="shipping_courier"
-                          checked={isSelected}
-                          onChange={() => setSelectedCourierId(courier.id)}
-                          className="mt-1 text-[#0052FF] focus:ring-[#00BDFF]"
-                        />
+                      <div className="text-[10.5px] text-slate-400 truncate">
+                        {selectedCourier.estimatedDays} &bull; {selectedCourier.description}
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs font-bold text-slate-900 font-mono">
+                      {shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isCourierDropdownOpen ? 'rotate-180' : ''}`} />
+                  </div>
+                </button>
+
+                {isCourierDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden divide-y divide-slate-100 animate-in fade-in zoom-in-95 duration-150">
+                    {shippingCalculation.couriers.map((courier) => {
+                      const isSelected = selectedCourierId === courier.id;
+                      return (
+                        <div
+                          key={courier.id}
+                          onClick={() => {
+                            setSelectedCourierId(courier.id);
+                            setIsCourierDropdownOpen(false);
+                          }}
+                          className={`p-2.5 flex items-center justify-between gap-3 cursor-pointer transition-colors ${
+                            isSelected ? 'bg-sky-50 text-sky-900' : 'hover:bg-slate-50 text-slate-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <CourierLogo type={courier.logoType} className="w-7 h-7 shrink-0" />
+                            <div className="min-w-0">
+                              <div className="text-xs font-medium truncate flex items-center gap-1.5">
+                                <span>{courier.name}</span>
+                                {courier.serviceType === 'same_day' && (
+                                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-orange-100 text-orange-700">
+                                    Same Day
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[10px] text-slate-400 truncate">
+                                {courier.estimatedDays} &bull; {courier.description}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-xs font-bold font-mono">
+                              {courier.rate === 0 ? 'Percuma' : formatCurrency(courier.rate)}
+                            </span>
+                            {isSelected && <Check className="w-4 h-4 text-sky-600" />}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Nota Tambahan Berbentuk Textarea */}
-            <div className="pt-2">
-              <label className="text-[11px] font-semibold text-slate-700 block mb-1">
-                Nota Tambahan
+            {/* Nota Tambahan */}
+            <div className="pt-1">
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
+                Nota Tambahan <span className="text-[10px] text-slate-400 font-normal">(pilihan)</span>
               </label>
               <textarea
                 rows={2}
                 value={additionalNotes}
                 onChange={(e) => setAdditionalNotes(e.target.value)}
-                placeholder="cth: Rujukan kod warna Pantone, leher jenis V-neck, atau sebarang arahan khas untuk pereka kami..."
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF] leading-relaxed resize-none"
+                placeholder="Sebarang arahan khas atau catatan untuk pesanan anda..."
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition-all leading-relaxed resize-none"
               />
             </div>
           </div>
         </div>
 
         {/* 8. Fixed Bottom Sticky Bar Ringkasan Sebut Harga & Butang Proses */}
-        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 p-3.5 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.85rem)] shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
+        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 p-3 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
           <div className="flex items-center justify-between gap-3">
             {/* Price Column */}
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5 text-[10.5px] text-slate-500 font-medium">
-                <span>{totalQuantity} helai</span>
-                <span>&bull;</span>
-                <span>{formatCurrency(quote.finalUnitPrice)}/helai</span>
-                {shippingFee > 0 && (
-                  <span className="text-slate-600 font-medium">
-                    + Pos {formatCurrency(shippingFee)}
-                  </span>
-                )}
+              <div className="text-[10.5px] text-slate-400 font-medium truncate">
+                {totalQuantity} helai {shippingFee > 0 ? `+ Pos ${formatCurrency(shippingFee)}` : ''}
               </div>
               <div className="text-base font-black text-slate-900 font-mono leading-tight">
                 {formatCurrency(grandTotalAmount)}
@@ -1533,7 +1475,7 @@ export default function CustomizePage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Tanya di WhatsApp"
-                className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-[#25D366] hover:bg-emerald-100 flex items-center justify-center shrink-0 active:scale-90 transition-all shadow-2xs"
+                className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 text-[#25D366] hover:bg-emerald-100 flex items-center justify-center shrink-0 active:scale-95 transition-all"
               >
                 <FaWhatsapp className="w-5 h-5" />
               </a>
@@ -1542,10 +1484,10 @@ export default function CustomizePage() {
               <button
                 type="submit"
                 disabled={totalQuantity <= 0}
-                className="h-11 px-5 rounded-2xl bg-[#00BDFF] hover:bg-sky-600 disabled:bg-slate-300 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-sky-400/25 active:scale-95 transition-all cursor-pointer"
+                className="h-10 px-5 rounded-xl bg-[#00BDFF] hover:bg-sky-600 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer shadow-sm"
               >
-                <span>Proses Tempahan</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>Teruskan</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -1876,12 +1818,12 @@ export default function CustomizePage() {
                   type="button"
                   onClick={handleConfirmAndSendOrder}
                   disabled={isSubmitting}
-                  className="w-full py-3.5 rounded-2xl bg-[#0052FF] hover:bg-[#0041CC] disabled:bg-slate-300 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-blue-500/25 active:scale-95 transition-all cursor-pointer"
+                  className="w-full py-3.5 rounded-xl bg-[#0052FF] hover:bg-[#0041CC] disabled:bg-slate-300 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-white" />
-                      <span>Menyambung ke Gerbang Pembayaran...</span>
+                      <span>Menyambung Pembayaran...</span>
                     </>
                   ) : (
                     <>
@@ -1895,14 +1837,14 @@ export default function CustomizePage() {
                   type="button"
                   onClick={handleConfirmAndSendOrder}
                   disabled={isSubmitting}
-                  className="w-full py-3.5 rounded-2xl bg-[#25D366] hover:bg-emerald-600 disabled:bg-slate-300 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
+                  className="w-full py-3.5 rounded-xl bg-[#25D366] hover:bg-emerald-600 disabled:bg-slate-300 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all cursor-pointer"
                 >
                   {isSubmitting ? (
                     <span>Memproses Pesanan...</span>
                   ) : (
                     <>
                       <FaWhatsapp className="w-4 h-4" />
-                      <span>Sahkan & Hantar ke WhatsApp</span>
+                      <span>Hantar ke WhatsApp</span>
                     </>
                   )}
                 </button>
@@ -1912,9 +1854,9 @@ export default function CustomizePage() {
                 type="button"
                 onClick={() => setIsSummaryModalOpen(false)}
                 disabled={isSubmitting}
-                className="w-full py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold active:scale-95 transition-all cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold active:scale-95 transition-all cursor-pointer"
               >
-                Ubah Semula Butiran
+                Kembali
               </button>
             </div>
           </div>
