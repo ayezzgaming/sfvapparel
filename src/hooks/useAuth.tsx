@@ -6,6 +6,7 @@ export interface AuthCustomer {
   id: string;
   full_name: string;
   whatsapp: string | null;
+  phone?: string | null;
   email: string | null;
   company_or_team?: string | null;
   address?: string | null;

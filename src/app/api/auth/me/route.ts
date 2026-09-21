@@ -39,7 +39,8 @@ export async function GET(req: NextRequest) {
       customer: {
         id: customer.id,
         full_name: customer.full_name,
-        whatsapp: customer.whatsapp,
+        whatsapp: customer.whatsapp || customer.phone || null,
+        phone: customer.phone || customer.whatsapp || null,
         email: (customer.email as string)?.includes('@whatsapp.noreply') ? null : customer.email,
         company_or_team: customer.company_or_team || null,
         address: customer.address || null,

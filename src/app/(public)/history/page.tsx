@@ -25,6 +25,7 @@ import { formatCurrency } from '@/lib/pricing-calculator';
 import { buildWhatsAppInquiryUrl } from '@/lib/whatsapp/dynamic-link';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { confirmPaymentReturnAction } from '@/app/actions/paymentActions';
+import { getCustomerOrdersDb } from '@/app/actions/orderActions';
 import { Order, OrderStatus } from '@/types/database';
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; stepIndex: number; color: string; bg: string; dot: string }> = {
@@ -56,6 +57,8 @@ function HistoryContent() {
   const [isCopied, setIsCopied] = useState(false);
   const [isPayingBalance, setIsPayingBalance] = useState(false);
   const [balanceError, setBalanceError] = useState<string | null>(null);
+  const [liveOrders, setLiveOrders] = useState<Order[]>([]);
+  const [isFetchingLive, setIsFetchingLive] = useState(false);
 
   const paymentQuery = searchParams.get('payment');
   const orderNumberQuery = searchParams.get('order_number');
@@ -86,39 +89,62 @@ function HistoryContent() {
     };
   }, [paymentQuery, orderNumberQuery, refreshAllDb]);
 
-  // Filter orders by authenticated customer from Database
+  // Fetch live orders directly from Supabase by Customer Phone or Order Number
+  useEffect(() => {
+    let isMounted = true;
+    const identifier = customer?.phone || customer?.whatsapp || customer?.id || orderNumberQuery;
+    if (identifier) {
+      setIsFetchingLive(true);
+      getCustomerOrdersDb(identifier)
+        .then((res) => {
+          if (isMounted && res.success && Array.isArray(res.orders)) {
+            setLiveOrders(res.orders);
+          }
+        })
+        .catch(console.error)
+        .finally(() => {
+          if (isMounted) setIsFetchingLive(false);
+        });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [customer, orderNumberQuery]);
+
+  // Combined & deduplicated customer orders list
   const customerOrders = useMemo(() => {
-    if (!Array.isArray(orders)) return [];
+    const combined: Order[] = [...liveOrders];
+    const existingIds = new Set(combined.map((o) => o.id || o.order_number));
 
-    if (isAuthenticated && customer) {
-      const phone = String(customer.whatsapp || '');
-      const cleanPhone = phone.replace(/[\s\-\+\(\)]/g, '');
+    const phone = String(customer?.phone || customer?.whatsapp || '');
+    const cleanPhone = phone.replace(/[\s\-\+\(\)]/g, '');
+    const shortPhone = cleanPhone.replace(/^60|^0/, '');
 
-      return orders.filter((o) => {
-        if (!o) return false;
+    if (Array.isArray(orders)) {
+      for (const o of orders) {
+        if (!o || existingIds.has(o.id) || existingIds.has(o.order_number)) continue;
+
+        let isMatch = false;
         if (orderNumberQuery) {
           const baseQuery = orderNumberQuery.replace(/-(DP|BAL)$/i, '');
-          if (o.order_number === baseQuery) return true;
+          if (o.order_number === baseQuery) isMatch = true;
         }
-        if (o.customer_id && customer.id && o.customer_id === customer.id) return true;
-        if (o.customer_phone && cleanPhone) {
-          const orderPhoneClean = String(o.customer_phone).replace(/[\s\-\+\(\)]/g, '');
-          if (orderPhoneClean && (orderPhoneClean.includes(cleanPhone.slice(-8)) || cleanPhone.includes(orderPhoneClean.slice(-8)))) return true;
+        if (customer?.id && o.customer_id === customer.id) isMatch = true;
+        if (shortPhone && shortPhone.length >= 6 && o.customer_phone) {
+          const oPhone = String(o.customer_phone).replace(/[\s\-\+\(\)]/g, '');
+          if (oPhone.includes(shortPhone) || shortPhone.includes(oPhone)) isMatch = true;
         }
-        if (customer.email && o.customer_email && String(o.customer_email).toLowerCase() === String(customer.email).toLowerCase()) return true;
-        return false;
-      });
+        if (customer?.email && o.customer_email && String(o.customer_email).toLowerCase() === String(customer.email).toLowerCase()) isMatch = true;
+
+        if (isMatch) {
+          combined.push(o);
+          existingIds.add(o.id || o.order_number);
+        }
+      }
     }
 
-    // If returning from payment or querying specific order
-    if (orderNumberQuery) {
-      const baseQuery = orderNumberQuery.replace(/-(DP|BAL)$/i, '');
-      const match = orders.filter((o) => o.order_number === baseQuery);
-      if (match.length > 0) return match;
-    }
-
-    return orders;
-  }, [orders, isAuthenticated, customer, orderNumberQuery]);
+    return combined;
+  }, [liveOrders, orders, customer, orderNumberQuery]);
 
   const handleOpenOrder = (order: Order) => {
     setSelectedOrder(order);
@@ -210,8 +236,14 @@ function HistoryContent() {
           </div>
         )}
 
-        {/* State 1: Guest / Not Logged In */}
-        {!isAuthenticated ? (
+        {/* Loading State */}
+        {(isLoading || isFetchingLive) && customerOrders.length === 0 ? (
+          <div className="bg-white rounded-3xl p-10 text-center shadow-xs space-y-3 border border-slate-200/60 my-4">
+            <div className="w-8 h-8 rounded-full border-2 border-sky-500 border-t-transparent animate-spin mx-auto" />
+            <p className="text-xs text-slate-500">Memuatkan rekod pesanan dari pangkalan data...</p>
+          </div>
+        ) : !isAuthenticated && customerOrders.length === 0 ? (
+          /* State 1: Guest / Not Logged In & No Direct Query */
           <div className="bg-white rounded-3xl p-8 text-center shadow-xs space-y-3 border border-slate-200/60 my-4">
             <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
               <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
@@ -238,17 +270,17 @@ function HistoryContent() {
             <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
               <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
             </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-800">Tiada Pesanan Rekod</p>
-              <p className="text-xs text-slate-400 mt-0.5">Anda belum mempunyai rekod tempahan di kilang.</p>
+            <div className="space-y-1">
+              <h3 className="text-sm font-semibold text-slate-900">Tiada Pesanan Rekod</h3>
+              <p className="text-xs text-slate-500">Anda belum mempunyai rekod tempahan di kilang.</p>
             </div>
             <div className="pt-2">
               <Link
                 href="/catalog"
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white text-xs font-bold active:scale-95 transition-all shadow-md shadow-blue-500/20"
+                className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-[#007AFF] text-white text-xs font-bold shadow-md shadow-blue-500/20 active:scale-95 transition-all"
               >
                 <span>Lihat Katalog</span>
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
           </div>

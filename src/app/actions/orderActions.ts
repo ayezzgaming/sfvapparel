@@ -30,18 +30,35 @@ export async function getCustomerOrdersDb(identifier: string): Promise<{ success
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Database connection failed.' };
 
-    if (!identifier) return { success: true, orders: [] };
+    if (!identifier || !identifier.trim()) return { success: true, orders: [] };
 
-    let cleanedPhone = identifier.replace(/[\s\-\+\(\)]/g, '');
-    if (cleanedPhone.startsWith('0')) cleanedPhone = '60' + cleanedPhone.slice(1);
-    if (!cleanedPhone.startsWith('6') && cleanedPhone.length >= 9) cleanedPhone = '60' + cleanedPhone;
+    const trimmed = identifier.trim();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmed);
 
-    // Fetch orders matching customer_id, customer_phone, or normalized phone
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .or(`customer_id.eq.${identifier},customer_phone.eq.${identifier},customer_phone.eq.${cleanedPhone},customer_phone.eq.+${cleanedPhone}`)
-      .order('created_at', { ascending: false });
+    let query = supabase.from('orders').select('*');
+
+    if (isUuid) {
+      query = query.or(`customer_id.eq.${trimmed},id.eq.${trimmed}`);
+    } else {
+      const cleanDigits = trimmed.replace(/[\s\-\+\(\)]/g, '');
+      const shortDigits = cleanDigits.replace(/^60|^0/, '');
+      let normalized60 = cleanDigits;
+      if (normalized60.startsWith('0')) normalized60 = '60' + normalized60.slice(1);
+      if (!normalized60.startsWith('6') && normalized60.length >= 9) normalized60 = '60' + normalized60;
+
+      const orConditions = [
+        shortDigits.length >= 6 ? `customer_phone.ilike.%${shortDigits}%` : '',
+        `customer_phone.eq.${trimmed}`,
+        `customer_phone.eq.${normalized60}`,
+        `customer_phone.eq.+${normalized60}`,
+        `order_number.ilike.%${trimmed}%`,
+        trimmed.includes('@') ? `customer_email.ilike.%${trimmed}%` : '',
+      ].filter(Boolean).join(',');
+
+      query = query.or(orConditions);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('[orderActions] getCustomerOrdersDb error:', error.message);
