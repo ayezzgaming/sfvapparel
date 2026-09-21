@@ -36,6 +36,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect') || '/';
+  const destination = redirectTo && redirectTo !== '/auth/login' ? redirectTo : '/';
   const { refresh } = useAuth();
 
   const [step, setStep] = useState<'phone' | 'otp' | 'complete-profile'>('phone');
@@ -272,11 +273,9 @@ function LoginForm() {
     }
   };
 
-  const destination = redirectTo && redirectTo !== '/auth/login' ? redirectTo : '/';
-
   const handleBack = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (step === 'otp') {
-      e.preventDefault();
       setStep('phone');
       setOtp(['', '', '', '', '', '']);
       setError('');
@@ -284,17 +283,16 @@ function LoginForm() {
     }
 
     if (step === 'complete-profile') {
-      e.preventDefault();
-      // Already verified, can proceed to destination
-      router.push(destination);
+      // User is verified, navigate to home or destination
+      router.push('/');
       return;
     }
 
-    // If step is phone, navigate directly to main home page or destination
+    // Always return to home page
     try {
-      router.push(destination);
+      router.push('/');
     } catch {
-      window.location.href = destination;
+      window.location.href = '/';
     }
   };
 
@@ -304,7 +302,7 @@ function LoginForm() {
       {/* Top Bar / Back button */}
       <div className="w-full max-w-md mx-auto flex items-center justify-between shrink-0">
         <Link
-          href={step === 'otp' ? '#' : destination}
+          href="/"
           onClick={handleBack}
           aria-label="Kembali ke halaman utama"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 active:bg-slate-200/80 active:scale-95 transition-all py-2 px-2.5 -ml-2 rounded-xl cursor-pointer select-none"
