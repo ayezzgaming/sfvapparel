@@ -8,9 +8,9 @@
   }
 }
 
-html, body {
+html, body, html.k-ios, body.k-ios, .k-ios, #app {
   font-family: var(--font-sans);
-  background-color: #FFFFFF;
+  background-color: #FFFFFF !important;
   color: #1D1D1F;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

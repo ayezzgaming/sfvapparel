@@ -60,7 +60,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
   const favoriteDesigns = designs.filter((d) => favorites.includes(d.id));
 
   return (
-    <App theme="ios" safeAreas={true} className="!bg-transparent h-full font-ios antialiased selection:bg-[#00BDFF] selection:text-white overscroll-none">
+    <App theme="ios" safeAreas={true} className="!bg-white h-full font-ios antialiased selection:bg-[#00BDFF] selection:text-white overscroll-none">
       {/* 1. FIXED FULL-SCREEN FRAME (Locks directly to physical viewport, zero window scrolling) */}
       <div className="fixed inset-0 w-full h-full bg-white sm:bg-slate-100 flex justify-center overflow-hidden overscroll-none">
 
@@ -69,7 +69,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
           
           {/* Header / Navbar (Clean White Apple-Grade Polish) */}
           <header 
-            className="shrink-0 z-40 px-4 py-3 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] flex items-center justify-between border-b border-slate-200/80 bg-white/95 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.03)] select-none touch-none transition-colors"
+            className="shrink-0 z-40 px-4 py-3 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] flex items-center justify-between border-b border-slate-200/80 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.03)] select-none touch-none transition-colors"
             style={{ touchAction: 'none' }}
           >
             {/* Brand Logo */}
