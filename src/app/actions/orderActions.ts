@@ -60,8 +60,11 @@ export async function saveOrderDb(orderData: Partial<Order>): Promise<{ success:
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Database connection failed.' };
 
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(-2);
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const orderNumber = orderData.order_number || `SFV-ORD-${randomSuffix}`;
+    const orderNumber = orderData.order_number || `SFV-${yy}${mm}-${randomSuffix}`;
 
     const recordToInsert = {
       order_number: orderNumber,

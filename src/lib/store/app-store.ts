@@ -353,15 +353,18 @@ export function useAppStore() {
 
   const addOrder = useCallback(async (orderData: Omit<Order, 'id' | 'order_number' | 'created_at' | 'updated_at'>) => {
     initStoreIfNeeded();
-    const timestamp = Date.now();
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(-2);
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const timestamp = now.getTime();
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const tempId = `ord-${timestamp}`;
     const newOrder: Order = {
       ...orderData,
       id: tempId,
-      order_number: `ORD-${randomSuffix}`,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      order_number: `SFV-${yy}${mm}-${randomSuffix}`,
+      created_at: now.toISOString(),
+      updated_at: now.toISOString(),
     };
 
     const next = [newOrder, ...storeState.orders];
