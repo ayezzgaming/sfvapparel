@@ -179,7 +179,6 @@ export default function CustomizePage() {
 
   // Pilihan Kurier & Kos Penghantaran
   const [selectedCourierId, setSelectedCourierId] = useState<string>('jnt');
-  const [isCourierDropdownOpen, setIsCourierDropdownOpen] = useState(false);
 
   // Autofill customer details if authenticated
   useEffect(() => {
@@ -701,7 +700,7 @@ export default function CustomizePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F2F2F7] pb-32 font-ios select-none text-slate-900">
+    <div className="min-h-screen bg-[#F2F2F7] pb-44 font-ios select-none text-slate-900">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 px-4 py-3 flex items-center justify-between">
         <button
@@ -1251,66 +1250,67 @@ export default function CustomizePage() {
               </label>
             </div>
 
-            {/* Courier Selection & Price logic: No courier prices shown until address is filled */}
-            <div className="space-y-1.5 pt-1">
+            {/* Pilihan Kurier: Clean iOS Grouped List (Tidak tertutup navigasi bottom) */}
+            <div className="space-y-2 pt-1">
               <div className="flex items-center justify-between">
-                <label className="text-xs text-slate-600 block">Pilihan Kurier</label>
-                {(!addrLine.trim() || !addrPostcode.trim()) && (
-                  <span className="text-[10px] text-red-500">Sila lengkapkan alamat untuk kos pos</span>
+                <label className="text-xs text-slate-600 font-medium">Pilihan Kurier</label>
+                {(!addrLine.trim() || !addrPostcode.trim()) ? (
+                  <span className="text-[10px] text-slate-400">Masukkan alamat untuk kos pos</span>
+                ) : (
+                  <span className="text-[10px] text-emerald-600 font-medium">{shippingCalculation.zoneLabel}</span>
                 )}
               </div>
 
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsCourierDropdownOpen((prev) => !prev)}
-                  className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-left flex items-center justify-between gap-2.5 hover:border-slate-300 transition-colors"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <CourierLogo type={selectedCourier.logoType} className="w-8 h-8 shrink-0" />
-                    <div className="min-w-0">
-                      <div className="text-xs font-semibold text-slate-900 truncate">{selectedCourier.name}</div>
-                      <div className="text-[10px] text-slate-400 truncate">{selectedCourier.estimatedDays}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <span className="text-xs font-semibold font-mono">
-                      {!addrLine.trim() || !addrPostcode.trim() ? '-' : (shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee))}
-                    </span>
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
-                  </div>
-                </button>
-
-                {isCourierDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden divide-y divide-slate-100">
-                    {shippingCalculation.couriers.map((courier) => {
-                      const isSelected = selectedCourierId === courier.id;
-                      return (
+              <div className="rounded-xl border border-slate-200 bg-white divide-y divide-slate-100 overflow-hidden shadow-xs">
+                {shippingCalculation.couriers.map((courier) => {
+                  const isSelected = selectedCourierId === courier.id;
+                  const hasAddress = Boolean(addrLine.trim() && addrPostcode.trim());
+                  return (
+                    <button
+                      key={courier.id}
+                      type="button"
+                      onClick={() => setSelectedCourierId(courier.id)}
+                      className={`w-full p-2.5 px-3 flex items-center justify-between gap-3 text-left transition-all ${
+                        isSelected ? 'bg-sky-50/70' : 'hover:bg-slate-50/80'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        {/* iOS Radio Selection Indicator */}
                         <div
-                          key={courier.id}
-                          onClick={() => {
-                            setSelectedCourierId(courier.id);
-                            setIsCourierDropdownOpen(false);
-                          }}
-                          className={`p-2.5 flex items-center justify-between gap-2.5 cursor-pointer transition-colors ${
-                            isSelected ? 'bg-sky-50 text-sky-900' : 'hover:bg-slate-50 text-slate-800'
+                          className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                            isSelected ? 'border-sky-500 bg-sky-500' : 'border-slate-300 bg-white'
                           }`}
                         >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <CourierLogo type={courier.logoType} className="w-8 h-8 shrink-0" />
-                            <div className="min-w-0">
-                              <div className="text-xs font-medium truncate">{courier.name}</div>
-                              <div className="text-[10px] text-slate-400">{courier.estimatedDays}</div>
-                            </div>
-                          </div>
-                          <span className="text-xs font-semibold font-mono">
-                            {!addrLine.trim() || !addrPostcode.trim() ? '-' : (courier.rate === 0 ? 'Percuma' : formatCurrency(courier.rate))}
-                          </span>
+                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+
+                        {/* Courier Logo Badge: Landscape rectangle with original logo visible */}
+                        <CourierLogo type={courier.logoType} className="h-7 w-20 shrink-0" />
+
+                        {/* Courier Name & Estimated Delivery */}
+                        <div className="min-w-0">
+                          <div className={`text-xs font-semibold truncate ${isSelected ? 'text-sky-950' : 'text-slate-800'}`}>
+                            {courier.name}
+                          </div>
+                          <div className="text-[10px] text-slate-400 truncate">
+                            {courier.estimatedDays}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Pricing */}
+                      <div className="text-right shrink-0">
+                        <span className={`text-xs font-bold font-mono ${isSelected ? 'text-sky-600' : 'text-slate-700'}`}>
+                          {!hasAddress
+                            ? '-'
+                            : courier.rate === 0
+                            ? 'Percuma'
+                            : formatCurrency(courier.rate)}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -1328,7 +1328,7 @@ export default function CustomizePage() {
         </div>
 
         {/* Cleaner Bottom Bar */}
-        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 p-3 px-4 shadow-sm">
+        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 p-3 px-4 shadow-sm pb-safe">
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="text-[10px] text-slate-500">{totalQuantity} helai</div>
@@ -1447,7 +1447,7 @@ export default function CustomizePage() {
                   <span>{totalQuantity} helai</span>
                   <span>&bull;</span>
                   <div className="inline-flex items-center gap-1.5">
-                    <CourierLogo type={selectedCourier.logoType} className="w-5 h-5 shrink-0" />
+                    <CourierLogo type={selectedCourier.logoType} className="h-5 w-14 shrink-0" />
                     <span className="font-medium text-slate-700">{selectedCourier.shortName || selectedCourier.name}</span>
                   </div>
                 </div>
