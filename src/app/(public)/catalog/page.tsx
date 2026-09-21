@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { 
   Search, 
@@ -214,28 +215,22 @@ function CatalogContent() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Diskusi Produk di WhatsApp"
-                className="h-12 w-12 rounded-xl bg-emerald-50 border border-emerald-200/80 text-[#25D366] hover:bg-emerald-100 flex items-center justify-center shrink-0 active:scale-95 transition-all shadow-xs"
+                className="h-12 px-3.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-[#25D366] hover:bg-emerald-100 flex items-center justify-center gap-1.5 shrink-0 active:scale-95 transition-all shadow-xs"
                 title="Diskusi di WhatsApp"
               >
-                <FaWhatsapp className="w-6 h-6" />
+                <FaWhatsapp className="w-5 h-5" />
+                <span className="text-xs font-bold text-emerald-700 hidden sm:inline">Diskusi</span>
               </a>
 
-              {/* Primary Tempah Action Button */}
-              <a
-                href={buildWhatsAppInquiryUrl({
-                  phone: companySettings?.whatsapp_number,
-                  type: 'catalog',
-                  designTitle: selectedDesign.title,
-                  designId: selectedDesign.id,
-                  category: selectedDesign.category,
-                })}
-                target="_blank"
-                rel="noopener noreferrer"
+              {/* Primary Tempah Action Button - Redirect to dedicated Order Form page */}
+              <Link
+                href={`/customize/${selectedDesign.id}`}
+                onClick={() => setIsSheetOpen(false)}
                 className="flex-1 h-12 bg-[#00BDFF] hover:bg-sky-600 text-white font-bold rounded-xl text-center active:bg-sky-700 transition-colors flex items-center justify-center space-x-1.5 shadow-md shadow-sky-400/25 text-xs"
               >
-                <span>Tanya & Tempah Rekaan Ini</span>
+                <span>Isi Borang Tempahan</span>
                 <ChevronRight className="w-4 h-4" />
-              </a>
+              </Link>
             </div>
           ) : undefined
         }
