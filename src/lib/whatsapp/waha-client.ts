@@ -52,6 +52,8 @@ export interface WahaChatMessage {
   body: string;
   hasMedia?: boolean;
   mediaUrl?: string;
+  mediaMimetype?: string;
+  mediaFilename?: string;
   ack?: number; // 1: sent, 2: received, 3: read
 }
 
@@ -264,8 +266,36 @@ export async function getWahaMessages(chatId: string, limit: number = 50): Promi
       const from = extractChatId(m.from);
       const to = extractChatId(m.to);
       const fromMe = !!(m.fromMe || (msgData?.id as Record<string, unknown>)?.fromMe);
-      const body = (m.body as string) || (msgData?.body as string) || (m.hasMedia ? '[Media / Gambar]' : '');
-      const media = m.media as { url?: string } | undefined;
+      const media = m.media as { url?: string; mimetype?: string; filename?: string } | undefined;
+      
+      let mediaUrl: string | undefined = undefined;
+      if (media?.url) {
+        // Transform http://localhost:3000/api/files/... to /api/whatsapp/files?file=...
+        const match = media.url.match(/\/api\/files\/(.+)$/);
+        if (match && match[1]) {
+          mediaUrl = `/api/whatsapp/files?file=${encodeURIComponent(match[1])}`;
+        } else {
+          mediaUrl = `/api/whatsapp/files?url=${encodeURIComponent(media.url)}`;
+        }
+      }
+
+      const mediaMimetype = media?.mimetype || (msgData?.mimetype as string) || '';
+      const mediaFilename = media?.filename || (msgData?.filename as string) || '';
+
+      let body = (m.body as string) || (msgData?.body as string) || (msgData?.caption as string) || '';
+      if (!body && (m.hasMedia || !!mediaUrl)) {
+        if (mediaMimetype.startsWith('image/')) {
+          body = '[Gambar]';
+        } else if (mediaMimetype.startsWith('audio/')) {
+          body = '[Mesej Suara / Audio]';
+        } else if (mediaMimetype.startsWith('video/')) {
+          body = '[Video]';
+        } else if (mediaFilename) {
+          body = mediaFilename;
+        } else {
+          body = '[Lampiran Fail]';
+        }
+      }
 
       return {
         id: (msgId as string) || String(Math.random()),
@@ -273,9 +303,11 @@ export async function getWahaMessages(chatId: string, limit: number = 50): Promi
         from: from || '',
         fromMe,
         to: to || '',
-        body: body || '',
-        hasMedia: !!m.hasMedia,
-        mediaUrl: media?.url,
+        body,
+        hasMedia: !!(m.hasMedia || mediaUrl),
+        mediaUrl,
+        mediaMimetype,
+        mediaFilename,
         ack: (m.ack as number) || (msgData?.ack as number),
       };
     });

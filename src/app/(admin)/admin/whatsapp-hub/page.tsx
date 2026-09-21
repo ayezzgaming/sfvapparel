@@ -29,7 +29,11 @@ import {
   Phone,
   X,
   FileText,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Maximize2,
+  Download,
+  Volume2,
+  Video
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
@@ -230,11 +234,13 @@ export default function WhatsAppHubPage() {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loadingTickets, setLoadingTickets] = useState(false);
 
-  // Test Message Form
   const [testPhone, setTestPhone] = useState('');
   const [testMessage, setTestMessage] = useState('Salam dari Kilang SFV Apparel! Ujian sambungan WhatsApp berjaya.');
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  // Lightbox Preview Modal State
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Fetch Session Status & QR
   const fetchStatus = useCallback(async (isManual = false) => {
@@ -900,31 +906,153 @@ export default function WhatsAppHubPage() {
                                         </a>
                                       )}
                                     </div>
-                                  ) : isMedia ? (
-                                    <div className={`p-2.5 rounded-xl border flex items-center gap-2.5 ${
-                                      msg.fromMe
-                                        ? 'bg-emerald-100/50 border-emerald-300/50 text-[#111B21]'
-                                        : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-100'
-                                    }`}>
-                                      <div className="w-9 h-9 rounded-lg bg-[#00BDFF]/10 text-[#00BDFF] flex items-center justify-center shrink-0">
-                                        {msg.body.match(/\.(png|jpe?g|webp|gif)$/i) ? (
-                                          <ImageIcon className="w-4 h-4" />
-                                        ) : (
-                                          <FileText className="w-4 h-4" />
-                                        )}
+                                  ) : (() => {
+                                    const isImage = msg.mediaMimetype?.startsWith('image/') || 
+                                      (msg.mediaUrl && msg.mediaUrl.match(/\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i)) ||
+                                      (!vcard && msg.body.match(/\.(png|jpe?g|webp|gif)$/i)) ||
+                                      msg.body === '[Gambar]';
+                                    const isAudio = msg.mediaMimetype?.startsWith('audio/') || 
+                                      (msg.mediaUrl && msg.mediaUrl.match(/\.(opus|ogg|mp3|wav|m4a)(\?.*)?$/i)) ||
+                                      msg.body === '[Mesej Suara / Audio]' || msg.body.startsWith('[Audio');
+                                    const isVideo = msg.mediaMimetype?.startsWith('video/') || 
+                                      (msg.mediaUrl && msg.mediaUrl.match(/\.(mp4|mov|webm)(\?.*)?$/i)) ||
+                                      msg.body === '[Video]';
+                                    const isDocOrOther = !isImage && !isAudio && !isVideo && (msg.hasMedia || isMedia || !!msg.mediaUrl);
+
+                                    if (isImage) {
+                                      return (
+                                        <div className="space-y-1.5">
+                                          {msg.mediaUrl ? (
+                                            <div 
+                                              onClick={() => setPreviewImage(msg.mediaUrl!)}
+                                              className="relative group rounded-xl overflow-hidden border border-black/10 dark:border-white/10 cursor-pointer max-w-sm bg-black/5 hover:opacity-95 transition-all shadow-xs"
+                                            >
+                                              <img 
+                                                src={msg.mediaUrl} 
+                                                alt="WhatsApp Media" 
+                                                className="max-h-72 w-auto max-w-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-[1.02]"
+                                                loading="lazy"
+                                              />
+                                              <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white text-xs font-semibold backdrop-blur-[2px]">
+                                                <Maximize2 className="w-4 h-4" />
+                                                <span>Klik Lihat Gambar Penuh</span>
+                                              </div>
+                                            </div>
+                                          ) : (
+                                            <div className={`p-2.5 rounded-xl border flex items-center gap-2.5 ${
+                                              msg.fromMe
+                                                ? 'bg-emerald-100/50 border-emerald-300/50 text-[#111B21]'
+                                                : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-100'
+                                            }`}>
+                                              <div className="w-9 h-9 rounded-lg bg-[#00BDFF]/10 text-[#00BDFF] flex items-center justify-center shrink-0">
+                                                <ImageIcon className="w-4 h-4" />
+                                              </div>
+                                              <div className="min-w-0 flex-1">
+                                                <p className="font-bold text-xs truncate">{msg.body || 'Gambar WhatsApp'}</p>
+                                                <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                                                  Gambar (Memuat...)
+                                                </span>
+                                              </div>
+                                            </div>
+                                          )}
+                                          {msg.body && !msg.body.startsWith('[Gambar]') && !msg.body.startsWith('[Media') && (
+                                            <div className="leading-relaxed whitespace-pre-wrap break-words pt-1">
+                                              {formatWhatsAppText(msg.body)}
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    }
+
+                                    if (isAudio) {
+                                      return (
+                                        <div className="space-y-1.5">
+                                          <div className={`p-2.5 rounded-xl border flex flex-col gap-2 min-w-[240px] max-w-sm ${
+                                            msg.fromMe
+                                              ? 'bg-emerald-100/50 border-emerald-300/50 text-[#111B21]'
+                                              : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-100'
+                                          }`}>
+                                            <div className="flex items-center gap-2 text-xs font-semibold">
+                                              <Volume2 className="w-4 h-4 text-[#00BDFF]" />
+                                              <span>Mesej Suara WhatsApp</span>
+                                            </div>
+                                            {msg.mediaUrl ? (
+                                              <audio controls src={msg.mediaUrl} className="w-full h-8" preload="metadata" />
+                                            ) : (
+                                              <span className="text-[10px] text-slate-400 font-mono">Audio sedang diproses...</span>
+                                            )}
+                                          </div>
+                                          {msg.body && !msg.body.startsWith('[Mesej Suara') && !msg.body.startsWith('[Audio') && !msg.body.startsWith('[Media') && (
+                                            <div className="leading-relaxed whitespace-pre-wrap break-words">
+                                              {formatWhatsAppText(msg.body)}
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    }
+
+                                    if (isVideo) {
+                                      return (
+                                        <div className="space-y-1.5">
+                                          {msg.mediaUrl ? (
+                                            <video controls src={msg.mediaUrl} className="max-h-72 rounded-xl max-w-sm border border-black/10 shadow-xs" />
+                                          ) : null}
+                                          {msg.body && !msg.body.startsWith('[Video') && !msg.body.startsWith('[Media') && (
+                                            <div className="leading-relaxed whitespace-pre-wrap break-words">
+                                              {formatWhatsAppText(msg.body)}
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    }
+
+                                    if (isDocOrOther) {
+                                      return (
+                                        <div className="space-y-1.5">
+                                          <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 ${
+                                            msg.fromMe
+                                              ? 'bg-emerald-100/50 border-emerald-300/50 text-[#111B21]'
+                                              : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-100'
+                                          }`}>
+                                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                              <div className="w-9 h-9 rounded-lg bg-[#00BDFF]/10 text-[#00BDFF] flex items-center justify-center shrink-0">
+                                                <FileText className="w-4 h-4" />
+                                              </div>
+                                              <div className="min-w-0 flex-1">
+                                                <p className="font-bold text-xs truncate">{msg.mediaFilename || msg.body || 'Dokumen'}</p>
+                                                <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                                                  {msg.mediaMimetype || 'Lampiran Fail'}
+                                                </span>
+                                              </div>
+                                            </div>
+                                            {msg.mediaUrl && (
+                                              <a
+                                                href={msg.mediaUrl}
+                                                download={msg.mediaFilename || 'lampiran-whatsapp'}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="p-2 rounded-full bg-white dark:bg-zinc-700 hover:bg-[#00BDFF] hover:text-white border border-slate-200 dark:border-zinc-600 transition-colors shadow-2xs shrink-0 cursor-pointer"
+                                                title="Muat Turun Fail"
+                                              >
+                                                <Download className="w-4 h-4" />
+                                              </a>
+                                            )}
+                                          </div>
+                                          {msg.body && !msg.body.startsWith('[Lampiran') && !msg.body.startsWith('[Media') && msg.body !== msg.mediaFilename && (
+                                            <div className="leading-relaxed whitespace-pre-wrap break-words">
+                                              {formatWhatsAppText(msg.body)}
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    }
+
+                                    return (
+                                      <div className="leading-relaxed whitespace-pre-wrap break-words">
+                                        {formatWhatsAppText(msg.body)}
                                       </div>
-                                      <div className="min-w-0 flex-1">
-                                        <p className="font-bold text-xs truncate">{msg.body}</p>
-                                        <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
-                                          Lampiran Fail / Gambar
-                                        </span>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="leading-relaxed whitespace-pre-wrap break-words">
-                                      {formatWhatsAppText(msg.body)}
-                                    </div>
-                                  )}
+                                    );
+                                  })()}
 
                                   <div className={`flex items-center justify-end gap-1 text-[10px] font-mono ${
                                     msg.fromMe ? 'text-[#54656f] dark:text-[#8696a0]' : 'text-slate-400'
@@ -1283,6 +1411,45 @@ export default function WhatsAppHubPage() {
                   <span>{sending ? 'Sedang Menghantar...' : 'Hantar Mesej Ujian'}</span>
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* FULLSCREEN IMAGE LIGHTBOX MODAL */}
+        {previewImage && (
+          <div 
+            className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+            onClick={() => setPreviewImage(null)}
+          >
+            <div 
+              className="relative max-w-4xl max-h-[90vh] flex flex-col items-center gap-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+                <a
+                  href={previewImage}
+                  download="whatsapp-image.jpg"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-full bg-black/60 hover:bg-[#00BDFF] text-white transition-colors cursor-pointer shadow-md"
+                  title="Muat Turun Gambar"
+                >
+                  <Download className="w-4 h-4" />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setPreviewImage(null)}
+                  className="p-2 rounded-full bg-black/60 hover:bg-rose-600 text-white transition-colors cursor-pointer shadow-md"
+                  title="Tutup"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <img
+                src={previewImage}
+                alt="Pratonton Penuh Gambar"
+                className="max-h-[85vh] max-w-full object-contain rounded-2xl shadow-2xl border border-white/10"
+              />
             </div>
           </div>
         )}
