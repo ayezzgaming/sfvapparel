@@ -18,13 +18,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { phone, name, email } = body as { phone?: string; name?: string; email?: string };
 
-    if (!phone || !name) {
-      return NextResponse.json({ success: false, message: 'Nombor WhatsApp dan Nama diperlukan.' }, { status: 400 });
+    if (!phone?.trim()) {
+      return NextResponse.json({ success: false, message: 'Nombor WhatsApp diperlukan.' }, { status: 400 });
     }
 
     const normalizedPhone = normalizePhone(phone);
 
-    // Validate Malaysian phone number
+    // Validate Malaysian phone number (e.g. 60123456789, 60111234567)
     if (!/^60\d{8,11}$/.test(normalizedPhone)) {
       return NextResponse.json({ success: false, message: 'Format nombor WhatsApp tidak sah. Contoh: 0123456789' }, { status: 400 });
     }
@@ -32,6 +32,19 @@ export async function POST(req: NextRequest) {
     const supabase = getServiceSupabase();
     if (!supabase) {
       return NextResponse.json({ success: false, message: 'Sambungan pangkalan data gagal.' }, { status: 500 });
+    }
+
+    // Check if customer already exists to personalize message
+    let customerName = name?.trim();
+    if (!customerName) {
+      const { data: existingCust } = await supabase
+        .from('customers')
+        .select('full_name')
+        .eq('whatsapp', normalizedPhone)
+        .single();
+      if (existingCust?.full_name) {
+        customerName = existingCust.full_name;
+      }
     }
 
     // Rate limiting: max 3 OTP requests per phone per 10 minutes
@@ -73,7 +86,8 @@ export async function POST(req: NextRequest) {
 
     // Send OTP via WAHA (Strictly no emojis)
     const chatId = formatChatId(normalizedPhone);
-    const message = `*SFV Apparel - Kod Pengesahan*\n\nAssalamualaikum *${name}*,\n\nKod OTP anda ialah: *${otpCode}*\n\nKod ini sah selama 5 minit sahaja.\nJangan kongsikan kod ini kepada sesiapa.`;
+    const greeting = customerName ? `Assalamualaikum *${customerName}*,` : 'Assalamualaikum,';
+    const message = `*SFV Apparel - Kod Pengesahan*\n\n${greeting}\n\nKod OTP anda ialah: *${otpCode}*\n\nKod ini sah selama 5 minit sahaja.\nJangan kongsikan kod ini kepada sesiapa.`;
 
     const wahaResult = await sendWahaMessage(chatId, message);
 

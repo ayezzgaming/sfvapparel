@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
 
     // Find or create customer
     let customer;
+    let isNewCustomer = false;
     const { data: existingCustomer } = await supabase
       .from('customers')
       .select('*')
@@ -77,7 +78,10 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (existingCustomer) {
-      // Update name if provided and different
+      // Check if existing customer has incomplete profile
+      isNewCustomer = !existingCustomer.full_name || existingCustomer.full_name === 'Pelanggan Baru';
+
+      // Update verified status
       const updates: Record<string, unknown> = { phone_verified: true };
       if (name && name !== existingCustomer.full_name) updates.full_name = name;
       if (email && !existingCustomer.email) updates.email = email;
@@ -91,6 +95,7 @@ export async function POST(req: NextRequest) {
       customer = updated || existingCustomer;
     } else {
       // Create new customer
+      isNewCustomer = true;
       const { data: newCustomer, error: createError } = await supabase
         .from('customers')
         .insert({
@@ -131,7 +136,8 @@ export async function POST(req: NextRequest) {
     const isProduction = process.env.NODE_ENV === 'production';
     const response = NextResponse.json({
       success: true,
-      message: 'Log masuk berjaya!',
+      message: isNewCustomer ? 'Pengesahan berjaya! Sila lengkapkan profil anda.' : 'Log masuk berjaya!',
+      isNewCustomer,
       customer: {
         id: customer.id,
         full_name: customer.full_name,
