@@ -1,0 +1,17 @@
+{
+  "id": "chip-main-gateway",
+  "provider": "chip",
+  "brand_id": "b8c18753-720a-464e-87da-146306991194",
+  "api_key": "w77LhibmJbmk34nfiETmFjcY8LPaKQtEbgW24ovzS6SLyjAfQTXC9iT6Ul-sIWkIj-Xy5aVUKNoylYQnGeGAsg==",
+  "public_key": "",
+  "is_active": true,
+  "is_sandbox": true,
+  "webhook_url": "/api/payment/chip/webhook",
+  "payment_methods": [
+    "fpx",
+    "card",
+    "duitnow_qr",
+    "ewallet"
+  ],
+  "updated_at": "2026-09-21T12:13:44.263Z"
+}
