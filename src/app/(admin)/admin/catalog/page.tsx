@@ -321,7 +321,7 @@ export default function AdminCatalogPage() {
       {/* Header Bar */}
       <div className="shrink-0 flex items-center justify-between gap-3">
         {/* Tab Switcher */}
-        <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-zinc-800/90 backdrop-blur-md p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
+        <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-zinc-800/90 backdrop-blur-md p-1 rounded-full border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
           {[
             { id: 'all', label: `Semua (${designs.length})` },
             { id: 'sublimation', label: `Sublimasi (${designs.filter((d) => d.print_type === 'sublimation').length})` },
@@ -331,10 +331,10 @@ export default function AdminCatalogPage() {
               key={tab.id}
               type="button"
               onClick={() => setFilterType(tab.id)}
-              className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
                 filterType === tab.id
-                  ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                  : 'text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-zinc-200'
+                  ? 'bg-[#00BDFF] text-white font-semibold shadow-xs'
+                  : 'text-slate-600 dark:text-zinc-400 hover:text-[#00BDFF] dark:hover:text-zinc-200'
               }`}
             >
               {tab.label}
@@ -350,20 +350,20 @@ export default function AdminCatalogPage() {
             onClick={() => refreshDesigns()}
             disabled={isLoadingDesigns}
             title="Segar semula daripada pangkalan data Supabase"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 text-slate-700 dark:text-zinc-200 text-xs font-medium transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 text-slate-700 dark:text-zinc-200 text-xs font-medium transition-all shadow-2xs cursor-pointer disabled:opacity-50 active:scale-95"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingDesigns ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingDesigns ? 'animate-spin text-[#00BDFF]' : 'text-slate-500'}`} />
             <span className="hidden sm:inline">{isLoadingDesigns ? 'Memuatkan...' : 'Segar Semula'}</span>
           </button>
 
-          <div className="flex items-center gap-1 bg-slate-100/90 dark:bg-zinc-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
+          <div className="flex items-center gap-1 bg-slate-100/90 dark:bg-zinc-800/90 p-1 rounded-full border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
             <button
               type="button"
               onClick={() => setActiveView('grid')}
               title="Grid"
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              className={`p-1.5 rounded-full transition-colors cursor-pointer ${
                 activeView === 'grid'
-                  ? 'bg-white text-blue-600 shadow-xs'
+                  ? 'bg-[#00BDFF] text-white shadow-xs'
                   : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400'
               }`}
             >
@@ -373,9 +373,9 @@ export default function AdminCatalogPage() {
               type="button"
               onClick={() => setActiveView('list')}
               title="Senarai"
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              className={`p-1.5 rounded-full transition-colors cursor-pointer ${
                 activeView === 'list'
-                  ? 'bg-white text-blue-600 shadow-xs'
+                  ? 'bg-[#00BDFF] text-white shadow-xs'
                   : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400'
               }`}
             >
@@ -385,7 +385,7 @@ export default function AdminCatalogPage() {
           <button
             type="button"
             onClick={handleOpenAdd}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Tambah Rekaan</span>
@@ -412,17 +412,17 @@ export default function AdminCatalogPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari kod (SFV0001) atau nama..."
-                className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 border border-slate-200 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-blue-400 font-medium"
+                className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 border border-slate-200 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF] font-medium"
               />
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 type="button"
                 onClick={() => setFilterCategory('all')}
-                className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-all border cursor-pointer ${
+                className={`px-3 py-1 rounded-full text-[10px] font-medium transition-all border cursor-pointer ${
                   filterCategory === 'all'
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-xs font-semibold'
-                    : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-blue-300 hover:text-blue-600'
+                    ? 'bg-[#00BDFF] text-white border-[#00BDFF] shadow-xs font-semibold'
+                    : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-[#00BDFF]/40 hover:text-[#00BDFF]'
                 }`}
               >
                 Semua
@@ -432,10 +432,10 @@ export default function AdminCatalogPage() {
                   key={cat}
                   type="button"
                   onClick={() => setFilterCategory(cat)}
-                  className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-all border cursor-pointer ${
+                  className={`px-3 py-1 rounded-full text-[10px] font-medium transition-all border cursor-pointer ${
                     filterCategory === cat
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-xs font-semibold'
-                      : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-blue-300 hover:text-blue-600'
+                      ? 'bg-[#00BDFF] text-white border-[#00BDFF] shadow-xs font-semibold'
+                      : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-[#00BDFF]/40 hover:text-[#00BDFF]'
                   }`}
                 >
                   {cat}
@@ -483,7 +483,7 @@ export default function AdminCatalogPage() {
                       onClick={() => setActiveDesignIndex(idx)}
                       className={`group relative rounded-2xl overflow-hidden border transition-all text-left cursor-pointer ${
                         isActive
-                          ? 'border-2 border-blue-600 ring-2 ring-blue-500/20 shadow-md bg-white dark:bg-zinc-800'
+                          ? 'border-2 border-[#00BDFF] ring-2 ring-[#00BDFF]/20 shadow-md bg-white dark:bg-zinc-800'
                           : 'border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 bg-white dark:bg-zinc-900'
                       }`}
                     >
@@ -498,20 +498,20 @@ export default function AdminCatalogPage() {
                           className={`w-full h-full object-cover transition-transform duration-200 ${isActive ? 'scale-105' : 'group-hover:scale-105'}`}
                         />
                       </div>
-                      <div className={`px-2.5 py-2 transition-colors ${isActive ? 'bg-blue-50/50 dark:bg-blue-950/30 border-t border-blue-100 dark:border-blue-900/50' : 'bg-white dark:bg-zinc-900 border-t border-slate-100 dark:border-zinc-800'}`}>
+                      <div className={`px-2.5 py-2 transition-colors ${isActive ? 'bg-sky-50/60 dark:bg-sky-950/30 border-t border-sky-100 dark:border-sky-900/50' : 'bg-white dark:bg-zinc-900 border-t border-slate-100 dark:border-zinc-800'}`}>
                         <div className="flex items-center space-x-1.5">
                           {itemCode && (
                             <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
-                              isActive ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
+                              isActive ? 'bg-[#00BDFF] text-white' : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
                             }`}>
                               {itemCode}
                             </span>
                           )}
-                          <p className={`text-[11px] truncate ${isActive ? 'font-bold text-blue-950 dark:text-blue-200' : 'font-semibold text-slate-800 dark:text-zinc-100'}`}>
+                          <p className={`text-[11px] truncate ${isActive ? 'font-bold text-sky-950 dark:text-sky-200' : 'font-semibold text-slate-800 dark:text-zinc-100'}`}>
                             {displayTitle}
                           </p>
                         </div>
-                        <p className={`text-[9px] mt-0.5 ${isActive ? 'text-blue-700/80 dark:text-blue-300/80 font-medium' : 'text-slate-400'}`}>{item.category}</p>
+                        <p className={`text-[9px] mt-0.5 ${isActive ? 'text-sky-700/80 dark:text-sky-300/80 font-medium' : 'text-slate-400'}`}>{item.category}</p>
                       </div>
                       {item.is_featured && (
                         <span className="absolute top-2 left-2 w-4 h-4 rounded-full bg-amber-400 flex items-center justify-center shadow">
@@ -536,13 +536,13 @@ export default function AdminCatalogPage() {
                       onClick={() => setActiveDesignIndex(idx)}
                       className={`w-full flex items-center gap-2.5 p-2 rounded-2xl border transition-all text-left cursor-pointer ${
                         isActive
-                          ? 'bg-blue-50/70 dark:bg-blue-950/40 border-blue-500 ring-1 ring-blue-500/20 shadow-xs'
+                          ? 'bg-sky-50/70 dark:bg-sky-950/40 border-[#00BDFF] ring-1 ring-[#00BDFF]/20 shadow-xs'
                           : 'bg-white dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800 hover:border-slate-300'
                       }`}
                     >
                       <div
                         className={`w-12 h-12 rounded-xl overflow-hidden shrink-0 border flex items-center justify-center bg-slate-100 dark:bg-zinc-950 ${
-                          isActive ? 'border-blue-300' : 'border-slate-200 dark:border-zinc-800'
+                          isActive ? 'border-sky-300' : 'border-slate-200 dark:border-zinc-800'
                         }`}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -559,16 +559,16 @@ export default function AdminCatalogPage() {
                         <div className="flex items-center space-x-1.5">
                           {itemCode && (
                             <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
-                              isActive ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
+                              isActive ? 'bg-[#00BDFF] text-white' : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
                             }`}>
                               {itemCode}
                             </span>
                           )}
-                          <p className={`text-xs truncate ${isActive ? 'font-bold text-blue-950 dark:text-blue-200' : 'font-semibold text-slate-900 dark:text-zinc-100'}`}>
+                          <p className={`text-xs truncate ${isActive ? 'font-bold text-sky-950 dark:text-sky-200' : 'font-semibold text-slate-900 dark:text-zinc-100'}`}>
                             {displayTitle}
                           </p>
                         </div>
-                        <p className={`text-[10px] mt-0.5 ${isActive ? 'text-blue-700/80 dark:text-blue-300/80 font-medium' : 'text-slate-400'}`}>
+                        <p className={`text-[10px] mt-0.5 ${isActive ? 'text-sky-700/80 dark:text-sky-300/80 font-medium' : 'text-slate-400'}`}>
                           {item.category} · {item.print_type === 'sublimation' ? 'Sublimasi' : 'DTF'}
                         </p>
                       </div>
@@ -614,7 +614,7 @@ export default function AdminCatalogPage() {
             <div className="flex items-center gap-2.5 min-w-0">
               {activeDesign && (
                 <>
-                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 border border-blue-100 shrink-0">
+                  <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-100 shrink-0">
                     {activeDesign.code || extractDesignCode(activeDesign.title) || 'SFV0001'}
                   </span>
                   <h2 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-100 truncate">
@@ -632,7 +632,7 @@ export default function AdminCatalogPage() {
                 <button
                   type="button"
                   onClick={() => handleOpenEdit(activeDesign)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer active:scale-95"
                 >
                   <Edit className="w-3.5 h-3.5 text-slate-500" />
                   <span>Kemaskini</span>
@@ -640,7 +640,7 @@ export default function AdminCatalogPage() {
                 <button
                   type="button"
                   onClick={() => handleDelete(activeDesign.id)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-medium transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold transition-colors cursor-pointer active:scale-95"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Padam</span>
@@ -654,7 +654,7 @@ export default function AdminCatalogPage() {
             {isLoadingDesigns && designs.length === 0 ? (
               <div className="flex flex-col items-center justify-center space-y-3 text-center max-w-sm animate-pulse">
                 <div className="w-14 h-14 rounded-2xl bg-white dark:bg-zinc-900 shadow-md flex items-center justify-center border border-slate-100 dark:border-zinc-800">
-                  <RefreshCw className="w-7 h-7 text-blue-600 animate-spin" />
+                  <RefreshCw className="w-7 h-7 text-[#00BDFF] animate-spin" />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-slate-700 dark:text-zinc-200">Menyegerak Katalog</h3>
@@ -673,7 +673,7 @@ export default function AdminCatalogPage() {
                 <button
                   type="button"
                   onClick={handleOpenAdd}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all shadow-md cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold transition-all shadow-md cursor-pointer active:scale-95"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Tambah Rekaan Baharu</span>
@@ -718,7 +718,7 @@ export default function AdminCatalogPage() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100 shrink-0">
+                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-100 shrink-0">
                           {activeDesign.code || extractDesignCode(activeDesign.title) || 'SFV0001'}
                         </span>
                         <p className="text-xs font-bold text-slate-800 dark:text-zinc-100 truncate">
@@ -737,7 +737,7 @@ export default function AdminCatalogPage() {
                       {activeDesign.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 text-[10px] font-medium"
+                          className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 text-[10px] font-medium"
                         >
                           #{tag}
                         </span>
@@ -757,8 +757,8 @@ export default function AdminCatalogPage() {
           <div className="w-full max-w-md bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 space-y-5 shadow-2xl animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-xs">
-                  <ImageIcon className="w-4 h-4 text-blue-600" />
+                <div className="w-8 h-8 rounded-full bg-sky-50 border border-sky-100 flex items-center justify-center shadow-xs">
+                  <ImageIcon className="w-4 h-4 text-[#00BDFF]" />
                 </div>
                 <h3 className="text-sm font-bold text-slate-800">
                   {editingDesign ? 'Kemaskini Rekaan' : 'Tambah Rekaan Baharu'}
@@ -788,7 +788,7 @@ export default function AdminCatalogPage() {
                     Gambar Rekaan <span className="text-rose-500">*</span>
                   </label>
                   {compressionInfo && (
-                    <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-mono font-medium border border-emerald-100">
+                    <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-mono font-medium border border-emerald-100">
                       <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" />
                       <span>
                         {compressionInfo.compressedKb} KB (-{compressionInfo.percentSaved}%)
@@ -820,7 +820,7 @@ export default function AdminCatalogPage() {
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="px-3.5 py-1.5 rounded-full bg-white text-slate-800 text-xs font-semibold shadow-md flex items-center space-x-1.5 hover:bg-slate-50 cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-full bg-white text-slate-800 text-xs font-semibold shadow-md flex items-center space-x-1.5 hover:bg-slate-50 cursor-pointer active:scale-95"
                       >
                         <RefreshCw className="w-3.5 h-3.5 text-slate-600" />
                         <span>Tukar</span>
@@ -831,7 +831,7 @@ export default function AdminCatalogPage() {
                           setImageUrl('');
                           setCompressionInfo(null);
                         }}
-                        className="px-3.5 py-1.5 rounded-full bg-rose-600 text-white text-xs font-semibold shadow-md flex items-center space-x-1 hover:bg-rose-700 cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-full bg-rose-600 text-white text-xs font-semibold shadow-md flex items-center space-x-1 hover:bg-rose-700 cursor-pointer active:scale-95"
                       >
                         <X className="w-3.5 h-3.5" />
                         <span>Padam</span>
@@ -857,18 +857,18 @@ export default function AdminCatalogPage() {
                     onClick={() => fileInputRef.current?.click()}
                     className={`w-full h-44 rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center p-4 text-center ${
                       isDragging
-                        ? 'border-blue-500 bg-blue-50/50'
-                        : 'border-slate-200 hover:border-blue-300 bg-slate-50/50 hover:bg-slate-50'
+                        ? 'border-[#00BDFF] bg-sky-50/50'
+                        : 'border-slate-200 hover:border-sky-300 bg-slate-50/50 hover:bg-slate-50'
                     }`}
                   >
                     {isProcessingImage ? (
                       <div className="flex flex-col items-center space-y-2 animate-in fade-in">
-                        <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
+                        <RefreshCw className="w-6 h-6 animate-spin text-[#00BDFF]" />
                         <span className="text-xs font-semibold text-slate-800">Mengoptimumkan imej...</span>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center space-y-1.5">
-                        <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-1 shadow-xs border border-blue-100">
+                        <div className="w-11 h-11 rounded-full bg-sky-50 text-[#00BDFF] flex items-center justify-center mb-1 shadow-xs border border-sky-100">
                           <UploadCloud className="w-5 h-5" />
                         </div>
                         <p className="text-xs font-semibold text-slate-800">Pilih fail gambar rekaan</p>
@@ -904,7 +904,7 @@ export default function AdminCatalogPage() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Contoh: HARI SUKAN MALAYSIA"
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-400 uppercase placeholder:normal-case font-medium"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF] uppercase placeholder:normal-case font-medium"
                   />
                 </div>
               </div>
@@ -916,7 +916,7 @@ export default function AdminCatalogPage() {
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-400 font-medium"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF] font-medium"
                   >
                     {CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>
@@ -930,7 +930,7 @@ export default function AdminCatalogPage() {
                   <select
                     value={printType}
                     onChange={(e) => setPrintType(e.target.value as PrintType)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-400 font-medium"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF] font-medium"
                   >
                     <option value="sublimation">Sublimasi Penuh</option>
                     <option value="dtf">DTF Direct Transfer</option>
@@ -948,12 +948,12 @@ export default function AdminCatalogPage() {
                   value={tagsInput}
                   onChange={(e) => setTagsInput(e.target.value)}
                   placeholder="Contoh: sukan, jersi, futsal, hari sukan"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-400 placeholder:normal-case font-medium"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF] placeholder:normal-case font-medium"
                 />
               </div>
 
               {/* Featured Toggle */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100">
                 <div>
                   <p className="text-xs font-semibold text-slate-800">Rekaan Pilihan Utama</p>
                   <p className="text-[10px] text-slate-400 mt-0.5">Badge bintang emas di katalog</p>
@@ -977,14 +977,14 @@ export default function AdminCatalogPage() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all cursor-pointer active:scale-95"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving || !title.trim() || !imageUrl}
-                  className="px-5 py-2 rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-semibold text-xs shadow-sm transition-all flex items-center space-x-1.5 cursor-pointer"
+                  className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] disabled:opacity-40 text-white font-semibold text-xs shadow-xs transition-all flex items-center space-x-1.5 cursor-pointer active:scale-95"
                 >
                   {isSaving ? (
                     <>
