@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Order } from '@/types/database';
 import { useAppStore } from '@/lib/store/app-store';
 import { formatCurrency } from '@/lib/pricing-calculator';
-import { Printer, X, Check, ShieldCheck } from 'lucide-react';
+import { sendOrderInvoiceWhatsAppAction } from '@/app/actions/orderActions';
+import { Printer, X, Check, ShieldCheck, Send } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa6';
 
 interface OrderInvoiceModalProps {
   order: Order;
@@ -15,6 +17,8 @@ interface OrderInvoiceModalProps {
 export default function OrderInvoiceModal({ order, isOpen, onClose }: OrderInvoiceModalProps) {
   const invoiceRef = useRef<HTMLDivElement>(null);
   const { companySettings } = useAppStore();
+  const [isSendingWa, setIsSendingWa] = useState(false);
+  const [waToast, setWaToast] = useState<{ success: boolean; message: string } | null>(null);
 
   if (!isOpen) return null;
 
@@ -50,6 +54,25 @@ export default function OrderInvoiceModal({ order, isOpen, onClose }: OrderInvoi
     window.print();
   };
 
+  const handleSendWhatsApp = async () => {
+    if (!order.customer_phone) {
+      setWaToast({ success: false, message: 'Nombor telefon pelanggan tidak ditemui.' });
+      setTimeout(() => setWaToast(null), 3000);
+      return;
+    }
+    setIsSendingWa(true);
+    setWaToast(null);
+    try {
+      const res = await sendOrderInvoiceWhatsAppAction(order.order_number);
+      setWaToast({ success: res.success, message: res.message });
+    } catch {
+      setWaToast({ success: false, message: 'Ralat sambungan penghantaran WhatsApp.' });
+    } finally {
+      setIsSendingWa(false);
+      setTimeout(() => setWaToast(null), 4000);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4 overflow-y-auto print:p-0 print:bg-white print:static select-none font-ios">
       {/* Mobile-First Modal Container (Clean iOS Card / Full-screen on mobile) */}
@@ -65,6 +88,17 @@ export default function OrderInvoiceModal({ order, isOpen, onClose }: OrderInvoi
           </div>
 
           <div className="flex items-center space-x-1.5">
+            {/* 1-Tap Send to Customer WhatsApp */}
+            <button
+              type="button"
+              onClick={handleSendWhatsApp}
+              disabled={isSendingWa || !order.customer_phone}
+              className="p-2 rounded-full hover:bg-emerald-50 text-emerald-600 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+              title="Hantar Invois ke WhatsApp Pelanggan"
+            >
+              <FaWhatsapp className={`w-4 h-4 ${isSendingWa ? 'animate-spin' : ''}`} />
+            </button>
+
             <button
               type="button"
               onClick={handlePrint}
@@ -73,6 +107,7 @@ export default function OrderInvoiceModal({ order, isOpen, onClose }: OrderInvoi
               <Printer className="w-3.5 h-3.5" />
               <span>Cetak / PDF</span>
             </button>
+
             <button
               type="button"
               onClick={onClose}
@@ -82,6 +117,15 @@ export default function OrderInvoiceModal({ order, isOpen, onClose }: OrderInvoi
             </button>
           </div>
         </header>
+
+        {waToast && (
+          <div className={`px-4 py-2 text-xs font-medium border-b flex items-center gap-1.5 print:hidden ${
+            waToast.success ? 'bg-emerald-50 text-emerald-800 border-emerald-100' : 'bg-rose-50 text-rose-800 border-rose-100'
+          }`}>
+            <FaWhatsapp className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span>{waToast.message}</span>
+          </div>
+        )}
 
         {/* Scrollable Clean Invoice Body */}
         <div className="overflow-y-auto p-5 sm:p-6 text-slate-800 space-y-5 bg-white print:overflow-visible print:p-8" ref={invoiceRef}>

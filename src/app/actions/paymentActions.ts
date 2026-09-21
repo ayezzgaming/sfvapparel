@@ -8,8 +8,9 @@ import {
   CreateChipPurchaseParams,
   CreateChipPurchaseResult 
 } from '@/lib/payment/chip-client';
-import { PaymentGatewayConfig, PaymentStatus } from '@/types/database';
+import { PaymentGatewayConfig, PaymentStatus, Order } from '@/types/database';
 import { getServiceSupabase } from '@/lib/supabase/serverClient';
+import { sendOrderInvoiceWhatsApp } from '@/lib/whatsapp/order-notifier';
 
 /**
  * Server Action: Get client-safe Payment Gateway configuration
@@ -253,6 +254,14 @@ export async function confirmPaymentReturnAction(orderNumber: string): Promise<{
 
     if (updateErr) {
       return { success: false, message: updateErr.message };
+    }
+
+    // Trigger WhatsApp Official Invoice asynchronously
+    if (updatedOrder) {
+      sendOrderInvoiceWhatsApp(
+        updatedOrder as Order,
+        isBalancePayment ? 'balance_paid' : 'deposit_confirmed'
+      ).catch((e) => console.error('[confirmPaymentReturnAction] WA Invoice notification error:', e));
     }
 
     return { success: true, order: updatedOrder };

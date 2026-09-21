@@ -2,6 +2,7 @@
 
 import { getServiceSupabase } from '@/lib/supabase/serverClient';
 import { Order, OrderStatus } from '@/types/database';
+import { sendOrderInvoiceWhatsApp } from '@/lib/whatsapp/order-notifier';
 
 export async function getOrdersDb(): Promise<{ success: boolean; orders?: Order[]; message?: string }> {
   try {
@@ -179,7 +180,16 @@ export async function saveOrderDb(orderData: Partial<Order>): Promise<{ success:
       return { success: false, message: error.message };
     }
 
-    return { success: true, order: data as Order };
+    const savedOrder = data as Order;
+
+    // Trigger WhatsApp Official Invoice asynchronously
+    if (savedOrder && savedOrder.customer_phone) {
+      sendOrderInvoiceWhatsApp(savedOrder, 'order_created').catch((e) =>
+        console.error('[saveOrderDb] WA Invoice notification error:', e)
+      );
+    }
+
+    return { success: true, order: savedOrder };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to save order';
     return { success: false, message };
@@ -197,7 +207,7 @@ export async function markOrderBalancePaidAction(
 
     const { data: currentOrder, error: fetchErr } = await supabase
       .from('orders')
-      .select('total_amount, paid_amount')
+      .select('*')
       .eq('id', orderId)
       .single();
 
@@ -218,13 +228,22 @@ export async function markOrderBalancePaidAction(
 
     if (paymentId) updates.balance_payment_id = paymentId;
 
-    const { error } = await supabase
+    const { data: updatedOrder, error } = await supabase
       .from('orders')
       .update(updates)
-      .eq('id', orderId);
+      .eq('id', orderId)
+      .select()
+      .single();
 
     if (error) {
       return { success: false, message: error.message };
+    }
+
+    // Trigger WhatsApp notification for full balance payment
+    if (updatedOrder) {
+      sendOrderInvoiceWhatsApp(updatedOrder as Order, 'balance_paid').catch((e) =>
+        console.error('[markOrderBalancePaidAction] WA notification error:', e)
+      );
     }
 
     return { success: true, message: 'Baki pesanan berjaya dilunaskan.' };
@@ -349,5 +368,34 @@ export async function clientApproveProofAction(orderNumber: string): Promise<{ s
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Ralat meluluskan mockup';
     return { success: false, message };
+  }
+}
+
+/**
+ * Server Action: Send or Resend WhatsApp Invoice Directly to Customer
+ */
+export async function sendOrderInvoiceWhatsAppAction(
+  identifier: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const res = await getOrderByNumberOrIdDb(identifier);
+    if (!res.success || !res.order) {
+      return { success: false, message: 'Pesanan tidak dijumpai.' };
+    }
+
+    const order = res.order;
+    if (!order.customer_phone) {
+      return { success: false, message: 'Nombor WhatsApp pelanggan tidak ditemui pada pesanan ini.' };
+    }
+
+    const waRes = await sendOrderInvoiceWhatsApp(order, 'manual_invoice');
+    if (!waRes.success) {
+      return { success: false, message: waRes.error || 'Gagal menghantar invois melalui WhatsApp.' };
+    }
+
+    return { success: true, message: `Invois rasmi berjaya dihantar ke WhatsApp ${order.customer_phone}!` };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Ralat semasa menghantar WhatsApp';
+    return { success: false, message: msg };
   }
 }
