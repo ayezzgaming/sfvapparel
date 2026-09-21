@@ -109,7 +109,7 @@ function CatalogContent() {
 
       {/* 4. Product Gallery Grid (Clean Cards without Text Pollution) */}
       <div className="px-5 pt-1">
-        {isLoadingDesigns ? (
+        {isLoadingDesigns && designs.length === 0 ? (
           <div className="grid grid-cols-2 gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
@@ -130,8 +130,9 @@ function CatalogContent() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4">
-            {filteredDesigns.map((design) => {
+            {filteredDesigns.map((design, index) => {
               const isFav = favorites.includes(design.id);
+              const isPriority = index < 4;
 
               return (
                 <div
@@ -147,7 +148,9 @@ function CatalogContent() {
                       fill
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 250px"
                       className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                      loading="lazy"
+                      priority={isPriority}
+                      loading={isPriority ? 'eager' : 'lazy'}
+                      decoding="async"
                     />
 
                     {/* Minimalist Clean Heart Button */}

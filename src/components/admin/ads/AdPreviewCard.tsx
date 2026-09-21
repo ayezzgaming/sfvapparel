@@ -199,7 +199,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
               <div className="relative aspect-[16/9] w-full bg-slate-100 overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={creative.imageUrl || '/images/prod_sportswear.jpg'}
+                  src={creative.imageUrl || '/images/prod_sportswear.webp'}
                   alt="Display Ad"
                   className="w-full h-full object-cover"
                 />
@@ -233,7 +233,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
               <div className="relative aspect-square w-full bg-slate-100 rounded-xl overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={creative.imageUrl || '/images/prod_sportswear.jpg'}
+                  src={creative.imageUrl || '/images/prod_sportswear.webp'}
                   alt="Google Shopping"
                   className="w-full h-full object-cover"
                 />
@@ -340,7 +340,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
               <div className="relative aspect-[4/3] w-full bg-slate-100 overflow-hidden border-y border-slate-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={creative.imageUrl || '/images/prod_sportswear.jpg'}
+                  src={creative.imageUrl || '/images/prod_sportswear.webp'}
                   alt="Facebook Creative"
                   className="w-full h-full object-cover"
                 />
@@ -420,7 +420,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
             <div className="relative aspect-[9/16] max-w-[280px] mx-auto rounded-3xl overflow-hidden bg-slate-950 text-white flex flex-col justify-between p-4 shadow-md">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={creative.imageUrl || '/images/prod_sportswear.jpg'}
+                src={creative.imageUrl || '/images/prod_sportswear.webp'}
                 alt="Story Ad"
                 className="absolute inset-0 w-full h-full object-cover opacity-90"
               />
@@ -466,7 +466,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
               <div className="relative aspect-[16/9] w-full bg-slate-100 rounded-xl overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={creative.imageUrl || '/images/prod_sportswear.jpg'}
+                  src={creative.imageUrl || '/images/prod_sportswear.webp'}
                   alt="Right Column Ad"
                   className="w-full h-full object-cover"
                 />
@@ -521,7 +521,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
               <div className="relative aspect-[4/3] w-full bg-slate-100 overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={creative.imageUrl || '/images/prod_sportswear.jpg'}
+                  src={creative.imageUrl || '/images/prod_sportswear.webp'}
                   alt="Instagram Creative"
                   className="w-full h-full object-cover"
                 />
@@ -579,7 +579,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
             <div className="relative aspect-[9/16] max-w-[250px] mx-auto rounded-3xl overflow-hidden bg-slate-950 text-white flex flex-col justify-between p-3.5 shadow-md">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={creative.imageUrl || '/images/prod_sportswear.jpg'}
+                src={creative.imageUrl || '/images/prod_sportswear.webp'}
                 alt="Instagram Story"
                 className="absolute inset-0 w-full h-full object-cover"
               />
@@ -623,7 +623,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
             <div className="relative aspect-[9/16] max-w-[250px] mx-auto rounded-3xl overflow-hidden bg-slate-950 text-white flex flex-col justify-between p-3.5 shadow-md">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={creative.imageUrl || '/images/prod_sportswear.jpg'}
+                src={creative.imageUrl || '/images/prod_sportswear.webp'}
                 alt="Instagram Reels"
                 className="absolute inset-0 w-full h-full object-cover"
               />
@@ -682,7 +682,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
             <div className="relative aspect-[9/16] w-full rounded-3xl overflow-hidden bg-slate-900 text-white flex flex-col justify-between p-3.5 shadow-md">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={creative.imageUrl || '/images/prod_sportswear.jpg'}
+                src={creative.imageUrl || '/images/prod_sportswear.webp'}
                 alt="TikTok Ad"
                 className="absolute inset-0 w-full h-full object-cover opacity-85"
               />
@@ -743,7 +743,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
             <div className="relative aspect-[9/16] w-full rounded-3xl overflow-hidden bg-black text-white flex flex-col justify-between p-3.5 shadow-md">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={creative.imageUrl || '/images/prod_sportswear.jpg'}
+                src={creative.imageUrl || '/images/prod_sportswear.webp'}
                 alt="TikTok TopView"
                 className="absolute inset-0 w-full h-full object-cover"
               />
@@ -796,7 +796,7 @@ export default function AdPreviewCard({ platform, creative, connectedAccount, fo
               <div className="aspect-video rounded-xl overflow-hidden bg-slate-100 relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={creative.imageUrl || '/images/prod_sportswear.jpg'}
+                  src={creative.imageUrl || '/images/prod_sportswear.webp'}
                   alt="WhatsApp Ad Preview"
                   className="w-full h-full object-cover"
                 />

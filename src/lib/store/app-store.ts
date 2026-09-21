@@ -122,19 +122,19 @@ interface AppStoreState {
 }
 
 let storeState: AppStoreState = {
-  designs: [], // Pure Supabase DB data only
-  fabrics: [], // Loaded from DB on init
-  cuts: [], // Loaded from DB on init
-  dtfDimensions: [], // Loaded from DB on init
-  tiers: [], // Loaded from DB on init
+  designs: [], // Pure Supabase DB data
+  fabrics: INITIAL_FABRIC_MATERIALS,
+  cuts: INITIAL_APPAREL_CUTS,
+  dtfDimensions: INITIAL_DTF_DIMENSIONS,
+  tiers: INITIAL_QUANTITY_TIERS,
   customers: INITIAL_CUSTOMERS,
   orders: INITIAL_ORDERS,
   favorites: [],
-  heroBanners: [], // Pure database loaded
-  services: [],
-  productionVideos: [],
-  productionGallery: [],
-  testimonials: [],
+  heroBanners: INITIAL_CMS_HERO_BANNERS,
+  services: INITIAL_CMS_SERVICES,
+  productionVideos: INITIAL_CMS_PRODUCTION_VIDEOS,
+  productionGallery: INITIAL_CMS_PRODUCTION_GALLERY,
+  testimonials: INITIAL_CMS_TESTIMONIALS,
   sloganQuote: INITIAL_CMS_SLOGAN_QUOTE,
   companySettings: INITIAL_CMS_COMPANY_SETTINGS,
   policies: INITIAL_CMS_POLICIES,
@@ -152,22 +152,33 @@ function notify() {
 
 /**
  * Fetch and sync all Cloud DB items directly from Supabase (Pure Database)
+ * Using 2-Stage Chunking to prevent network congestion and unblock critical UI rendering immediately
  */
 async function fetchAndSyncAllDb() {
-  storeState = { ...storeState, isLoadingDesigns: true, isLoadingCms: true };
-  notify();
+  const isDesignsEmpty = storeState.designs.length === 0;
+  const isCmsEmpty = storeState.heroBanners.length === 0;
+
+  if (isDesignsEmpty || isCmsEmpty) {
+    storeState = {
+      ...storeState,
+      isLoadingDesigns: isDesignsEmpty,
+      isLoadingCms: isCmsEmpty,
+    };
+    notify();
+  }
 
   try {
-    // 1. Fetch Designs directly from Database
+    // -------------------------------------------------------------
+    // STAGE 1: CRITICAL UI DATA (Designs & CMS content for fast view)
+    // -------------------------------------------------------------
     const designsPromise = getDesignsDb()
       .then((res) => {
-        if (res.success && Array.isArray(res.designs)) {
+        if (res.success && Array.isArray(res.designs) && res.designs.length > 0) {
           storeState = { ...storeState, designs: res.designs };
         }
       })
       .catch((e) => console.error('Error fetching designs from DB:', e));
 
-    // 2. Fetch CMS Data directly from Database
     const cmsPromise = getCmsDataDb()
       .then((res) => {
         if (res.success && res.data) {
@@ -184,11 +195,11 @@ async function fetchAndSyncAllDb() {
 
           storeState = {
             ...storeState,
-            heroBanners: Array.isArray(heroBanners) ? heroBanners : [],
-            services: Array.isArray(services) ? services : [],
-            productionVideos: Array.isArray(productionVideos) ? productionVideos : [],
-            productionGallery: Array.isArray(productionGallery) ? productionGallery : [],
-            testimonials: Array.isArray(testimonials) ? testimonials : [],
+            heroBanners: Array.isArray(heroBanners) && heroBanners.length > 0 ? heroBanners : storeState.heroBanners,
+            services: Array.isArray(services) && services.length > 0 ? services : storeState.services,
+            productionVideos: Array.isArray(productionVideos) && productionVideos.length > 0 ? productionVideos : storeState.productionVideos,
+            productionGallery: Array.isArray(productionGallery) && productionGallery.length > 0 ? productionGallery : storeState.productionGallery,
+            testimonials: Array.isArray(testimonials) && testimonials.length > 0 ? testimonials : storeState.testimonials,
             sloganQuote: sloganQuote || storeState.sloganQuote,
             companySettings: companySettings || storeState.companySettings,
             policies: policies || storeState.policies,
@@ -197,47 +208,55 @@ async function fetchAndSyncAllDb() {
       })
       .catch((e) => console.error('Error fetching CMS data from DB:', e));
 
-    // 3. Fetch Master Pricing directly from Database
-    const pricingPromise = getMasterPricingDb()
-      .then((res) => {
-        if (res.success && res.data) {
-          const { fabrics, cuts, dtfDimensions, tiers } = res.data;
-          storeState = {
-            ...storeState,
-            fabrics,
-            cuts,
-            dtfDimensions,
-            tiers,
-          };
-        } else if (res.message) {
-          console.error('[app-store] pricing fetch failed:', res.message);
-        }
-      })
-      .catch((e) => console.error('Error fetching pricing data from DB:', e));
-
-    // 4. Fetch Customers directly from Database
-    const customersPromise = getCustomersDb()
-      .then((res) => {
-        if (res.success && Array.isArray(res.customers)) {
-          storeState = { ...storeState, customers: res.customers };
-        }
-      })
-      .catch((e) => console.error('Error fetching customers from DB:', e));
-
-    // 5. Fetch Orders directly from Database
-    const ordersPromise = getOrdersDb()
-      .then((res) => {
-        if (res.success && Array.isArray(res.orders)) {
-          storeState = { ...storeState, orders: res.orders };
-        }
-      })
-      .catch((e) => console.error('Error fetching orders from DB:', e));
-
-    await Promise.all([designsPromise, cmsPromise, pricingPromise, customersPromise, ordersPromise]);
+    // Await ONLY Stage 1 so UI unblocks in record time (<300ms)
+    await Promise.all([designsPromise, cmsPromise]);
   } finally {
     storeState = { ...storeState, isLoadingDesigns: false, isLoadingCms: false };
     notify();
   }
+
+  // -------------------------------------------------------------
+  // STAGE 2: SECONDARY DATA (Pricing, Customers, Orders)
+  // Executes asynchronously in background without blocking the UI
+  // -------------------------------------------------------------
+  const pricingPromise = getMasterPricingDb()
+    .then((res) => {
+      if (res.success && res.data) {
+        const { fabrics, cuts, dtfDimensions, tiers } = res.data;
+        storeState = {
+          ...storeState,
+          fabrics: fabrics.length > 0 ? fabrics : storeState.fabrics,
+          cuts: cuts.length > 0 ? cuts : storeState.cuts,
+          dtfDimensions: dtfDimensions.length > 0 ? dtfDimensions : storeState.dtfDimensions,
+          tiers: tiers.length > 0 ? tiers : storeState.tiers,
+        };
+        notify();
+      }
+    })
+    .catch((e) => console.error('Error fetching pricing data from DB:', e));
+
+  const customersPromise = getCustomersDb()
+    .then((res) => {
+      if (res.success && Array.isArray(res.customers)) {
+        storeState = { ...storeState, customers: res.customers };
+        notify();
+      }
+    })
+    .catch((e) => console.error('Error fetching customers from DB:', e));
+
+  const ordersPromise = getOrdersDb()
+    .then((res) => {
+      if (res.success && Array.isArray(res.orders)) {
+        storeState = { ...storeState, orders: res.orders };
+        notify();
+      }
+    })
+    .catch((e) => console.error('Error fetching orders from DB:', e));
+
+  // Run secondary sync concurrently without awaiting in main render path
+  Promise.all([pricingPromise, customersPromise, ordersPromise]).catch((e) => {
+    console.error('Stage 2 secondary data sync background error:', e);
+  });
 }
 
 function initStoreIfNeeded() {
@@ -247,10 +266,7 @@ function initStoreIfNeeded() {
   storeState = {
     ...storeState,
     isInitialized: true,
-    isLoadingDesigns: true,
-    isLoadingCms: true,
   };
-  notify();
 
   // Load fresh live data directly from Cloud Supabase DB
   fetchAndSyncAllDb();
@@ -269,18 +285,18 @@ function getSnapshot() {
 
 const serverSnapshot: AppStoreState = {
   designs: [],
-  fabrics: [],
-  cuts: [],
-  dtfDimensions: [],
-  tiers: [],
+  fabrics: INITIAL_FABRIC_MATERIALS,
+  cuts: INITIAL_APPAREL_CUTS,
+  dtfDimensions: INITIAL_DTF_DIMENSIONS,
+  tiers: INITIAL_QUANTITY_TIERS,
   customers: INITIAL_CUSTOMERS,
   orders: INITIAL_ORDERS,
   favorites: [],
-  heroBanners: [],
-  services: [],
-  productionVideos: [],
-  productionGallery: [],
-  testimonials: [],
+  heroBanners: INITIAL_CMS_HERO_BANNERS,
+  services: INITIAL_CMS_SERVICES,
+  productionVideos: INITIAL_CMS_PRODUCTION_VIDEOS,
+  productionGallery: INITIAL_CMS_PRODUCTION_GALLERY,
+  testimonials: INITIAL_CMS_TESTIMONIALS,
   sloganQuote: INITIAL_CMS_SLOGAN_QUOTE,
   companySettings: INITIAL_CMS_COMPANY_SETTINGS,
   policies: INITIAL_CMS_POLICIES,

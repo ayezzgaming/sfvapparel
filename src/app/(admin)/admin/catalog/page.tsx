@@ -490,10 +490,10 @@ export default function AdminCatalogPage() {
                       <div className="aspect-square w-full bg-slate-50 dark:bg-zinc-950 flex items-center justify-center overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={item.thumbnail_url || item.mockup_front_url || '/images/prod_sportswear.jpg'}
+                          src={item.thumbnail_url || item.mockup_front_url || '/images/prod_sportswear.webp'}
                           alt={item.title}
                           onError={(e) => {
-                            e.currentTarget.src = '/images/prod_sportswear.jpg';
+                            e.currentTarget.src = '/images/prod_sportswear.webp';
                           }}
                           className={`w-full h-full object-cover transition-transform duration-200 ${isActive ? 'scale-105' : 'group-hover:scale-105'}`}
                         />
@@ -547,10 +547,10 @@ export default function AdminCatalogPage() {
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={item.thumbnail_url || item.mockup_front_url || '/images/prod_sportswear.jpg'}
+                          src={item.thumbnail_url || item.mockup_front_url || '/images/prod_sportswear.webp'}
                           alt={item.title}
                           onError={(e) => {
-                            e.currentTarget.src = '/images/prod_sportswear.jpg';
+                            e.currentTarget.src = '/images/prod_sportswear.webp';
                           }}
                           className="w-full h-full object-cover"
                         />
@@ -685,10 +685,10 @@ export default function AdminCatalogPage() {
                 <div className="relative group w-full aspect-square bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/90 dark:border-zinc-800 shadow-lg overflow-hidden flex items-center justify-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={activeDesign.thumbnail_url || activeDesign.mockup_front_url || '/images/prod_sportswear.jpg'}
+                    src={activeDesign.thumbnail_url || activeDesign.mockup_front_url || '/images/prod_sportswear.webp'}
                     alt={activeDesign.title}
                     onError={(e) => {
-                      e.currentTarget.src = '/images/prod_sportswear.jpg';
+                      e.currentTarget.src = '/images/prod_sportswear.webp';
                     }}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
                   />
@@ -812,7 +812,7 @@ export default function AdminCatalogPage() {
                       src={imageUrl}
                       alt="Pratonton"
                       onError={(e) => {
-                        e.currentTarget.src = '/images/prod_sportswear.jpg';
+                        e.currentTarget.src = '/images/prod_sportswear.webp';
                       }}
                       className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-200 drop-shadow-sm"
                     />

@@ -623,7 +623,7 @@ export default function AdminAdsGeneratorPage() {
   const currentCreative: AdCreative = {
     id: 'active-preview',
     productName: customTitle || activeDesign?.title || 'Jersi Sukan Kustom Sublimasi',
-    imageUrl: customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.jpg',
+    imageUrl: customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.webp',
     headline: activeVariation?.headline || 'Kilang Cetak Jersi Sublimasi & DTF',
     secondaryHeadline: activeVariation?.secondaryHeadline || '',
     primaryText: activeVariation?.primaryText || '',
@@ -1081,7 +1081,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                       {customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img
-                          src={customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.jpg'}
+                          src={customImage || activeDesign?.thumbnail_url || activeDesign?.mockup_front_url || '/images/prod_sportswear.webp'}
                           alt={customTitle || activeDesign?.title || 'Produk'}
                           className="w-7 h-7 rounded-lg object-cover shrink-0 border border-slate-200 dark:border-zinc-700"
                         />
@@ -2367,7 +2367,7 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                   <div className="aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={d.thumbnail_url || d.mockup_front_url || '/images/prod_sportswear.jpg'}
+                      src={d.thumbnail_url || d.mockup_front_url || '/images/prod_sportswear.webp'}
                       alt={d.title}
                       className="w-full h-full object-cover"
                     />

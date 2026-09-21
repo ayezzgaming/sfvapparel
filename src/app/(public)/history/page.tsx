@@ -144,7 +144,7 @@ export default function HistoryPage() {
             };
 
             const mockupImg = order.mockup_url || 
-              (order.print_type === 'sublimation' ? '/images/prod_sportswear.jpg' : '/images/prod_tshirt.jpg');
+              (order.print_type === 'sublimation' ? '/images/prod_sportswear.webp' : '/images/prod_tshirt.webp');
 
             return (
               <div

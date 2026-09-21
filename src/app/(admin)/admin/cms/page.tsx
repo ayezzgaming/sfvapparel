@@ -315,7 +315,7 @@ export default function AdminCmsPage() {
         fabric: 'Microfiber Eyelet 160gsm',
         client: 'Tempahan Rasmi',
         tag: 'Hasil Kilang',
-        image_url: '/images/prod_sportswear.jpg',
+        image_url: '/images/prod_sportswear.webp',
         is_active: true,
       });
     }

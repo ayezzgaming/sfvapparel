@@ -422,7 +422,7 @@ export default function HomePage() {
       <div className="w-full bg-[#F2F2F7] pt-3 pb-8 px-4 space-y-6">
         {/* 1. DYNAMIC HERO SECTION WITH MULTI-SLIDE BANNER */}
         <div className="relative w-full h-[240px] rounded-3xl overflow-hidden shadow-md shadow-slate-300/40 bg-slate-900 group">
-          {isLoadingCms || activeBanners.length === 0 ? (
+          {isLoadingCms && activeBanners.length === 0 ? (
             /* Skeleton sementara data dimuatkan */
             <div className="w-full h-full bg-slate-200 animate-pulse">
               <div className="absolute inset-x-4 bottom-4 space-y-2">
@@ -436,6 +436,7 @@ export default function HomePage() {
               {/* Stacked All Banner Layers for Silky Smooth Cross-Fade & Zero Black Flash */}
               {activeBanners.map((banner, index) => {
                 const isActive = index === activeBannerIndex;
+                const isFirst = index === 0;
                 return (
                   <div
                     key={banner.id}
@@ -448,6 +449,9 @@ export default function HomePage() {
                     <img
                       src={banner.image_url}
                       alt={banner.title}
+                      loading={isFirst ? 'eager' : 'lazy'}
+                      decoding="async"
+                      {...(isFirst ? { fetchPriority: 'high' } : {})}
                       className={`w-full h-full object-cover object-[center_22%] transition-transform duration-[7000ms] ease-out ${
                         isActive ? 'scale-105' : 'scale-100'
                       }`}
@@ -593,7 +597,7 @@ export default function HomePage() {
 
           {/* Card Produk Dinamik */}
           <div className="flex items-stretch gap-4 overflow-x-auto snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar -mx-4 px-4 pt-1 pb-4">
-            {isLoadingCms ? (
+            {isLoadingCms && activeServices.length === 0 ? (
               [1, 2, 3].map((i) => (
                 <div
                   key={i}
@@ -621,6 +625,8 @@ export default function HomePage() {
                     <img
                       src={item.image_url}
                       alt={item.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -791,7 +797,7 @@ export default function HomePage() {
           className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar" 
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {isLoadingCms ? (
+          {isLoadingCms && activeVideos.length === 0 ? (
             [1, 2].map((i) => (
               <div
                 key={i}
@@ -825,6 +831,8 @@ export default function HomePage() {
                     <img 
                       src={video.thumbnail_url} 
                       alt={video.title} 
+                      loading="lazy"
+                      decoding="async"
                       className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
                     />
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/35 to-transparent pointer-events-none" />
@@ -875,7 +883,7 @@ export default function HomePage() {
           className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar" 
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {isLoadingCms ? (
+          {isLoadingCms && activeGallery.length === 0 ? (
             [1, 2].map((i) => (
               <div
                 key={i}
@@ -907,6 +915,8 @@ export default function HomePage() {
                     <img 
                       src={item.image_url} 
                       alt={item.title} 
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                     />
                     <div className="absolute top-3 left-3">

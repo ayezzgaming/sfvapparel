@@ -390,7 +390,7 @@ export async function saveHeroBannerDb(banner: Partial<CmsHeroBanner> & { id?: s
       existingRow = ex;
     }
 
-    let imageUrl = banner.image_url ?? existingRow?.image_url ?? '/hero1.png';
+    let imageUrl = banner.image_url ?? existingRow?.image_url ?? '/hero1.webp';
     if (imageUrl && imageUrl.startsWith('data:image/')) {
       imageUrl = await uploadCmsImageToStorage(imageUrl, 'hero-banner');
     }
@@ -622,7 +622,7 @@ export async function saveProductionGalleryDb(item: Partial<CmsProductionGallery
       existingRow = ex;
     }
 
-    let imgUrl = item.image_url ?? existingRow?.image_url ?? '/images/prod_sportswear.jpg';
+    let imgUrl = item.image_url ?? existingRow?.image_url ?? '/images/prod_sportswear.webp';
     if (imgUrl && imgUrl.startsWith('data:image/')) {
       imgUrl = await uploadCmsImageToStorage(imgUrl, 'gallery');
     }

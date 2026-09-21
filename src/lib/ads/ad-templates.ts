@@ -105,7 +105,7 @@ export const INITIAL_CAMPAIGNS: AdCampaign[] = [
     creative: {
       id: 'cr-1',
       productName: 'Jersi Sukan Sublimasi E-Sports & Kelab',
-      imageUrl: '/images/prod_sportswear.jpg',
+      imageUrl: '/images/prod_sportswear.webp',
       headline: 'Kilang Cetak Jersi Sublimasi & Baju DTF',
       secondaryHeadline: 'Tempah Terus Dari Kilang | Harga Borong',
       primaryText: 'Pakar cetak jersi sukan & korporat di Malaysia. Kain sejuk berkualiti, jahitan kemas, siap 7 hari.',
@@ -132,7 +132,7 @@ export const INITIAL_CAMPAIGNS: AdCampaign[] = [
     creative: {
       id: 'cr-2',
       productName: 'Jersi Sukan Sublimasi E-Sports & Kelab',
-      imageUrl: '/images/prod_merchandise.jpg',
+      imageUrl: '/images/prod_merchandise.webp',
       headline: 'Jersi Sukan Kustom Eksklusif | Kain Milano Sejuk',
       primaryText: 'Upgrade jersi team anda sekarang! Cetakan sublimasi penuh warna tahan luntur & rekaan mantap.',
       callToAction: 'Kirim Mesej WhatsApp',
