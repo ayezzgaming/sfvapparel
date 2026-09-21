@@ -19,7 +19,15 @@ import {
   Globe, 
   Layers,
   HelpCircle,
-  Building2
+  Building2,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  Activity,
+  QrCode,
+  Wallet,
+  Smartphone,
+  CheckCheck
 } from 'lucide-react';
 import { 
   getPaymentConfigAction, 
@@ -28,11 +36,16 @@ import {
 } from '@/app/actions/paymentActions';
 import { PaymentGatewayConfig } from '@/types/database';
 
+type PaymentTabKey = 'status' | 'credentials' | 'methods' | 'webhooks' | 'diagnostics';
+
 export default function AdminPaymentSettingsPage() {
   const [config, setConfig] = useState<PaymentGatewayConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
+  const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
+  const [activeTab, setActiveTab] = useState<PaymentTabKey>('status');
+  const [searchFilter, setSearchFilter] = useState('');
 
   // Form states
   const [brandId, setBrandId] = useState('');
@@ -115,8 +128,8 @@ export default function AdminPaymentSettingsPage() {
   };
 
   // Save Settings
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsSaving(true);
     setNotification(null);
 
@@ -148,414 +161,515 @@ export default function AdminPaymentSettingsPage() {
     }
   };
 
+  const SECTIONS: { id: PaymentTabKey; label: string; desc: string; icon: React.ElementType }[] = [
+    { id: 'status', label: 'Status & Mod Operasi', desc: 'Pengaktifan gateway & Sandbox/Live', icon: Zap },
+    { id: 'credentials', label: 'Kunci API & Kredensial', desc: 'Brand ID, Secret Key & Public Key', icon: Key },
+    { id: 'methods', label: 'Kaedah Pembayaran', desc: 'FPX, Kad, DuitNow QR & e-Wallet', icon: Layers },
+    { id: 'webhooks', label: 'Webhook & Callback', desc: 'URL notifikasi transaksi automatik', icon: Globe },
+    { id: 'diagnostics', label: 'Ujian Sambungan API', desc: 'Pemeriksaan status & latency CHIP', icon: Activity },
+  ];
+
+  const filteredSections = SECTIONS.filter(
+    (s) => s.label.toLowerCase().includes(searchFilter.toLowerCase()) || s.desc.toLowerCase().includes(searchFilter.toLowerCase())
+  );
+
   if (isLoading) {
     return (
-      <div className="p-8 flex flex-col items-center justify-center min-h-[400px] space-y-3">
+      <div className="w-full h-full flex flex-col items-center justify-center p-8 space-y-3 bg-[#f0f4f9] dark:bg-zinc-950 text-slate-700">
         <RefreshCw className="w-8 h-8 animate-spin text-[#00BDFF]" />
-        <p className="text-sm font-medium text-slate-500">Memuatkan tetapan gerbang pembayaran...</p>
+        <p className="text-xs font-semibold text-slate-500">Memuatkan tetapan gerbang pembayaran...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6 pb-24 font-sans antialiased select-none">
+    <div className="w-full h-full overflow-hidden bg-[#f0f4f9] dark:bg-zinc-950 flex flex-col p-4 gap-3 text-slate-900 dark:text-zinc-100 font-sans select-none">
       
-      {/* 1. Header & Quick Brand Badges */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00BDFF] to-[#0052FF] text-white flex items-center justify-center shadow-xs">
-              <CreditCard className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                Gerbang Pembayaran CHIP
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-[#0052FF] border border-blue-200/60">
-                  portal.chip-in.asia
-                </span>
-              </h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Konfigurasi pembayaran digital automatik FPX, Kad Debit/Kredit, DuitNow QR & e-Wallet untuk SVF Apparel.
-              </p>
-            </div>
+      {/* Toast Notification */}
+      {notification && (
+        <div
+          className={`fixed top-5 right-5 z-50 px-4 py-2.5 rounded-2xl shadow-xl border flex items-center space-x-2 text-xs animate-in fade-in slide-in-from-top-2 ${
+            notification.type === 'success'
+              ? 'bg-emerald-900 text-white border-emerald-700'
+              : 'bg-rose-900 text-white border-rose-700'
+          }`}
+        >
+          {notification.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          ) : (
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+          )}
+          <span>{notification.message}</span>
+        </div>
+      )}
+
+      {/* ----------------- TOP TOOLBAR BAR ----------------- */}
+      <div className="shrink-0 flex items-center justify-between gap-3 min-h-[38px]">
+        {/* Title & Status */}
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 tracking-tight">
+              Gerbang Pembayaran CHIP
+            </span>
+            <span className="text-[10px] font-semibold text-[#00BDFF] bg-sky-50 dark:bg-sky-950/50 px-2.5 py-0.5 rounded-full border border-sky-200/60 dark:border-sky-900">
+              portal.chip-in.asia
+            </span>
           </div>
         </div>
 
+        {/* Toolbar Kanan */}
         <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 text-xs font-semibold shadow-2xs">
+            <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
+            <span>{isActive ? (isSandbox ? 'Sandbox Aktif' : 'Produksi Live Aktif') : 'Gateway Nyahaktif'}</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleTestConnection}
+            disabled={isTesting}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 text-slate-700 dark:text-zinc-200 text-xs font-semibold transition-all shadow-2xs cursor-pointer disabled:opacity-50 active:scale-95"
+          >
+            <Activity className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin text-[#00BDFF]' : 'text-slate-500'}`} />
+            <span>{isTesting ? 'Menguji API...' : 'Uji Sambungan'}</span>
+          </button>
+
           <a
             href="https://portal.chip-in.asia"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 active:scale-95 transition-all shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 text-slate-700 dark:text-zinc-200 text-xs font-medium transition-all shadow-2xs cursor-pointer active:scale-95"
           >
-            <span>Buka Portal CHIP</span>
+            <span className="hidden sm:inline">Portal CHIP</span>
             <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
           </a>
+
+          <button
+            type="button"
+            onClick={() => handleSave()}
+            disabled={isSaving}
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+          >
+            <Save className="w-3.5 h-3.5" />
+            <span>{isSaving ? 'Menyimpan...' : 'Simpan Tetapan'}</span>
+          </button>
         </div>
       </div>
 
-      {/* Notifications Alert */}
-      {notification && (
+      {/* ----------------- SPLIT PANEL BODY ----------------- */}
+      <div className="flex-1 min-h-0 overflow-hidden flex items-stretch gap-4 relative animate-in fade-in">
+        
+        {/* =========================================================================
+            SISI KIRI: PANEL NAVIGASI MODUL PEMBAYARAN
+           ========================================================================= */}
         <div
-          className={`p-4 rounded-2xl border text-xs flex items-center justify-between animate-in fade-in duration-200 ${
-            notification.type === 'success'
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-              : 'bg-rose-50 border-rose-200 text-rose-800'
+          className={`flex flex-col h-full shrink-0 transition-all duration-300 ease-in-out select-none ${
+            isLeftPanelCollapsed
+              ? 'w-0 opacity-0 overflow-hidden pointer-events-none'
+              : 'w-[280px] xl:w-[320px] opacity-100'
           }`}
         >
-          <div className="flex items-center gap-2.5">
-            {notification.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-            )}
-            <span className="font-medium">{notification.message}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setNotification(null)}
-            className="text-slate-400 hover:text-slate-600 font-bold ml-4"
-          >
-            &times;
-          </button>
-        </div>
-      )}
-
-      <form onSubmit={handleSave} className="space-y-6">
-
-        {/* 2. Main Gateway Status & Environment Card */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-[#00BDFF]" />
-              <h2 className="text-sm font-bold text-slate-900">Status & Mod Persekitaran</h2>
-            </div>
-            <div className="flex items-center gap-2">
-              <span
-                className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
-                  isActive
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    : 'bg-slate-100 text-slate-500 border-slate-200'
-                }`}
-              >
-                {isActive ? 'Aktif' : 'Nyahaktif'}
-              </span>
-              <span
-                className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
-                  isSandbox
-                    ? 'bg-amber-50 text-amber-700 border-amber-200'
-                    : 'bg-blue-50 text-blue-700 border-blue-200'
-                }`}
-              >
-                {isSandbox ? 'Sandbox (Ujian)' : 'Live (Produksi)'}
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-            {/* Toggle 1: Active Gateway */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50/80 border border-slate-200/60">
-              <div>
-                <span className="text-xs font-bold text-slate-900 block">Dayakan Pembayaran CHIP</span>
-                <span className="text-[11px] text-slate-500">
-                  Pelanggan boleh memilih untuk membayar serta-merta semasa menempah jersi.
-                </span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
-                <input
-                  type="checkbox"
-                  checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00BDFF]"></div>
-              </label>
-            </div>
-
-            {/* Toggle 2: Sandbox vs Live Mode */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50/80 border border-slate-200/60">
-              <div>
-                <span className="text-xs font-bold text-slate-900 block">Mod Sandbox (Staging / Ujian)</span>
-                <span className="text-[11px] text-slate-500">
-                  Gunakan akaun percubaan sebelum beralih ke kunci pengeluaran Live.
-                </span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
-                <input
-                  type="checkbox"
-                  checked={isSandbox}
-                  onChange={(e) => setIsSandbox(e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* 3. API Credentials (Industry Standard Security Card) */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2">
-              <Key className="w-4 h-4 text-[#0052FF]" />
-              <h2 className="text-sm font-bold text-slate-900">Kredensial API & Keselamatan</h2>
-            </div>
-            <div className="flex items-center gap-1 text-[11px] text-slate-500">
-              <Lock className="w-3.5 h-3.5 text-slate-400" />
-              <span>Disimpan selamat di pelayan (Server-side RLS)</span>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {/* Brand ID */}
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">
-                Brand ID (UUID) <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={brandId}
-                  onChange={(e) => setBrandId(e.target.value)}
-                  placeholder="e.g. 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
-                  className="w-full text-xs font-mono px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00BDFF] bg-slate-50/50 focus:bg-white transition-all"
-                  required
-                />
-              </div>
-              <p className="text-[11px] text-slate-400 mt-1">
-                Diperoleh daripada menu <strong>Brands</strong> di portal CHIP.
-              </p>
-            </div>
-
-            {/* Secret API Key */}
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">
-                Secret API Key / Bearer Token <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative flex items-center">
-                <input
-                  type={showApiKey ? 'text' : 'password'}
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Masukkan Secret API Key daripada portal CHIP"
-                  className="w-full text-xs font-mono px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00BDFF] bg-slate-50/50 focus:bg-white transition-all"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                  className="absolute right-3 text-slate-400 hover:text-slate-600 p-1"
-                  title={showApiKey ? 'Sembunyi kunci' : 'Papar kunci'}
-                >
-                  {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-1">
-                Kunci rahsia pelayan. Dijamin tidak akan didedahkan kepada pelayar awam.
-              </p>
-            </div>
-
-            {/* Webhook Public Key (RSA PEM) */}
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">
-                Webhook Public Key (RSA PEM) <span className="text-slate-400 font-normal">(Pilihan tetapi Disyorkan)</span>
-              </label>
-              <textarea
-                rows={3}
-                value={publicKey}
-                onChange={(e) => setPublicKey(e.target.value)}
-                placeholder="-----BEGIN PUBLIC KEY-----&#10;MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...&#10;-----END PUBLIC KEY-----"
-                className="w-full text-[11px] font-mono p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00BDFF] bg-slate-50/50 focus:bg-white transition-all resize-none"
+          {/* Search / Filter */}
+          <div className="p-3 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-2xs mb-2.5 shrink-0">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                placeholder="Cari tetapan pembayaran..."
+                className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 border border-slate-200 dark:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF] font-medium"
               />
-              <p className="text-[11px] text-slate-400 mt-1">
-                Digunakan untuk mengesahkan integriti signature kriptografi <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-600">X-Signature</code> pada setiap panggilan webhook bayaran.
-              </p>
             </div>
           </div>
-        </div>
 
-        {/* 4. URLs to Put Inside CHIP Portal (Easy Copy Card) */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-emerald-600" />
-              <h2 className="text-sm font-bold text-slate-900">URL Sistem untuk Dimasukkan ke Portal CHIP</h2>
-            </div>
-            <span className="text-[11px] text-slate-400">Salin & tampal ke tetapan Brand CHIP</span>
-          </div>
-
-          <div className="space-y-3">
-            {/* Webhook Callback URL */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <span className="text-[11px] font-bold text-slate-700 block">Webhook Callback URL:</span>
-                <span className="text-xs font-mono text-slate-900 break-all select-all font-semibold">
-                  {webhookUrl}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleCopy(webhookUrl, 'webhook')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-100 active:scale-95 transition-all shrink-0 self-start sm:self-center"
-              >
-                {copiedField === 'webhook' ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    <span className="text-emerald-700 font-semibold">Disalin</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Salin URL</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Success Return URL */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <span className="text-[11px] font-bold text-slate-700 block">Success Return URL:</span>
-                <span className="text-xs font-mono text-slate-900 break-all select-all font-semibold">
-                  {successRedirectUrl}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleCopy(successRedirectUrl, 'redirect')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-100 active:scale-95 transition-all shrink-0 self-start sm:self-center"
-              >
-                {copiedField === 'redirect' ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    <span className="text-emerald-700 font-semibold">Disalin</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Salin URL</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* 5. Payment Methods Selection */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-purple-600" />
-              <h2 className="text-sm font-bold text-slate-900">Saluran Pembayaran Disokong</h2>
-            </div>
-            <span className="text-[11px] text-slate-400">Diproses secara automatik oleh CHIP</span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { id: 'fpx', label: 'FPX Online Banking', desc: 'Maybank2u, CIMB, Bank Islam, dll.' },
-              { id: 'card', label: 'Kad Kredit / Debit', desc: 'Visa, Mastercard & MyDebit' },
-              { id: 'duitnow_qr', label: 'DuitNow QR', desc: 'Imbas terus dari mana-mana app bank' },
-              { id: 'ewallet', label: 'e-Wallet Tempatan', desc: 'Touch n Go, GrabPay, ShopeePay' },
-            ].map((method) => {
-              const isSelected = selectedMethods.includes(method.id);
+          {/* Nav Items List */}
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1 pb-2 sparkle-scroll">
+            {filteredSections.map((sec) => {
+              const Icon = sec.icon;
+              const isActiveTab = activeTab === sec.id;
               return (
-                <div
-                  key={method.id}
-                  onClick={() => handleToggleMethod(method.id)}
-                  className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-                    isSelected
-                      ? 'bg-blue-50/50 border-[#00BDFF] ring-1 ring-[#00BDFF]/40'
-                      : 'bg-white border-slate-200 hover:border-slate-300'
+                <button
+                  key={sec.id}
+                  type="button"
+                  onClick={() => setActiveTab(sec.id)}
+                  className={`w-full flex items-center justify-between p-3 rounded-2xl text-left transition-all cursor-pointer ${
+                    isActiveTab
+                      ? 'bg-sky-50/80 dark:bg-sky-950/40 border-2 border-[#00BDFF] ring-2 ring-[#00BDFF]/20 shadow-xs'
+                      : 'bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 hover:bg-slate-50/70 dark:hover:bg-zinc-800/60 shadow-2xs'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900">{method.label}</span>
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => {}}
-                      className="rounded text-[#00BDFF] focus:ring-[#00BDFF]"
-                    />
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                        isActiveTab
+                          ? 'bg-[#00BDFF] text-white shadow-xs'
+                          : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className={`text-xs truncate ${isActiveTab ? 'font-bold text-sky-950 dark:text-sky-100' : 'font-semibold text-slate-800 dark:text-zinc-200'}`}>
+                        {sec.label}
+                      </p>
+                      <p className={`text-[10.5px] truncate mt-0.5 ${isActiveTab ? 'text-[#00BDFF] dark:text-sky-300 font-medium' : 'text-slate-400 dark:text-zinc-500'}`}>
+                        {sec.desc}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-[10.5px] text-slate-500 mt-1">{method.desc}</p>
-                </div>
+                </button>
               );
             })}
           </div>
         </div>
 
-        {/* 6. Live Diagnostic Test Connection Result */}
-        {testResult && (
-          <div
-            className={`p-4 rounded-2xl border text-xs space-y-1.5 animate-in fade-in duration-200 ${
-              testResult.success
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-                : 'bg-rose-50 border-rose-200 text-rose-900'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-bold flex items-center gap-1.5">
-                {testResult.success ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                ) : (
-                  <AlertCircle className="w-4 h-4 text-rose-600" />
-                )}
-                {testResult.success ? 'Ujian Sambungan Berjaya' : 'Ujian Sambungan Gagal'}
-              </span>
-              <span className="text-[11px] font-mono opacity-75">
-                Masa Respon: {testResult.latencyMs}ms
-              </span>
-            </div>
-            <p className="text-xs leading-relaxed">{testResult.message}</p>
-            {testResult.brandTitle && (
-              <p className="text-[11px] font-semibold text-emerald-700">{testResult.brandTitle}</p>
-            )}
-          </div>
-        )}
-
-        {/* 7. Bottom Actions: Test & Save Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+        {/* =========================================================================
+            SISI KANAN: KAD UTAMA KANDUNGAN & EDITOR GERBANG PEMBAYARAN
+           ========================================================================= */}
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out flex-1 min-w-0 mr-0">
+          
+          {/* Gagang Toggle Kapsul Sisi Kiri */}
           <button
             type="button"
-            onClick={handleTestConnection}
-            disabled={isTesting || !brandId.trim() || !apiKey.trim()}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer active:scale-95 shadow-2xs"
+            onClick={() => setIsLeftPanelCollapsed((v) => !v)}
+            title={isLeftPanelCollapsed ? 'Buka Panel Navigasi' : 'Sembunyikan Panel Navigasi'}
+            className={`absolute left-[5px] top-1/2 -translate-y-1/2 h-12 rounded-full flex items-center justify-center cursor-pointer select-none z-40 transition-all duration-200 ease-out group p-0 border-0 outline-none origin-left ${
+              isLeftPanelCollapsed
+                ? 'w-5 bg-[#f0f4f9] hover:bg-[#e2e7ee] dark:bg-zinc-700'
+                : 'w-1.5 hover:w-5 bg-[#f0f4f9] hover:bg-[#e2e7ee] dark:bg-zinc-700'
+            }`}
           >
-            {isTesting ? (
-              <>
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span>Menguji Sambungan CHIP...</span>
-              </>
-            ) : (
-              <>
-                <Zap className="w-3.5 h-3.5 text-[#0052FF]" />
-                <span>Uji Sambungan API</span>
-              </>
-            )}
+            <span
+              className={`transition-opacity duration-150 flex items-center justify-center text-slate-500 dark:text-zinc-300 ${
+                isLeftPanelCollapsed ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              }`}
+            >
+              {isLeftPanelCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+            </span>
           </button>
 
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="w-full sm:w-auto px-7 py-2.5 rounded-xl bg-[#0052FF] hover:bg-[#0041CC] text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            {isSaving ? (
-              <>
-                <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />
-                <span>Menyimpan Konfigurasi...</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-3.5 h-3.5 text-white" />
-                <span>Simpan Konfigurasi Pembayaran</span>
-              </>
+          {/* ----------------- INTERNAL CARD HEADER ----------------- */}
+          <div className="shrink-0 px-6 py-3.5 border-b border-slate-100 dark:border-zinc-800/80 flex items-center justify-between gap-4 bg-slate-50/50 dark:bg-zinc-900/50">
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
+                {activeTab === 'status' && 'Status Gateway & Mod Persekitaran'}
+                {activeTab === 'credentials' && 'Kunci API & Pengesahan Kredensial'}
+                {activeTab === 'methods' && 'Kaedah Pembayaran Digital Pelanggan'}
+                {activeTab === 'webhooks' && 'Webhook Endpoint & Pautan Pengalihan'}
+                {activeTab === 'diagnostics' && 'Diagnostik & Ujian Sambungan Langsung'}
+              </h2>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                {activeTab === 'status' && 'Kawal pengaktifan pembayaran dan pilih persekitaran Sandbox atau Produksi Live'}
+                {activeTab === 'credentials' && 'Konfigurasi Brand ID, Secret API Key, dan Public Key daripada akaun CHIP anda'}
+                {activeTab === 'methods' && 'Pilih saluran pembayaran digital yang ingin dipaparkan kepada pelanggan di portal'}
+                {activeTab === 'webhooks' && 'Daftar webhook URL pada portal CHIP untuk pengesahan pembayaran automatik 24/7'}
+                {activeTab === 'diagnostics' && 'Periksa kesihatan sambungan API dan latency pelayan CHIP'}
+              </p>
+            </div>
+          </div>
+
+          {/* ----------------- SCROLLABLE CARD BODY ----------------- */}
+          <div className="flex-1 overflow-y-auto sparkle-scroll p-5 sm:p-6 space-y-6">
+
+            {/* TAB 1: STATUS & ENVIRONMENT */}
+            {activeTab === 'status' && (
+              <div className="max-w-2xl space-y-4 animate-in fade-in">
+                <div className="p-4 rounded-2xl bg-sky-50/70 dark:bg-sky-950/30 border border-sky-200/70 dark:border-sky-900/60 flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-full bg-[#00BDFF] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div className="text-xs space-y-0.5">
+                    <p className="font-bold text-sky-950 dark:text-sky-100">
+                      Integrasi Pembayaran Automatik CHIP
+                    </p>
+                    <p className="text-sky-800/80 dark:text-sky-300 text-[11px] leading-relaxed">
+                      Sistem ini membolehkan pelanggan membayar deposit 50% atau lunas 100% serta-merta semasa membuat pesanan jersi. Status pesanan akan dikemaskini secara automatik setelah pembayaran selesai.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Toggle: Enable Gateway */}
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700 flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 block">Dayakan Pembayaran CHIP</span>
+                      <span className="text-[11px] text-slate-500 block mt-0.5">
+                        Aktifkan pilihan pembayaran digital di checkout awam.
+                      </span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
+                      <input
+                        type="checkbox"
+                        checked={isActive}
+                        onChange={(e) => setIsActive(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00BDFF]"></div>
+                    </label>
+                  </div>
+
+                  {/* Toggle: Sandbox vs Live */}
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700 flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 block">Mod Sandbox (Ujian)</span>
+                      <span className="text-[11px] text-slate-500 block mt-0.5">
+                        {isSandbox ? 'Menggunakan kunci percubaan staging.' : 'Menggunakan akaun transaksi pengeluaran sebenar.'}
+                      </span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
+                      <input
+                        type="checkbox"
+                        checked={isSandbox}
+                        onChange={(e) => setIsSandbox(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSave()}
+                    disabled={isSaving}
+                    className="px-5 py-2.5 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                  >
+                    {isSaving ? 'Menyimpan...' : 'Simpan Status Gateway'}
+                  </button>
+                </div>
+              </div>
             )}
-          </button>
+
+            {/* TAB 2: CREDENTIALS */}
+            {activeTab === 'credentials' && (
+              <div className="max-w-2xl space-y-4 animate-in fade-in">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300 flex items-center justify-between">
+                    <span>Brand ID (UUID) <span className="text-rose-500">*</span></span>
+                    <span className="text-[10px] text-slate-400">Didapati di Portal CHIP → Brands</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={brandId}
+                    onChange={(e) => setBrandId(e.target.value)}
+                    placeholder="cth: 3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                    className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300 flex items-center justify-between">
+                    <span>Secret API Key (Bearer Token) <span className="text-rose-500">*</span></span>
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKey(!showApiKey)}
+                      className="text-[11px] text-[#00BDFF] hover:underline cursor-pointer inline-flex items-center gap-1"
+                    >
+                      {showApiKey ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                      <span>{showApiKey ? 'Sembunyikan' : 'Papar Kunci'}</span>
+                    </button>
+                  </label>
+                  <input
+                    type={showApiKey ? 'text' : 'password'}
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="cth: secret_..."
+                    className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300 flex items-center justify-between">
+                    <span>Public Key (Pilihan untuk Enkripsi Webhook)</span>
+                    <span className="text-[10px] text-slate-400">Pilihan keselamatan tambahan</span>
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={publicKey}
+                    onChange={(e) => setPublicKey(e.target.value)}
+                    placeholder="-----BEGIN PUBLIC KEY-----..."
+                    className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#00BDFF] focus:border-[#00BDFF]"
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSave()}
+                    disabled={isSaving}
+                    className="px-5 py-2.5 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                  >
+                    {isSaving ? 'Menyimpan...' : 'Simpan Kredensial'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: PAYMENT METHODS */}
+            {activeTab === 'methods' && (
+              <div className="max-w-2xl space-y-4 animate-in fade-in">
+                <p className="text-xs text-slate-600 dark:text-zinc-400">
+                  Tandakan kaedah pembayaran digital yang disokong oleh akaun CHIP anda untuk ditawarkan kepada pelanggan:
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    { id: 'fpx', label: 'FPX Online Banking', desc: 'Maybank2u, CIMB Clicks, Bank Islam, RHB, dll.', icon: Building2 },
+                    { id: 'card', label: 'Kad Debit / Kredit', desc: 'Visa & MasterCard dengan 3D Secure OTP.', icon: CreditCard },
+                    { id: 'duitnow_qr', label: 'DuitNow QR Kebangsaan', desc: 'Imbas QR dari mana-mana aplikasi e-Wallet perbankan.', icon: QrCode },
+                    { id: 'ewallet', label: 'e-Wallet Digital', desc: 'Touch n Go eWallet, GrabPay & Boost.', icon: Wallet },
+                  ].map((m) => {
+                    const isChecked = selectedMethods.includes(m.id);
+                    const Icon = m.icon;
+                    return (
+                      <div
+                        key={m.id}
+                        onClick={() => handleToggleMethod(m.id)}
+                        className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 ${
+                          isChecked
+                            ? 'bg-sky-50/80 dark:bg-sky-950/40 border-[#00BDFF] ring-1 ring-[#00BDFF]/30'
+                            : 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-700 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isChecked ? 'bg-[#00BDFF] text-white shadow-xs' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'}`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-900 dark:text-zinc-100">{m.label}</span>
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => handleToggleMethod(m.id)}
+                              className="rounded border-slate-300 text-[#00BDFF] accent-[#00BDFF] focus:ring-[#00BDFF] w-4 h-4 cursor-pointer"
+                            />
+                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-relaxed">{m.desc}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSave()}
+                    disabled={isSaving}
+                    className="px-5 py-2.5 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                  >
+                    {isSaving ? 'Menyimpan...' : 'Simpan Kaedah Pembayaran'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: WEBHOOKS & CALLBACKS */}
+            {activeTab === 'webhooks' && (
+              <div className="max-w-2xl space-y-4 animate-in fade-in">
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-xs space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                      Webhook Callback URL (Salin ke Portal CHIP)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={webhookUrl}
+                        className="flex-1 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-800 dark:text-zinc-200 select-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(webhookUrl, 'webhook')}
+                        className="px-4 py-2 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 text-xs font-semibold text-slate-700 dark:text-zinc-300 transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs active:scale-95 shrink-0"
+                      >
+                        {copiedField === 'webhook' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedField === 'webhook' ? 'Disalin' : 'Salin'}</span>
+                      </button>
+                    </div>
+                    <p className="text-[10.5px] text-slate-400">
+                      CHIP akan menghantar payload JSON ke pautan ini apabila status pembayaran berubah (paid / expired / cancelled).
+                    </p>
+                  </div>
+
+                  <div className="space-y-1 pt-2 border-t border-slate-100 dark:border-zinc-800">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                      Success Redirect URL (Pautan Selepas Selesai Bayar)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={successRedirectUrl}
+                        className="flex-1 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-800 dark:text-zinc-200 select-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(successRedirectUrl, 'redirect')}
+                        className="px-4 py-2 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 text-xs font-semibold text-slate-700 dark:text-zinc-300 transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs active:scale-95 shrink-0"
+                      >
+                        {copiedField === 'redirect' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedField === 'redirect' ? 'Disalin' : 'Salin'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 5: DIAGNOSTICS & TEST */}
+            {activeTab === 'diagnostics' && (
+              <div className="max-w-2xl space-y-4 animate-in fade-in">
+                <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100">Ujian Sambungan API CHIP Langsung</h3>
+                      <p className="text-[11px] text-slate-500 mt-0.5">Semak ketepatan Brand ID dan Secret Key secara terus dengan pelayan CHIP.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleTestConnection}
+                      disabled={isTesting}
+                      className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                    >
+                      <Activity className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin' : ''}`} />
+                      <span>{isTesting ? 'Menguji...' : 'Uji Sekarang'}</span>
+                    </button>
+                  </div>
+
+                  {testResult && (
+                    <div
+                      className={`p-4 rounded-2xl border text-xs space-y-1.5 animate-in fade-in ${
+                        testResult.success
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100'
+                          : 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-100'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold flex items-center gap-1.5">
+                          {testResult.success ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <AlertCircle className="w-4 h-4 text-rose-600" />}
+                          {testResult.success ? 'Sambungan Berjaya' : 'Sambungan Gagal'}
+                        </span>
+                        <span className="font-mono text-[10px] bg-white/60 dark:bg-zinc-800/60 px-2 py-0.5 rounded-full">
+                          Latency: {testResult.latencyMs}ms
+                        </span>
+                      </div>
+                      <p className="text-[11px] leading-relaxed opacity-90">{testResult.message}</p>
+                      {testResult.brandTitle && (
+                        <p className="text-[11px] font-semibold pt-1">Nama Jenama CHIP: {testResult.brandTitle}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+          </div>
         </div>
-
-      </form>
-
+      </div>
     </div>
   );
 }
