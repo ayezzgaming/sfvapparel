@@ -27,7 +27,9 @@ import {
   PlayCircle,
   User,
   Phone,
-  X
+  X,
+  FileText,
+  Image as ImageIcon
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
@@ -72,6 +74,110 @@ function parseVCard(body: string): { name: string; phone: string } | null {
   }
 
   return { name, phone };
+}
+
+function isMediaFilename(text: string): boolean {
+  if (!text) return false;
+  const trimmed = text.trim();
+  if (trimmed.startsWith('[Media') || trimmed.startsWith('[Gambar') || trimmed.startsWith('[Audio') || trimmed.startsWith('[Dokumen')) {
+    return true;
+  }
+  return /\.(png|jpe?g|webp|gif|pdf|docx?|xlsx?|mp4|opus|ogg|mp3)$/i.test(trimmed);
+}
+
+function stripWhatsAppFormatting(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/```[\s\S]*?```/g, (m) => m.slice(3, -3))
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/_(.*?)_/g, '$1')
+    .replace(/~(.*?)~/g, '$1')
+    .trim();
+}
+
+function renderFormattedTokens(text: string, keyPrefix: string): React.ReactNode {
+  if (!text) return null;
+
+  // Regex to match WhatsApp formatting:
+  // 1. Monospace: ```(.*?)```
+  // 2. Bold: **(.*?)** or *(.*?)*
+  // 3. Italic: _(.*?)_
+  // 4. Strikethrough: ~(.*?)~
+  const tokenRegex = /(```[\s\S]*?```|\*\*[^\*]+?\*\*|\*[^\*]+?\*|_[^_]+?_|~[^~]+?~)/g;
+  const segments = text.split(tokenRegex);
+
+  return segments.map((seg, idx) => {
+    const key = `${keyPrefix}-${idx}`;
+    if (!seg) return null;
+
+    if (seg.startsWith('```') && seg.endsWith('```') && seg.length >= 6) {
+      const code = seg.slice(3, -3);
+      return (
+        <code key={key} className="bg-slate-200/80 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 px-1.5 py-0.5 rounded font-mono text-[11.5px]">
+          {code}
+        </code>
+      );
+    }
+
+    if (seg.startsWith('**') && seg.endsWith('**') && seg.length > 4) {
+      const boldText = seg.slice(2, -2);
+      return <strong key={key} className="font-extrabold text-[#0a1014] dark:text-white">{boldText}</strong>;
+    }
+
+    if (seg.startsWith('*') && seg.endsWith('*') && seg.length > 2) {
+      const boldText = seg.slice(1, -1);
+      return <strong key={key} className="font-extrabold text-[#0a1014] dark:text-white">{boldText}</strong>;
+    }
+
+    if (seg.startsWith('_') && seg.endsWith('_') && seg.length > 2) {
+      const italicText = seg.slice(1, -1);
+      return <em key={key} className="italic text-slate-800 dark:text-zinc-200">{italicText}</em>;
+    }
+
+    if (seg.startsWith('~') && seg.endsWith('~') && seg.length > 2) {
+      const strikeText = seg.slice(1, -1);
+      return <del key={key} className="line-through text-slate-500 opacity-75">{strikeText}</del>;
+    }
+
+    return <span key={key}>{seg}</span>;
+  });
+}
+
+function formatWhatsAppText(text: string): React.ReactNode {
+  if (!text) return null;
+
+  const lines = text.split('\n');
+
+  return lines.map((line, lineIdx) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = line.split(urlRegex);
+
+    return (
+      <React.Fragment key={lineIdx}>
+        {lineIdx > 0 && <br />}
+        {parts.map((part, partIdx) => {
+          if (part.match(urlRegex)) {
+            return (
+              <a
+                key={partIdx}
+                href={part}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sky-700 dark:text-sky-400 font-medium underline break-all hover:text-sky-900 inline-flex items-center gap-0.5"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span>{part}</span>
+                <ExternalLink className="w-2.5 h-2.5 inline shrink-0" />
+              </a>
+            );
+          }
+
+          return renderFormattedTokens(part, `${lineIdx}-${partIdx}`);
+        })}
+      </React.Fragment>
+    );
+  });
 }
 
 export default function WhatsAppHubPage() {
@@ -442,7 +548,7 @@ export default function WhatsAppHubPage() {
             <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-[10px] font-semibold">
               <Radio className={`w-3 h-3 ${isConnected ? 'text-emerald-500 animate-pulse' : 'text-amber-500'}`} />
               <span className={isConnected ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
-                {loading ? 'Menyemak...' : isConnected ? 'Terhubung' : 'Perlu Imbas QR'}
+                {loading ? 'Menyemak...' : isConnected ? 'WhatsApp Terhubung' : 'Perlu Imbas QR'}
               </span>
             </div>
           </div>
@@ -747,7 +853,7 @@ export default function WhatsAppHubPage() {
                                     {chat.name}
                                   </h4>
                                   {chat.lastMessage && (
-                                    <span className="text-[10px] text-slate-400">
+                                    <span className="text-[10px] text-slate-400 font-mono">
                                       {new Date(chat.lastMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                   )}
@@ -761,11 +867,11 @@ export default function WhatsAppHubPage() {
                                       🔒 Peribadi
                                     </span>
                                   ) : isBotPaused ? (
-                                    <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                                    <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium">
                                       Staf CS
                                     </span>
                                   ) : (
-                                    <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200">
+                                    <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200 font-medium">
                                       Bot AI
                                     </span>
                                   )}
@@ -773,7 +879,7 @@ export default function WhatsAppHubPage() {
                                 {chat.lastMessage && (
                                   <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate mt-0.5">
                                     {chat.lastMessage.fromMe && <span className="font-semibold text-slate-700 dark:text-zinc-300">Anda: </span>}
-                                    {chat.lastMessage.body}
+                                    {stripWhatsAppFormatting(chat.lastMessage.body)}
                                   </p>
                                 )}
                               </div>
@@ -786,11 +892,11 @@ export default function WhatsAppHubPage() {
 
                   {/* Right Column: Chat Content */}
                   {selectedChat ? (
-                    <div className="flex-1 flex flex-col bg-slate-50/50 dark:bg-zinc-950/40">
+                    <div className="flex-1 flex flex-col bg-[#efeae2]/50 dark:bg-zinc-950">
                       {/* Active Chat Bar with Bot Pause Toggle */}
-                      <div className="p-3 px-5 bg-white dark:bg-zinc-900 border-b border-slate-200/80 dark:border-zinc-800 flex items-center justify-between shrink-0">
+                      <div className="p-3 px-5 bg-white dark:bg-zinc-900 border-b border-slate-200/80 dark:border-zinc-800 flex items-center justify-between shrink-0 shadow-2xs">
                         <div className="flex items-center space-x-3">
-                          <div className={`w-8 h-8 rounded-full text-white font-bold text-xs flex items-center justify-center ${
+                          <div className={`w-9 h-9 rounded-full text-white font-bold text-xs flex items-center justify-center shadow-xs ${
                             privateChatIds[selectedChat.id] ? 'bg-slate-600' : 'bg-[#00BDFF]'
                           }`}>
                             {selectedChat.name.charAt(0).toUpperCase()}
@@ -888,47 +994,49 @@ export default function WhatsAppHubPage() {
                       )}
 
                       {/* Chat Messages List */}
-                      <div className="flex-1 overflow-y-auto p-4 sm:p-6 sparkle-scroll bg-slate-50/50 dark:bg-zinc-950/50">
-                        <div className="max-w-3xl mx-auto w-full space-y-3">
+                      <div className="flex-1 overflow-y-auto p-4 sm:p-6 sparkle-scroll">
+                        <div className="max-w-3xl mx-auto w-full space-y-3.5">
                           {loadingMessages ? (
                             <div className="py-16 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
                               <RefreshCw className="w-5 h-5 animate-spin text-[#00BDFF]" />
                               <span>Memuatkan mesej perbualan...</span>
                             </div>
                           ) : messages.length === 0 ? (
-                            <div className="py-16 text-center text-xs text-slate-400 bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800">
+                            <div className="py-16 text-center text-xs text-slate-400 bg-white/80 dark:bg-zinc-900/80 rounded-2xl border border-dashed border-slate-300 dark:border-zinc-800">
                               Tiada rekod mesej lagi dalam sesi ini.
                             </div>
                           ) : (
                             messages.map((msg) => {
                               const vcard = parseVCard(msg.body);
+                              const isMedia = !vcard && isMediaFilename(msg.body);
+
                               return (
                                 <div
                                   key={msg.id}
                                   className={`flex ${msg.fromMe ? 'justify-end' : 'justify-start'}`}
                                 >
                                   <div
-                                    className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-2.5 text-xs shadow-xs space-y-1.5 transition-all ${
+                                    className={`max-w-[85%] sm:max-w-[75%] lg:max-w-[68%] rounded-2xl px-4 py-2.5 text-[12.5px] shadow-xs space-y-1.5 transition-all select-text ${
                                       msg.fromMe
-                                        ? 'bg-[#00BDFF] text-white rounded-tr-xs'
-                                        : 'bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-100 border border-slate-200/80 dark:border-zinc-800 rounded-tl-xs'
+                                        ? 'bg-[#D9FDD3] dark:bg-[#005C4B] text-[#111B21] dark:text-[#E9EDEF] border border-[#C2EBBB] dark:border-[#005C4B] rounded-tr-xs'
+                                        : 'bg-white dark:bg-zinc-900 text-[#111B21] dark:text-[#E9EDEF] border border-slate-200/90 dark:border-zinc-800 rounded-tl-xs'
                                     }`}
                                   >
                                     {vcard ? (
                                       <div className={`p-2.5 rounded-xl border space-y-2 ${
                                         msg.fromMe 
-                                          ? 'bg-sky-600/30 border-sky-400/40 text-white' 
+                                          ? 'bg-emerald-100/60 border-emerald-300/60 text-[#111B21]' 
                                           : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-100'
                                       }`}>
                                         <div className="flex items-center gap-2.5">
                                           <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                                            msg.fromMe ? 'bg-white/20 text-white' : 'bg-[#00BDFF]/10 text-[#00BDFF]'
+                                            msg.fromMe ? 'bg-emerald-600 text-white' : 'bg-[#00BDFF]/10 text-[#00BDFF]'
                                           }`}>
                                             <User className="w-4 h-4" />
                                           </div>
                                           <div className="min-w-0 flex-1">
                                             <p className="font-bold text-xs truncate">{vcard.name}</p>
-                                            <p className={`text-[10px] font-mono truncate ${msg.fromMe ? 'text-sky-100' : 'text-slate-500'}`}>
+                                            <p className={`text-[10px] font-mono truncate ${msg.fromMe ? 'text-emerald-800' : 'text-slate-500'}`}>
                                               {vcard.phone ? `+${vcard.phone}` : 'Kad Kenalan'}
                                             </p>
                                           </div>
@@ -940,7 +1048,7 @@ export default function WhatsAppHubPage() {
                                             rel="noopener noreferrer"
                                             className={`inline-flex items-center justify-center gap-1.5 w-full py-1.5 rounded-full font-semibold text-[11px] transition-colors ${
                                               msg.fromMe 
-                                                ? 'bg-white text-[#00BDFF] hover:bg-sky-50' 
+                                                ? 'bg-emerald-700 text-white hover:bg-emerald-800' 
                                                 : 'bg-[#00BDFF] text-white hover:bg-sky-600'
                                             }`}
                                           >
@@ -949,17 +1057,39 @@ export default function WhatsAppHubPage() {
                                           </a>
                                         )}
                                       </div>
+                                    ) : isMedia ? (
+                                      <div className={`p-2.5 rounded-xl border flex items-center gap-2.5 ${
+                                        msg.fromMe
+                                          ? 'bg-emerald-100/50 border-emerald-300/50 text-[#111B21]'
+                                          : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-100'
+                                      }`}>
+                                        <div className="w-9 h-9 rounded-lg bg-[#00BDFF]/10 text-[#00BDFF] flex items-center justify-center shrink-0">
+                                          {msg.body.match(/\.(png|jpe?g|webp|gif)$/i) ? (
+                                            <ImageIcon className="w-4 h-4" />
+                                          ) : (
+                                            <FileText className="w-4 h-4" />
+                                          )}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                          <p className="font-bold text-xs truncate">{msg.body}</p>
+                                          <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                                            Lampiran Fail / Gambar
+                                          </span>
+                                        </div>
+                                      </div>
                                     ) : (
-                                      <p className="leading-relaxed whitespace-pre-wrap break-words">{msg.body}</p>
+                                      <div className="leading-relaxed whitespace-pre-wrap break-words">
+                                        {formatWhatsAppText(msg.body)}
+                                      </div>
                                     )}
 
-                                    <div className={`flex items-center justify-end gap-1 text-[9.5px] ${
-                                      msg.fromMe ? 'text-sky-100' : 'text-slate-400'
+                                    <div className={`flex items-center justify-end gap-1 text-[10px] font-mono ${
+                                      msg.fromMe ? 'text-[#54656f] dark:text-[#8696a0]' : 'text-slate-400'
                                     }`}>
                                       <span>
                                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                       </span>
-                                      {msg.fromMe && <CheckCheck className="w-3 h-3" />}
+                                      {msg.fromMe && <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb]" />}
                                     </div>
                                   </div>
                                 </div>
@@ -1065,7 +1195,7 @@ export default function WhatsAppHubPage() {
                         </div>
 
                         <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed bg-slate-50 dark:bg-zinc-800/60 p-3 rounded-xl border border-slate-200/60 dark:border-zinc-700/60">
-                          {t.summary}
+                          {formatWhatsAppText(t.summary)}
                         </p>
 
                         <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
