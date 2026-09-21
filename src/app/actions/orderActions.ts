@@ -290,3 +290,64 @@ export async function deleteOrderDb(orderId: string): Promise<{ success: boolean
     return { success: false, message };
   }
 }
+
+/**
+ * Server Action: Retrieve full order by order number or ID
+ */
+export async function getOrderByNumberOrIdDb(identifier: string): Promise<{ success: boolean; order?: Order; message?: string }> {
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) return { success: false, message: 'Database connection failed.' };
+
+    const cleanIdentifier = identifier.trim().replace(/-(DP|BAL)$/i, '');
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanIdentifier);
+
+    let query = supabase.from('orders').select('*');
+
+    if (isUuid) {
+      query = query.or(`id.eq.${cleanIdentifier},order_number.eq.${cleanIdentifier}`);
+    } else {
+      query = query.eq('order_number', cleanIdentifier);
+    }
+
+    const { data, error } = await query.single();
+
+    if (error || !data) {
+      return { success: false, message: 'Pesanan tidak dijumpai.' };
+    }
+
+    return { success: true, order: data as Order };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Ralat memuatkan data pesanan';
+    return { success: false, message };
+  }
+}
+
+/**
+ * Server Action: Client approves production mockup proof
+ */
+export async function clientApproveProofAction(orderNumber: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) return { success: false, message: 'Database connection failed.' };
+
+    const cleanOrderNumber = orderNumber.trim().replace(/-(DP|BAL)$/i, '');
+
+    const { error } = await supabase
+      .from('orders')
+      .update({
+        status: 'proof_approved',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('order_number', cleanOrderNumber);
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, message: 'Mockup reka bentuk berjaya disahkan dan diluluskan!' };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Ralat meluluskan mockup';
+    return { success: false, message };
+  }
+}

@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   ChevronRight, 
   ShoppingBag,
@@ -48,6 +48,7 @@ const TIMELINE_STEPS = [
 ];
 
 function HistoryContent() {
+  const router = useRouter();
   const { orders, deleteOrder, companySettings, refreshAllDb } = useAppStore();
   const { isAuthenticated, customer, isLoading } = useAuth();
   const searchParams = useSearchParams();
@@ -295,21 +296,27 @@ function HistoryContent() {
               dot: 'bg-slate-500',
             };
 
-            const mockupImg = order.mockup_url || 
+            const mockupImg =
+              order.mockup_url ||
               (order.print_type === 'sublimation' ? '/images/prod_sportswear.webp' : '/images/prod_tshirt.webp');
+
+            const total = Number(order.total_amount) || 0;
+            const depAmt = Number(order.deposit_amount) || Math.round(total * 0.5 * 100) / 100;
+            const balAmt =
+              order.balance_amount !== undefined && order.balance_amount !== null && order.balance_amount > 0
+                ? Number(order.balance_amount)
+                : Math.max(0, Math.round((total - depAmt) * 100) / 100);
 
             return (
               <div
                 key={order.id}
-                onClick={() => handleOpenOrder(order)}
-                className="p-4 rounded-2xl bg-white border border-slate-200/70 shadow-xs hover:border-slate-300 active:scale-[0.99] transition-all cursor-pointer space-y-3"
+                onClick={() => router.push(`/history/${order.order_number || order.id}`)}
+                className="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-2xs hover:border-slate-300 hover:shadow-xs active:scale-[0.99] transition-all cursor-pointer space-y-3"
               >
                 {/* Header: Order Number & Status */}
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-2">
-                    <span className="font-mono text-xs font-semibold text-slate-900">
-                      {order.order_number}
-                    </span>
+                    <span className="font-mono text-xs font-bold text-slate-900">{order.order_number}</span>
                     <span className="text-[10px] text-slate-400 font-mono">
                       {new Date(order.created_at).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short' })}
                     </span>
@@ -322,13 +329,21 @@ function HistoryContent() {
                       </span>
                     ) : order.payment_status === 'deposit_paid' ? (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold bg-sky-100 text-sky-800">
-                        DP 50% Dibayar
+                        DP 50% Sah
                       </span>
-                    ) : order.payment_status === 'deposit_pending' || order.payment_status === 'balance_pending' ? (
+                    ) : order.payment_status === 'deposit_pending' ? (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold bg-amber-100 text-amber-800">
-                        Menunggu Bayaran
+                        Menunggu DP
                       </span>
-                    ) : null}
+                    ) : order.payment_status === 'balance_pending' ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold bg-amber-100 text-amber-800">
+                        Menunggu Baki
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600">
+                        Belum Dibayar
+                      </span>
+                    )}
 
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-medium ${config.bg} ${config.color}`}>
                       <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${config.dot}`} />
@@ -339,23 +354,18 @@ function HistoryContent() {
 
                 {/* Item Details */}
                 <div className="flex space-x-3 items-center">
-                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200/60 relative">
-                    <Image
-                      src={mockupImg}
-                      alt={order.design_title}
-                      fill
-                      className="object-cover"
-                    />
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200/80 relative">
+                    <Image src={mockupImg} alt={order.design_title} fill className="object-cover" />
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-xs font-semibold text-slate-800 truncate">
-                      {order.design_title}
-                    </h3>
+                    <h3 className="text-xs font-bold text-slate-900 truncate">{order.design_title}</h3>
                     <p className="text-[11px] text-slate-500 mt-0.5 truncate">
                       {order.print_type === 'sublimation'
                         ? `${order.fabric_name || 'Sublimasi'} • ${order.cut_name || 'Standard'}`
-                        : `${order.dtf_dimension_name || 'DTF'} • ${order.dtf_option_type === 'with_garment' ? 'Dengan Baju' : 'Cetakan Filem Sahaja'}`}
+                        : `${order.dtf_dimension_name || 'DTF'} • ${
+                            order.dtf_option_type === 'with_garment' ? 'Dengan Baju' : 'Cetakan Filem Sahaja'
+                          }`}
                     </p>
                     <p className="text-[11px] font-medium text-slate-400 mt-0.5">
                       Kuantiti: {order.total_quantity} helai
@@ -364,22 +374,20 @@ function HistoryContent() {
                 </div>
 
                 {/* Footer: Amount & Action Link */}
-                <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-xs">
+                <div className="pt-2.5 border-t border-slate-100 flex justify-between items-center text-xs">
                   <div>
                     <span className="text-[11px] text-slate-400">Jumlah: </span>
-                    <span className="font-semibold text-slate-900">
-                      {formatCurrency(order.total_amount)}
-                    </span>
-                    {order.payment_status === 'deposit_paid' && order.balance_amount && order.balance_amount > 0 ? (
-                      <span className="text-[10px] text-amber-600 font-medium ml-1.5">
-                        (Baki: {formatCurrency(order.balance_amount)})
+                    <span className="font-bold text-slate-900 font-mono">{formatCurrency(total)}</span>
+                    {order.payment_status === 'deposit_paid' && balAmt > 0 ? (
+                      <span className="text-[10px] text-amber-700 font-medium ml-1.5">
+                        (Baki: {formatCurrency(balAmt)})
                       </span>
                     ) : null}
                   </div>
 
-                  <div className="flex items-center text-slate-500 font-medium text-[11px] gap-0.5 group">
-                    <span>Perincian</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  <div className="flex items-center text-sky-600 font-semibold text-[11px] gap-0.5 group">
+                    <span>Lihat Penjejakan</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-sky-500 group-hover:translate-x-0.5 transition-transform" />
                   </div>
                 </div>
               </div>
