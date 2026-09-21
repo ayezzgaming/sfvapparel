@@ -185,3 +185,79 @@ export async function updateOrderPaymentStatusDb(
     return { success: false, message: msg };
   }
 }
+
+/**
+ * Server Action: Authoritatively confirm payment on successful gateway return
+ */
+export async function confirmPaymentReturnAction(orderNumber: string): Promise<{ success: boolean; order?: any; message?: string }> {
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) return { success: false, message: 'Database connection failed' };
+
+    const baseOrderNumber = orderNumber.replace(/-(DP|BAL)$/i, '');
+    const isBalancePayment = /-BAL$/i.test(orderNumber);
+    const isDepositPayment = /-DP$/i.test(orderNumber);
+
+    const { data: currentOrder, error: fetchErr } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('order_number', baseOrderNumber)
+      .single();
+
+    if (fetchErr || !currentOrder) {
+      return { success: false, message: 'Pesanan tidak dijumpai' };
+    }
+
+    const totalAmount = Number(currentOrder.total_amount) || 0;
+    const depositAmount = Number(currentOrder.deposit_amount) || (Math.round(totalAmount * 0.5 * 100) / 100);
+
+    const updatePayload: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (isBalancePayment) {
+      updatePayload.payment_status = 'paid';
+      updatePayload.balance_paid_at = new Date().toISOString();
+      updatePayload.balance_amount = 0;
+      updatePayload.paid_amount = totalAmount;
+      updatePayload.balance_payment_method = 'CHIP Online Gateway';
+    } else if (isDepositPayment || currentOrder.payment_type_selected === 'deposit_50') {
+      if (currentOrder.payment_status !== 'paid') {
+        updatePayload.payment_status = 'deposit_paid';
+        updatePayload.deposit_paid_at = new Date().toISOString();
+        updatePayload.deposit_amount = depositAmount;
+        updatePayload.balance_amount = Math.max(0, totalAmount - depositAmount);
+        updatePayload.paid_amount = depositAmount;
+        updatePayload.payment_method = 'CHIP Online (Deposit 50%)';
+        if (currentOrder.status === 'pending_proof') {
+          updatePayload.status = 'proof_approved';
+        }
+      }
+    } else {
+      updatePayload.payment_status = 'paid';
+      updatePayload.paid_at = new Date().toISOString();
+      updatePayload.paid_amount = totalAmount;
+      updatePayload.balance_amount = 0;
+      updatePayload.payment_method = 'CHIP Online (100% Penuh)';
+      if (currentOrder.status === 'pending_proof') {
+        updatePayload.status = 'proof_approved';
+      }
+    }
+
+    const { data: updatedOrder, error: updateErr } = await supabase
+      .from('orders')
+      .update(updatePayload)
+      .eq('order_number', baseOrderNumber)
+      .select()
+      .single();
+
+    if (updateErr) {
+      return { success: false, message: updateErr.message };
+    }
+
+    return { success: true, order: updatedOrder };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Gagal mengesahkan pembayaran';
+    return { success: false, message: msg };
+  }
+}

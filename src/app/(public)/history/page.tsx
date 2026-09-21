@@ -24,6 +24,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { formatCurrency } from '@/lib/pricing-calculator';
 import { buildWhatsAppInquiryUrl } from '@/lib/whatsapp/dynamic-link';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
+import { confirmPaymentReturnAction } from '@/app/actions/paymentActions';
 import { Order, OrderStatus } from '@/types/database';
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; stepIndex: number; color: string; bg: string; dot: string }> = {
@@ -59,28 +60,65 @@ function HistoryContent() {
   const paymentQuery = searchParams.get('payment');
   const orderNumberQuery = searchParams.get('order_number');
 
-  // Sync DB on mount and on return from payment gateway
+  // Auto confirm payment return from gateway & sync database
   useEffect(() => {
-    refreshAllDb?.();
-  }, [paymentQuery, refreshAllDb]);
+    let isMounted = true;
+    if (paymentQuery === 'success' && orderNumberQuery) {
+      confirmPaymentReturnAction(orderNumberQuery)
+        .then((res) => {
+          if (isMounted) {
+            refreshAllDb?.();
+            if (res.success && res.order) {
+              setSelectedOrder(res.order);
+              setIsOrderSheetOpen(true);
+            }
+          }
+        })
+        .catch((e) => {
+          console.error('[history] Error confirming payment return:', e);
+          refreshAllDb?.();
+        });
+    } else {
+      refreshAllDb?.();
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [paymentQuery, orderNumberQuery, refreshAllDb]);
 
   // Filter orders by authenticated customer from Database
   const customerOrders = useMemo(() => {
-    if (!isAuthenticated || !customer || !Array.isArray(orders)) return [];
-    const phone = String(customer.whatsapp || '');
-    const cleanPhone = phone.replace(/[\s\-\+\(\)]/g, '');
+    if (!Array.isArray(orders)) return [];
 
-    return orders.filter((o) => {
-      if (!o) return false;
-      if (o.customer_id && customer.id && o.customer_id === customer.id) return true;
-      if (o.customer_phone && cleanPhone) {
-        const orderPhoneClean = String(o.customer_phone).replace(/[\s\-\+\(\)]/g, '');
-        if (orderPhoneClean && (orderPhoneClean.includes(cleanPhone.slice(-8)) || cleanPhone.includes(orderPhoneClean.slice(-8)))) return true;
-      }
-      if (customer.email && o.customer_email && String(o.customer_email).toLowerCase() === String(customer.email).toLowerCase()) return true;
-      return false;
-    });
-  }, [orders, isAuthenticated, customer]);
+    if (isAuthenticated && customer) {
+      const phone = String(customer.whatsapp || '');
+      const cleanPhone = phone.replace(/[\s\-\+\(\)]/g, '');
+
+      return orders.filter((o) => {
+        if (!o) return false;
+        if (orderNumberQuery) {
+          const baseQuery = orderNumberQuery.replace(/-(DP|BAL)$/i, '');
+          if (o.order_number === baseQuery) return true;
+        }
+        if (o.customer_id && customer.id && o.customer_id === customer.id) return true;
+        if (o.customer_phone && cleanPhone) {
+          const orderPhoneClean = String(o.customer_phone).replace(/[\s\-\+\(\)]/g, '');
+          if (orderPhoneClean && (orderPhoneClean.includes(cleanPhone.slice(-8)) || cleanPhone.includes(orderPhoneClean.slice(-8)))) return true;
+        }
+        if (customer.email && o.customer_email && String(o.customer_email).toLowerCase() === String(customer.email).toLowerCase()) return true;
+        return false;
+      });
+    }
+
+    // If returning from payment or querying specific order
+    if (orderNumberQuery) {
+      const baseQuery = orderNumberQuery.replace(/-(DP|BAL)$/i, '');
+      const match = orders.filter((o) => o.order_number === baseQuery);
+      if (match.length > 0) return match;
+    }
+
+    return orders;
+  }, [orders, isAuthenticated, customer, orderNumberQuery]);
 
   const handleOpenOrder = (order: Order) => {
     setSelectedOrder(order);
@@ -494,11 +532,33 @@ function HistoryContent() {
             )}
 
             {/* Financial Summary */}
-            <div className="p-3.5 rounded-2xl bg-white border border-slate-200/70 space-y-2">
-              <h4 className="text-[11px] font-semibold text-slate-900 uppercase tracking-wider">
-                Perincian Kewangan
-              </h4>
-              <div className="space-y-1.5 pt-1 text-xs">
+            <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h4 className="text-[11px] font-bold text-slate-900 uppercase tracking-wider">
+                  Perincian Kewangan
+                </h4>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                  selectedOrder.payment_status === 'paid'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : selectedOrder.payment_status === 'deposit_paid'
+                    ? 'bg-sky-100 text-sky-800'
+                    : selectedOrder.payment_status === 'deposit_pending' || selectedOrder.payment_status === 'balance_pending'
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-slate-100 text-slate-700'
+                }`}>
+                  {selectedOrder.payment_status === 'paid'
+                    ? 'Lunas 100%'
+                    : selectedOrder.payment_status === 'deposit_paid'
+                    ? 'Deposit 50% Sah'
+                    : selectedOrder.payment_status === 'deposit_pending'
+                    ? 'Menunggu Bayaran Deposit'
+                    : selectedOrder.payment_status === 'balance_pending'
+                    ? 'Menunggu Bayaran Baki'
+                    : 'Belum Dibayar'}
+                </span>
+              </div>
+
+              <div className="space-y-2 text-xs">
                 <div className="flex justify-between text-slate-500">
                   <span>Harga Seunit Asal</span>
                   <span className="font-mono">{formatCurrency(selectedOrder.raw_unit_price)}</span>
@@ -513,69 +573,55 @@ function HistoryContent() {
                   <span>Harga Seunit Akhir</span>
                   <span className="font-mono">{formatCurrency(selectedOrder.final_unit_price)}</span>
                 </div>
-                <div className="flex justify-between font-semibold text-slate-900 pt-1.5 border-t border-slate-100">
-                  <span>Jumlah Keseluruhan</span>
-                  <span className="font-mono">{formatCurrency(selectedOrder.total_amount)}</span>
+                <div className="flex justify-between font-semibold text-slate-900 pt-2 border-t border-slate-100">
+                  <span>Jumlah Keseluruhan ({selectedOrder.total_quantity} helai)</span>
+                  <span className="font-mono text-sm font-bold text-slate-950">{formatCurrency(selectedOrder.total_amount)}</span>
                 </div>
 
-                {/* Deposit & Balance Breakdown */}
-                {selectedOrder.payment_type_selected === 'deposit_50' || selectedOrder.deposit_amount ? (
-                  <div className="pt-2 mt-2 border-t border-dashed border-slate-200 space-y-1.5">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600 font-medium">Deposit 50%:</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-mono font-semibold text-slate-800">
-                          {formatCurrency(selectedOrder.deposit_amount || (selectedOrder.total_amount * 0.5))}
-                        </span>
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                          selectedOrder.deposit_paid_at || selectedOrder.payment_status === 'deposit_paid' || selectedOrder.payment_status === 'paid'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {selectedOrder.deposit_paid_at || selectedOrder.payment_status === 'deposit_paid' || selectedOrder.payment_status === 'paid' ? 'Dibayar' : 'Menunggu'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600 font-medium">Baki 50% (Pelunasan):</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-mono font-semibold text-slate-800">
-                          {formatCurrency(selectedOrder.balance_amount || (selectedOrder.total_amount * 0.5))}
-                        </span>
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                          selectedOrder.balance_paid_at || selectedOrder.payment_status === 'paid'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {selectedOrder.balance_paid_at || selectedOrder.payment_status === 'paid' ? 'Lunas' : 'Belum Lunas'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
+                {/* Struktur Bayaran: Deposit 50% vs Bayaran Penuh */}
+                {(() => {
+                  const total = Number(selectedOrder.total_amount) || 0;
+                  const depAmt = Number(selectedOrder.deposit_amount) || Math.round(total * 0.5 * 100) / 100;
+                  const balAmt = Number(selectedOrder.balance_amount) !== undefined && selectedOrder.balance_amount !== null
+                    ? Number(selectedOrder.balance_amount)
+                    : Math.round((total - depAmt) * 100) / 100;
+                  const isDepPaid = selectedOrder.payment_status === 'deposit_paid' || selectedOrder.payment_status === 'paid' || Boolean(selectedOrder.deposit_paid_at);
+                  const isBalPaid = selectedOrder.payment_status === 'paid' || Boolean(selectedOrder.balance_paid_at);
 
-                <div className="flex justify-between items-center text-xs pt-2 border-t border-slate-100">
-                  <span className="text-slate-500">Status Pembayaran:</span>
-                  <span className={`font-bold px-2 py-0.5 rounded text-[10px] ${
-                    selectedOrder.payment_status === 'paid'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : selectedOrder.payment_status === 'deposit_paid'
-                      ? 'bg-sky-100 text-sky-800'
-                      : selectedOrder.payment_status === 'deposit_pending' || selectedOrder.payment_status === 'balance_pending'
-                      ? 'bg-amber-100 text-amber-800'
-                      : 'bg-slate-100 text-slate-700'
-                  }`}>
-                    {selectedOrder.payment_status === 'paid'
-                      ? 'Lunas 100%'
-                      : selectedOrder.payment_status === 'deposit_paid'
-                      ? 'Deposit 50% Diterima (Baki Belum Lunas)'
-                      : selectedOrder.payment_status === 'deposit_pending'
-                      ? 'Menunggu Bayaran Deposit'
-                      : selectedOrder.payment_status === 'balance_pending'
-                      ? 'Menunggu Bayaran Baki'
-                      : 'Belum Dibayar'}
-                  </span>
-                </div>
+                  return (
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 space-y-2.5 mt-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <div>
+                          <span className="font-medium text-slate-800 block">1. Bayaran Deposit 50%</span>
+                          <span className="text-[10px] text-slate-400">Pengesahan permulaan proses kilang</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="font-mono font-bold text-slate-900">{formatCurrency(depAmt)}</span>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                            isDepPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {isDepPaid ? 'Telah Diterima' : 'Menunggu'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-200/60">
+                        <div>
+                          <span className="font-medium text-slate-800 block">2. Baki Pelunasan 50%</span>
+                          <span className="text-[10px] text-slate-400">Dibayar apabila jersi siap sedia dipos</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="font-mono font-bold text-slate-900">{formatCurrency(balAmt)}</span>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                            isBalPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {isBalPaid ? 'Selesai Lunas' : 'Belum Lunas'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 
