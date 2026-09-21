@@ -34,28 +34,33 @@ const COURIER_ASSETS: Record<string, { src: string; alt: string }> = {
   }
 };
 
-export default function CourierLogo({ type, className = 'h-5 w-auto max-w-[80px]' }: CourierLogoProps) {
+export default function CourierLogo({ type, className = 'w-[72px] h-6' }: CourierLogoProps) {
   const normalizedType = type?.toLowerCase() || '';
   const asset = COURIER_ASSETS[normalizedType];
 
   if (asset) {
     return (
-      <img
-        src={asset.src}
-        alt={asset.alt}
-        className={`${className} object-contain select-none shrink-0`}
-        loading="lazy"
-      />
+      <div className={`${className} shrink-0 flex items-center justify-start select-none`}>
+        <img
+          src={asset.src}
+          alt={asset.alt}
+          className="max-h-full max-w-full object-contain object-left"
+          loading="lazy"
+        />
+      </div>
     );
   }
 
   // Pickup or Fallback
   return (
-    <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded text-xs select-none shrink-0 uppercase tracking-wider">
-      Ambil Sendiri
-    </span>
+    <div className={`${className} shrink-0 flex items-center justify-start select-none`}>
+      <span className="text-[9px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded text-xs select-none uppercase tracking-wider leading-none">
+        Ambil Sendiri
+      </span>
+    </div>
   );
 }
+
 
 
 

@@ -1299,8 +1299,8 @@ export default function CustomizePage() {
                     : 'bg-slate-50 hover:bg-slate-100/80 border-slate-200 cursor-pointer'
                 }`}
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <CourierLogo type={selectedCourier.logoType} className="h-5 w-auto max-w-[70px]" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <CourierLogo type={selectedCourier.logoType} className="w-[72px] h-6 shrink-0" />
                   <span className={`text-xs font-semibold truncate ${!isAddressFilled ? 'text-slate-400' : 'text-slate-800'}`}>
                     {!isAddressFilled ? 'Pilih Kurier (Perlu Alamat)' : selectedCourier.name}
                   </span>
@@ -1585,22 +1585,29 @@ export default function CustomizePage() {
                       setSelectedCourierId(courier.id);
                       setIsCourierPickerOpen(false);
                     }}
-                    className={`w-full py-2.5 px-2 flex items-center justify-between gap-3 text-left transition-colors rounded-xl ${
-                      isSelected ? 'bg-sky-50 text-sky-950 font-medium' : 'hover:bg-slate-50 text-slate-800'
+                    className={`w-full py-3 px-2 flex items-center justify-between gap-3.5 text-left transition-colors rounded-xl ${
+                      isSelected ? 'bg-sky-50/80 text-sky-950 font-medium' : 'hover:bg-slate-50 text-slate-800'
                     }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <CourierLogo type={courier.logoType} className="h-5 w-auto max-w-[75px]" />
-                      <div className="min-w-0">
-                        <div className="text-xs font-medium truncate">{courier.name}</div>
+                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                      {/* Fixed Width Logo Column - Guaranteed Vertical Text Alignment */}
+                      <CourierLogo type={courier.logoType} className="w-[72px] h-6 shrink-0" />
+
+                      {/* Text Column - Perfectly Aligned */}
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-semibold text-slate-900 truncate">{courier.name}</div>
                         <div className="text-[10px] text-slate-400">{courier.estimatedDays}</div>
                       </div>
                     </div>
+
+                    {/* Price & Selection Checkmark */}
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs font-semibold font-mono">
+                      <span className="text-xs font-semibold font-mono text-slate-900">
                         {!hasAddress ? '-' : courier.rate === 0 ? 'Percuma' : formatCurrency(courier.rate)}
                       </span>
-                      {isSelected && <Check className="w-4 h-4 text-sky-500" />}
+                      <div className="w-5 h-5 flex items-center justify-center">
+                        {isSelected && <Check className="w-4 h-4 text-sky-500 stroke-[2.5]" />}
+                      </div>
                     </div>
                   </button>
                 );
