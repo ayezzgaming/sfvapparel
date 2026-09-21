@@ -459,10 +459,18 @@ export default function CustomizePage() {
 
   // Kiraan Pilihan Kurier & Kos Penghantaran
   const shippingCalculation = useMemo(() => {
+    if (totalQuantity <= 0) {
+      return {
+        zone: 'peninsular' as const,
+        zoneLabel: 'Pilih kuantiti dahulu',
+        estimatedWeightKg: 0,
+        couriers: [],
+      };
+    }
     return calculateMalaysiaShippingRates({
       postcode: addrPostcode || customer?.postal_code || '40000',
       state: addrCity || customer?.city || 'Selangor',
-      totalQuantity: totalQuantity || 1,
+      totalQuantity: totalQuantity,
     });
   }, [addrPostcode, addrCity, customer, totalQuantity]);
 
@@ -476,7 +484,7 @@ export default function CustomizePage() {
         shortName: 'J&T Express',
         serviceType: 'standard' as const,
         estimatedDays: '1 - 2 Hari Bekerja',
-        rate: 8.5,
+        rate: 0,
         logoType: 'jnt' as const,
         description: 'Penghantaran standard',
         isAvailable: true,
@@ -484,9 +492,9 @@ export default function CustomizePage() {
     );
   }, [shippingCalculation, selectedCourierId]);
 
-  const isAddressFilled = Boolean(addrLine.trim() && addrPostcode.trim() && addrPostcode.trim().length >= 4);
-  const shippingFee = isAddressFilled ? (selectedCourier?.rate || 0) : 0;
-  const grandTotalAmount = quote.finalTotal + shippingFee;
+  const isAddressFilled = Boolean(totalQuantity > 0 && addrLine.trim() && addrPostcode.trim() && addrPostcode.trim().length >= 4);
+  const shippingFee = (totalQuantity > 0 && isAddressFilled) ? (selectedCourier?.rate || 0) : 0;
+  const grandTotalAmount = totalQuantity > 0 ? (quote.finalTotal + shippingFee) : 0;
   const formattedFullAddress = [addrLine, addrPostcode, addrCity].filter(Boolean).join(', ');
 
   // Buka Ringkasan Pesanan (Order Summary)
@@ -1189,6 +1197,13 @@ export default function CustomizePage() {
             5. Maklumat & Penghantaran
           </h3>
 
+          {totalQuantity === 0 && (
+            <div className="p-3 bg-amber-50/90 border border-amber-200/80 rounded-xl text-amber-800 text-xs flex items-center gap-2">
+              <Info className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>Sila pilih saiz & kuantiti di <strong>Bahagian 2</strong> untuk mengaktifkan pengisian alamat dan kurier.</span>
+            </div>
+          )}
+
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -1233,30 +1248,45 @@ export default function CustomizePage() {
                 <div>
                   <input
                     type="text"
+                    disabled={totalQuantity === 0}
                     value={addrPostcode}
                     onChange={(e) => handlePostcodeChange(e.target.value)}
                     placeholder="Poskod"
                     maxLength={5}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono"
+                    className={`w-full px-3 py-2 border rounded-xl text-xs font-mono transition-colors ${
+                      totalQuantity === 0
+                        ? 'bg-slate-100/70 border-slate-200/60 opacity-60 cursor-not-allowed text-slate-400'
+                        : 'bg-slate-50 border-slate-200 text-slate-900 focus:outline-none focus:border-sky-500'
+                    }`}
                   />
                 </div>
                 <div className="col-span-2">
                   <input
                     type="text"
+                    disabled={totalQuantity === 0}
                     value={addrCity}
                     onChange={(e) => setAddrCity(e.target.value)}
                     placeholder="Bandar & Negeri"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500"
+                    className={`w-full px-3 py-2 border rounded-xl text-xs transition-colors ${
+                      totalQuantity === 0
+                        ? 'bg-slate-100/70 border-slate-200/60 opacity-60 cursor-not-allowed text-slate-400'
+                        : 'bg-slate-50 border-slate-200 text-slate-900 focus:outline-none focus:border-sky-500'
+                    }`}
                   />
                 </div>
               </div>
 
               <textarea
                 rows={2}
+                disabled={totalQuantity === 0}
                 value={addrLine}
                 onChange={(e) => setAddrLine(e.target.value)}
                 placeholder="No rumah, nama jalan, taman perumahan"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 resize-none"
+                className={`w-full px-3 py-2 border rounded-xl text-xs resize-none transition-colors ${
+                  totalQuantity === 0
+                    ? 'bg-slate-100/70 border-slate-200/60 opacity-60 cursor-not-allowed text-slate-400'
+                    : 'bg-slate-50 border-slate-200 text-slate-900 focus:outline-none focus:border-sky-500'
+                }`}
               />
 
               <label className="flex items-center gap-2 cursor-pointer">
@@ -1270,11 +1300,13 @@ export default function CustomizePage() {
               </label>
             </div>
 
-            {/* Pilihan Kurier: Disabled sehingga alamat diisi */}
+            {/* Pilihan Kurier: Disabled sehingga kuantiti dan alamat diisi */}
             <div className="space-y-1.5 pt-1">
               <div className="flex items-center justify-between">
                 <label className="text-xs text-slate-600 block">Pilihan Kurier</label>
-                {!isAddressFilled ? (
+                {totalQuantity === 0 ? (
+                  <span className="text-[10px] text-slate-400">Pilih kuantiti jersi dahulu</span>
+                ) : !isAddressFilled ? (
                   <span className="text-[10px] text-slate-400">Isi alamat dahulu untuk pilih kurier</span>
                 ) : (
                   <span className="text-[10px] text-emerald-600 font-medium">{shippingCalculation.zoneLabel}</span>
@@ -1283,25 +1315,25 @@ export default function CustomizePage() {
 
               <button
                 type="button"
-                disabled={!isAddressFilled}
-                onClick={() => isAddressFilled && setIsCourierPickerOpen(true)}
+                disabled={totalQuantity === 0 || !isAddressFilled}
+                onClick={() => totalQuantity > 0 && isAddressFilled && setIsCourierPickerOpen(true)}
                 className={`w-full px-3 py-2.5 border rounded-xl text-left flex items-center justify-between gap-3 transition-colors ${
-                  !isAddressFilled
+                  totalQuantity === 0 || !isAddressFilled
                     ? 'bg-slate-100/70 border-slate-200/60 opacity-60 cursor-not-allowed'
                     : 'bg-slate-50 hover:bg-slate-100/80 border-slate-200 cursor-pointer'
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <CourierLogo type={selectedCourier.logoType} className="w-[72px] h-6 shrink-0" />
-                  <span className={`text-xs font-semibold truncate ${!isAddressFilled ? 'text-slate-400' : 'text-slate-800'}`}>
-                    {!isAddressFilled ? 'Pilih Kurier (Perlu Alamat)' : selectedCourier.name}
+                  <span className={`text-xs font-semibold truncate ${totalQuantity === 0 || !isAddressFilled ? 'text-slate-400' : 'text-slate-800'}`}>
+                    {totalQuantity === 0 ? 'Pilih Kuantiti Dahulu' : !isAddressFilled ? 'Pilih Kurier (Perlu Alamat)' : selectedCourier.name}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <span className="text-xs font-semibold font-mono text-slate-900">
-                    {!isAddressFilled ? '-' : (shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee))}
+                    {totalQuantity === 0 || !isAddressFilled ? '-' : (shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee))}
                   </span>
-                  <ChevronDown className={`w-4 h-4 ${!isAddressFilled ? 'text-slate-300' : 'text-slate-400'}`} />
+                  <ChevronDown className={`w-4 h-4 ${totalQuantity === 0 || !isAddressFilled ? 'text-slate-300' : 'text-slate-400'}`} />
                 </div>
               </button>
             </div>
@@ -1326,12 +1358,16 @@ export default function CustomizePage() {
           </div>
           <div className="flex justify-between text-slate-600">
             <span>Harga Jersi ({totalQuantity} helai)</span>
-            <span className="font-mono font-medium text-slate-900">{formatCurrency(quote.finalTotal)}</span>
+            <span className="font-mono font-medium text-slate-900">
+              {totalQuantity > 0 ? formatCurrency(quote.finalTotal) : 'RM 0.00'}
+            </span>
           </div>
           <div className="flex justify-between text-slate-600">
-            <span>Kos Pos {isAddressFilled ? `(${selectedCourier.shortName})` : ''}</span>
+            <span>Kos Pos {totalQuantity > 0 && isAddressFilled ? `(${selectedCourier.shortName})` : ''}</span>
             <span className="font-mono font-medium text-slate-900">
-              {!isAddressFilled ? (
+              {totalQuantity === 0 ? (
+                <span className="text-slate-400 font-sans text-[11px]">Pilih kuantiti dahulu</span>
+              ) : !isAddressFilled ? (
                 <span className="text-slate-400 font-sans text-[11px]">Isi alamat dahulu</span>
               ) : shippingFee === 0 ? (
                 'Percuma'
@@ -1343,7 +1379,7 @@ export default function CustomizePage() {
           <div className="pt-2 border-t border-slate-100 flex justify-between font-bold text-slate-900 text-sm">
             <span>Jumlah Keseluruhan</span>
             <span className="font-mono text-sky-600">
-              {formatCurrency(grandTotalAmount)}
+              {totalQuantity > 0 ? formatCurrency(grandTotalAmount) : 'RM 0.00'}
             </span>
           </div>
         </div>
@@ -1353,10 +1389,12 @@ export default function CustomizePage() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="text-[10px] text-slate-400">
-                {totalQuantity} helai {isAddressFilled && shippingFee > 0 ? `+ pos RM${shippingFee.toFixed(2)}` : ''}
+                {totalQuantity === 0
+                  ? '0 helai dipilih'
+                  : `${totalQuantity} helai ${isAddressFilled && shippingFee > 0 ? `+ pos RM${shippingFee.toFixed(2)}` : ''}`}
               </div>
               <div className="text-sm font-bold text-slate-900 font-mono">
-                {formatCurrency(grandTotalAmount)}
+                {totalQuantity > 0 ? formatCurrency(grandTotalAmount) : 'RM 0.00'}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -1376,7 +1414,12 @@ export default function CustomizePage() {
               </a>
               <button
                 type="submit"
-                className="h-9 px-4 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+                disabled={totalQuantity === 0}
+                className={`h-9 px-4 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all ${
+                  totalQuantity === 0
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-sky-500 hover:bg-sky-600 text-white cursor-pointer'
+                }`}
               >
                 <span>Semak & Tempah</span>
                 <ArrowRight className="w-3.5 h-3.5" />

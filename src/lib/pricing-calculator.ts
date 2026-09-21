@@ -51,22 +51,23 @@ export function calculateSublimationPrice({
   quantity,
   tiers,
 }: SublimationQuoteParams): PriceQuote {
-  const safeQty = Math.max(1, quantity || 1);
+  const actualQty = Math.max(0, quantity || 0);
+  const tierLookupQty = Math.max(1, actualQty);
   const rawUnitPrice = (fabric?.sublimation_base_price || 0) + (cut?.cut_add_on_price || 0);
-  const tier = getTierDiscount(safeQty, tiers);
+  const tier = getTierDiscount(tierLookupQty, tiers);
   const discountPercent = tier.discount_percentage || 0;
   
   const unitDiscountAmount = Math.round(rawUnitPrice * (discountPercent / 100));
   const finalUnitPrice = rawUnitPrice - unitDiscountAmount;
-  const subtotal = rawUnitPrice * safeQty;
-  const finalTotal = finalUnitPrice * safeQty;
+  const subtotal = rawUnitPrice * actualQty;
+  const finalTotal = finalUnitPrice * actualQty;
   const totalSavings = subtotal - finalTotal;
 
   return {
     rawUnitPrice,
-    tierLabel: tier.tier_label,
-    discountPercentage: discountPercent,
-    unitDiscountAmount,
+    tierLabel: actualQty > 0 ? tier.tier_label : 'Standard',
+    discountPercentage: actualQty > 0 ? discountPercent : 0,
+    unitDiscountAmount: actualQty > 0 ? unitDiscountAmount : 0,
     finalUnitPrice,
     subtotal,
     totalSavings,
@@ -81,25 +82,26 @@ export function calculateDtfPrice({
   quantity,
   tiers,
 }: DtfQuoteParams): PriceQuote {
-  const safeQty = Math.max(1, quantity || 1);
+  const actualQty = Math.max(0, quantity || 0);
+  const tierLookupQty = Math.max(1, actualQty);
   const rawUnitPrice = optionType === 'with_garment' 
     ? (dimension?.garment_included_base_price || dimension?.base_price || 0)
     : (dimension?.base_price || 0);
 
-  const tier = getTierDiscount(safeQty, tiers);
+  const tier = getTierDiscount(tierLookupQty, tiers);
   const discountPercent = tier.discount_percentage || 0;
   
   const unitDiscountAmount = Math.round(rawUnitPrice * (discountPercent / 100));
   const finalUnitPrice = rawUnitPrice - unitDiscountAmount;
-  const subtotal = rawUnitPrice * safeQty;
-  const finalTotal = finalUnitPrice * safeQty;
+  const subtotal = rawUnitPrice * actualQty;
+  const finalTotal = finalUnitPrice * actualQty;
   const totalSavings = subtotal - finalTotal;
 
   return {
     rawUnitPrice,
-    tierLabel: tier.tier_label,
-    discountPercentage: discountPercent,
-    unitDiscountAmount,
+    tierLabel: actualQty > 0 ? tier.tier_label : 'Standard',
+    discountPercentage: actualQty > 0 ? discountPercent : 0,
+    unitDiscountAmount: actualQty > 0 ? unitDiscountAmount : 0,
     finalUnitPrice,
     subtotal,
     totalSavings,

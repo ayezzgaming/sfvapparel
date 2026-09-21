@@ -58,8 +58,7 @@ export function calculateMalaysiaShippingRates(params: ShippingCalculationParams
   couriers: CourierOption[];
 } {
   const { postcode, state, totalQuantity, itemWeightKg = 0.20 } = params;
-  const qty = Math.max(1, totalQuantity || 1);
-  const weightKg = Math.max(0.5, Math.ceil(qty * itemWeightKg * 10) / 10);
+  const qty = Math.max(0, totalQuantity || 0);
   const zone = getMalaysiaZone(postcode, state);
 
   const zoneLabel =
@@ -68,6 +67,17 @@ export function calculateMalaysiaShippingRates(params: ShippingCalculationParams
       : zone === 'peninsular'
       ? 'Semenanjung Malaysia (Zon 2)'
       : 'Sabah & Sarawak (Zon 3 - Pos Udara)';
+
+  if (qty <= 0) {
+    return {
+      zone,
+      zoneLabel,
+      estimatedWeightKg: 0,
+      couriers: [],
+    };
+  }
+
+  const weightKg = Math.max(0.5, Math.ceil(qty * itemWeightKg * 10) / 10);
 
   // Rate formulas based on market aggregator standard pricing in Malaysia (EasyParcel / Delyva standard)
   let jntRate = 0;
