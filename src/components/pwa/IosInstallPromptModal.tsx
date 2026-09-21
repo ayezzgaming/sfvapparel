@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Share, PlusSquare, CheckSquare, X } from 'lucide-react';
+import { Share, PlusSquare, ArrowDown, X } from 'lucide-react';
 
-const STORAGE_KEY = 'sfv_ios_pwa_prompt_v6';
+const STORAGE_KEY = 'sfv_ios_pwa_prompt_v7';
 
 export default function IosInstallPromptModal() {
   const [isVisible, setIsVisible] = useState(false);
@@ -74,10 +74,10 @@ export default function IosInstallPromptModal() {
         localStorage.setItem(STORAGE_KEY, 'seen');
       } catch {}
 
-      // 6. AUTO-CLOSE TIMER: Auto-close smoothly after 7.5s if user doesn't close manually
+      // 6. AUTO-CLOSE TIMER: Auto-close smoothly after 8s if user doesn't close manually
       autoCloseTimerRef.current = setTimeout(() => {
         handleDismiss();
-      }, 7500);
+      }, 8000);
     }, 2000);
 
     return () => {
@@ -91,86 +91,59 @@ export default function IosInstallPromptModal() {
   return (
     <aside 
       aria-label="Panduan Pasang PWA iOS"
-      className={`fixed bottom-[5.5rem] right-3 sm:right-6 w-[310px] sm:w-[330px] z-50 pointer-events-auto select-none font-ios transition-all duration-300 ${
+      className={`fixed bottom-[calc(env(safe-area-inset-bottom,0px)+3.75rem)] right-3 sm:right-6 w-[275px] sm:w-[290px] z-50 pointer-events-auto select-none font-ios transition-all duration-300 ${
         isClosing 
           ? 'animate-out fade-out slide-out-to-bottom-4 duration-300 opacity-0 translate-y-4' 
           : 'animate-in fade-in slide-in-from-bottom-4 duration-300 opacity-100 translate-y-0'
       }`}
     >
-      {/* Apple Light Frosted Glass Card (Clean, Spacious & Elegant) */}
-      <div className="relative bg-white/95 backdrop-blur-2xl text-slate-900 rounded-3xl p-4 shadow-[0_16px_40px_rgba(0,0,0,0.18)] border border-slate-200/90 flex flex-col space-y-3">
+      {/* Apple Frosted Glass Card (Ultra Concise & Minimalist) */}
+      <div className="relative bg-white/95 backdrop-blur-2xl text-slate-900 rounded-2xl p-3.5 shadow-[0_12px_36px_rgba(0,0,0,0.14)] border border-slate-200/90 flex flex-col space-y-2.5">
         {/* Minimalist Close Button */}
         <button
           type="button"
           onClick={handleDismiss}
           aria-label="Tutup"
-          className="absolute top-3 right-3 w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all cursor-pointer z-10"
+          className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-90 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-all cursor-pointer z-10"
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="w-3 h-3" />
         </button>
 
         {/* Header Title */}
         <div className="pr-6">
-          <h3 className="text-xs font-bold text-slate-900 tracking-tight">
-            Pasang Aplikasi SFV Apparel
+          <h3 className="text-xs font-semibold text-slate-900 tracking-tight">
+            Pasang Aplikasi SFV
           </h3>
-          <p className="text-[10.5px] text-slate-500 mt-0.5 font-medium">
-            3 langkah pantas untuk akses terus dari Skrin Utama
-          </p>
         </div>
 
-        {/* 3 Step Vertical Rows (Spacious & No Text Squeezing) */}
-        <div className="flex flex-col gap-2 w-full pt-1">
+        {/* Clean 2-Step Rows (Zero Pollution) */}
+        <div className="flex flex-col gap-1.5 w-full">
           {/* Step 1 */}
-          <div className="flex items-center gap-2.5 p-2 px-2.5 rounded-2xl bg-slate-50/80 border border-slate-100 text-left">
-            <div className="w-7 h-7 rounded-xl bg-slate-200/80 text-slate-700 flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-2.5 p-2 px-2.5 rounded-xl bg-slate-50/90 border border-slate-100/90 text-left">
+            <div className="w-6 h-6 rounded-lg bg-slate-200/70 text-slate-700 flex items-center justify-center shrink-0">
               <Share className="w-3.5 h-3.5 stroke-[2]" />
             </div>
-            <div className="min-w-0 flex-1">
-              <span className="text-[11px] font-bold text-slate-900 block leading-tight">
-                1. Ketuk ikon Kongsi / •••
-              </span>
-              <span className="text-[9.5px] text-slate-500 font-medium block leading-snug mt-0.5">
-                Di bar bawah kanan pelayar Safari/Chrome
-              </span>
-            </div>
-          </div>
-
-          {/* Step 2 */}
-          <div className="flex items-center gap-2.5 p-2 px-2.5 rounded-2xl bg-slate-50/80 border border-slate-100 text-left">
-            <div className="w-7 h-7 rounded-xl bg-slate-200/80 text-slate-700 flex items-center justify-center shrink-0">
-              <PlusSquare className="w-3.5 h-3.5 stroke-[2]" />
-            </div>
-            <span className="min-w-0 flex-1">
-              <span className="text-[11px] font-bold text-slate-900 block leading-tight">
-                2. Pilih &apos;Tambah ke Skrin Utama&apos;
-              </span>
-              <span className="text-[9.5px] text-slate-500 font-medium block leading-snug mt-0.5">
-                Skrol menu ke bawah lalu ketuk pilihan ini
-              </span>
+            <span className="text-[11px] font-medium text-slate-800 leading-snug">
+              1. Ketuk ikon <strong className="font-semibold text-slate-900">Kongsi</strong>
             </span>
           </div>
 
-          {/* Step 3 */}
-          <div className="flex items-center gap-2.5 p-2 px-2.5 rounded-2xl bg-slate-50/80 border border-slate-100 text-left">
-            <div className="w-7 h-7 rounded-xl bg-slate-200/80 text-slate-700 flex items-center justify-center shrink-0">
-              <CheckSquare className="w-3.5 h-3.5 stroke-[2]" />
+          {/* Step 2 */}
+          <div className="flex items-center gap-2.5 p-2 px-2.5 rounded-xl bg-slate-50/90 border border-slate-100/90 text-left">
+            <div className="w-6 h-6 rounded-lg bg-slate-200/70 text-slate-700 flex items-center justify-center shrink-0">
+              <PlusSquare className="w-3.5 h-3.5 stroke-[2]" />
             </div>
-            <div className="min-w-0 flex-1">
-              <span className="text-[11px] font-bold text-slate-900 block leading-tight">
-                3. Ketuk &apos;Tambah&apos;
-              </span>
-              <span className="text-[9.5px] text-slate-500 font-medium block leading-snug mt-0.5">
-                Di sudut kanan atas skrin iPhone anda
-              </span>
-            </div>
+            <span className="text-[11px] font-medium text-slate-800 leading-snug">
+              2. Pilih <strong className="font-semibold text-slate-900">Tambah ke Skrin Utama</strong>
+            </span>
           </div>
         </div>
 
-        {/* Animated Bouncing Pointer Arrow Stem (Extended down past tab bar straight to Safari menu button) */}
-        <div className="absolute -bottom-11 right-6 flex flex-col items-center animate-bounce z-20 pointer-events-none">
-          <div className="w-1 h-7 bg-slate-800 rounded-full shadow-xs" />
-          <div className="w-3.5 h-3.5 bg-slate-800 rotate-45 -mt-2.5 rounded-xs shadow-md" />
+        {/* Clean Animated Pointer Arrow Icon (Lucide Icon instead of raw shape) */}
+        <div className="absolute -bottom-8 right-6 flex items-center justify-center animate-bounce z-20 pointer-events-none">
+          <div className="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md">
+            <ArrowDown className="w-4 h-4 stroke-[2.5]" />
+          </div>
         </div>
       </div>
     </aside>
