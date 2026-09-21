@@ -608,7 +608,7 @@ export default function HomePage() {
                     <img
                       src={item.image_url}
                       alt={item.title}
-                      loading="lazy"
+                      loading="eager"
                       decoding="async"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
