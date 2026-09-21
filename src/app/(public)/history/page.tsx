@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
@@ -45,7 +45,7 @@ const TIMELINE_STEPS = [
   { step: 4, title: 'Penghantaran Kurier', desc: 'Bungkusan sedia dihantar kepada anda' },
 ];
 
-export default function HistoryPage() {
+function HistoryContent() {
   const { orders, deleteOrder, companySettings, refreshAllDb } = useAppStore();
   const { isAuthenticated, customer, isLoading } = useAuth();
   const searchParams = useSearchParams();
@@ -594,5 +594,19 @@ export default function HistoryPage() {
       )}
 
     </div>
+  );
+}
+
+export default function HistoryPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full min-h-screen bg-[#F2F2F7] flex items-center justify-center p-8">
+          <div className="w-6 h-6 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <HistoryContent />
+    </Suspense>
   );
 }
