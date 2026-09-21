@@ -12,6 +12,11 @@ import {
 } from '@/lib/pricing-calculator';
 import { SizingMatrix } from '@/types/database';
 import SizeChartModal from '@/components/public/SizeChartModal';
+import CourierLogo from '@/components/ui/CourierLogo';
+import { 
+  calculateMalaysiaShippingRates, 
+  CourierOption 
+} from '@/lib/shipping-calculator';
 import { 
   ChevronLeft, 
   Ruler, 
@@ -27,7 +32,9 @@ import {
   CreditCard, 
   Loader2,
   Check,
-  Tag
+  Tag,
+  Truck,
+  MapPin
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { 
@@ -35,8 +42,6 @@ import {
   buildCustomOrderWhatsAppUrl 
 } from '@/lib/whatsapp/dynamic-link';
 import { useAuth } from '@/hooks/useAuth';
-
-const DEFAULT_STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
 
 const SIZE_GROUPS = {
   dewasa: {
@@ -144,11 +149,9 @@ export default function CustomizePage() {
   );
   const [dtfOptionType, setDtfOptionType] = useState<'film_only' | 'with_garment'>('with_garment');
 
-  // Dynamic Sizing Management (Semua mula dari 0 / kosong agar tidak keliru)
-  const [activeSizeKeys, setActiveSizeKeys] = useState<string[]>(DEFAULT_STANDARD_SIZES);
-  const [sizing, setSizing] = useState<SizingMatrix>(
-    Object.fromEntries(DEFAULT_STANDARD_SIZES.map((s) => [s, 0]))
-  );
+  // Dynamic Sizing Management: Mula kosong / tanpa saiz pra-pilihan agar kemas
+  const [activeSizeKeys, setActiveSizeKeys] = useState<string[]>([]);
+  const [sizing, setSizing] = useState<SizingMatrix>({});
 
   // Modal Pilihan Saiz Berkelompok (Dewasa, Kids, Muslimah)
   const [isAddSizeModalOpen, setIsAddSizeModalOpen] = useState(false);
@@ -165,13 +168,19 @@ export default function CustomizePage() {
   const [rosterFileName, setRosterFileName] = useState<string>('');
   const [manualRoster, setManualRoster] = useState<Record<string, PlayerEntry[]>>({});
 
-  // Maklumat Pelanggan & Tempahan (Autofill dari profil)
+  // Maklumat Pelanggan & Alamat (Persis seperti profil dengan API Poskod Malaysia)
   const [teamName, setTeamName] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [shippingAddress, setShippingAddress] = useState('');
+  const [addrLine, setAddrLine] = useState('');
+  const [addrPostcode, setAddrPostcode] = useState('');
+  const [addrCity, setAddrCity] = useState('');
+  const [isLookingUpPostcode, setIsLookingUpPostcode] = useState(false);
   const [saveAddressToProfile, setSaveAddressToProfile] = useState<boolean>(true);
   const [additionalNotes, setAdditionalNotes] = useState('');
+
+  // Pilihan Kurier & Kos Penghantaran
+  const [selectedCourierId, setSelectedCourierId] = useState<string>('jnt');
 
   // Autofill customer details if authenticated
   useEffect(() => {
@@ -179,12 +188,32 @@ export default function CustomizePage() {
       if (customer.full_name) setCustomerName(customer.full_name);
       if (customer.whatsapp) setCustomerPhone(customer.whatsapp);
       if (customer.company_or_team) setTeamName(customer.company_or_team);
-      if (customer.address) {
-        const fullAddr = [customer.address, customer.postal_code, customer.city].filter(Boolean).join(', ');
-        setShippingAddress(fullAddr);
-      }
+      if (customer.address) setAddrLine(customer.address);
+      if (customer.postal_code) setAddrPostcode(customer.postal_code);
+      if (customer.city) setAddrCity(customer.city);
     }
   }, [customer]);
+
+  // Malaysia Postcode auto-lookup (Sama persis seperti di halaman profil)
+  const handlePostcodeChange = async (val: string) => {
+    const cleaned = val.replace(/\D/g, '').slice(0, 5);
+    setAddrPostcode(cleaned);
+
+    if (cleaned.length === 5) {
+      setIsLookingUpPostcode(true);
+      try {
+        const res = await fetch(`/api/malaysia/postcode?code=${cleaned}`);
+        const data = await res.json();
+        if (data.success && data.city && data.state) {
+          setAddrCity(`${data.city}, ${data.state}`);
+        }
+      } catch {
+        // Kekalkan nilai sedia ada jika ralat
+      } finally {
+        setIsLookingUpPostcode(false);
+      }
+    }
+  };
 
   // Modal Ringkasan Tempahan (Order Summary) & Status
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
@@ -436,6 +465,26 @@ export default function CustomizePage() {
     return rows.length > 0 ? rows.join('\n') : 'Tiada senarai nama';
   }, [activeSizeKeys, sizing, manualRoster]);
 
+  // Kiraan Pilihan Kurier & Kos Penghantaran
+  const shippingCalculation = useMemo(() => {
+    return calculateMalaysiaShippingRates({
+      postcode: addrPostcode || customer?.postal_code || '40000',
+      state: addrCity || customer?.city || 'Selangor',
+      totalQuantity: totalQuantity || 1,
+    });
+  }, [addrPostcode, addrCity, customer, totalQuantity]);
+
+  const selectedCourier = useMemo(() => {
+    return (
+      shippingCalculation.couriers.find((c) => c.id === selectedCourierId) ||
+      shippingCalculation.couriers[0]
+    );
+  }, [shippingCalculation, selectedCourierId]);
+
+  const shippingFee = selectedCourier?.rate || 0;
+  const grandTotalAmount = quote.finalTotal + shippingFee;
+  const formattedFullAddress = [addrLine, addrPostcode, addrCity].filter(Boolean).join(', ');
+
   // Buka Ringkasan Pesanan (Order Summary)
   const handleOpenProcessSummary = (e: React.FormEvent) => {
     e.preventDefault();
@@ -465,8 +514,12 @@ export default function CustomizePage() {
     setPaymentError(null);
 
     // Kemaskini alamat ke profil jika ditanda
-    if (saveAddressToProfile && shippingAddress.trim()) {
-      updateAddress({ address: shippingAddress.trim() }).catch(() => {});
+    if (saveAddressToProfile && (addrLine.trim() || addrPostcode.trim() || addrCity.trim())) {
+      updateAddress({
+        address: addrLine.trim(),
+        postal_code: addrPostcode.trim() || undefined,
+        city: addrCity.trim() || undefined,
+      }).catch(() => {});
     }
 
     const activeSizingBreakdown = Object.fromEntries(
@@ -484,6 +537,7 @@ export default function CustomizePage() {
     const fullNotes = [
       teamName ? `Pasukan: ${teamName}` : '',
       `[Kaedah Bayaran]: ${paymentMode === 'chip_online' ? 'CHIP Gateway (FPX/Kad/e-Wallet)' : 'Manual / WhatsApp'}`,
+      `[Pilihan Kurier]: ${selectedCourier.name} (${shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)})`,
       `[Logo & Penaja]:\n${logoInfo}`,
       `[Senarai Nama & Nombor]:\n${rosterInfo}`,
       additionalNotes ? `Nota Khas: ${additionalNotes}` : '',
@@ -511,13 +565,13 @@ export default function CustomizePage() {
       raw_unit_price: quote.rawUnitPrice,
       discount_percentage: quote.discountPercentage,
       final_unit_price: quote.finalUnitPrice,
-      total_amount: quote.finalTotal,
+      total_amount: grandTotalAmount,
       payment_status: paymentMode === 'chip_online' ? 'pending' : 'unpaid',
       payment_method: paymentMode === 'chip_online' ? 'chip_gateway' : 'whatsapp_manual',
       status: 'pending_proof',
       production_notes: fullNotes,
-      shipping_address: shippingAddress.trim() || 'Pusat Edaran SFV Apparel / Penghantaran Terus',
-      shipping_courier: 'Kurier Rasmi Kilang SFV',
+      shipping_address: formattedFullAddress || 'Ambil Sendiri di Kilang SFV Apparel',
+      shipping_courier: `${selectedCourier.name} (${shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)})`,
     });
 
     // 2A. Jika memilih bayaran terus secara online melalui CHIP Gateway
@@ -531,8 +585,8 @@ export default function CustomizePage() {
             customerName: customerName.trim(),
             customerEmail: customer?.email || `${customerName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
             customerPhone: customerPhone.trim(),
-            totalAmount: quote.finalTotal,
-            itemsDescription: `${design?.title || 'Jersi Kustom'} (${totalQuantity} helai)`,
+            totalAmount: grandTotalAmount,
+            itemsDescription: `${design?.title || 'Jersi Kustom'} (${totalQuantity} helai) + Kurier ${selectedCourier.shortName}`,
           }),
         });
 
@@ -573,11 +627,13 @@ export default function CustomizePage() {
       rawUnitPrice: quote.rawUnitPrice,
       discountPercentage: quote.discountPercentage,
       finalUnitPrice: quote.finalUnitPrice,
-      totalAmount: quote.finalTotal,
+      totalAmount: grandTotalAmount,
       logoStatus: logoList.length > 0 ? `${logoList.length} Fail Logo/Penaja Dimuat Naik` : 'Tiada fail logo (Akan dihantar di WhatsApp)',
       rosterStatus: rosterMode === 'upload' && rosterFileName ? `Fail ${rosterFileName}` : formattedManualRosterString,
       notes: additionalNotes.trim() || undefined,
-      shippingAddress: shippingAddress.trim() || undefined,
+      shippingAddress: formattedFullAddress || undefined,
+      shippingCourier: selectedCourier.name,
+      shippingFee: shippingFee,
     });
 
     setTimeout(() => {
@@ -590,7 +646,7 @@ export default function CustomizePage() {
 
       setOrderSuccessModal({
         orderNumber: newOrder.order_number,
-        totalAmount: quote.finalTotal,
+        totalAmount: grandTotalAmount,
       });
     }, 400);
   };
@@ -848,14 +904,14 @@ export default function CustomizePage() {
           )}
         </div>
 
-        {/* 4. Pemilihan Saiz & Kuantiti (Mula dengan 0 / Kosong & Modal Saiz Berkelompok) */}
+        {/* 4. Pemilihan Saiz & Kuantiti (Mula dengan Kosong & Butang Tambah Icon Sahaja) */}
         <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3.5">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                 2. Kuantiti Mengikut Saiz
               </h3>
-              <p className="text-[10px] text-slate-400">Masukkan jumlah helai bagi saiz yang diperlukan</p>
+              <p className="text-[10px] text-slate-400">Pilih saiz dan tentukan bilangan helai</p>
             </div>
             
             {/* Butang Toggle Carta Saiz (Size Chart) */}
@@ -869,21 +925,38 @@ export default function CustomizePage() {
             </button>
           </div>
 
-          {/* Grid Matriks Saiz Dinamik */}
-          <div className="grid grid-cols-4 gap-2">
-            {activeSizeKeys.map((sizeKey) => {
-              const qty = sizing[sizeKey] || 0;
-              return (
-                <div
-                  key={sizeKey}
-                  className="bg-slate-50 p-2 rounded-2xl border border-slate-200/70 text-center flex flex-col justify-between relative group"
-                >
-                  <div className="flex items-center justify-between px-0.5">
-                    <span className="text-[11px] font-bold text-slate-800 truncate" title={sizeKey}>
-                      {sizeKey}
-                    </span>
-                    {/* Buang saiz jika lebih daripada 1 saiz dalam senarai */}
-                    {activeSizeKeys.length > 1 && (
+          {activeSizeKeys.length === 0 ? (
+            /* Keadaan Kosong (Zero selected): Hanya butang + bersih */
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+              <div className="space-y-0.5">
+                <span className="text-xs font-bold text-slate-800 block">Belum Ada Saiz Dipilih</span>
+                <span className="text-[10.5px] text-slate-400">Tekan butang + untuk memilih saiz (Dewasa / Kids / Muslimah)</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAddSizeModalOpen(true)}
+                className="w-10 h-10 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white flex items-center justify-center shadow-md shadow-blue-500/20 active:scale-90 transition-all cursor-pointer shrink-0"
+                title="Tambah Pilihan Saiz"
+                aria-label="Tambah Pilihan Saiz"
+              >
+                <Plus className="w-5 h-5 stroke-[2.5]" />
+              </button>
+            </div>
+          ) : (
+            /* Grid Matriks Saiz Dinamik yang telah dipilih */
+            <div className="grid grid-cols-4 gap-2">
+              {activeSizeKeys.map((sizeKey) => {
+                const qty = sizing[sizeKey] || 0;
+                return (
+                  <div
+                    key={sizeKey}
+                    className="bg-slate-50 p-2 rounded-2xl border border-slate-200/70 text-center flex flex-col justify-between relative group"
+                  >
+                    <div className="flex items-center justify-between px-0.5">
+                      <span className="text-[11px] font-bold text-slate-800 truncate" title={sizeKey}>
+                        {sizeKey}
+                      </span>
                       <button
                         type="button"
                         onClick={() => handleRemoveSizeKey(sizeKey)}
@@ -892,47 +965,48 @@ export default function CustomizePage() {
                       >
                         <X className="w-3 h-3" />
                       </button>
-                    )}
-                  </div>
+                    </div>
 
-                  <div className="flex items-center justify-between mt-1.5 bg-white rounded-xl border border-slate-200 px-1 py-0.5 shadow-2xs">
-                    <button
-                      type="button"
-                      onClick={() => handleSizeChange(sizeKey, qty - 1)}
-                      className="w-5 h-5 rounded text-slate-400 hover:text-slate-800 flex items-center justify-center font-bold text-xs active:scale-90"
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      min="0"
-                      value={qty === 0 ? '' : qty}
-                      onChange={(e) => handleSizeChange(sizeKey, parseInt(e.target.value) || 0)}
-                      placeholder="0"
-                      className="w-6 text-center text-xs font-mono font-bold text-slate-900 bg-transparent focus:outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleSizeChange(sizeKey, qty + 1)}
-                      className="w-5 h-5 rounded text-[#00BDFF] flex items-center justify-center font-bold text-xs active:scale-90"
-                    >
-                      +
-                    </button>
+                    <div className="flex items-center justify-between mt-1.5 bg-white rounded-xl border border-slate-200 px-1 py-0.5 shadow-2xs">
+                      <button
+                        type="button"
+                        onClick={() => handleSizeChange(sizeKey, qty - 1)}
+                        className="w-5 h-5 rounded text-slate-400 hover:text-slate-800 flex items-center justify-center font-bold text-xs active:scale-90"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min="0"
+                        value={qty === 0 ? '' : qty}
+                        onChange={(e) => handleSizeChange(sizeKey, parseInt(e.target.value) || 0)}
+                        placeholder="0"
+                        className="w-6 text-center text-xs font-mono font-bold text-slate-900 bg-transparent focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleSizeChange(sizeKey, qty + 1)}
+                        className="w-5 h-5 rounded text-[#00BDFF] flex items-center justify-center font-bold text-xs active:scale-90"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
 
-            {/* Butang Tambah Saiz */}
-            <button
-              type="button"
-              onClick={() => setIsAddSizeModalOpen(true)}
-              className="p-2 rounded-2xl border-2 border-dashed border-slate-200 hover:border-[#00BDFF] bg-slate-50/50 flex flex-col items-center justify-center space-y-1 text-slate-500 hover:text-[#00BDFF] transition-all cursor-pointer min-h-[64px]"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="text-[10px] font-bold">+ Pilihan Saiz</span>
-            </button>
-          </div>
+              {/* Butang Tambah Saiz Ikon Sahaja (Tanpa Teks) */}
+              <button
+                type="button"
+                onClick={() => setIsAddSizeModalOpen(true)}
+                className="p-2 rounded-2xl border-2 border-dashed border-slate-200 hover:border-[#00BDFF] bg-slate-50/50 flex items-center justify-center text-slate-400 hover:text-[#0052FF] active:scale-90 transition-all cursor-pointer min-h-[64px]"
+                title="Tambah Saiz Lain"
+                aria-label="Tambah Saiz Lain"
+              >
+                <Plus className="w-6 h-6 stroke-[2.5]" />
+              </button>
+            </div>
+          )}
 
           <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
             <span className="text-slate-500 font-medium">Jumlah Keseluruhan:</span>
@@ -1218,11 +1292,14 @@ export default function CustomizePage() {
           )}
         </div>
 
-        {/* 7. Maklumat Pelanggan & Penghantaran (Autofill Profil & Simpan Alamat) */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-3.5">
-          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-            5. Maklumat Pelanggan & Penghantaran
-          </h3>
+        {/* 7. Maklumat Pelanggan & Alamat Penghantaran Persis Profil */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              5. Maklumat Pelanggan & Penghantaran
+            </h3>
+            <span className="text-[10.5px] text-slate-400 font-medium">Pengeposan</span>
+          </div>
 
           <div className="space-y-3">
             <div>
@@ -1238,71 +1315,185 @@ export default function CustomizePage() {
               />
             </div>
 
-            <div>
-              <label className="text-[11px] font-semibold text-slate-700 block mb-1">
-                Nama Wakil Pelanggan <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="cth: Ahmad Hafiz"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-semibold text-slate-700 block mb-1">
+                  Nama Wakil Pelanggan <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="cth: Ahmad Hafiz"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-semibold text-slate-700 block mb-1">
+                  Nombor WhatsApp <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="cth: 014-8599138"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="text-[11px] font-semibold text-slate-700 block mb-1">
-                Nombor Telefon / WhatsApp <span className="text-rose-500">*</span>
+            {/* Inset Alamat Penghantaran Malaysia dengan Poskod Auto-lookup */}
+            <div className="pt-2">
+              <label className="text-[11px] font-bold text-slate-900 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-[#0052FF]" />
+                <span>Alamat Penghantaran Malaysia</span>
               </label>
-              <input
-                type="tel"
-                required
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                placeholder="cth: 014-8599138"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]"
-              />
-            </div>
 
-            <div>
-              <label className="text-[11px] font-semibold text-slate-700 block mb-1">
-                Alamat Penghantaran (Opsional)
-              </label>
-              <textarea
-                value={shippingAddress}
-                onChange={(e) => setShippingAddress(e.target.value)}
-                placeholder="Alamat lengkap poskod & negeri..."
-                rows={2}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]"
-              />
-              
+              <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden divide-y divide-slate-100">
+                
+                {/* Poskod (5 Digit) */}
+                <div className="px-3.5 py-2.5">
+                  <div className="flex justify-between items-center mb-0.5">
+                    <label className="block text-[10.5px] font-semibold text-slate-500">
+                      Poskod Malaysia (5 Digit)
+                    </label>
+                    {isLookingUpPostcode && (
+                      <span className="text-[10px] text-[#0052FF] flex items-center gap-1 font-medium">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Mengesahkan kawasan...
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    value={addrPostcode}
+                    onChange={(e) => handlePostcodeChange(e.target.value)}
+                    placeholder="Contoh: 50450 atau 40000"
+                    maxLength={5}
+                    className="w-full text-xs text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none font-mono font-bold tracking-wide"
+                  />
+                </div>
+
+                {/* Bandar & Negeri (Auto-populated from API) */}
+                <div className="px-3.5 py-2.5 bg-slate-50/60">
+                  <label className="block text-[10.5px] font-semibold text-slate-500 mb-0.5">
+                    Bandar & Negeri (Auto Pengecaman)
+                  </label>
+                  <input
+                    type="text"
+                    value={addrCity}
+                    onChange={(e) => setAddrCity(e.target.value)}
+                    placeholder="Auto diisi mengikut poskod (atau taip manual)"
+                    className="w-full text-xs text-slate-800 placeholder-slate-400 bg-transparent focus:outline-none font-medium"
+                  />
+                </div>
+
+                {/* Alamat Jalan / Rumah */}
+                <div className="px-3.5 py-2.5">
+                  <label className="block text-[10.5px] font-semibold text-slate-500 mb-0.5">
+                    Alamat Jalan, No. Rumah / Bangunan
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={addrLine}
+                    onChange={(e) => setAddrLine(e.target.value)}
+                    placeholder="No. 12, Jalan Kemboja 3/1, Taman..."
+                    className="w-full text-xs text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none leading-relaxed resize-none"
+                  />
+                </div>
+              </div>
+
               {/* Checkbox Simpan Alamat ke Profil */}
               <label className="inline-flex items-center gap-2 cursor-pointer mt-2 select-none">
                 <input
                   type="checkbox"
                   checked={saveAddressToProfile}
                   onChange={(e) => setSaveAddressToProfile(e.target.checked)}
-                  className="rounded text-[#00BDFF] focus:ring-[#00BDFF] w-4 h-4 cursor-pointer"
+                  className="rounded text-[#0052FF] focus:ring-[#00BDFF] w-4 h-4 cursor-pointer"
                 />
-                <span className="text-[11px] text-slate-600 font-medium">
+                <span className="text-[10.5px] text-slate-600 font-medium">
                   Simpan alamat ini ke profil akaun saya untuk pesanan akan datang
                 </span>
               </label>
             </div>
 
+            {/* 6. PILIHAN JASA PENGHANTARAN / KURIER DENGAN LOGO ASLI & KIRAAN ONGKOS */}
+            <div className="pt-2 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-bold text-slate-900 uppercase tracking-wider block flex items-center gap-1.5">
+                  <Truck className="w-3.5 h-3.5 text-[#0052FF]" />
+                  <span>Pilihan Jasa Kurier & Penghantaran</span>
+                </label>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  {shippingCalculation.zoneLabel} &bull; ~{shippingCalculation.estimatedWeightKg}kg
+                </span>
+              </div>
+
+              {/* Courier Option Cards */}
+              <div className="grid grid-cols-1 gap-2">
+                {shippingCalculation.couriers.map((courier) => {
+                  const isSelected = selectedCourierId === courier.id;
+                  return (
+                    <div
+                      key={courier.id}
+                      onClick={() => setSelectedCourierId(courier.id)}
+                      className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${
+                        isSelected
+                          ? 'bg-blue-50/70 border-[#00BDFF] ring-2 ring-sky-100 shadow-2xs'
+                          : 'bg-white border-slate-200/80 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <CourierLogo type={courier.logoType} className="w-10 h-10" />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-bold text-slate-900 truncate">
+                              {courier.name}
+                            </span>
+                            {courier.serviceType === 'same_day' && (
+                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-orange-100 text-orange-800 shrink-0">
+                                Same Day
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[10.5px] text-slate-500 mt-0.5 truncate">
+                            {courier.estimatedDays} &bull; {courier.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <div className="text-xs font-extrabold text-slate-900 font-mono">
+                          {courier.rate === 0 ? 'Percuma' : formatCurrency(courier.rate)}
+                        </div>
+                        <input
+                          type="radio"
+                          name="shipping_courier"
+                          checked={isSelected}
+                          onChange={() => setSelectedCourierId(courier.id)}
+                          className="mt-1 text-[#0052FF] focus:ring-[#00BDFF]"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Nota Tambahan Berbentuk Textarea */}
-            <div>
+            <div className="pt-2">
               <label className="text-[11px] font-semibold text-slate-700 block mb-1">
                 Nota Tambahan
               </label>
               <textarea
-                rows={3}
+                rows={2}
                 value={additionalNotes}
                 onChange={(e) => setAdditionalNotes(e.target.value)}
                 placeholder="cth: Rujukan kod warna Pantone, leher jenis V-neck, atau sebarang arahan khas untuk pereka kami..."
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF] leading-relaxed"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00BDFF] leading-relaxed resize-none"
               />
             </div>
           </div>
@@ -1317,14 +1508,14 @@ export default function CustomizePage() {
                 <span>{totalQuantity} helai</span>
                 <span>&bull;</span>
                 <span>{formatCurrency(quote.finalUnitPrice)}/helai</span>
-                {quote.discountPercentage > 0 && (
-                  <span className="font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded-full text-[9.5px]">
-                    -{quote.discountPercentage}%
+                {shippingFee > 0 && (
+                  <span className="text-slate-600 font-medium">
+                    + Pos {formatCurrency(shippingFee)}
                   </span>
                 )}
               </div>
               <div className="text-base font-black text-slate-900 font-mono leading-tight">
-                {formatCurrency(quote.finalTotal)}
+                {formatCurrency(grandTotalAmount)}
               </div>
             </div>
 
@@ -1553,20 +1744,34 @@ export default function CustomizePage() {
                     {rosterMode === 'upload' && rosterFileName ? rosterFileName : 'Borang Kolom Isian'}
                   </span>
                 </div>
-              </div>
-
-              {/* Perincian Sebut Harga */}
-              <div className="p-3.5 rounded-2xl bg-sky-50/70 border border-sky-100 text-xs space-y-1.5">
-                <div className="flex justify-between text-slate-600">
-                  <span>Harga Asas Fabrik:</span>
-                  <span className="font-mono">{formatCurrency(selectedFabric?.sublimation_base_price || 0)}</span>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Pilihan Kurier:</span>
+                  <span className="font-semibold text-slate-900">
+                    {selectedCourier.name}
+                  </span>
                 </div>
-                {selectedCut?.cut_add_on_price > 0 && (
-                  <div className="flex justify-between text-slate-600">
-                    <span>Add-on Pola Potongan:</span>
-                    <span className="font-mono">+{formatCurrency(selectedCut?.cut_add_on_price)}</span>
+                {formattedFullAddress && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400 shrink-0">Alamat:</span>
+                    <span className="font-medium text-slate-800 text-right truncate max-w-[200px]" title={formattedFullAddress}>
+                      {formattedFullAddress}
+                    </span>
                   </div>
                 )}
+              </div>
+
+              {/* Perincian Sebut Harga & Kos Kurier */}
+              <div className="p-3.5 rounded-2xl bg-sky-50/70 border border-sky-100 text-xs space-y-1.5">
+                <div className="flex justify-between text-slate-600">
+                  <span>Subtotal Pakaian ({totalQuantity} helai):</span>
+                  <span className="font-mono">{formatCurrency(quote.finalTotal)}</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Kos Penghantaran ({selectedCourier.shortName}):</span>
+                  <span className="font-mono font-semibold text-slate-900">
+                    {shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)}
+                  </span>
+                </div>
                 {quote.discountPercentage > 0 && (
                   <div className="flex justify-between text-emerald-600 font-semibold">
                     <span>Diskaun Pukal ({quote.discountPercentage}%):</span>
@@ -1574,8 +1779,8 @@ export default function CustomizePage() {
                   </div>
                 )}
                 <div className="border-t border-sky-200/60 pt-1.5 flex justify-between items-baseline font-bold">
-                  <span className="text-slate-900">Jumlah Anggaran ({totalQuantity} helai):</span>
-                  <span className="text-base text-[#00BDFF] font-mono">{formatCurrency(quote.finalTotal)}</span>
+                  <span className="text-slate-900">Jumlah Keseluruhan:</span>
+                  <span className="text-base text-[#0052FF] font-mono font-black">{formatCurrency(grandTotalAmount)}</span>
                 </div>
               </div>
 
@@ -1681,7 +1886,7 @@ export default function CustomizePage() {
                   ) : (
                     <>
                       <CreditCard className="w-4 h-4" />
-                      <span>Bayar Sekarang ({formatCurrency(quote.finalTotal)})</span>
+                      <span>Bayar Sekarang ({formatCurrency(grandTotalAmount)})</span>
                     </>
                   )}
                 </button>

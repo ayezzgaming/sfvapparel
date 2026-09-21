@@ -113,6 +113,8 @@ export interface WhatsAppCustomOrderPayload {
   rosterStatus?: string;
   notes?: string;
   shippingAddress?: string;
+  shippingCourier?: string;
+  shippingFee?: number;
 }
 
 export function buildCustomOrderWhatsAppUrl(payload: WhatsAppCustomOrderPayload): string {
@@ -141,8 +143,9 @@ ${payload.fabricName ? `- Fabrik: ${payload.fabricName} (RM ${payload.fabricPric
 *PECAHAN SAIZ (${payload.totalQty} helai):*
 ${activeSizes || '- Tiada saiz dinyatakan'}
 
-*SEBUT HARGA:*
+*SEBUT HARGA & KOS PENGHANTARAN:*
 - Harga Seunit: RM ${payload.finalUnitPrice.toFixed(2)}${payload.discountPercentage > 0 ? ` (Diskaun Kuantiti ${payload.discountPercentage}%)` : ''}
+- Pilihan Kurier: ${payload.shippingCourier || 'Standard Kurier'} ${payload.shippingFee ? `(RM ${payload.shippingFee.toFixed(2)})` : '(Percuma / Ambil Sendiri)'}
 - Jumlah Keseluruhan: RM ${payload.totalAmount.toFixed(2)}
 
 *STATUS LOGO & SENARAI NAMA:*
