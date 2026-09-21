@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -33,6 +33,7 @@ import {
   buildWhatsAppInquiryUrl, 
   buildCustomOrderWhatsAppUrl 
 } from '@/lib/whatsapp/dynamic-link';
+import { useAuth } from '@/hooks/useAuth';
 
 const DEFAULT_STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
 
@@ -47,6 +48,14 @@ export default function CustomizePage() {
   const router = useRouter();
   const params = useParams();
   const designId = params.id as string;
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthLoading && !isAuthenticated) {
+      router.replace(`/auth/login?redirect=/customize/${designId}`);
+    }
+  }, [isAuthenticated, isAuthLoading, router, designId]);
 
   const { 
     designs, 
@@ -61,6 +70,20 @@ export default function CustomizePage() {
   const design = useMemo(() => {
     return designs.find((d) => d.id === designId) || designs[0];
   }, [designs, designId]);
+
+  // Show loading spinner while checking auth
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm text-slate-500">Memuat...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return null;
 
   const [activeView, setActiveView] = useState<'front' | 'back'>('front');
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);

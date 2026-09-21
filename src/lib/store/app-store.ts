@@ -47,6 +47,8 @@ import {
   deleteCutDb,
   saveDtfDimensionDb,
   deleteDtfDimensionDb,
+  saveQuantityTierDb,
+  deleteQuantityTierDb,
 } from '@/app/actions/pricingActions';
 import {
   INITIAL_APPAREL_CUTS,
@@ -119,10 +121,10 @@ interface AppStoreState {
 
 let storeState: AppStoreState = {
   designs: [], // Pure Supabase DB data only
-  fabrics: INITIAL_FABRIC_MATERIALS,
-  cuts: INITIAL_APPAREL_CUTS,
-  dtfDimensions: INITIAL_DTF_DIMENSIONS,
-  tiers: INITIAL_QUANTITY_TIERS,
+  fabrics: [], // Loaded from DB on init
+  cuts: [], // Loaded from DB on init
+  dtfDimensions: [], // Loaded from DB on init
+  tiers: [], // Loaded from DB on init
   customers: INITIAL_CUSTOMERS,
   orders: INITIAL_ORDERS,
   favorites: [],
@@ -197,13 +199,16 @@ async function fetchAndSyncAllDb() {
     const pricingPromise = getMasterPricingDb()
       .then((res) => {
         if (res.success && res.data) {
-          const { fabrics, cuts, dtfDimensions } = res.data;
+          const { fabrics, cuts, dtfDimensions, tiers } = res.data;
           storeState = {
             ...storeState,
-            fabrics: fabrics.length > 0 ? fabrics : storeState.fabrics,
-            cuts: cuts.length > 0 ? cuts : storeState.cuts,
-            dtfDimensions: dtfDimensions.length > 0 ? dtfDimensions : storeState.dtfDimensions,
+            fabrics,
+            cuts,
+            dtfDimensions,
+            tiers,
           };
+        } else if (res.message) {
+          console.error('[app-store] pricing fetch failed:', res.message);
         }
       })
       .catch((e) => console.error('Error fetching pricing data from DB:', e));
@@ -244,10 +249,10 @@ function getSnapshot() {
 
 const serverSnapshot: AppStoreState = {
   designs: [],
-  fabrics: INITIAL_FABRIC_MATERIALS,
-  cuts: INITIAL_APPAREL_CUTS,
-  dtfDimensions: INITIAL_DTF_DIMENSIONS,
-  tiers: INITIAL_QUANTITY_TIERS,
+  fabrics: [],
+  cuts: [],
+  dtfDimensions: [],
+  tiers: [],
   customers: INITIAL_CUSTOMERS,
   orders: INITIAL_ORDERS,
   favorites: [],
@@ -406,14 +411,24 @@ export function useAppStore() {
   // Master Pricing Mutators (Pure Cloud DB)
   const addFabric = useCallback(async (fabric: Omit<FabricMaterial, 'id'>) => {
     initStoreIfNeeded();
-    const id = `mat-${Date.now()}`;
-    const newFabric: FabricMaterial = { ...fabric, id };
-    const next = [...storeState.fabrics, newFabric];
-    storeState = { ...storeState, fabrics: next };
+    // Optimistic: use temp ID while waiting for DB UUID
+    const tempId = `temp-fabric-${Date.now()}`;
+    const tempFabric: FabricMaterial = { ...fabric, id: tempId };
+    storeState = { ...storeState, fabrics: [...storeState.fabrics, tempFabric] };
     notify();
 
-    saveFabricDb(newFabric).catch((e) => console.error('Error adding fabric to DB:', e));
-    return newFabric;
+    try {
+      // Save without ID so Supabase generates UUID
+      const res = await saveFabricDb(tempFabric);
+      if (!res.success) console.error('Error adding fabric to DB:', res.message);
+      // Re-fetch to get real UUID from DB
+      await fetchAndSyncAllDb();
+    } catch (e) {
+      console.error('Error adding fabric to DB:', e);
+      // Rollback on error
+      storeState = { ...storeState, fabrics: storeState.fabrics.filter(f => f.id !== tempId) };
+      notify();
+    }
   }, []);
 
   const updateFabric = useCallback(async (id: string, updates: Partial<FabricMaterial>) => {
@@ -424,7 +439,9 @@ export function useAppStore() {
 
     const target = next.find((f) => f.id === id);
     if (target) {
-      saveFabricDb(target).catch((e) => console.error('Error saving fabric to DB:', e));
+      saveFabricDb(target).then(res => {
+        if (!res.success) console.error('Error saving fabric to DB:', res.message);
+      }).catch((e) => console.error('Error saving fabric to DB:', e));
     }
   }, []);
 
@@ -434,19 +451,27 @@ export function useAppStore() {
     storeState = { ...storeState, fabrics: next };
     notify();
 
-    deleteFabricDb(id).catch((e) => console.error('Error deleting fabric from DB:', e));
+    deleteFabricDb(id).then(res => {
+      if (!res.success) console.error('Error deleting fabric from DB:', res.message);
+    }).catch((e) => console.error('Error deleting fabric from DB:', e));
   }, []);
 
   const addCut = useCallback(async (cut: Omit<ApparelCut, 'id'>) => {
     initStoreIfNeeded();
-    const id = `cut-${Date.now()}`;
-    const newCut: ApparelCut = { ...cut, id };
-    const next = [...storeState.cuts, newCut];
-    storeState = { ...storeState, cuts: next };
+    const tempId = `temp-cut-${Date.now()}`;
+    const tempCut: ApparelCut = { ...cut, id: tempId };
+    storeState = { ...storeState, cuts: [...storeState.cuts, tempCut] };
     notify();
 
-    saveCutDb(newCut).catch((e) => console.error('Error adding cut to DB:', e));
-    return newCut;
+    try {
+      const res = await saveCutDb(tempCut);
+      if (!res.success) console.error('Error adding cut to DB:', res.message);
+      await fetchAndSyncAllDb();
+    } catch (e) {
+      console.error('Error adding cut to DB:', e);
+      storeState = { ...storeState, cuts: storeState.cuts.filter(c => c.id !== tempId) };
+      notify();
+    }
   }, []);
 
   const updateCut = useCallback(async (id: string, updates: Partial<ApparelCut>) => {
@@ -457,7 +482,9 @@ export function useAppStore() {
 
     const target = next.find((c) => c.id === id);
     if (target) {
-      saveCutDb(target).catch((e) => console.error('Error saving cut to DB:', e));
+      saveCutDb(target).then(res => {
+        if (!res.success) console.error('Error saving cut to DB:', res.message);
+      }).catch((e) => console.error('Error saving cut to DB:', e));
     }
   }, []);
 
@@ -467,19 +494,27 @@ export function useAppStore() {
     storeState = { ...storeState, cuts: next };
     notify();
 
-    deleteCutDb(id).catch((e) => console.error('Error deleting cut from DB:', e));
+    deleteCutDb(id).then(res => {
+      if (!res.success) console.error('Error deleting cut from DB:', res.message);
+    }).catch((e) => console.error('Error deleting cut from DB:', e));
   }, []);
 
   const addDtfDimension = useCallback(async (dim: Omit<DtfDimension, 'id'>) => {
     initStoreIfNeeded();
-    const id = `dtf-${Date.now()}`;
-    const newDim: DtfDimension = { ...dim, id };
-    const next = [...storeState.dtfDimensions, newDim];
-    storeState = { ...storeState, dtfDimensions: next };
+    const tempId = `temp-dtf-${Date.now()}`;
+    const tempDim: DtfDimension = { ...dim, id: tempId };
+    storeState = { ...storeState, dtfDimensions: [...storeState.dtfDimensions, tempDim] };
     notify();
 
-    saveDtfDimensionDb(newDim).catch((e) => console.error('Error adding DTF dim to DB:', e));
-    return newDim;
+    try {
+      const res = await saveDtfDimensionDb(tempDim);
+      if (!res.success) console.error('Error adding DTF dim to DB:', res.message);
+      await fetchAndSyncAllDb();
+    } catch (e) {
+      console.error('Error adding DTF dim to DB:', e);
+      storeState = { ...storeState, dtfDimensions: storeState.dtfDimensions.filter(d => d.id !== tempId) };
+      notify();
+    }
   }, []);
 
   const updateDtfDimension = useCallback(async (id: string, updates: Partial<DtfDimension>) => {
@@ -490,7 +525,9 @@ export function useAppStore() {
 
     const target = next.find((d) => d.id === id);
     if (target) {
-      saveDtfDimensionDb(target).catch((e) => console.error('Error saving DTF dim to DB:', e));
+      saveDtfDimensionDb(target).then(res => {
+        if (!res.success) console.error('Error saving DTF dim to DB:', res.message);
+      }).catch((e) => console.error('Error saving DTF dim to DB:', e));
     }
   }, []);
 
@@ -500,31 +537,53 @@ export function useAppStore() {
     storeState = { ...storeState, dtfDimensions: next };
     notify();
 
-    deleteDtfDimensionDb(id).catch((e) => console.error('Error deleting DTF dim from DB:', e));
+    deleteDtfDimensionDb(id).then(res => {
+      if (!res.success) console.error('Error deleting DTF dim from DB:', res.message);
+    }).catch((e) => console.error('Error deleting DTF dim from DB:', e));
   }, []);
 
-  const addQuantityTier = useCallback((tier: Omit<QuantityTierDiscount, 'id'>) => {
+  const addQuantityTier = useCallback(async (tier: Omit<QuantityTierDiscount, 'id'>) => {
     initStoreIfNeeded();
-    const id = `tier-${Date.now()}`;
-    const newTier: QuantityTierDiscount = { ...tier, id };
-    const next = [...storeState.tiers, newTier].sort((a, b) => a.min_qty - b.min_qty);
+    const tempId = `temp-tier-${Date.now()}`;
+    const tempTier: QuantityTierDiscount = { ...tier, id: tempId };
+    const next = [...storeState.tiers, tempTier].sort((a, b) => a.min_qty - b.min_qty);
     storeState = { ...storeState, tiers: next };
     notify();
-    return newTier;
+
+    try {
+      const res = await saveQuantityTierDb(tempTier);
+      if (!res.success) console.error('Error adding tier to DB:', res.message);
+      await fetchAndSyncAllDb();
+    } catch (e) {
+      console.error('Error adding tier to DB:', e);
+      storeState = { ...storeState, tiers: storeState.tiers.filter(t => t.id !== tempId) };
+      notify();
+    }
   }, []);
 
-  const updateQuantityTier = useCallback((id: string, updates: Partial<QuantityTierDiscount>) => {
+  const updateQuantityTier = useCallback(async (id: string, updates: Partial<QuantityTierDiscount>) => {
     initStoreIfNeeded();
     const next = storeState.tiers.map((t) => (t.id === id ? { ...t, ...updates } : t)).sort((a, b) => a.min_qty - b.min_qty);
     storeState = { ...storeState, tiers: next };
     notify();
+
+    const target = next.find((t) => t.id === id);
+    if (target) {
+      saveQuantityTierDb(target).then(res => {
+        if (!res.success) console.error('Error saving tier to DB:', res.message);
+      }).catch((e) => console.error('Error saving tier to DB:', e));
+    }
   }, []);
 
-  const deleteQuantityTier = useCallback((id: string) => {
+  const deleteQuantityTier = useCallback(async (id: string) => {
     initStoreIfNeeded();
     const next = storeState.tiers.filter((t) => t.id !== id);
     storeState = { ...storeState, tiers: next };
     notify();
+
+    deleteQuantityTierDb(id).then(res => {
+      if (!res.success) console.error('Error deleting tier from DB:', res.message);
+    }).catch((e) => console.error('Error deleting tier from DB:', e));
   }, []);
 
 

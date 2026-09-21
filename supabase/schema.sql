@@ -358,3 +358,40 @@ ALTER TABLE IF EXISTS ad_campaigns DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS designs DISABLE ROW LEVEL SECURITY;
 
 
+-- =====================================================
+-- AUTH SYSTEM: Customer Authentication (WhatsApp OTP)
+-- =====================================================
+
+-- OTP Verifications (short-lived, auto-cleanup)
+CREATE TABLE IF NOT EXISTS otp_verifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    phone TEXT NOT NULL,             -- WhatsApp number e.g. '601XXXXXXXX'
+    otp_code TEXT NOT NULL,          -- 6-digit code
+    attempts INTEGER DEFAULT 0,      -- Track failed attempts (max 5)
+    expires_at TIMESTAMPTZ NOT NULL, -- 5 minutes from creation
+    is_used BOOLEAN DEFAULT false,   -- Prevent reuse
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Customer Sessions (httpOnly cookie token)
+CREATE TABLE IF NOT EXISTS customer_sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+    session_token TEXT NOT NULL UNIQUE, -- Random secure token stored in cookie
+    expires_at TIMESTAMPTZ NOT NULL,    -- 30 days
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Extend customers table with WhatsApp fields (safe to run multiple times)
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS whatsapp TEXT;
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS phone_verified BOOLEAN DEFAULT false;
+
+-- Index for fast session lookup
+CREATE INDEX IF NOT EXISTS idx_customer_sessions_token ON customer_sessions(session_token);
+CREATE INDEX IF NOT EXISTS idx_otp_verifications_phone ON otp_verifications(phone);
+CREATE INDEX IF NOT EXISTS idx_customers_whatsapp ON customers(whatsapp);
+
+-- Disable RLS for auth tables (using service role for all server ops)
+ALTER TABLE IF EXISTS otp_verifications DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS customer_sessions DISABLE ROW LEVEL SECURITY;
+

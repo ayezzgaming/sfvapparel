@@ -45,7 +45,8 @@ export default function AdminPricingRulesPage() {
     addQuantityTier,
     updateQuantityTier,
     deleteQuantityTier,
-    resetToSeedData
+    isLoadingCms,
+    refreshAllDb,
   } = useAppStore();
 
   const [activeTab, setActiveTab] = useState<'sublimation_fabrics' | 'apparel_cuts' | 'dtf_dims' | 'volume_tiers' | 'simulator'>('sublimation_fabrics');
@@ -219,15 +220,12 @@ export default function AdminPricingRulesPage() {
         </div>
 
         <button
-          onClick={() => {
-            if (confirm('Kembalikan formula harga kepada kadar lalai kilang?')) {
-              resetToSeedData();
-            }
-          }}
-          className="px-4 py-2 rounded-full bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-xs flex items-center space-x-1.5 transition-all self-start sm:self-auto cursor-pointer"
+          onClick={() => refreshAllDb()}
+          disabled={isLoadingCms}
+          className="px-4 py-2 rounded-full bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 shadow-xs flex items-center space-x-1.5 transition-all self-start sm:self-auto cursor-pointer disabled:opacity-50"
         >
-          <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-          <span>Reset Lalai</span>
+          <RotateCcw className={`w-3.5 h-3.5 text-slate-500 ${isLoadingCms ? 'animate-spin' : ''}`} />
+          <span>{isLoadingCms ? 'Memuatkan...' : 'Muat Semula'}</span>
         </button>
       </div>
 

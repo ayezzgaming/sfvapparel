@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { AuthProvider } from '@/hooks/useAuth';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://sfvapparel.my'),
@@ -203,7 +204,9 @@ export default function RootLayout({
         />
       </head>
       <body className="h-full antialiased selection:bg-blue-500 selection:text-white overscroll-none">
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
