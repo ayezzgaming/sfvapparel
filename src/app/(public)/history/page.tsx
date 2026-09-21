@@ -163,10 +163,22 @@ export default function HistoryPage() {
                     </span>
                   </div>
 
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-medium ${config.bg} ${config.color}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${config.dot}`} />
-                    {config.label}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {order.payment_status === 'paid' ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold bg-emerald-100 text-emerald-800">
+                        Dibayar
+                      </span>
+                    ) : order.payment_status === 'pending' ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold bg-amber-100 text-amber-800">
+                        Menunggu Bayaran
+                      </span>
+                    ) : null}
+
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-medium ${config.bg} ${config.color}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${config.dot}`} />
+                      {config.label}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Item Details */}
@@ -356,6 +368,22 @@ export default function HistoryPage() {
               <div className="flex justify-between font-semibold text-slate-900 pt-1.5 border-t border-slate-100 text-sm">
                 <span>Jumlah Keseluruhan</span>
                 <span className="font-mono">{formatCurrency(selectedOrder.total_amount)}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs pt-1">
+                <span className="text-slate-500">Status Pembayaran:</span>
+                <span className={`font-bold px-2 py-0.5 rounded text-[10px] ${
+                  selectedOrder.payment_status === 'paid'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : selectedOrder.payment_status === 'pending'
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-slate-100 text-slate-700'
+                }`}>
+                  {selectedOrder.payment_status === 'paid'
+                    ? 'Dibayar Sepenuhnya'
+                    : selectedOrder.payment_status === 'pending'
+                    ? 'Menunggu Bayaran'
+                    : 'Belum Dibayar (Manual / WhatsApp)'}
+                </span>
               </div>
             </div>
 

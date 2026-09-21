@@ -26,7 +26,9 @@ import {
   Sparkles,
   ArrowRight,
   ShieldCheck,
-  Info
+  Info,
+  CreditCard,
+  Loader2
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { 
@@ -158,6 +160,8 @@ export default function CustomizePage() {
 
   // Modal Ringkasan Tempahan (Order Summary) & Status
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+  const [paymentMode, setPaymentMode] = useState<'chip_online' | 'whatsapp_manual'>('chip_online');
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccessModal, setOrderSuccessModal] = useState<{
@@ -303,9 +307,10 @@ export default function CustomizePage() {
     setIsSummaryModalOpen(true);
   };
 
-  // Sahkan & Hantar Tempahan (Simpan ke Sistem + Buka WhatsApp)
+  // Sahkan & Hantar Tempahan (Simpan ke Sistem + Buka CHIP Gateway / WhatsApp)
   const handleConfirmAndSendOrder = async () => {
     setIsSubmitting(true);
+    setPaymentError(null);
 
     const activeSizingBreakdown = Object.fromEntries(
       Object.entries(sizing).filter(([key, qty]) => activeSizeKeys.includes(key) && Number(qty) > 0)
@@ -321,6 +326,7 @@ export default function CustomizePage() {
 
     const fullNotes = [
       teamName ? `Pasukan: ${teamName}` : '',
+      `[Kaedah Bayaran]: ${paymentMode === 'chip_online' ? 'CHIP Gateway (FPX/Kad/e-Wallet)' : 'Manual / WhatsApp'}`,
       `[Logo]: ${logoInfo}`,
       `[Senarai Nama]: ${rosterInfo}`,
       additionalNotes ? `Nota: ${additionalNotes}` : '',
@@ -349,13 +355,50 @@ export default function CustomizePage() {
       discount_percentage: quote.discountPercentage,
       final_unit_price: quote.finalUnitPrice,
       total_amount: quote.finalTotal,
+      payment_status: paymentMode === 'chip_online' ? 'pending' : 'unpaid',
+      payment_method: paymentMode === 'chip_online' ? 'chip_gateway' : 'whatsapp_manual',
       status: 'pending_proof',
       production_notes: fullNotes,
       shipping_address: shippingAddress.trim() || 'Pusat Edaran SFV Apparel / Penghantaran Terus',
       shipping_courier: 'Kurier Rasmi Kilang SFV',
     });
 
-    // 2. Bina Link WhatsApp Lengkap & Auto Redirect
+    // 2A. Jika memilih bayaran terus secara online melalui CHIP Gateway
+    if (paymentMode === 'chip_online') {
+      try {
+        const res = await fetch('/api/payment/chip/create-purchase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderNumber: newOrder.order_number,
+            customerName: customerName.trim(),
+            customerEmail: customer?.email || `${customerName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+            customerPhone: customerPhone.trim(),
+            totalAmount: quote.finalTotal,
+            itemsDescription: `${design?.title || 'Jersi Kustom'} (${totalQuantity} helai)`,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (data.success && data.checkoutUrl) {
+          // Beralih ke halaman pembayaran selamat CHIP
+          window.location.href = data.checkoutUrl;
+          return;
+        } else {
+          setPaymentError(data.message || 'Gagal memulakan sesi pembayaran CHIP. Anda boleh beralih ke WhatsApp.');
+          setIsSubmitting(false);
+          return;
+        }
+      } catch (err: unknown) {
+        console.error('CHIP checkout error:', err);
+        setPaymentError('Ralat sambungan gerbang pembayaran. Sila gunakan pilihan WhatsApp.');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    // 2B. Bina Link WhatsApp Lengkap & Auto Redirect (Manual flow)
     const waUrl = buildCustomOrderWhatsAppUrl({
       phone: companySettings?.whatsapp_number,
       orderNumber: newOrder.order_number,
@@ -1205,29 +1248,135 @@ export default function CustomizePage() {
                   <span className="text-base text-[#00BDFF] font-mono">{formatCurrency(quote.finalTotal)}</span>
                 </div>
               </div>
+
+              {/* Pilihan Kaedah Pembayaran */}
+              <div className="space-y-2 pt-1">
+                <span className="text-[11px] font-bold text-slate-800 block">
+                  Pilih Kaedah Pembayaran:
+                </span>
+                
+                <div className="grid grid-cols-1 gap-2">
+                  {/* Option 1: CHIP Gateway */}
+                  <div
+                    onClick={() => {
+                      setPaymentMode('chip_online');
+                      setPaymentError(null);
+                    }}
+                    className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-start justify-between gap-3 ${
+                      paymentMode === 'chip_online'
+                        ? 'bg-blue-50/60 border-[#00BDFF] ring-1.5 ring-[#00BDFF]'
+                        : 'bg-white border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-start gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00BDFF] to-[#0052FF] text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                        <CreditCard className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-slate-900">Bayar Dalam Talian (CHIP Gateway)</span>
+                          <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800">
+                            Pantas
+                          </span>
+                        </div>
+                        <p className="text-[10.5px] text-slate-500 mt-0.5">
+                          FPX Online Banking, Kad Debit/Kredit, DuitNow QR & e-Wallet
+                        </p>
+                      </div>
+                    </div>
+                    <input
+                      type="radio"
+                      checked={paymentMode === 'chip_online'}
+                      onChange={() => setPaymentMode('chip_online')}
+                      className="mt-1 text-[#00BDFF] focus:ring-[#00BDFF]"
+                    />
+                  </div>
+
+                  {/* Option 2: WhatsApp Manual */}
+                  <div
+                    onClick={() => {
+                      setPaymentMode('whatsapp_manual');
+                      setPaymentError(null);
+                    }}
+                    className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-start justify-between gap-3 ${
+                      paymentMode === 'whatsapp_manual'
+                        ? 'bg-emerald-50/60 border-emerald-500 ring-1.5 ring-emerald-500'
+                        : 'bg-white border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-start gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-[#25D366] text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                        <FaWhatsapp className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-slate-900 block">Bincang & Bayar di WhatsApp</span>
+                        <p className="text-[10.5px] text-slate-500 mt-0.5">
+                          Invois manual, semakan artwork tambahan & pemindahan bank terus
+                        </p>
+                      </div>
+                    </div>
+                    <input
+                      type="radio"
+                      checked={paymentMode === 'whatsapp_manual'}
+                      onChange={() => setPaymentMode('whatsapp_manual')}
+                      className="mt-1 text-emerald-600 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Error Notification */}
+              {paymentError && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                  <Info className="w-4 h-4 shrink-0 text-rose-600" />
+                  <span>{paymentError}</span>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}
             <div className="pt-2 space-y-2">
-              <button
-                type="button"
-                onClick={handleConfirmAndSendOrder}
-                disabled={isSubmitting}
-                className="w-full py-3 rounded-2xl bg-[#25D366] hover:bg-emerald-600 disabled:bg-slate-300 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
-              >
-                {isSubmitting ? (
-                  <span>Memproses Pesanan...</span>
-                ) : (
-                  <>
-                    <FaWhatsapp className="w-4 h-4" />
-                    <span>Sahkan & Hantar ke WhatsApp</span>
-                  </>
-                )}
-              </button>
+              {paymentMode === 'chip_online' ? (
+                <button
+                  type="button"
+                  onClick={handleConfirmAndSendOrder}
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 rounded-2xl bg-[#0052FF] hover:bg-[#0041CC] disabled:bg-slate-300 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-blue-500/25 active:scale-95 transition-all cursor-pointer"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      <span>Menyambung ke Gerbang Pembayaran...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="w-4 h-4" />
+                      <span>Bayar Sekarang ({formatCurrency(quote.finalTotal)})</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleConfirmAndSendOrder}
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 rounded-2xl bg-[#25D366] hover:bg-emerald-600 disabled:bg-slate-300 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
+                >
+                  {isSubmitting ? (
+                    <span>Memproses Pesanan...</span>
+                  ) : (
+                    <>
+                      <FaWhatsapp className="w-4 h-4" />
+                      <span>Sahkan & Hantar ke WhatsApp</span>
+                    </>
+                  )}
+                </button>
+              )}
 
               <button
                 type="button"
                 onClick={() => setIsSummaryModalOpen(false)}
+                disabled={isSubmitting}
                 className="w-full py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold active:scale-95 transition-all cursor-pointer"
               >
                 Ubah Semula Butiran

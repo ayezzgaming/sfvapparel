@@ -16,7 +16,8 @@ import {
   HelpCircle,
   ExternalLink,
   ChevronRight,
-  Megaphone
+  Megaphone,
+  CreditCard
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 
@@ -24,6 +25,7 @@ const ADMIN_NAV = [
   { href: '/admin', label: 'Beranda', icon: Home, exact: true },
   { href: '/admin/orders', label: 'Saluran Pesanan', icon: ClipboardList },
   { href: '/admin/catalog', label: 'Katalog Rekaan', icon: Shirt },
+  { href: '/admin/payment-settings', label: 'Gerbang Pembayaran', icon: CreditCard },
   { href: '/admin/ads-generator', label: 'Ads Generator', icon: Megaphone },
   { href: '/admin/whatsapp-hub', label: 'WhatsApp Hub', icon: FaWhatsapp },
   { href: '/admin/cms', label: 'Pengurus Web', icon: Globe },

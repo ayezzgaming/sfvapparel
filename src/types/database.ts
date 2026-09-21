@@ -11,6 +11,22 @@ export type OrderStatus =
   | 'delivered'
   | 'cancelled';
 
+export type PaymentStatus = 'unpaid' | 'pending' | 'paid' | 'failed' | 'refunded';
+
+export interface PaymentGatewayConfig {
+  id: string;
+  provider: 'chip' | 'toyyibpay' | 'manual';
+  brand_id: string;
+  api_key: string;
+  public_key?: string;
+  is_active: boolean;
+  is_sandbox: boolean;
+  webhook_url?: string;
+  payment_methods?: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Design {
   id: string;
   code?: string; // e.g. "SFV0001"
@@ -125,6 +141,13 @@ export interface Order {
   final_unit_price: number;
   total_amount: number;
   
+  // Payment Gateway
+  payment_status?: PaymentStatus;
+  payment_method?: string;
+  payment_id?: string;
+  payment_checkout_url?: string;
+  paid_at?: string;
+
   // Status & Shipping
   status: OrderStatus;
   production_notes?: string;
@@ -227,20 +250,20 @@ export interface CmsSloganQuote {
 export interface CmsCompanySettings {
   company_name: string;
   brand_name: string;
-  registration_number: string; // SSM e.g. 202303123456 (003456789-X)
+  registration_number: string;
   tagline: string;
   phone: string;
-  whatsapp_number: string; // 60148599138
+  whatsapp_number: string;
   whatsapp_default_message: string;
   email: string;
   address: string;
   working_hours: string;
   website_url?: string;
-  telegram_catalog_url: string;
-  facebook_url: string;
-  instagram_url: string;
-  tiktok_url: string;
-  developer_name?: string; // e.g. 'AYEZZ Global'
+  telegram_catalog_url?: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  tiktok_url?: string;
+  developer_name?: string;
   developer_url?: string;
 }
 
@@ -257,28 +280,28 @@ export interface CmsPolicy {
   sections: CmsPolicySection[];
 }
 
-export type CmsThemePresetKey = 'hybrid' | 'clean_white' | 'full_blue' | 'custom';
+export type CmsThemePresetKey = 'hybrid' | 'clean_white' | 'full_blue';
 
 export interface CmsThemeSettings {
-  preset: CmsThemePresetKey;
-  header_bg: string; // e.g. '#0052FF' or '#FFFFFF'
-  header_style: 'solid_blue' | 'frosted_white' | 'custom';
-  header_logo_mode: 'inverted_white' | 'original_blue';
-  bottom_nav_bg: string; // e.g. 'rgba(255, 255, 255, 0.95)' or '#0052FF'
-  bottom_nav_style: 'glass_light' | 'solid_blue' | 'custom';
-  bottom_nav_active_color: string; // e.g. '#0052FF' or '#FFFFFF'
-  bottom_nav_inactive_color: string; // e.g. '#94A3B8' or '#93C5FD'
-  primary_accent_color: string; // e.g. '#0052FF'
-  whatsapp_fab_bg: string; // e.g. '#25D366'
+  preset?: CmsThemePresetKey;
+  header_bg: string;
+  header_style: 'frosted_white' | 'solid_blue';
+  header_logo_mode: 'original_blue' | 'inverted_white';
+  bottom_nav_bg: string;
+  bottom_nav_style: 'frosted_white' | 'solid_blue' | 'glass_light';
+  bottom_nav_active_color: string;
+  bottom_nav_inactive_color: string;
+  primary_accent_color?: string;
+  whatsapp_fab_bg: string;
 }
 
 export interface CmsTrustBadge {
   id: string;
-  title: string;
-  desc: string;
-  pill: string;
   icon_name: string;
-  color_theme: 'sky' | 'indigo' | 'emerald' | 'amber' | 'blue' | 'rose' | 'purple' | string;
+  title: string;
+  pill: string;
+  desc: string;
+  color_theme: string;
   sort_order: number;
   is_active: boolean;
 }
