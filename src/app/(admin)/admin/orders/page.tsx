@@ -19,9 +19,12 @@ import {
   Truck,
   Send,
   CreditCard,
-  AlertCircle
+  AlertCircle,
+  FileText,
+  Printer
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
+import OrderInvoiceModal from '@/components/invoice/OrderInvoiceModal';
 
 const STATUS_LIST: { status: OrderStatus; label: string; color: string }[] = [
   { status: 'pending_proof', label: 'Menunggu Proof', color: 'bg-amber-50 text-amber-800 border-amber-200' },
@@ -52,6 +55,7 @@ export default function AdminOrdersPage() {
   const [isSendingWa, setIsSendingWa] = useState(false);
   const [isMarkingBalancePaid, setIsMarkingBalancePaid] = useState(false);
   const [waToast, setWaToast] = useState<{ success: boolean; message: string } | null>(null);
+  const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
 
   const handleSendWhatsAppNotification = async () => {
     if (!activeOrder || !activeOrder.customer_phone) {
@@ -500,13 +504,24 @@ export default function AdminOrdersPage() {
                   {activeOrder.design_title}
                 </h3>
               </div>
-              <button
-                type="button"
-                onClick={() => setActiveOrder(null)}
-                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setIsInvoiceOpen(true)}
+                  className="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                  title="Cetak Invois Rasmi / Packing Slip Kilang"
+                >
+                  <FileText className="w-3.5 h-3.5 text-sky-600" />
+                  <span>Invois PDF</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveOrder(null)}
+                  className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Mockup Preview & Info Card */}
@@ -743,6 +758,15 @@ export default function AdminOrdersPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Official Invoice Modal */}
+      {activeOrder && (
+        <OrderInvoiceModal
+          order={activeOrder}
+          isOpen={isInvoiceOpen}
+          onClose={() => setIsInvoiceOpen(false)}
+        />
       )}
     </div>
   );

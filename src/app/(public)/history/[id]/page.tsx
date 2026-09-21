@@ -17,7 +17,8 @@ import {
   ExternalLink,
   ShieldCheck,
   RefreshCw,
-  FileText
+  FileText,
+  Printer
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
@@ -26,6 +27,7 @@ import { buildWhatsAppInquiryUrl } from '@/lib/whatsapp/dynamic-link';
 import { getOrderByNumberOrIdDb, clientApproveProofAction } from '@/app/actions/orderActions';
 import { confirmPaymentReturnAction } from '@/app/actions/paymentActions';
 import { Order, OrderStatus } from '@/types/database';
+import OrderInvoiceModal from '@/components/invoice/OrderInvoiceModal';
 
 const STATUS_CONFIG: Record<
   OrderStatus,
@@ -126,6 +128,7 @@ export default function OrderDetailPage() {
   const [balanceError, setBalanceError] = useState<string | null>(null);
   const [isApprovingProof, setIsApprovingProof] = useState(false);
   const [proofSuccessMsg, setProofSuccessMsg] = useState<string | null>(null);
+  const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
 
   // Load Order Authoritatively from Database
   const fetchOrder = async () => {
@@ -312,14 +315,26 @@ export default function OrderDetailPage() {
           </button>
         </div>
 
-        <button
-          type="button"
-          onClick={fetchOrder}
-          className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 active:rotate-180 transition-all duration-300"
-          title="Segar Semula Data"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setIsInvoiceOpen(true)}
+            className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold flex items-center gap-1 active:scale-95 transition-all"
+            title="Lihat Invois Rasmi PDF"
+          >
+            <FileText className="w-3.5 h-3.5 text-sky-600" />
+            <span className="hidden sm:inline">Invois PDF</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={fetchOrder}
+            className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 active:rotate-180 transition-all duration-300"
+            title="Segar Semula Data"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </header>
 
       <main className="max-w-md mx-auto px-4 py-4 space-y-4">
@@ -589,6 +604,17 @@ export default function OrderDetailPage() {
                   </div>
                 )}
               </div>
+              {/* Invoice Download Action */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsInvoiceOpen(true)}
+                  className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-[0.98] text-slate-800 font-bold text-xs border border-slate-200/80 transition-all flex items-center justify-center gap-2"
+                >
+                  <FileText className="w-3.5 h-3.5 text-sky-600" />
+                  <span>Muat Turun / Cetak Invois Rasmi (PDF)</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -722,6 +748,13 @@ export default function OrderDetailPage() {
             Kembali ke Senarai Pesanan
           </Link>
         </div>
+
+        {/* 8. OFFICIAL INVOICE MODAL */}
+        <OrderInvoiceModal
+          order={order}
+          isOpen={isInvoiceOpen}
+          onClose={() => setIsInvoiceOpen(false)}
+        />
       </main>
     </div>
   );
