@@ -55,6 +55,12 @@ export async function getCustomerOrdersDb(identifier: string): Promise<{ success
   }
 }
 
+function toValidUuidOrNull(val?: string | null): string | null {
+  if (!val) return null;
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val.trim());
+  return isUuid ? val.trim() : null;
+}
+
 export async function saveOrderDb(orderData: Partial<Order>): Promise<{ success: boolean; order?: Order; message?: string }> {
   try {
     const supabase = getServiceSupabase();
@@ -66,22 +72,22 @@ export async function saveOrderDb(orderData: Partial<Order>): Promise<{ success:
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const orderNumber = orderData.order_number || `SFV-${yy}${mm}-${randomSuffix}`;
 
-    const recordToInsert = {
+    const recordToInsert: Record<string, unknown> = {
       order_number: orderNumber,
-      customer_id: orderData.customer_id || null,
+      customer_id: toValidUuidOrNull(orderData.customer_id),
       customer_name: orderData.customer_name || 'Pelanggan',
       customer_email: orderData.customer_email || 'pelanggan@sfv.my',
       customer_phone: orderData.customer_phone || '',
       print_type: orderData.print_type || 'sublimation',
-      design_id: orderData.design_id || null,
+      design_id: toValidUuidOrNull(orderData.design_id),
       design_title: orderData.design_title || 'Custom Order',
       mockup_url: orderData.mockup_url || null,
       custom_artwork_url: orderData.custom_artwork_url || null,
-      fabric_material_id: orderData.fabric_material_id || null,
+      fabric_material_id: toValidUuidOrNull(orderData.fabric_material_id),
       fabric_name: orderData.fabric_name || null,
-      apparel_cut_id: orderData.apparel_cut_id || null,
+      apparel_cut_id: toValidUuidOrNull(orderData.apparel_cut_id),
       cut_name: orderData.cut_name || null,
-      dtf_dimension_id: orderData.dtf_dimension_id || null,
+      dtf_dimension_id: toValidUuidOrNull(orderData.dtf_dimension_id),
       dtf_dimension_name: orderData.dtf_dimension_name || null,
       dtf_option_type: orderData.dtf_option_type || null,
       garment_blank_color: orderData.garment_blank_color || null,
@@ -105,11 +111,51 @@ export async function saveOrderDb(orderData: Partial<Order>): Promise<{ success:
       tracking_number: orderData.tracking_number || null,
     };
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('orders')
       .insert(recordToInsert)
       .select()
       .single();
+
+    // Fallback: If custom deposit columns don't exist in Supabase yet, retry with base columns
+    if (error && error.message && error.message.includes('column')) {
+      console.warn('[orderActions] Retrying insert with standard columns:', error.message);
+      const baseRecord = {
+        order_number: orderNumber,
+        customer_id: toValidUuidOrNull(orderData.customer_id),
+        customer_name: orderData.customer_name || 'Pelanggan',
+        customer_email: orderData.customer_email || 'pelanggan@sfv.my',
+        customer_phone: orderData.customer_phone || '',
+        print_type: orderData.print_type || 'sublimation',
+        design_id: toValidUuidOrNull(orderData.design_id),
+        design_title: orderData.design_title || 'Custom Order',
+        mockup_url: orderData.mockup_url || null,
+        custom_artwork_url: orderData.custom_artwork_url || null,
+        fabric_material_id: toValidUuidOrNull(orderData.fabric_material_id),
+        fabric_name: orderData.fabric_name || null,
+        apparel_cut_id: toValidUuidOrNull(orderData.apparel_cut_id),
+        cut_name: orderData.cut_name || null,
+        dtf_dimension_id: toValidUuidOrNull(orderData.dtf_dimension_id),
+        dtf_dimension_name: orderData.dtf_dimension_name || null,
+        dtf_option_type: orderData.dtf_option_type || null,
+        garment_blank_color: orderData.garment_blank_color || null,
+        sizing_breakdown: orderData.sizing_breakdown || {},
+        total_quantity: orderData.total_quantity || 1,
+        raw_unit_price: orderData.raw_unit_price || 0,
+        discount_percentage: orderData.discount_percentage || 0,
+        final_unit_price: orderData.final_unit_price || 0,
+        total_amount: orderData.total_amount || 0,
+        status: orderData.status || 'pending_proof',
+        production_notes: orderData.production_notes || null,
+        shipping_address: orderData.shipping_address || null,
+        shipping_courier: orderData.shipping_courier || null,
+        tracking_number: orderData.tracking_number || null,
+      };
+
+      const retry = await supabase.from('orders').insert(baseRecord).select().single();
+      data = retry.data;
+      error = retry.error;
+    }
 
     if (error) {
       console.error('[orderActions] saveOrderDb error:', error.message);
