@@ -491,26 +491,39 @@ export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<
 
   const lower = userText.toLowerCase();
 
-  // 4. Check if contact is currently paused by human (with auto-resume on explicit inquiry)
+  // 4. Check if contact is currently paused by human (with auto-resume on any customer question or image)
   if (isContactPaused(msg.from)) {
     const isUnpauseRequest = 
-      lower.includes('bot') ||
-      lower.includes('aktif') ||
-      lower.includes('unpause') ||
-      lower.includes('start') ||
-      lower.includes('menu') ||
-      lower.includes('harga') ||
+      msg.hasMedia ||
+      lower.includes('?') ||
+      lower.includes('desain') ||
+      lower.includes('design') ||
+      lower.includes('koleksi') ||
       lower.includes('katalog') ||
+      lower.includes('berapa') ||
+      lower.includes('jumlah') ||
+      lower.includes('harga') ||
+      lower.includes('punya') ||
+      lower.includes('ada') ||
+      lower.includes('mau') ||
+      lower.includes('nak') ||
+      lower.includes('buat') ||
+      lower.includes('tempah') ||
+      lower.includes('jersi') ||
+      lower.includes('baju') ||
+      lower.includes('polo') ||
+      lower.includes('kain') ||
+      lower.includes('saiz') ||
+      lower.includes('size') ||
       lower.includes('order') ||
       lower.includes('pesanan') ||
-      lower.includes('tempah') ||
-      lower.includes('kain') ||
-      lower.includes('kolar') ||
+      lower.includes('bot') ||
+      lower.includes('aktif') ||
       lower.startsWith('/');
 
     if (isUnpauseRequest) {
       resumeContact(msg.from);
-      console.log(`[AI Brain] Auto-unpaused contact ${msg.from} due to customer inquiry: "${userText}"`);
+      console.log(`[AI Brain] Auto-unpaused contact ${msg.from} due to active customer question/image: "${userText}"`);
     } else {
       return { success: true, replied: false, reason: 'bot_paused_for_contact' };
     }
