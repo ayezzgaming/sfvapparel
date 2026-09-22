@@ -21,6 +21,7 @@ import {
   INITIAL_APPAREL_CUTS
 } from '../store/seed-data';
 
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 const LITELLM_URL = process.env.LITELLM_API_URL || 'http://187.127.223.53:4000';
 const LITELLM_KEY = process.env.LITELLM_API_KEY || 'sfv_litellm_master_2026';
 const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
@@ -110,14 +111,51 @@ function cleanWhatsAppChat(text: string): string {
 }
 
 /**
- * Multi-Provider LLM Caller with ultra-fast Groq prioritized
+ * Multi-Provider LLM Caller with OpenRouter Super Power Free Models Prioritized
  */
 async function callLlmWithFallback(
   messages: { role: string; content: string }[],
-  temperature: number = 0.35,
+  temperature: number = 0.70,
   maxTokens: number = 800
 ): Promise<string | null> {
-  // 1. Try Groq first for ultra-fast <800ms inference
+  // 1. Try OpenRouter Free Models (Nex AGI Pro, Qwen 27B, Nemotron 3 Super, Ling 3.0 Fin)
+  if (OPENROUTER_API_KEY) {
+    const openRouterFreeModels = [
+      'nex-agi/nex-n2.5-pro:free',
+      'inclusionai/ling-3.0-flash-fin:free',
+      'nvidia/nemotron-3-super-120b-a12b:free',
+      'qwen/qwen3.8-27b:free',
+      'nvidia/nemotron-3-ultra-550b-a55b:free'
+    ];
+
+    for (const model of openRouterFreeModels) {
+      try {
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+            'HTTP-Referer': 'https://sfvapparel.my',
+            'X-Title': 'SFV Apparel AI CS',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model,
+            messages,
+            temperature,
+            max_tokens: maxTokens,
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const content = data.choices?.[0]?.message?.content?.trim();
+          if (content && content.length > 5) return content;
+        }
+      } catch {}
+    }
+  }
+
+  // 2. Try Groq for ultra-fast fallback
   if (GROQ_API_KEY) {
     const groqModels = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b'];
     for (const model of groqModels) {
@@ -145,7 +183,7 @@ async function callLlmWithFallback(
     }
   }
 
-  // 2. Try LiteLLM Router on VPS port 4000
+  // 3. Try LiteLLM Router on VPS port 4000
   try {
     const res = await fetch(`${LITELLM_URL}/v1/chat/completions`, {
       method: 'POST',
@@ -790,8 +828,8 @@ ${liveDesignContext}
     }
   }
 
-  // 11. Execute LLM Call
-  const rawReply = await callLlmWithFallback(messagesToSend, 0.35, 800);
+  // 11. Execute LLM Call (Temperature 0.70 for natural, friendly CS tone)
+  const rawReply = await callLlmWithFallback(messagesToSend, 0.70, 800);
 
   if (!rawReply) {
     stopWahaTyping(msg.from).catch(() => {});

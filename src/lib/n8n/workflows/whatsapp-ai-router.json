@@ -1,5 +1,5 @@
 {
-  "name": "SFV Apparel - WhatsApp AI Router & CS Escalator",
+  "name": "SFV Apparel - WhatsApp Super Power Multi-Agent AI (OpenRouter Free)",
   "nodes": [
     {
       "parameters": {
@@ -7,10 +7,13 @@
         "path": "whatsapp-incoming",
         "options": {}
       },
-      "name": "Webhook WAHA",
+      "name": "Webhook Inbound WAHA",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [240, 300],
+      "position": [
+        100,
+        300
+      ],
       "id": "node-webhook-waha"
     },
     {
@@ -25,44 +28,145 @@
           ]
         }
       },
-      "name": "Filter Mesej Dari Pelanggan",
+      "name": "Filter Mesej Pelanggan",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [460, 300],
+      "position": [
+        320,
+        300
+      ],
       "id": "node-filter-customer"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://sfvapparel.vercel.app/api/whatsapp/webhook",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://sfvapparel.my",
+          "X-Title": "SFV Apparel Master Dispatcher"
+        },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "jsonBody": "={\n  \"model\": \"nvidia/nemotron-3-super-120b-a12b:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Gateway Classifier Kilang Jersi SFV APPAREL. Analisis mesej pelanggan dan tentukan kategori: [TANYA_HARGA, LIHAT_GAMBAR, CEK_ORDER, MINTA_STAF, CS_UMUM]. Jawab format JSON: {\\\"kategori\\\": \\\"...\\\", \\\"ringkasan\\\": \\\"...\\\"}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($json.body.body || $json.body.text || '') }}\n    }\n  ],\n  \"temperature\": 0.2\n}",
         "options": {}
       },
-      "name": "Proses Melalui AI Brain SFV",
+      "name": "Divisi 1: Nemotron Super 120B Dispatcher",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [680, 280],
-      "id": "node-ai-brain"
+      "position": [
+        540,
+        300
+      ],
+      "id": "node-dispatcher-ai"
     },
     {
       "parameters": {
-        "conditions": {
-          "string": [
+        "dataType": "string",
+        "value1": "={{ (() => { try { const p = JSON.parse($json.choices[0].message.content); return p.kategori; } catch(e) { return 'CS_UMUM'; } })() }}",
+        "rules": {
+          "rules": [
             {
-              "value1": "={{ $json.body.aiResult?.ticketCreated }}",
-              "operation": "equal",
-              "value2": "true"
+              "value2": "TANYA_HARGA",
+              "output": 0
+            },
+            {
+              "value2": "LIHAT_GAMBAR",
+              "output": 1
+            },
+            {
+              "value2": "CEK_ORDER",
+              "output": 2
+            },
+            {
+              "value2": "MINTA_STAF",
+              "output": 3
             }
           ]
-        }
+        },
+        "fallbackOutput": 4
       },
-      "name": "Perlu Bantuan Staf?",
-      "type": "n8n-nodes-base.if",
+      "name": "Router Cabang Agen",
+      "type": "n8n-nodes-base.switch",
       "typeVersion": 1,
-      "position": [900, 280],
-      "id": "node-check-ticket"
+      "position": [
+        780,
+        300
+      ],
+      "id": "node-switch-branch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://sfvapparel.my",
+          "X-Title": "SFV Apparel Pricing Engine"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"inclusionai/ling-3.0-flash-fin:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Akuntan Sebut Harga SFV APPAREL. Harga standard RM28/helai (siap cetak nama, no & logo). Kolar polo +RM3. Kira jumlah keseluruhan & deposit 50% secara tepat dan mesra dalam Bahasa Melayu.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node['Webhook Inbound WAHA'].json.body.body || '') }}\n    }\n  ],\n  \"temperature\": 0.3\n}",
+        "options": {}
+      },
+      "name": "Divisi 5: Ling 3.0 Fin (Kiraan Harga)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1050,
+        100
+      ],
+      "id": "node-pricing-agent"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://sfvapparel.my",
+          "X-Title": "SFV Apparel Vision Agent"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"inclusionai/ling-3.0-flash-vl:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Desainer Visual Kilang SFV APPAREL. Analisis gambar jersi yang dihantar pelanggan. Puji rekaannya, terangkan teknik Full Sublimation kilang kami, dan cadangkan katalog di https://sfvapparel.my/catalog.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node['Webhook Inbound WAHA'].json.body.body || 'Sila analisis gambar jersi ini.') }}\n    }\n  ],\n  \"temperature\": 0.6\n}",
+        "options": {}
+      },
+      "name": "Divisi 3: Ling 3.0 VL (Analisis Gambar)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1050,
+        240
+      ],
+      "id": "node-vision-agent"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://sfvapparel.my",
+          "X-Title": "SFV Apparel CS Agent"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"nex-agi/nex-n2.5-pro:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah staf jurujual khidmat pelanggan rasmi Kilang Jersi SFV APPAREL di Kajang. Bercakap dengan gaya bahasa Melayu yang mesra, efisien, profesional dan bersahaja (2-3 ayat sahaja). Sifar emoji. Info kilang: Alamat Kajang, Fabrik Drifit Milano 165gsm & Microfiber Eyelet, Katalog: https://sfvapparel.my/catalog.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node['Webhook Inbound WAHA'].json.body.body || '') }}\n    }\n  ],\n  \"temperature\": 0.7\n}",
+        "options": {}
+      },
+      "name": "Divisi 4: Nex AGI Pro / Qwen CS Utama",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1050,
+        520
+      ],
+      "id": "node-cs-agent"
     },
     {
       "parameters": {
@@ -74,62 +178,157 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": \"60148599138@c.us\",\n  \"text\": \"🔔 *PERHATIAN STAF KILANG:*\\nPelanggan *\" + $json.body.aiResult.customerName + \"* memerlukan semakan sebut harga/rekaan khas.\\nNombor: +\" + $json.body.aiResult.customerPhone\n}",
+        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": {{ JSON.stringify($node['Webhook Inbound WAHA'].json.body.from || $node['Webhook Inbound WAHA'].json.body.chatId) }},\n  \"text\": \"🔔 *PERMINTAAN STAF KILANG SFV APPAREL*\\n\\nPelanggan *\" + ($node['Webhook Inbound WAHA'].json.body.notifyName || 'Pelanggan') + \"* meminta bantuan staf admin manusia.\\nNombor: +\" + ($node['Webhook Inbound WAHA'].json.body.from || '').replace(/\\D/g, '') + \"\\n\\nMesej: \\\"\" + ($node['Webhook Inbound WAHA'].json.body.body || '') + \"\\\"\"\n}",
         "options": {}
       },
-      "name": "Alert Staf Kilang",
+      "name": "Alert Admin WhatsApp",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [1120, 200],
-      "id": "node-staff-alert"
+      "position": [
+        1050,
+        380
+      ],
+      "id": "node-alert-staff"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://187.127.223.53:3000/api/sendText",
+        "headers": {
+          "X-Api-Key": "sfv_waha_master_key_2026",
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": {{ JSON.stringify($node['Webhook Inbound WAHA'].json.body.from || $node['Webhook Inbound WAHA'].json.body.chatId) }},\n  \"text\": {{ JSON.stringify(($json.choices?.[0]?.message?.content || 'Terima kasih atas mesej anda. Staf kami akan membantu sebentar lagi.').trim()) }}\n}",
+        "options": {}
+      },
+      "name": "Hantar Balasan ke WhatsApp Pelanggan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1360,
+        300
+      ],
+      "id": "node-send-reply"
     }
   ],
   "connections": {
-    "Webhook WAHA": {
+    "Webhook Inbound WAHA": {
       "main": [
         [
           {
-            "node": "Filter Mesej Dari Pelanggan",
+            "node": "Filter Mesej Pelanggan",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Filter Mesej Dari Pelanggan": {
+    "Filter Mesej Pelanggan": {
       "main": [
         [
           {
-            "node": "Proses Melalui AI Brain SFV",
+            "node": "Divisi 1: Nemotron Super 120B Dispatcher",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Proses Melalui AI Brain SFV": {
+    "Divisi 1: Nemotron Super 120B Dispatcher": {
       "main": [
         [
           {
-            "node": "Perlu Bantuan Staf?",
+            "node": "Router Cabang Agen",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Perlu Bantuan Staf?": {
+    "Router Cabang Agen": {
       "main": [
         [
           {
-            "node": "Alert Staf Kilang",
+            "node": "Divisi 5: Ling 3.0 Fin (Kiraan Harga)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Divisi 3: Ling 3.0 VL (Analisis Gambar)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Divisi 4: Nex AGI Pro / Qwen CS Utama",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert Admin WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Divisi 4: Nex AGI Pro / Qwen CS Utama",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Divisi 5: Ling 3.0 Fin (Kiraan Harga)": {
+      "main": [
+        [
+          {
+            "node": "Hantar Balasan ke WhatsApp Pelanggan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Divisi 3: Ling 3.0 VL (Analisis Gambar)": {
+      "main": [
+        [
+          {
+            "node": "Hantar Balasan ke WhatsApp Pelanggan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Divisi 4: Nex AGI Pro / Qwen CS Utama": {
+      "main": [
+        [
+          {
+            "node": "Hantar Balasan ke WhatsApp Pelanggan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Admin WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Hantar Balasan ke WhatsApp Pelanggan",
             "type": "main",
             "index": 0
           }
         ]
       ]
     }
-  },
-  "active": false,
-  "settings": {}
+  }
 }
