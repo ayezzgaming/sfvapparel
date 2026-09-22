@@ -319,22 +319,42 @@ export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<
     return { success: true, replied: false, reason: 'contact_marked_as_private' };
   }
 
-  // 4. Check if contact is currently paused by human
-  if (isContactPaused(msg.from)) {
-    return { success: true, replied: false, reason: 'bot_paused_for_contact' };
-  }
-
   const userText = (msg.body || '').trim();
   if (!userText) {
     return { success: true, replied: false, reason: 'empty_message' };
+  }
+
+  const lower = userText.toLowerCase();
+
+  // 4. Check if contact is currently paused by human (with auto-resume on explicit inquiry)
+  if (isContactPaused(msg.from)) {
+    const isUnpauseRequest = 
+      lower.includes('bot') ||
+      lower.includes('aktif') ||
+      lower.includes('unpause') ||
+      lower.includes('start') ||
+      lower.includes('menu') ||
+      lower.includes('harga') ||
+      lower.includes('katalog') ||
+      lower.includes('order') ||
+      lower.includes('pesanan') ||
+      lower.includes('tempah') ||
+      lower.includes('kain') ||
+      lower.includes('kolar') ||
+      lower.startsWith('/');
+
+    if (isUnpauseRequest) {
+      resumeContact(msg.from);
+      console.log(`[AI Brain] Auto-unpaused contact ${msg.from} due to customer inquiry: "${userText}"`);
+    } else {
+      return { success: true, replied: false, reason: 'bot_paused_for_contact' };
+    }
   }
 
   // START TYPING INDICATOR IMMEDIATELY (Customer sees "mengetik..." on WhatsApp)
   startWahaTyping(msg.from).catch(() => {});
 
   // 5. Intent & Human Handover Keywords Check (Malay & Indonesian support)
-  const lower = userText.toLowerCase();
-
   // Check recent conversation to see if the AI previously offered to connect to human agent
   let previousAssistantOfferedHandover = false;
   try {
@@ -377,8 +397,8 @@ export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<
     (previousAssistantOfferedHandover && (lower === 'sekarang' || lower === 'skrg' || lower === 'ya' || lower === 'boleh' || lower === 'sambung'));
 
   if (isHandoverIntent) {
-    pauseContact(msg.from, 120); // Pause bot for 2 hours
-    const handoverText = 'Baik bang, saya dah maklumkan kepada staf admin kami sekarang. Perbualan AI dihentikan seketika dan staf manusia kami akan sambung perbualan ini terus di WhatsApp ya.';
+    pauseContact(msg.from, 10); // Pause bot for 10 mins (auto-resumes if customer asks a product question)
+    const handoverText = 'Baik, saya sudah maklumkan kepada staf admin kami. Perbualan AI dihentikan seketika dan staf kami akan menyambung perbualan ini terus di WhatsApp ya.';
     await sendWahaMessage(msg.from, handoverText);
     stopWahaTyping(msg.from).catch(() => {});
 
@@ -395,7 +415,7 @@ Pelanggan meminta bercakap terus dengan staf / ejen manusia sekarang!
 💬 *Mesej:* "${userText}"
 ⏰ *Masa:* ${timeNow}
 
-⚠️ *Status:* AI telah dipausekan secara automatik selama 2 jam. Sila buka WhatsApp dan sambung perbualan dengan pelanggan ini.`.trim();
+⚠️ *Status:* AI telah dipausekan seketika. Sila buka WhatsApp dan sambung perbualan dengan pelanggan ini.`.trim();
 
     for (const adminChat of adminPhones) {
       sendWahaMessage(adminChat, adminAlertText).catch(() => {});
