@@ -2,12 +2,14 @@ import { sendWahaMessage, sendWahaImage, formatChatId, getWahaMessages, startWah
 import { getCmsDataDb } from '@/app/actions/cmsActions';
 import { getDesignsDb } from '@/app/actions/designActions';
 import { getMasterPricingDb } from '@/app/actions/pricingActions';
+import { getCustomerOrdersDb } from '@/app/actions/orderActions';
 import { calculateSublimationPrice, formatCurrency } from '@/lib/pricing-calculator';
 import { 
   CmsCompanySettings, 
   CmsService, 
   QuantityTierDiscount, 
-  Design 
+  Design,
+  Order
 } from '@/types/database';
 import { 
   INITIAL_CMS_COMPANY_SETTINGS, 
@@ -199,6 +201,29 @@ async function callLlmWithFallback(
 
 function parseMalaysianQuantity(text: string): number | null {
   const lower = text.toLowerCase();
+
+  // 1. Never parse quantity if the text is or contains an Order ID (e.g. SFV_ORD_4199, SFV-ORD-4199, ORD-4199) or Design ID (DES-01)
+  if (/sfv[-_]?ord[-_]?\d+/i.test(lower) || /ord[-_]\d+/i.test(lower) || /des[-_]?\d+/i.test(lower)) {
+    return null;
+  }
+
+  // 2. If user is asking about order status / tracking / invoice, do not match random digits as quantity
+  if (
+    lower.includes('order') ||
+    lower.includes('pesanan') ||
+    lower.includes('tempahan') ||
+    lower.includes('invois') ||
+    lower.includes('invoice') ||
+    lower.includes('status') ||
+    lower.includes('cek') ||
+    lower.includes('semak')
+  ) {
+    const explicitUnit = lower.match(/(\d+)\s*(helai|pcs|pasang|baju|jersi|keping)/i);
+    if (explicitUnit && explicitUnit[1]) {
+      return parseInt(explicitUnit[1], 10);
+    }
+    return null;
+  }
   
   // Check for "ribu" / "k" (e.g. "100 ribu", "10 ribu", "100k", "50k")
   const kMatch = lower.match(/(\d+)\s*(k|ribu)/i);
@@ -206,19 +231,26 @@ function parseMalaysianQuantity(text: string): number | null {
     return parseInt(kMatch[1], 10) * 1000;
   }
 
-  // Check for numbers with commas/dots (e.g. "100,000", "1.000")
-  const commaMatch = lower.match(/(\d{1,3}(?:[,\.]\d{3})+)/);
+  // Check for numbers with commas/dots explicitly followed by unit (e.g. "100,000 helai", "1,000 pcs")
+  const commaMatch = lower.match(/(\d{1,3}(?:[,\.]\d{3})+)\s*(helai|pcs|pasang|baju|jersi|keping)?/i);
   if (commaMatch && commaMatch[1]) {
     const cleanNum = commaMatch[1].replace(/[,\.]/g, '');
     const n = parseInt(cleanNum, 10);
     if (!isNaN(n)) return n;
   }
 
-  // Check standard digits (e.g. "40 helai", "1000 pcs")
-  const stdMatch = lower.match(/(\d+)\s*(helai|pcs|pasang|baju|jersi|keping)?/i);
+  // Check standard digits WITH explicit apparel units (e.g. "40 helai", "1000 pcs", "50 baju")
+  const stdMatch = lower.match(/(\d+)\s*(helai|pcs|pasang|baju|jersi|keping)/i);
   if (stdMatch && stdMatch[1]) {
     const n = parseInt(stdMatch[1], 10);
     if (!isNaN(n)) return n;
+  }
+
+  // Check standalone quantity in quotation questions (e.g. "kalau 40 berapa", "nak buat 100", "harga untuk 50")
+  const contextMatch = lower.match(/(?:kalau|buat|tempah|anggaran|harga\s+untuk|kuantiti)\s+(\d+)(?:\s+|$)/i);
+  if (contextMatch && contextMatch[1]) {
+    const n = parseInt(contextMatch[1], 10);
+    if (!isNaN(n) && n < 1000000) return n;
   }
 
   return null;
@@ -372,8 +404,97 @@ FAKTA KIRAAN PENGELUARAN KILANG (GUNAKAN INI BILA JAWAB KUANTITI ${detectedQty.t
     `.trim();
   }
 
+  // 8. Check if user is asking about Order Status (by Order Number or Customer Phone)
+  let liveOrderContext = '';
+  let foundOrder: Order | null = null;
 
-  // 8. Check if user is asking about a specific design/catalog product
+  const orderNumMatch = lower.match(/sfv[-_]?ord[-_]?\d+|ord[-_]?\d+|sfv[-_]?\d{4,}/i);
+  if (orderNumMatch) {
+    const rawMatched = orderNumMatch[0].toUpperCase().replace(/_/g, '-');
+    const normalizedOrderNum = rawMatched.startsWith('ORD-') ? `SFV-${rawMatched}` : rawMatched;
+    const digitsMatch = rawMatched.match(/\d+/);
+    const digits = digitsMatch ? digitsMatch[0] : '';
+
+    try {
+      const res = await getCustomerOrdersDb(normalizedOrderNum);
+      if (res.success && res.orders && res.orders.length > 0) {
+        foundOrder = res.orders[0];
+      } else if (digits) {
+        const fallbackRes = await getCustomerOrdersDb(digits);
+        if (fallbackRes.success && fallbackRes.orders && fallbackRes.orders.length > 0) {
+          foundOrder = fallbackRes.orders.find(o => o.order_number.includes(digits)) || fallbackRes.orders[0];
+        }
+      }
+    } catch (err) {
+      console.warn('[AI Brain] Order DB lookup error:', err);
+    }
+
+    if (!foundOrder) {
+      foundOrder = INITIAL_ORDERS.find(o => 
+        o.order_number.toUpperCase().replace(/_/g, '-') === normalizedOrderNum ||
+        (digits && o.order_number.includes(digits))
+      ) || null;
+    }
+  }
+
+  // If order not found by ID yet, check by customer WhatsApp phone if asking about order
+  if (!foundOrder && (lower.includes('order') || lower.includes('pesanan') || lower.includes('tempahan') || lower.includes('status') || lower.includes('invois') || lower.includes('invoice') || lower.includes('cek'))) {
+    try {
+      const phoneRes = await getCustomerOrdersDb(msg.from);
+      if (phoneRes.success && phoneRes.orders && phoneRes.orders.length > 0) {
+        foundOrder = phoneRes.orders[0];
+      }
+    } catch (err) {}
+
+    if (!foundOrder) {
+      const cleanFrom = msg.from.replace(/\D/g, '');
+      foundOrder = INITIAL_ORDERS.find(o => o.customer_phone.replace(/\D/g, '').includes(cleanFrom.slice(-7))) || null;
+    }
+  }
+
+  if (foundOrder) {
+    const statusLabels: Record<string, string> = {
+      pending_proof: 'Menunggu Pengesahan Proof Mockup (Design sedia disemak pelanggan)',
+      proof_approved: 'Proof Mockup Telah Diluluskan (Sedia masuk giliran cetakan)',
+      printing: 'Sedang Dicetak (Fasa cetakan sublimasi kilang)',
+      heat_press: 'Sedang Heat Press (Pindahan haba ke kain jersi)',
+      sewing: 'Sedang Dijahit (Proses cantuman & jahitan)',
+      qc_check: 'Pemeriksaan Kualiti / QC (Semakan kualiti akhir)',
+      ready_to_ship: 'Sedia Untuk Dipos / Dihantar',
+      delivered: 'Pesanan Telah Dihantar / Selesai',
+      cancelled: 'Pesanan Dibatalkan',
+    };
+
+    const paymentLabels: Record<string, string> = {
+      unpaid: 'Menunggu Bayaran Deposit 50%',
+      deposit_paid: 'Deposit 50% Telah Diterima (Baki 50% belum dibayar)',
+      paid: 'Telah Dibayar Penuh (Lunas)',
+    };
+
+    const sizingSummary = Object.entries(foundOrder.sizing_breakdown || {})
+      .filter(([_, qty]) => Number(qty) > 0)
+      .map(([size, qty]) => `${size}:${qty}`)
+      .join(', ');
+
+    const depositVal = Number(foundOrder.deposit_amount || foundOrder.total_amount * 0.5);
+    const balanceVal = Number(foundOrder.balance_amount || foundOrder.total_amount * 0.5);
+
+    liveOrderContext = `
+=== MAKLUMAT STATUS PESANAN PELANGGAN DI DALAM PANGKALAN DATA (WAJIB GUNAKAN MAKLUMAT INI) ===
+- No Pesanan: #${foundOrder.order_number}
+- Nama Pelanggan: ${foundOrder.customer_name || 'Pelanggan'}
+- Rekaan: ${foundOrder.design_title || 'Custom Jersey'}
+- Jumlah Kuantiti: ${foundOrder.total_quantity} helai ${sizingSummary ? `(Pecahan Saiz: ${sizingSummary})` : ''}
+- Jumlah Nilai Pesanan: RM ${Number(foundOrder.total_amount).toFixed(2)}
+- Deposit 50%: RM ${depositVal.toFixed(2)} (${paymentLabels[foundOrder.payment_status || 'unpaid'] || foundOrder.payment_status})
+- Baki 50%: RM ${balanceVal.toFixed(2)}
+- Status Pengeluaran Kilang Semasa: ${statusLabels[foundOrder.status] || foundOrder.status}
+- Tracking Kurier: ${foundOrder.tracking_number ? `${foundOrder.shipping_courier || 'Kurier'}: ${foundOrder.tracking_number}` : 'Belum dikeluarkan (pesanan masih dalam fasa pengeluaran)'}
+- Pautan Semak Butiran & Invois: https://sfvapparel.my/history
+    `.trim();
+  }
+
+  // 9. Check if user is asking about a specific design/catalog product
   const designMatch = lower.match(/des-?[\w\d]+/i);
   let liveDesignContext = '';
   let targetDesignImage: string | null = null;
@@ -402,7 +523,7 @@ REKAAN DITANYA:
     }
   }
 
-  // 9. Fetch Recent Conversation History for Context Memory
+  // 10. Fetch Recent Conversation History for Context Memory
   let conversationHistory: { role: string; content: string }[] = [];
   try {
     const recentMsgs = await getWahaMessages(msg.from, 6);
@@ -425,7 +546,7 @@ REKAAN DITANYA:
 
   const isOngoingConversation = conversationHistory.length > 0;
 
-  // 10. Master System Prompt (Human Persona, Few-Shot Training, Strict Spacing & Greeting Rules)
+  // 11. Master System Prompt (Human Persona, Few-Shot Training, Strict Spacing & Greeting Rules)
   const systemPrompt = `Anda adalah Pembantu Khidmat Pelanggan Pintar (AI Digital Assistant) rasmi bagi Kilang Jersi SFV APPAREL (Malaysia) di WhatsApp.
 Bercakaplah dengan nada mesra, bersahaja, santai seperti staf kilang tempatan (2-3 ayat sahaja). Sifar emoji.
 
@@ -438,14 +559,27 @@ Bercakaplah dengan nada mesra, bersahaja, santai seperti staf kilang tempatan (2
 === PERATURAN MUTLAK GAYA BAHASA & FORMAT WHATSAPP ===
 1. ${isOngoingConversation ? 'PERBUALAN INI SUDAH BERLANGSUNG: DILARANG mengucap "Salam", "Salam bang", "Hai", atau membuat pembukaan sapaan lagi. Terus jawab soalan pelanggan secara langsung.' : 'PERBUALAN BARU: Mulakan dengan sapaan ringkas seperti "Salam bang!" atau "Hai bang!"'}
 2. IDENTITI BOT / AI: Jika pelanggan tanya adakah anda bot / robot / AI, JAWAB DENGAN JUJUR & MESRA. Jangan berbohong kata anda manusia 100%, tapi jangan jawab kaku seperti robot! Nyatakan anda adalah pembantu AI digital kilang yang membantu menjawab pantas info harga, katalog & status tempahan, dan tawarkan sambungan ke staf manusia jika mereka perlukan.
-3. WAKTU OPERASI: Gunakan sebutan masa yang mesra (contoh: "9.00 pagi - 6.00 petang", jangan guna format jam mesin seperti "9.00-18.00"). Hari Ahad & cuti umum kilang tutup.
-4. SOALAN LOKASI / ALAMAT: Jika pelanggan tanya LOKASI KILANG atau ALAMAT PERNIAGAAN, BERIKAN ALAMAT PENUH DI KAJANG SECARA TERUS DAN TEPAT dengan baris baru (ENTER). DILARANG MENYURUH PELANGGAN CARI SENDIRI DI WEBSITE!
-5. PAUTAN TEPAT: Bila pelanggan tanya pasal TEMPLAT / CONTOH DESIGN / KATALOG, beri link https://sfvapparel.my/catalog. Bila pelanggan tanya nak TEMPAH / CUSTOMIZE, beri link https://sfvapparel.my/customize. Dilarang mereka-reka link lain!
-6. SUSUNAN DENGAN BARIS BARU (ENTER): Jika memberikan langkah atau senarai, gunakan baris baru (ENTER) untuk setiap poin. DILARANG menggabungkan langkah dalam satu baris bersambung!
-7. SIFAR EMOJI & EMOTIKON: Dilarang sama sekali meletakkan emoji atau emotikon.
-8. FORMAT TEKS: Untuk tulisan tebal, guna 1 tanda bintang sahaja seperti *teks* atau *RM28.00*. Jangan guna **.
+3. MAKLUMAT STATUS PESANAN PELANGGAN (PENTING):
+- Jika maklumat pesanan pelanggan ditemui dalam blok pangkalan data (rujuk "MAKLUMAT STATUS PESANAN PELANGGAN"), WAJIB GUNAKAN MAKLUMAT SEBENAR ITU!
+- Nyatakan No Pesanan (#SFV-ORD-XXXX), Nama rekaan, Kuantiti sebenar, Nilai jumlah pesanan, Status deposit/bayaran, dan Status pengeluaran kilang semasa.
+- DILARANG SAMA SEKALI mengira semula sebut harga baru atau menganggap nombor pesanan sebagai kuantiti helai baju!
+- Jika pelanggan tanya cara semak status pesanan tapi belum beri nombor pesanan, minta mereka berikan nombor pesanan (contoh: *#SFV-ORD-4199*) atau layari https://sfvapparel.my/history.
+4. WAKTU OPERASI: Gunakan sebutan masa yang mesra (contoh: "9.00 pagi - 6.00 petang", jangan guna format jam mesin seperti "9.00-18.00"). Hari Ahad & cuti umum kilang tutup.
+5. SOALAN LOKASI / ALAMAT: Jika pelanggan tanya LOKASI KILANG atau ALAMAT PERNIAGAAN, BERIKAN ALAMAT PENUH DI KAJANG SECARA TERUS DAN TEPAT dengan baris baru (ENTER). DILARANG MENYURUH PELANGGAN CARI SENDIRI DI WEBSITE!
+6. PAUTAN TEPAT: Bila pelanggan tanya pasal TEMPLAT / CONTOH DESIGN / KATALOG, beri link https://sfvapparel.my/catalog. Bila pelanggan tanya nak TEMPAH / CUSTOMIZE, beri link https://sfvapparel.my/customize. Dilarang mereka-reka link lain!
+7. SUSUNAN DENGAN BARIS BARU (ENTER): Jika memberikan langkah atau senarai, gunakan baris baru (ENTER) untuk setiap poin. DILARANG menggabungkan langkah dalam satu baris bersambung!
+8. SIFAR EMOJI & EMOTIKON: Dilarang sama sekali meletakkan emoji atau emotikon.
+9. FORMAT TEKS: Untuk tulisan tebal, guna 1 tanda bintang sahaja seperti *teks* atau *RM28.00*. Jangan guna **.
 
 === CONTOH DIALOG MANUSIAWI (FEW-SHOT TRAINING) ===
+Pelanggan: "SFV_ORD_4199" atau "Boleh semak order saya SFV-ORD-4199?"
+Jawapan: "Pesanan abang *#SFV-ORD-4199* (*PINK MOTIV DESIGN*, 20 helai) berjumlah *RM620.00* kini dalam status *Menunggu Pengesahan Proof Mockup*.
+
+Status deposit 50% (*RM310.00*) masih menunggu bayaran. Abang boleh semak butiran penuh atau muat turun invois di https://sfvapparel.my/history ya!"
+
+Pelanggan: "saya mau tanya soal order bisakah kamu cek"
+Jawapan: "Boleh sangat bang! Sila berikan nombor pesanan abang (contoh: *#SFV-ORD-4199*) atau nama/nombor telefon yang didaftarkan semasa tempahan, nanti saya semakkan status terkini terus di sistem kilang."
+
 Pelanggan: "Apakah hari minggu buka"
 Jawapan: "Hari Ahad kilang kami tutup bang. Kami beroperasi Isnin hingga Jumaat (9.00 pagi - 6.00 petang) dan Sabtu (9.00 pagi - 1.00 tengah hari).
 
@@ -521,7 +655,7 @@ Website Rasmi: https://sfvapparel.my
 Katalog Rekaan: https://sfvapparel.my/catalog
 Website 3D Customizer: https://sfvapparel.my/customize
 
-
+${liveOrderContext}
 ${dynamicPricingContext}
 ${liveDesignContext}
 `.trim();
