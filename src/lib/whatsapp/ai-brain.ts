@@ -294,7 +294,15 @@ function getTurnaroundTimeline(qty: number): { timeline: string; isMegaBulk: boo
 /**
  * Process incoming message with AI Brain, Intent Classifier, Conversation Memory, and Live DB Context
  */
-export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<{ success: boolean; replied: boolean; responseText?: string; reason?: string }> {
+export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<{ 
+  success: boolean; 
+  replied: boolean; 
+  responseText?: string; 
+  reason?: string; 
+  ticketCreated?: boolean; 
+  customerPhone?: string; 
+  customerName?: string; 
+}> {
   // 1. If message is from admin (fromMe = true), automatically PAUSE bot for this customer
   if (msg.fromMe) {
     pauseContact(msg.from, 30);
@@ -324,27 +332,84 @@ export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<
   // START TYPING INDICATOR IMMEDIATELY (Customer sees "mengetik..." on WhatsApp)
   startWahaTyping(msg.from).catch(() => {});
 
-  // 5. Intent & Human Handover Keywords Check
+  // 5. Intent & Human Handover Keywords Check (Malay & Indonesian support)
   const lower = userText.toLowerCase();
-  if (
+
+  // Check recent conversation to see if the AI previously offered to connect to human agent
+  let previousAssistantOfferedHandover = false;
+  try {
+    const recentMsgs = await getWahaMessages(msg.from, 3);
+    if (recentMsgs && recentMsgs.length > 0) {
+      const lastBotMsg = recentMsgs.filter(m => m.fromMe).slice(-1)[0];
+      if (lastBotMsg && (lastBotMsg.body.includes('sambungkan') || lastBotMsg.body.includes('ejen') || lastBotMsg.body.includes('staf') || lastBotMsg.body.includes('admin'))) {
+        previousAssistantOfferedHandover = true;
+      }
+    }
+  } catch {}
+
+  const isHandoverIntent = 
+    lower.includes('bicara sama ejen') ||
+    lower.includes('bicara sama admin') ||
+    lower.includes('bicara sama staf') ||
+    lower.includes('bicara sama orang') ||
+    lower.includes('bicara sama manusia') ||
+    lower.includes('mau bicara sama') ||
+    lower.includes('bisa ngomong sama') ||
     lower.includes('nak cakap staf') || 
     lower.includes('nak cakap manusia') || 
+    lower.includes('nak cakap admin') || 
     lower.includes('cakap dengan admin') || 
     lower.includes('human agent') ||
     lower.includes('panggil admin') ||
     lower.includes('hubungi staf') ||
+    lower.includes('hubungi ejen') ||
+    lower.includes('hubungi admin') ||
+    lower.includes('sambung staf') ||
+    lower.includes('sambung ke ejen') ||
+    lower.includes('sambungkan') ||
+    lower.includes('nak ejen') ||
+    lower.includes('ejen admin') ||
     lower.includes('nak orang') ||
     lower.includes('staf manusia') ||
     lower.includes('admin sebenar') ||
-    lower.includes('sambung staf') ||
     lower.includes('person in charge') ||
-    lower.includes('nak pic')
-  ) {
-    pauseContact(msg.from, 60);
-    const handoverText = 'Baik bang, mesej anda telah dimaklumkan kepada staf bertugas kilang kami. Staf manusia kami akan menyambung perbualan sebentar lagi.';
+    lower.includes('nak pic') ||
+    (previousAssistantOfferedHandover && (lower === 'sekarang' || lower === 'skrg' || lower === 'ya' || lower === 'boleh' || lower === 'sambung'));
+
+  if (isHandoverIntent) {
+    pauseContact(msg.from, 120); // Pause bot for 2 hours
+    const handoverText = 'Baik bang, saya dah maklumkan kepada staf admin kami sekarang. Perbualan AI dihentikan seketika dan staf manusia kami akan sambung perbualan ini terus di WhatsApp ya.';
     await sendWahaMessage(msg.from, handoverText);
     stopWahaTyping(msg.from).catch(() => {});
-    return { success: true, replied: true, responseText: handoverText, reason: 'human_handover_triggered' };
+
+    // Send instant Escalation Notification to Factory Admin WhatsApp
+    const adminPhones = ['6281260066616@c.us', '60148599138@c.us'];
+    const cleanCustomerNum = msg.from.replace('@c.us', '').replace('@s.whatsapp.net', '');
+    const timeNow = new Date().toLocaleTimeString('ms-MY', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit' });
+
+    const adminAlertText = `🔔 *PERMINTAAN ESKALASI PELANGGAN SFV APPAREL*
+Pelanggan meminta bercakap terus dengan staf / ejen manusia sekarang!
+
+👤 *Nama:* ${msg.senderName || 'Pelanggan'}
+📱 *WhatsApp:* +${cleanCustomerNum}
+💬 *Mesej:* "${userText}"
+⏰ *Masa:* ${timeNow}
+
+⚠️ *Status:* AI telah dipausekan secara automatik selama 2 jam. Sila buka WhatsApp dan sambung perbualan dengan pelanggan ini.`.trim();
+
+    for (const adminChat of adminPhones) {
+      sendWahaMessage(adminChat, adminAlertText).catch(() => {});
+    }
+
+    return { 
+      success: true, 
+      replied: true, 
+      responseText: handoverText, 
+      reason: 'human_handover_escalated',
+      ticketCreated: true,
+      customerPhone: cleanCustomerNum,
+      customerName: msg.senderName || 'Pelanggan'
+    };
   }
 
   // 6. Fetch Live Database Context (with fallback to default seed data)
