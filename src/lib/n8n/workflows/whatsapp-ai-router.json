@@ -12,7 +12,7 @@
       "typeVersion": 1,
       "position": [
         100,
-        300
+        400
       ],
       "id": "node-webhook-waha"
     },
@@ -21,7 +21,7 @@
         "conditions": {
           "string": [
             {
-              "value1": "={{ $json.body.fromMe }}",
+              "value1": "={{ $json.body.fromMe || $json.body.payload?.fromMe || false }}",
               "operation": "equal",
               "value2": "false"
             }
@@ -33,9 +33,27 @@
       "typeVersion": 1,
       "position": [
         320,
-        300
+        400
       ],
       "id": "node-filter-customer"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://187.127.223.53:3000/api/whatsapp/ai-context",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "name": "Introspeksi Data Kilang SFV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        540,
+        400
+      ],
+      "id": "node-system-introspection",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -49,22 +67,50 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"nvidia/nemotron-3-super-120b-a12b:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Gateway Classifier Kilang Jersi SFV APPAREL. Analisis mesej pelanggan dan tentukan kategori: [TANYA_HARGA, LIHAT_GAMBAR, CEK_ORDER, MINTA_STAF, CS_UMUM]. Jawab format JSON: {\\\"kategori\\\": \\\"...\\\", \\\"ringkasan\\\": \\\"...\\\"}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($json.body.body || $json.body.text || '') }}\n    }\n  ],\n  \"temperature\": 0.2\n}",
-        "options": {}
+        "jsonBody": "={\n  \"model\": \"nvidia/nemotron-3-super-120b-a12b:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Gateway Classifier Kilang SFV APPAREL. Analisis mesej dan pulangkan JSON SAHAJA: {\\\"kategori\\\": \\\"TANYA_HARGA\\\" | \\\"LIHAT_GAMBAR\\\" | \\\"CEK_ORDER\\\" | \\\"BULK_KORPORAT\\\" | \\\"MINTA_STAF\\\" | \\\"CS_UMUM\\\", \\\"kuantiti\\\": 0}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || $node[\"Filter Mesej Pelanggan\"].json.body.text || $node[\"Filter Mesej Pelanggan\"].json.body.payload?.body || '') }}\n    }\n  ],\n  \"temperature\": 0.1\n}",
+        "options": {
+          "timeout": 10000
+        }
       },
-      "name": "Divisi 1: Nemotron Super 120B Dispatcher",
+      "name": "Divisi 1: Nemotron Super 120B (Dispatcher)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        540,
-        300
+        780,
+        400
       ],
-      "id": "node-dispatcher-ai"
+      "id": "node-dispatcher-t1",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"qwen/qwen3.8-27b:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Tentukan kategori mesej pelanggan: TANYA_HARGA, LIHAT_GAMBAR, CEK_ORDER, BULK_KORPORAT, MINTA_STAF, CS_UMUM. Format JSON: {\\\"kategori\\\": \\\"...\\\"}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || $node[\"Filter Mesej Pelanggan\"].json.body.text || '') }}\n    }\n  ]\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Divisi 1 Fallback: Qwen 27B Dispatcher",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        780,
+        580
+      ],
+      "id": "node-dispatcher-t2",
+      "continueOnFail": true
     },
     {
       "parameters": {
         "dataType": "string",
-        "value1": "={{ (() => { try { const p = JSON.parse($json.choices[0].message.content); return p.kategori; } catch(e) { return 'CS_UMUM'; } })() }}",
+        "value1": "={{ (() => {\n        try {\n          const raw = $json.choices[0].message.content;\n          const p = JSON.parse(raw.replace(/\\`\\`\\`json|\\`\\`\\`/g, '').trim());\n          return p.kategori || 'CS_UMUM';\n        } catch(e) {\n          const text = ($node[\"Filter Mesej Pelanggan\"].json.body.body || '').toLowerCase();\n          if (text.includes('harga') || text.includes('sebut') || text.includes('berapa') || text.includes('helai')) return 'TANYA_HARGA';\n          if (text.includes('order') || text.includes('status') || text.includes('pesanan')) return 'CEK_ORDER';\n          if (text.includes('staf') || text.includes('admin') || text.includes('manusia')) return 'MINTA_STAF';\n          if (text.includes('100') || text.includes('500') || text.includes('kilang') || text.includes('korporat')) return 'BULK_KORPORAT';\n          return 'CS_UMUM';\n        }\n      })() }}",
         "rules": {
           "rules": [
             {
@@ -80,21 +126,25 @@
               "output": 2
             },
             {
-              "value2": "MINTA_STAF",
+              "value2": "BULK_KORPORAT",
               "output": 3
+            },
+            {
+              "value2": "MINTA_STAF",
+              "output": 4
             }
           ]
         },
-        "fallbackOutput": 4
+        "fallbackOutput": 5
       },
-      "name": "Router Cabang Agen",
+      "name": "Router Cabang Super Power",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 1,
       "position": [
-        780,
-        300
+        1060,
+        400
       ],
-      "id": "node-switch-branch"
+      "id": "node-master-switch"
     },
     {
       "parameters": {
@@ -102,23 +152,24 @@
         "url": "https://openrouter.ai/api/v1/chat/completions",
         "headers": {
           "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://sfvapparel.my",
-          "X-Title": "SFV Apparel Pricing Engine"
+          "Content-Type": "application/json"
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"inclusionai/ling-3.0-flash-fin:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Akuntan Sebut Harga SFV APPAREL. Harga standard RM28/helai (siap cetak nama, no & logo). Kolar polo +RM3. Kira jumlah keseluruhan & deposit 50% secara tepat dan mesra dalam Bahasa Melayu.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node['Webhook Inbound WAHA'].json.body.body || '') }}\n    }\n  ],\n  \"temperature\": 0.3\n}",
-        "options": {}
+        "jsonBody": "={\n  \"model\": \"inclusionai/ling-3.0-flash-fin:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Pakar Kiraan Sebut Harga SFV APPAREL. Berikan sebut harga jersi sublimation yang pantas, tepat, tanpa emoji. Terangkan harga sehelai mengikut tier (1-5 pcs: RM45, 6-12 pcs: RM40, 13-24 pcs: RM35, 25-50 pcs: RM30, 51-100 pcs: RM28, 101+ pcs: RM25). Nyatakan deposit 50% & percuma cetakan nama/nombor/logo. Ringkas 1-2 perenggan.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ],\n  \"temperature\": 0.5\n}",
+        "options": {
+          "timeout": 12000
+        }
       },
-      "name": "Divisi 5: Ling 3.0 Fin (Kiraan Harga)",
+      "name": "Divisi 2: Ling 3.0 Flash Fin (Harga Primary)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        1050,
+        1340,
         100
       ],
-      "id": "node-pricing-agent"
+      "id": "node-price-primary",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -126,23 +177,24 @@
         "url": "https://openrouter.ai/api/v1/chat/completions",
         "headers": {
           "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://sfvapparel.my",
-          "X-Title": "SFV Apparel Vision Agent"
+          "Content-Type": "application/json"
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"inclusionai/ling-3.0-flash-vl:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Desainer Visual Kilang SFV APPAREL. Analisis gambar jersi yang dihantar pelanggan. Puji rekaannya, terangkan teknik Full Sublimation kilang kami, dan cadangkan katalog di https://sfvapparel.my/catalog.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node['Webhook Inbound WAHA'].json.body.body || 'Sila analisis gambar jersi ini.') }}\n    }\n  ],\n  \"temperature\": 0.6\n}",
-        "options": {}
+        "jsonBody": "={\n  \"model\": \"nvidia/nemotron-3.5-lightning:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Pakar Sebut Harga Kilang SFV APPAREL. Jawab ramah, tepat, santun tanpa emoji mengenai harga jersi dan deposit 50%.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "options": {
+          "timeout": 10000
+        }
       },
-      "name": "Divisi 3: Ling 3.0 VL (Analisis Gambar)",
+      "name": "Divisi 2 Fallback: Nemotron Lightning (Harga Fast)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        1050,
-        240
+        1600,
+        100
       ],
-      "id": "node-vision-agent"
+      "id": "node-price-fb1",
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -150,67 +202,280 @@
         "url": "https://openrouter.ai/api/v1/chat/completions",
         "headers": {
           "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://sfvapparel.my",
-          "X-Title": "SFV Apparel CS Agent"
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"nex-agi/nex-n2.5-pro:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah staf jurujual khidmat pelanggan rasmi Kilang Jersi SFV APPAREL di Kajang. Bercakap dengan gaya bahasa Melayu yang mesra, efisien, profesional dan bersahaja (2-3 ayat sahaja). Sifar emoji. Info kilang: Alamat Kajang, Fabrik Drifit Milano 165gsm & Microfiber Eyelet, Katalog: https://sfvapparel.my/catalog.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node['Webhook Inbound WAHA'].json.body.body || '') }}\n    }\n  ],\n  \"temperature\": 0.7\n}",
-        "options": {}
-      },
-      "name": "Divisi 4: Nex AGI Pro / Qwen CS Utama",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [
-        1050,
-        520
-      ],
-      "id": "node-cs-agent"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "http://187.127.223.53:3000/api/sendText",
-        "headers": {
-          "X-Api-Key": "sfv_waha_master_key_2026",
           "Content-Type": "application/json"
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": {{ JSON.stringify($node['Webhook Inbound WAHA'].json.body.from || $node['Webhook Inbound WAHA'].json.body.chatId) }},\n  \"text\": \"🔔 *PERMINTAAN STAF KILANG SFV APPAREL*\\n\\nPelanggan *\" + ($node['Webhook Inbound WAHA'].json.body.notifyName || 'Pelanggan') + \"* meminta bantuan staf admin manusia.\\nNombor: +\" + ($node['Webhook Inbound WAHA'].json.body.from || '').replace(/\\D/g, '') + \"\\n\\nMesej: \\\"\" + ($node['Webhook Inbound WAHA'].json.body.body || '') + \"\\\"\"\n}",
-        "options": {}
+        "jsonBody": "={\n  \"model\": \"inclusionai/ling-3.0-vl:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Pakar Rekaan & Mockup Jersi SFV APPAREL. Analisis rekaan baju jersi pelanggan, sahkan bahawa kilang kami boleh mencetak rekaan ini secara cetakan sublimasi penuh HD. Minta pelanggan berikan kuantiti dan senarai saiz untuk kita sediakan sebut harga rasmi.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || 'Pelanggan berkongsi imej rekaan baju') }}\n    }\n  ]\n}",
+        "options": {
+          "timeout": 15000
+        }
       },
-      "name": "Alert Admin WhatsApp",
+      "name": "Divisi 3: Ling 3.0 VL (Vision & Mockup Primary)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        1050,
-        380
+        1340,
+        260
       ],
-      "id": "node-alert-staff"
+      "id": "node-vision-primary",
+      "continueOnFail": true
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://187.127.223.53:3000/api/sendText",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
         "headers": {
-          "X-Api-Key": "sfv_waha_master_key_2026",
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
           "Content-Type": "application/json"
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": {{ JSON.stringify($node['Webhook Inbound WAHA'].json.body.from || $node['Webhook Inbound WAHA'].json.body.chatId) }},\n  \"text\": {{ JSON.stringify(($json.choices?.[0]?.message?.content || 'Terima kasih atas mesej anda. Staf kami akan membantu sebentar lagi.').trim()) }}\n}",
+        "jsonBody": "={\n  \"model\": \"google/gemma-4-26b-a4b-it:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Pakar Rekaan Jersi SFV APPAREL. Jawab ramah dan beritahu pelanggan kilang sedia mencetak corak tersebut.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "options": {
+          "timeout": 12000
+        }
+      },
+      "name": "Divisi 3 Fallback: Gemma 4 26B (Vision Fallback)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1600,
+        260
+      ],
+      "id": "node-vision-fb1",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"dots-studio/dots-3-note-preview:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Pegawai Semakan Status Kilang SFV APPAREL. Berikan maklumat bahawa pelanggan boleh menyemak status pesanan dan invois di portal rasmi https://sfvapparel.my/history menggunakan No Pesanan (#SFV-ORD-XXXX) atau nombor WhatsApp.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Divisi 4: Dots 3 Note (Semak Status Order)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1340,
+        420
+      ],
+      "id": "node-order-primary",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"nvidia/nemotron-3-ultra-550b-a55b:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Pengurus Akaun Korporat & Pesanan Pukal Kilang SFV APPAREL. Untuk pesanan pukal (100 helai ke atas), tawarkan harga kilang terus serendah RM25 sehelai, perkhidmatan sampel percuma, dan sambungkan pelanggan dengan Pegawai Khas kami.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "name": "Divisi 5: Nemotron Ultra 550B (Pesanan Pukal & Korporat)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1340,
+        580
+      ],
+      "id": "node-bulk-primary",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"liquid/lfm-2.5-2.6b:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Pengurus Pukal SFV APPAREL. Tawarkan pakej istimewa 100 helai ke atas.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Divisi 5 Fallback: Liquid LFM 2.5 (Bulk Fallback)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1600,
+        580
+      ],
+      "id": "node-bulk-fb1",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://187.127.223.53:3001/api/sendText",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": \"60148599138@c.us\",\n  \"text\": \"🚨 *PERMINTAAN STAF SEBENAR SFV APPAREL*\\nPelanggan minta bantuan staf sekarang!\\n\\n📱 No: +{{ ($node[\"Filter Mesej Pelanggan\"].json.body.from || '').replace('@c.us', '') }}\\n💬 Mesej: \\\"{{ $node[\"Filter Mesej Pelanggan\"].json.body.body || '' }}\\\"\"\n}",
+        "options": {}
+      },
+      "name": "Alert Admin WhatsApp Staf",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1340,
+        740
+      ],
+      "id": "node-alert-admin",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"nex-agi/nex-n2.5-pro:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Khidmat Pelanggan SFV APPAREL, kilang cetak jersi sublimasi terus di Petaling Jaya, Selangor. Jawab pertanyaan pelanggan dengan ramah, santun, tepat, ringkas (1-2 perenggan), dan TANPA EMOJI. Aliran tempahan: (1) Pelanggan pilih corak di katalog https://sfvapparel.my/catalog ATAU hantar rekaan sendiri terus di WhatsApp (2) Berikan senarai saiz & kuantiti (3) Semak mockup (4) Bayar deposit 50% (5) Kilang cetak & jahit (6) Baki 50% & pos kurier. Jangan sebut ciri yang tidak wujud seperti Studio 3D.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ],\n  \"temperature\": 0.7\n}",
+        "options": {
+          "timeout": 12000
+        }
+      },
+      "name": "Divisi 6: Nex AGI Pro (CS Utama Primary)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1340,
+        900
+      ],
+      "id": "node-cs-primary",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"google/gemma-4-31b-it:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Khidmat Pelanggan Kilang SFV APPAREL. Jawab ramah dan santun tanpa emoji.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Divisi 6 Fallback: Gemma 4 31B (CS Backup)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1600,
+        900
+      ],
+      "id": "node-cs-fb1",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"z-ai/glm-5.2:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Khidmat Pelanggan SFV APPAREL. Bantu pelanggan tempah jersi.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Divisi 6 Fallback: GLM 5.2 (High Speed Fallback)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1860,
+        900
+      ],
+      "id": "node-cs-fb2",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"thinkingmachines/inkling:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Khidmat Pelanggan SFV APPAREL. Bantu pelanggan tempah jersi.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Divisi 6 Fallback: Inkling (Emergency CS)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2120,
+        900
+      ],
+      "id": "node-cs-fb3",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst item = $input.first();\nlet rawText = '';\n\n// Extract reply text from whichever node succeeded\nif (item.json.choices && item.json.choices[0] && item.json.choices[0].message) {\n  rawText = item.json.choices[0].message.content || '';\n} else if (item.json.text) {\n  rawText = item.json.text;\n} else if (item.json.message) {\n  rawText = item.json.message;\n}\n\nif (!rawText) {\n  rawText = 'Hai! Terima kasih kerana menghubungi SFV APPAREL. Ada apa-apa yang boleh kami bantu mengenai tempahan jersi anda hari ini?';\n}\n\n// Clean and humanize\nlet cleaned = rawText;\n// Remove markdown tables\ncleaned = cleaned.replace(/\\|[^\\n]+\\|/g, '');\n// Format bolding **word** to *word*\ncleaned = cleaned.replace(/\\*\\*([^\\*]+)\\*\\*/g, '*$1*');\n// Remove UUIDs / system tokens\ncleaned = cleaned.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '');\n// Strip all emojis\ntry {\n  cleaned = cleaned.replace(new RegExp('[\\\\uD83C-\\\\uDBFF\\\\uDC00-\\\\uDFFF]+|[\\\\u2600-\\\\u27BF]', 'g'), '');\n} catch(e) {}\n// Clean excessive whitespace\ncleaned = cleaned.replace(/---+/g, '');\ncleaned = cleaned.replace(/\\n{3,}/g, '\\n\\n').trim();\n\n// Target customer phone number\nconst customerChatId = $('Filter Mesej Pelanggan').first().json.body.from || $('Filter Mesej Pelanggan').first().json.body.payload?.from || '';\n\nreturn [{\n  json: {\n    chatId: customerChatId,\n    replyText: cleaned,\n    processedAt: new Date().toISOString()\n  }\n}];\n"
+      },
+      "name": "Format & Sanitizer WhatsApp (Humanizer)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2380,
+        450
+      ],
+      "id": "node-format-humanizer"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://187.127.223.53:3001/api/sendText",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": \"{{ $json.chatId }}\",\n  \"text\": {{ JSON.stringify($json.replyText) }}\n}",
         "options": {}
       },
       "name": "Hantar Balasan ke WhatsApp Pelanggan",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        1360,
-        300
+        2640,
+        450
       ],
-      "id": "node-send-reply"
+      "id": "node-send-customer"
     }
   ],
   "connections": {
@@ -229,97 +494,148 @@
       "main": [
         [
           {
-            "node": "Divisi 1: Nemotron Super 120B Dispatcher",
+            "node": "Introspeksi Data Kilang SFV",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Divisi 1: Nemotron Super 120B Dispatcher": {
+    "Introspeksi Data Kilang SFV": {
       "main": [
         [
           {
-            "node": "Router Cabang Agen",
+            "node": "Divisi 1: Nemotron Super 120B (Dispatcher)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Router Cabang Agen": {
+    "Divisi 1: Nemotron Super 120B (Dispatcher)": {
       "main": [
         [
           {
-            "node": "Divisi 5: Ling 3.0 Fin (Kiraan Harga)",
+            "node": "Router Cabang Super Power",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router Cabang Super Power": {
+      "main": [
+        [
+          {
+            "node": "Divisi 2: Ling 3.0 Flash Fin (Harga Primary)",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Divisi 3: Ling 3.0 VL (Analisis Gambar)",
+            "node": "Divisi 3: Ling 3.0 VL (Vision & Mockup Primary)",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Divisi 4: Nex AGI Pro / Qwen CS Utama",
+            "node": "Divisi 4: Dots 3 Note (Semak Status Order)",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Alert Admin WhatsApp",
+            "node": "Divisi 5: Nemotron Ultra 550B (Pesanan Pukal & Korporat)",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Divisi 4: Nex AGI Pro / Qwen CS Utama",
+            "node": "Alert Admin WhatsApp Staf",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Divisi 6: Nex AGI Pro (CS Utama Primary)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Divisi 5: Ling 3.0 Fin (Kiraan Harga)": {
+    "Divisi 2: Ling 3.0 Flash Fin (Harga Primary)": {
       "main": [
         [
           {
-            "node": "Hantar Balasan ke WhatsApp Pelanggan",
+            "node": "Format & Sanitizer WhatsApp (Humanizer)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Divisi 3: Ling 3.0 VL (Analisis Gambar)": {
+    "Divisi 3: Ling 3.0 VL (Vision & Mockup Primary)": {
       "main": [
         [
           {
-            "node": "Hantar Balasan ke WhatsApp Pelanggan",
+            "node": "Format & Sanitizer WhatsApp (Humanizer)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Divisi 4: Nex AGI Pro / Qwen CS Utama": {
+    "Divisi 4: Dots 3 Note (Semak Status Order)": {
       "main": [
         [
           {
-            "node": "Hantar Balasan ke WhatsApp Pelanggan",
+            "node": "Format & Sanitizer WhatsApp (Humanizer)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Alert Admin WhatsApp": {
+    "Divisi 5: Nemotron Ultra 550B (Pesanan Pukal & Korporat)": {
+      "main": [
+        [
+          {
+            "node": "Format & Sanitizer WhatsApp (Humanizer)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Admin WhatsApp Staf": {
+      "main": [
+        [
+          {
+            "node": "Format & Sanitizer WhatsApp (Humanizer)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Divisi 6: Nex AGI Pro (CS Utama Primary)": {
+      "main": [
+        [
+          {
+            "node": "Format & Sanitizer WhatsApp (Humanizer)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format & Sanitizer WhatsApp (Humanizer)": {
       "main": [
         [
           {
@@ -330,5 +646,8 @@
         ]
       ]
     }
+  },
+  "settings": {
+    "executionOrder": "v1"
   }
 }
