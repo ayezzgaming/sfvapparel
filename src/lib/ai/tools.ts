@@ -2,7 +2,7 @@ import { getCustomerOrdersDb } from '@/app/actions/orderActions';
 import { getMasterPricingDb } from '@/app/actions/pricingActions';
 import { getDesignsDb } from '@/app/actions/designActions';
 import { calculateSublimationPrice, formatCurrency } from '@/lib/pricing-calculator';
-import { INITIAL_FABRIC_MATERIALS, INITIAL_APPAREL_CUTS, INITIAL_QUANTITY_TIERS, INITIAL_ORDERS } from '@/lib/store/seed-data';
+import { INITIAL_FABRIC_MATERIALS, INITIAL_APPAREL_CUTS, INITIAL_QUANTITY_TIERS } from '@/lib/store/seed-data';
 
 export interface PricingCalculationInput {
   quantity: number;
@@ -112,24 +112,6 @@ MAKLUMAT PESANAN AKTIF DITEMUI (#${order.order_number}):
       `.trim();
     }
   } catch {}
-
-  // Fallback to baseline seed data
-  const fallback = INITIAL_ORDERS.find(o => 
-    o.order_number.toLowerCase().includes(clean.toLowerCase()) ||
-    o.customer_phone.replace(/\D/g, '').includes(clean.replace(/\D/g, ''))
-  );
-
-  if (fallback) {
-    return `
-MAKLUMAT PESANAN SEBENAR (#${fallback.order_number}):
-- Nama: ${fallback.customer_name}
-- Rekaan: ${fallback.design_title}
-- Kuantiti: ${fallback.total_quantity} helai
-- Jumlah: RM ${Number(fallback.total_amount).toFixed(2)}
-- Status Semasa: ${fallback.status}
-- Pautan Invois: https://sfvapparel.my/history
-    `.trim();
-  }
 
   return null;
 }

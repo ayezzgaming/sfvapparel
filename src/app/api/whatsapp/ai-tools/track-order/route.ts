@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { INITIAL_ORDERS } from '@/lib/store/seed-data';
+import { getOrdersDb } from '@/app/actions/orderActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +10,10 @@ export async function POST(req: Request) {
     const cleanQuery = (query || '').trim().toLowerCase();
     const cleanPhone = (phone || '').replace(/[\s\-\+\(\)]/g, '');
 
-    const found = INITIAL_ORDERS.find((o) => {
+    const ordersRes = await getOrdersDb();
+    const liveOrders = ordersRes.success && ordersRes.orders ? ordersRes.orders : [];
+
+    const found = liveOrders.find((o) => {
       const matchNum = o.order_number.toLowerCase().includes(cleanQuery);
       const matchPhone = cleanPhone && o.customer_phone.replace(/[\s\-\+\(\)]/g, '').includes(cleanPhone);
       const matchCustomer = cleanQuery && o.customer_name.toLowerCase().includes(cleanQuery);

@@ -15,8 +15,6 @@ import {
   INITIAL_CMS_COMPANY_SETTINGS, 
   INITIAL_CMS_SERVICES, 
   INITIAL_QUANTITY_TIERS,
-  INITIAL_ORDERS,
-  INITIAL_DESIGNS,
   INITIAL_FABRIC_MATERIALS,
   INITIAL_APPAREL_CUTS
 } from '../store/seed-data';
@@ -121,8 +119,8 @@ async function callLlmWithFallback(
   temperature: number = 0.70,
   maxTokens: number = 800
 ): Promise<string | null> {
-  // 1. Try OpenRouter Free Models (Nex AGI Pro, Qwen 27B, Nemotron 3 Super, Ling 3.0 Fin)
-  if (OPENROUTER_API_KEY) {
+  const openRouterKey = process.env.OPENROUTER_API_KEY || OPENROUTER_API_KEY;
+  if (openRouterKey) {
     const openRouterFreeModels = [
       'inclusionai/ling-3.0-flash-fin:free',
       'nvidia/nemotron-3-super-120b-a12b:free',
@@ -149,7 +147,7 @@ async function callLlmWithFallback(
           method: 'POST',
           signal: controller.signal,
           headers: {
-            'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+            'Authorization': `Bearer ${openRouterKey}`,
             'HTTP-Referer': 'https://sfvapparel.my',
             'X-Title': 'SFV Apparel AI CS',
             'Content-Type': 'application/json',
@@ -516,33 +514,42 @@ ${calc.formattedSummary}
   }
 
   // 9. Check if user is asking about a specific design/catalog product
-  const designMatch = lower.match(/des-?[\w\d]+/i);
+  const designMatch = lower.match(/(?:sfv-?|des-?)\d+/i);
   let liveDesignContext = '';
   let targetDesignImage: string | null = null;
   let targetDesignTitle: string | null = null;
 
-  if (designMatch) {
-    const rawSearch = designMatch[0].toLowerCase().replace('-', '');
-    const foundDesign = INITIAL_DESIGNS.find(d => {
-      const dCode = (d.code || d.id || '').toLowerCase().replace('-', '');
-      const dId = d.id.toLowerCase().replace('-', '');
-      return dCode === rawSearch || dId === rawSearch || d.title.toLowerCase().includes(rawSearch);
-    });
+  try {
+    const designsRes = await getDesignsDb();
+    const liveDesigns = designsRes.success && designsRes.designs ? designsRes.designs : [];
 
-    if (foundDesign) {
-      targetDesignTitle = foundDesign.title;
-      targetDesignImage = (foundDesign.mockup_front_url || foundDesign.thumbnail_url)?.startsWith('http') 
-        ? (foundDesign.mockup_front_url || foundDesign.thumbnail_url) 
-        : null;
+    if (designMatch || lower.includes('polo') || lower.includes('jersi') || lower.includes('baju')) {
+      const rawSearch = (designMatch ? designMatch[0] : '').toLowerCase().replace('-', '');
+      const foundDesign = liveDesigns.find(d => {
+        const dCode = (d.code || d.id || '').toLowerCase().replace('-', '');
+        const dId = d.id.toLowerCase().replace('-', '');
+        const titleLower = d.title.toLowerCase();
+        if (rawSearch && (dCode.includes(rawSearch) || dId.includes(rawSearch) || titleLower.includes(rawSearch))) {
+          return true;
+        }
+        return false;
+      });
 
-      liveDesignContext = `
-REKAAN DITANYA:
+      if (foundDesign) {
+        targetDesignTitle = foundDesign.title;
+        targetDesignImage = (foundDesign.mockup_front_url || foundDesign.thumbnail_url)?.startsWith('http') 
+          ? (foundDesign.mockup_front_url || foundDesign.thumbnail_url) 
+          : null;
+
+        liveDesignContext = `
+REKAAN DITANYA DARI PANGKALAN DATA SUPABASE:
 - Kod: ${foundDesign.code || foundDesign.id} | Nama: ${foundDesign.title}
 - Cetakan: ${foundDesign.print_type === 'sublimation' ? 'Sublimasi Penuh' : 'DTF'}
 - Fabrik Standard: Drifit Milano 165gsm & Microfiber Eyelet (kain sukan cepat kering)
-      `.trim();
+        `.trim();
+      }
     }
-  }
+  } catch (err) {}
 
   // 10. Fetch Recent Conversation History for Context Memory
   let conversationHistory: { role: string; content: string }[] = [];

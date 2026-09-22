@@ -6,8 +6,7 @@ import {
   INITIAL_QUANTITY_TIERS,
   INITIAL_FABRIC_MATERIALS,
   INITIAL_APPAREL_CUTS,
-  INITIAL_DTF_DIMENSIONS,
-  INITIAL_DESIGNS
+  INITIAL_DTF_DIMENSIONS
 } from '@/lib/store/seed-data';
 import { getFormattedSystemContext, getLiveSystemManifest } from '@/lib/ai/system-manifest';
 
@@ -21,14 +20,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       company: manifest.brand,
-      designs: INITIAL_DESIGNS.map(d => ({
-        id: d.id,
-        title: d.title,
-        category: d.category,
-        print_type: d.print_type,
-        description: d.description,
-        tags: d.tags
-      })),
+      designs: manifest.allDesigns || [],
       fabrics: INITIAL_FABRIC_MATERIALS.filter((f) => f.is_active),
       cuts: INITIAL_APPAREL_CUTS.filter((c) => c.is_active),
       pricingTiers: INITIAL_QUANTITY_TIERS,

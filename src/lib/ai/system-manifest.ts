@@ -58,6 +58,14 @@ export interface LiveSystemManifest {
     categories: string[];
     sampleTitles: string[];
   };
+  allDesigns?: {
+    id: string;
+    code?: string;
+    title: string;
+    category?: string;
+    print_type?: string;
+    description?: string;
+  }[];
 }
 
 /**
@@ -71,7 +79,7 @@ export async function getLiveSystemManifest(): Promise<LiveSystemManifest> {
   let fabrics = INITIAL_FABRIC_MATERIALS;
   let cuts = INITIAL_APPAREL_CUTS;
   let dtfOptions = INITIAL_DTF_DIMENSIONS;
-  let liveDesigns: { title: string; category?: string }[] = [];
+  let liveDesigns: any[] = [];
 
   try {
     const [cmsRes, designsRes, pricingRes] = await Promise.allSettled([
@@ -163,10 +171,18 @@ export async function getLiveSystemManifest(): Promise<LiveSystemManifest> {
       basePrice: `RM${Number(d.base_price).toFixed(2)}`,
     })),
     activeCatalogSummary: {
-      totalDesigns: liveDesigns.length || 28,
-      categories: Array.from(categoriesSet).length ? Array.from(categoriesSet) : ['Jersi Sukan', 'E-Sports', 'Korporat', 'Event'],
-      sampleTitles: liveDesigns.slice(0, 6).map(d => d.title),
+      totalDesigns: liveDesigns.length,
+      categories: Array.from(categoriesSet).length ? Array.from(categoriesSet) : ['Jersi Sukan', 'Polo', 'Sublimasi'],
+      sampleTitles: liveDesigns.slice(0, 8).map(d => d.title),
     },
+    allDesigns: liveDesigns.map(d => ({
+      id: String(d.id),
+      code: d.code || '',
+      title: d.title || 'Jersi SFV APPAREL',
+      category: d.category || 'Jersi',
+      print_type: d.print_type || 'sublimation',
+      description: d.description || 'Rekaan cetakan berkualiti tinggi dari kilang SFV APPAREL.'
+    }))
   };
 }
 
@@ -193,9 +209,11 @@ export async function getFormattedSystemContext(): Promise<string> {
     .map(n => `- ${n.name} (${n.urlPath}): ${n.description}`)
     .join('\n');
 
-  const designsList = INITIAL_DESIGNS
-    .map(d => `- [${d.id}] *${d.title}* (${d.category} - ${d.print_type === 'sublimation' ? 'Sublimasi' : 'DTF'}): ${d.description}`)
-    .join('\n');
+  const designsList = manifest.allDesigns && manifest.allDesigns.length > 0
+    ? manifest.allDesigns
+        .map(d => `- *${d.title}* [Kod: ${d.code || d.id}] (${d.category} - ${d.print_type === 'sublimation' ? 'Sublimasi Penuh' : 'DTF'}): ${d.description}`)
+        .join('\n')
+    : '- Senarai templat rekaan jersi terkini (Polo, Bola Sepak, E-Sports, Badminton) tersedia secara langsung di https://sfvapparel.my/catalog';
 
   return `
 === MAKLUMAT HIDUP KILANG & SISTEM SFV APPAREL (SUMBER DATA SEBENAR) ===
@@ -220,7 +238,7 @@ PANDUAN LANGKAH SEBENAR MEMBUAT TEMPAHAN DI LAMAN WEB SFV APPAREL:
 5. Selepas bayaran dibuat, status tempahan & invois boleh disemak di https://sfvapparel.my/history.
 *PERINGATAN: Di laman web SFV APPAREL TIADA butang 'Add to Cart' atau 'Submit Order'. Jangan gunakan terma tersebut!*
 
-SENARAI TEMPLAT & CORAK REKAAN SEBENAR DI KATALOG SFV APPAREL:
+SENARAI TEMPLAT & CORAK REKAAN SEBENAR DARI PANGKALAN DATA SUPABASE:
 ${designsList}
 
 PILIHAN FABRIK SEBENAR DARI PANGKALAN DATA:
