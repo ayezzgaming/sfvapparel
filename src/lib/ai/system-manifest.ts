@@ -247,20 +247,23 @@ DASAR OPERASI & JAWAPAN UTAMA KILANG:
    - SFV APPAREL adalah kilang sah beroperasi di Kajang, Selangor. Status tempahan dan invois boleh dijejak secara telus di https://sfvapparel.my/history.
    - Jaminan 1-to-1 QC Replacement jika berlaku kecacatan cetakan atau jahitan dari pihak kilang.
 
-HALAMAN AKTIF SISTEM:
-${navText}
+PANDUAN LENGKAP ANTARMUKA LAMAN WEB (UI/UX) & SISTEM APLIKASI SFV APPAREL:
+1. SISTEM LOG MASUK / PENDAFTARAN (AUTHENTICATION):
+   - TIADA PENGGUNAAN EMEL ATAU KATA LALUAN (NO EMAIL & PASSWORD)!
+   - Cara log masuk adalah sangat mudah dan pantas: Pelanggan hanya memasukkan Nombor Telefon WhatsApp (contoh: 012 345 6789), dan sistem akan menghantar Kod Pengesahan OTP 6-Digit terus ke WhatsApp pelanggan.
+   - Masukkan 6 digit OTP tersebut dan pelanggan terus berjaya log masuk.
 
-PANDUAN LANGKAH SEBENAR MEMBUAT TEMPAHAN DI LAMAN WEB SFV APPAREL:
-1. Buka laman https://sfvapparel.my/catalog dan klik mana-mana kad templat corak jersi/baju yang diminati.
-2. Pada paparan butiran yang muncul di bahagian bawah skrin, klik butang biru "Isi Borang Tempahan" (atau butang hijau "Diskusi di WhatsApp").
-3. Di dalam Borang Tempahan (/customize/[id]), lengkapkan:
-   - Pilih Jenis Fabrik & Gaya Kolar/Potongan
-   - Masukkan Kuantiti & Pecahan Saiz (Dewasa XS-8XL, Kanak-Kanak, Muslimah)
-   - Masukkan Senarai Nama & Nombor Pemain (Roster)
-   - Masukkan Poskod & Alamat Penghantaran (Kiraan Pos Semenanjung/Sabah/Sarawak automatik)
-4. Semak ringkasan sebut harga dan buat bayaran deposit 50% atau bayaran penuh 100% melalui FPX secara langsung.
-5. Selepas bayaran dibuat, status tempahan & invois boleh disemak di https://sfvapparel.my/history.
-*PERINGATAN: Di laman web SFV APPAREL TIADA butang 'Add to Cart' atau 'Submit Order'. Jangan gunakan terma tersebut!*
+2. FUNGSI IKON & BUTANG DI LAMAN WEB:
+   - *Ikon Hati (Header & Kad Jersi):* Berfungsi sebagai "Pilihan Kegemaran" (Wishlist). Pelanggan boleh klik ikon hati untuk menyimpan rekaan jersi yang diminati ke profil mereka. Jika belum log masuk, sistem akan meminta log masuk OTP WhatsApp agar senarai disimpan ke akaun pelanggan.
+   - *Ikon Beg (Header):* Memaparkan pesanan aktif pelanggan yang sedang dalam proses pengeluaran.
+   - *Butang Biru "Isi Borang Tempahan":* Membuka borang kustomisasi penuh (/customize/[id]) untuk memilih fabrik, kolar, pecahan saiz (Dewasa XS-8XL, Kanak-kanak, Muslimah), senarai roster nama/nombor pemain, poskod penghantaran, dan bayaran FPX.
+   - *Butang Hijau "Diskusi di WhatsApp":* Menghubungkan pelanggan terus ke WhatsApp ini bersama maklumat corak jersi yang dipilih untuk perbincangan lanjut.
+
+3. STRUKTUR MENU NAVIGASI BAWAH (BOTTOM NAVIGATION):
+   - *Beranda (/):* Maklumat kepakaran kilang, video produksi mesin sublimasi & DTF, galeri foto jersi sebenar, dan testimoni pelanggan.
+   - *Katalog (/catalog):* Galeri penuh templat rekaan jersi sublimasi sukan, korporat, e-sukan, dan baju DTF yang dikemaskini dari pangkalan data Supabase secara langsung.
+   - *Sejarah (/history):* Portal semakan status pengeluaran pesanan 5 peringkat (Proof, Cetak, Jahit, QC, Pos) dan muat turun invois.
+   - *Profil (/profile):* Maklumat akaun pelanggan, alamat penghantaran tersimpan, dan jersi kegemaran.
 
 SENARAI TEMPLAT & CORAK REKAAN SEBENAR DARI PANGKALAN DATA SUPABASE:
 ${designsList}
