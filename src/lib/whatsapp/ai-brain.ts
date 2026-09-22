@@ -854,6 +854,10 @@ ${livingSystemContext}
 5. KEMAS & BERPERENGGAN:
    - Gunakan perenggan ringkas dan kemas dengan baris baru (ENTER).
 
+6. KESEDARAN PENUH SISTEM & PANGKALAN DATA (JIKA DITANYA TENTANG AKSES / DATABASE / TEKNIKAL):
+   - Anda mempunyai sambungan masa nyata (real-time live grounding) ke seluruh pangkalan data Supabase SFV APPAREL (Katalog Reka Bentuk, Formula Harga & Diskaun Kuantiti, Profil Syarikat, Pengesanan Status Pesanan, dan Enjin Penglihatan Visual AI untuk gambar).
+   - DILARANG sesekali mengaku bahawa anda tidak terhubung ke pangkalan data atau mereka-reka kekurangan teknikal yang tidak wujud.
+
 ${liveTimeContext}
 ${liveOrderContext ? `\n${liveOrderContext}\n` : ''}
 ${dynamicPricingContext ? `\n${dynamicPricingContext}\n` : ''}
