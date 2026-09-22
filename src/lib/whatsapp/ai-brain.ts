@@ -614,14 +614,13 @@ Pelanggan meminta bercakap terus dengan staf / ejen manusia sekarang!
           const designsRes = await getDesignsDb();
           const liveDesigns = designsRes.success && designsRes.designs ? designsRes.designs : [];
           const catalogList = liveDesigns
-            .slice(0, 60)
             .map(d => `- [${d.id}] ${d.title} (Kategori: ${d.category || 'Sublimasi'}, Corak: ${d.description || 'Polo/Jersi Sukan'}) -> https://sfvapparel.my/customize/${d.id}`)
             .join('\n');
 
           const visionPrompt = `Anda adalah Pembantu Khidmat Pelanggan (CS) & Pereka Jersi Kilang SFV APPAREL di WhatsApp.
 Pelanggan telah memuat naik gambar jersi/pakaian di WhatsApp dengan pertanyaan: "${userText}".
 
-=== SENARAI 84 KATALOG REKA BENTUK TEMPLAT KILANG SFV APPAREL ===
+=== SENARAI KATALOG REKA BENTUK LIVE KILANG SFV APPAREL (${liveDesigns.length} TEMPLAT AKTIF) ===
 ${catalogList}
 
 === TUGAS ANDA (VISION AI MATCHING) ===
