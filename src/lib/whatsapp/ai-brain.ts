@@ -466,10 +466,12 @@ export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<
   customerPhone?: string; 
   customerName?: string; 
 }> {
-  // 1. If message is from admin (fromMe = true), automatically PAUSE bot for this customer
-  if (msg.fromMe) {
+  // 1. If message is from admin (fromMe = true) to an external customer, automatically PAUSE bot for that customer
+  if (msg.fromMe && !msg.from.includes('6281260066616')) {
     pauseContact(msg.from, 30);
     return { success: true, replied: false, reason: 'human_admin_active_paused_bot' };
+  } else if (msg.from.includes('6281260066616')) {
+    resumeContact(msg.from);
   }
 
   // 2. Ignore group chats and broadcast status

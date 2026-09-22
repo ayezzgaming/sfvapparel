@@ -68,14 +68,16 @@ export async function POST(req: Request) {
       PROCESSED_MESSAGES.set(msgId, Date.now());
     }
 
-    // Check 2: Ignore if from me (sent by bot or human admin)
-    if (fromMe) {
+    // Check 2: Ignore if from me UNLESS it is a self-test message (admin testing bot directly)
+    const to = data.to || data._data?.to || '';
+    const isSelfTest = fromMe && (!to || to === from || to.replace('@c.us','') === from.replace('@c.us',''));
+    if (fromMe && !isSelfTest) {
       return NextResponse.json({ success: true, message: 'Ignored fromMe message' });
     }
 
-    // Check 3: Debounce lock per sender (must be at least 3s apart)
+    // Check 3: Debounce lock per sender (must be at least 2s apart)
     const lastReplied = RECENT_REPLIES.get(from) || 0;
-    if (Date.now() - lastReplied < 3000) {
+    if (Date.now() - lastReplied < 2000) {
       console.log(`[WhatsApp Webhook] Debounced rapid message from ${from}`);
       return NextResponse.json({ success: true, message: 'Debounced rapid message' });
     }
