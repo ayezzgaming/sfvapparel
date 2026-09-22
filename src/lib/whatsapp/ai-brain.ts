@@ -115,7 +115,7 @@ function cleanWhatsAppChat(text: string): string {
 async function callLlmWithFallback(
   messages: { role: string; content: string }[],
   temperature: number = 0.35,
-  maxTokens: number = 350
+  maxTokens: number = 800
 ): Promise<string | null> {
   // 1. Try Groq first for ultra-fast <800ms inference
   if (GROQ_API_KEY) {
@@ -787,7 +787,7 @@ ${liveDesignContext}
   }
 
   // 11. Execute LLM Call
-  const rawReply = await callLlmWithFallback(messagesToSend, 0.35, 300);
+  const rawReply = await callLlmWithFallback(messagesToSend, 0.35, 800);
 
   if (!rawReply) {
     stopWahaTyping(msg.from).catch(() => {});
