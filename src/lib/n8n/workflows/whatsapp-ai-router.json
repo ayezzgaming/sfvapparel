@@ -1,0 +1,135 @@
+{
+  "name": "SFV Apparel - WhatsApp AI Router & CS Escalator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-incoming",
+        "options": {}
+      },
+      "name": "Webhook WAHA",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "id": "node-webhook-waha"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.fromMe }}",
+              "operation": "equal",
+              "value2": "false"
+            }
+          ]
+        }
+      },
+      "name": "Filter Mesej Dari Pelanggan",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "id": "node-filter-customer"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://sfvapparel.vercel.app/api/whatsapp/webhook",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "name": "Proses Melalui AI Brain SFV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 280],
+      "id": "node-ai-brain"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.aiResult?.ticketCreated }}",
+              "operation": "equal",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "name": "Perlu Bantuan Staf?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [900, 280],
+      "id": "node-check-ticket"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://187.127.223.53:3000/api/sendText",
+        "headers": {
+          "X-Api-Key": "sfv_waha_master_key_2026",
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": \"60148599138@c.us\",\n  \"text\": \"🔔 *PERHATIAN STAF KILANG:*\\nPelanggan *\" + $json.body.aiResult.customerName + \"* memerlukan semakan sebut harga/rekaan khas.\\nNombor: +\" + $json.body.aiResult.customerPhone\n}",
+        "options": {}
+      },
+      "name": "Alert Staf Kilang",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1120, 200],
+      "id": "node-staff-alert"
+    }
+  ],
+  "connections": {
+    "Webhook WAHA": {
+      "main": [
+        [
+          {
+            "node": "Filter Mesej Dari Pelanggan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Mesej Dari Pelanggan": {
+      "main": [
+        [
+          {
+            "node": "Proses Melalui AI Brain SFV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Proses Melalui AI Brain SFV": {
+      "main": [
+        [
+          {
+            "node": "Perlu Bantuan Staf?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perlu Bantuan Staf?": {
+      "main": [
+        [
+          {
+            "node": "Alert Staf Kilang",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}

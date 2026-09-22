@@ -1,0 +1,124 @@
+{
+  "name": "SFV Apparel - Peringatan Deposit & Follow-up 24 Jam",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 4
+            }
+          ]
+        }
+      },
+      "name": "Jadual Setiap 4 Jam",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "id": "node-cron-schedule"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "order-followup",
+        "options": {}
+      },
+      "name": "Webhook Pemicu Manual",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 480],
+      "id": "node-manual-webhook"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://sfvapparel.vercel.app/api/orders/pending-deposits",
+        "options": {}
+      },
+      "name": "Dapatkan Senarai Tempahan Tertunggak",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [500, 380],
+      "id": "node-fetch-pending"
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "name": "Ulang Setiap Pelanggan",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [720, 380],
+      "id": "node-split-batch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://187.127.223.53:3000/api/sendText",
+        "headers": {
+          "X-Api-Key": "sfv_waha_master_key_2026",
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": $json.customerPhone + \"@c.us\",\n  \"text\": \"Salam sejahtera *\" + $json.customerName + \"*,\\n\\nPesanan jersi anda (*\" + $json.orderNumber + \"*) bersedia untuk dicetak. Sila sahkan deposit untuk kami memulakan barisan produksi kilang segera.\\n\\n👉 Semak invois: https://sfvapparel.com/history/\" + $json.orderNumber\n}",
+        "options": {}
+      },
+      "name": "Hantar Peringatan WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [960, 380],
+      "id": "node-send-reminder"
+    }
+  ],
+  "connections": {
+    "Jadual Setiap 4 Jam": {
+      "main": [
+        [
+          {
+            "node": "Dapatkan Senarai Tempahan Tertunggak",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Pemicu Manual": {
+      "main": [
+        [
+          {
+            "node": "Dapatkan Senarai Tempahan Tertunggak",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dapatkan Senarai Tempahan Tertunggak": {
+      "main": [
+        [
+          {
+            "node": "Ulang Setiap Pelanggan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ulang Setiap Pelanggan": {
+      "main": [
+        [
+          {
+            "node": "Hantar Peringatan WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}

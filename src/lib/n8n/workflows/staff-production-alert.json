@@ -1,0 +1,51 @@
+{
+  "name": "SFV Apparel - Notifikasi Staf & Fasa Produksi Kilang",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "staff-production-alert",
+        "options": {}
+      },
+      "name": "Webhook Perubahan Status",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "id": "node-status-webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://187.127.223.53:3000/api/sendText",
+        "headers": {
+          "X-Api-Key": "sfv_waha_master_key_2026",
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": \"60148599138@c.us\",\n  \"text\": \"🏭 *KEMASKINI PRODUKSI KILANG:*\\nNo. Pesanan: *\" + $json.body.order.orderNumber + \"*\\nPelanggan: \" + $json.body.order.customerName + \"\\nKuantiti: \" + $json.body.order.itemCount + \" helai\\nStatus Baru: *\" + $json.body.order.status + \"*\"\n}",
+        "options": {}
+      },
+      "name": "Hantar WhatsApp ke Kumpulan Staf",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [480, 300],
+      "id": "node-notify-staff"
+    }
+  ],
+  "connections": {
+    "Webhook Perubahan Status": {
+      "main": [
+        [
+          {
+            "node": "Hantar WhatsApp ke Kumpulan Staf",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}

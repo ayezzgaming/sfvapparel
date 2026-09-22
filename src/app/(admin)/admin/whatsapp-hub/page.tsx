@@ -33,12 +33,19 @@ import {
   Maximize2,
   Download,
   Volume2,
-  Video
+  Video,
+  Zap,
+  Cpu,
+  Check,
+  Activity
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
 import { WahaChatSummary, WahaChatMessage } from '@/lib/whatsapp/waha-client';
 import { SupportTicket } from '@/app/api/whatsapp/tickets/route';
+import whatsappAiRouterJson from '@/lib/n8n/workflows/whatsapp-ai-router.json';
+import orderFollowupCronJson from '@/lib/n8n/workflows/order-followup-cron.json';
+import staffProductionAlertJson from '@/lib/n8n/workflows/staff-production-alert.json';
 
 type HubSectionKey = 'inbox' | 'device' | 'automation' | 'tickets' | 'tester';
 
@@ -293,6 +300,13 @@ export default function WhatsAppHubPage() {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loadingTickets, setLoadingTickets] = useState(false);
 
+  // n8n Engine State
+  const [n8nStatus, setN8nStatus] = useState<{ online: boolean; latencyMs: number; message?: string } | null>(null);
+  const [loadingN8n, setLoadingN8n] = useState(false);
+  const [triggeringWorkflow, setTriggeringWorkflow] = useState<string | null>(null);
+  const [triggerResult, setTriggerResult] = useState<{ id: string; success: boolean; message: string } | null>(null);
+
+  // Test Message Form
   const [testPhone, setTestPhone] = useState('');
   const [testMessage, setTestMessage] = useState('Salam dari Kilang SFV Apparel! Ujian sambungan WhatsApp berjaya.');
   const [sending, setSending] = useState(false);
@@ -300,6 +314,59 @@ export default function WhatsAppHubPage() {
 
   // Lightbox Preview Modal State
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  // Fetch n8n Status
+  const fetchN8nStatus = useCallback(async () => {
+    setLoadingN8n(true);
+    try {
+      const res = await fetch('/api/n8n/status');
+      const data = await res.json();
+      if (data.success && data.data) {
+        setN8nStatus(data.data);
+      }
+    } catch {
+      setN8nStatus({ online: false, latencyMs: 0, message: 'Gagal menghubungi enjin n8n' });
+    } finally {
+      setLoadingN8n(false);
+    }
+  }, []);
+
+  // Download Workflow JSON
+  const handleDownloadWorkflow = (filename: string, jsonContent: object) => {
+    const blob = new Blob([JSON.stringify(jsonContent, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Test Trigger Workflow
+  const handleTestTrigger = async (workflowId: string, webhookPath: string, payload: Record<string, unknown>) => {
+    setTriggeringWorkflow(workflowId);
+    setTriggerResult(null);
+    try {
+      const res = await fetch('/api/n8n/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ webhookPath, payload }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTriggerResult({ id: workflowId, success: true, message: 'Pemicu berjaya dihantar ke enjin n8n!' });
+      } else {
+        setTriggerResult({ id: workflowId, success: false, message: data.error || 'Pemicu tidak dapat dihantar.' });
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ralat semasa menghantar pemicu.';
+      setTriggerResult({ id: workflowId, success: false, message: msg });
+    } finally {
+      setTriggeringWorkflow(null);
+    }
+  };
 
   // Fetch Session Status & QR
   const fetchStatus = useCallback(async (isManual = false) => {
@@ -375,11 +442,12 @@ export default function WhatsAppHubPage() {
   useEffect(() => {
     fetchStatus();
     fetchTickets();
+    fetchN8nStatus();
     const interval = setInterval(() => {
       fetchStatus();
     }, 15000);
     return () => clearInterval(interval);
-  }, [fetchStatus, fetchTickets]);
+  }, [fetchStatus, fetchTickets, fetchN8nStatus]);
 
   // Auto load chats when status is WORKING
   useEffect(() => {
@@ -1369,76 +1437,244 @@ export default function WhatsAppHubPage() {
           </div>
         )}
 
-        {/* TAB 4: AUTOMATION TRIGGERS */}
+        {/* TAB 4: AUTOMATION & N8N ENGINE */}
         {activeTab === 'automation' && (
-          <div className="flex-1 overflow-y-auto p-6 space-y-4 sparkle-scroll">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-w-4xl mx-auto text-xs">
-              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 sparkle-scroll">
+            <div className="max-w-4xl mx-auto space-y-6">
+              
+              {/* TOP: n8n Engine Live Status Banner */}
+              <div className="p-5 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center space-x-3.5">
+                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
+                    n8nStatus?.online 
+                      ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 border border-emerald-200/80 dark:border-emerald-800' 
+                      : 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 border border-rose-200/80 dark:border-rose-800'
+                  }`}>
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
+                        Enjin Automasi n8n (VPS Port 5678)
+                      </h3>
+                      {n8nStatus?.online ? (
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          ONLINE ({n8nStatus.latencyMs}ms)
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                          SEMAK SAMBUNGAN
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {n8nStatus?.message || 'Memantau ketersediaan kontena n8n di pelayan VPS.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={fetchN8nStatus}
+                    disabled={loadingN8n}
+                    className="p-2 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 transition-colors cursor-pointer"
+                    title="Segarkan Status n8n"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${loadingN8n ? 'animate-spin' : ''}`} />
+                  </button>
+                  <a
+                    href="http://187.127.223.53:5678"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs"
+                  >
+                    <span>Buka n8n Studio</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </div>
+
+              {/* Alert Feedback on Trigger */}
+              {triggerResult && (
+                <div className={`p-4 rounded-2xl text-xs flex items-center justify-between gap-3 ${
+                  triggerResult.success 
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                    : 'bg-rose-50 text-rose-800 border border-rose-200'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    {triggerResult.success ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />}
+                    <span>{triggerResult.message}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setTriggerResult(null)}
+                    className="text-xs font-bold hover:underline"
+                  >
+                    Tutup
+                  </button>
+                </div>
+              )}
+
+              {/* SECTION: 3 PRE-BUILT WORKFLOW TEMPLATES */}
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900 dark:text-zinc-100">1. Notifikasi Pesanan Baharu</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
+                      Templat Aliran Kerja Sedia Digunakan (SFV Workflows)
+                    </h4>
+                    <p className="text-xs text-slate-500">
+                      Muat turun fail `.json` di bawah dan import ke dalam n8n di `http://187.127.223.53:5678`.
+                    </p>
+                  </div>
                 </div>
-                <p className="text-slate-500 leading-relaxed">
-                  Menghantar ringkasan tempahan jersi & pautan invois ke WhatsApp pelanggan secara automatik.
-                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  
+                  {/* Card 1: AI Router */}
+                  <div className="p-4.5 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-3 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="w-8 h-8 rounded-xl bg-sky-50 dark:bg-sky-950 text-[#00BDFF] flex items-center justify-center font-bold text-xs">
+                          01
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200">
+                          AI & Webhook
+                        </span>
+                      </div>
+                      <h5 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
+                        WhatsApp AI & CS Escalator
+                      </h5>
+                      <p className="text-[11.5px] text-slate-500 leading-relaxed">
+                        Menerima mesej WhatsApp dari WAHA, menyalurkan ke AI Brain, dan mengasingkan tiket jika perlu semakan staf.
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadWorkflow('sfv-whatsapp-ai-router.json', whatsappAiRouterJson)}
+                        className="flex-1 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200 dark:border-zinc-700 text-[11px] font-semibold text-slate-700 dark:text-zinc-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Muat Turun JSON</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card 2: 24H Follow-up */}
+                  <div className="p-4.5 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-3 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-600 flex items-center justify-center font-bold text-xs">
+                          02
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                          Cron 4 Jam
+                        </span>
+                      </div>
+                      <h5 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
+                        Peringatan Deposit 24 Jam
+                      </h5>
+                      <p className="text-[11.5px] text-slate-500 leading-relaxed">
+                        Menyemak sebut harga tertunggak tanpa deposit dan menghantar mesej susulan secara automatik ke WhatsApp pelanggan.
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadWorkflow('sfv-order-followup-cron.json', orderFollowupCronJson)}
+                        className="flex-1 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200 dark:border-zinc-700 text-[11px] font-semibold text-slate-700 dark:text-zinc-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Muat Turun JSON</span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={triggeringWorkflow === 'followup'}
+                        onClick={() => handleTestTrigger('followup', 'order-followup', { action: 'CHECK_PENDING_DEPOSITS' })}
+                        className="p-1.5 rounded-full bg-[#00BDFF]/10 text-[#00BDFF] hover:bg-[#00BDFF] hover:text-white transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+                        title="Uji Pemicu Automasi Sekarang"
+                      >
+                        <Zap className={`w-3.5 h-3.5 ${triggeringWorkflow === 'followup' ? 'animate-spin' : ''}`} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card 3: Staff Alert */}
+                  <div className="p-4.5 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-3 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center font-bold text-xs">
+                          03
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          Fasa Produksi
+                        </span>
+                      </div>
+                      <h5 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
+                        Amaran Kumpulan Staf Kilang
+                      </h5>
+                      <p className="text-[11.5px] text-slate-500 leading-relaxed">
+                        Memberi notifikasi automatik ke WhatsApp staf apabila tempahan bertukar status ke fasa Potongan, Sublimasi, atau Jahitan.
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadWorkflow('sfv-staff-production-alert.json', staffProductionAlertJson)}
+                        className="flex-1 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200 dark:border-zinc-700 text-[11px] font-semibold text-slate-700 dark:text-zinc-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Muat Turun JSON</span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={triggeringWorkflow === 'staff'}
+                        onClick={() => handleTestTrigger('staff', 'staff-production-alert', { 
+                          order: {
+                            orderNumber: 'INV-2026-TEST',
+                            customerName: 'Pelanggan Ujian',
+                            itemCount: 50,
+                            status: 'PRINTING'
+                          }
+                        })}
+                        className="p-1.5 rounded-full bg-[#00BDFF]/10 text-[#00BDFF] hover:bg-[#00BDFF] hover:text-white transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+                        title="Uji Amaran Staf Sekarang"
+                      >
+                        <Zap className={`w-3.5 h-3.5 ${triggeringWorkflow === 'staff' ? 'animate-spin' : ''}`} />
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900 dark:text-zinc-100">2. Amaran Tempahan Kilang</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
-                </div>
-                <p className="text-slate-500 leading-relaxed">
-                  Menghantar butiran saiz & kuantiti terus ke WhatsApp admin kilang.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900 dark:text-zinc-100">3. Status Siap Cetak</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
-                </div>
-                <p className="text-slate-500 leading-relaxed">
-                  WhatsApp dihantar kepada pelanggan apabila jersi/baju mereka telah siap dicetak.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900 dark:text-zinc-100">4. Nombor Tracking Pos</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>
-                </div>
-                <p className="text-slate-500 leading-relaxed">
-                  Menghantar nombor tracking pos laju automatik kepada pelanggan sebaik sahaja bungkusan dipos.
-                </p>
-              </div>
-            </div>
-
-            {/* n8n Engine Link Card */}
-            <div className="max-w-4xl mx-auto p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 flex items-center justify-between shadow-2xs">
-              <div className="flex items-center space-x-3">
-                <div className="w-9 h-9 rounded-full bg-sky-50 dark:bg-sky-950 text-[#00BDFF] border border-sky-100 dark:border-sky-900 flex items-center justify-center shrink-0">
-                  <Layers className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
-                    LiteLLM Multi-Key Router & n8n Engine
-                  </h4>
-                  <p className="text-[11px] text-slate-500">
-                    Router Port 4000 aktif menyalurkan AI Groq Llama 3.3 70B tanpa sekatan rate-limit.
-                  </p>
+              {/* QUICK GUIDE: CARA IMPORT KE N8N */}
+              <div className="p-5 rounded-3xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700/80 space-y-3">
+                <h4 className="text-xs font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-1.5">
+                  <Cpu className="w-4 h-4 text-[#00BDFF]" />
+                  <span>Panduan 3 Langkah Mengaktifkan Aliran Kerja di n8n:</span>
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-600 dark:text-zinc-300">
+                  <div className="p-3 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/60 dark:border-zinc-700/60 space-y-1">
+                    <span className="font-bold text-[#00BDFF]">Langkah 1:</span>
+                    <p className="text-[11.5px]">Muat turun fail `.json` templat aliran kerja di atas.</p>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/60 dark:border-zinc-700/60 space-y-1">
+                    <span className="font-bold text-[#00BDFF]">Langkah 2:</span>
+                    <p className="text-[11.5px]">Buka <strong>n8n Studio</strong> ➔ Tekan butang menu `...` di penjuru atas ➔ Pilih <strong>Import from File</strong>.</p>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/60 dark:border-zinc-700/60 space-y-1">
+                    <span className="font-bold text-[#00BDFF]">Langkah 3:</span>
+                    <p className="text-[11.5px]">Tukar suis <strong>Active</strong> kepada ON di bahagian atas n8n untuk memulakan automasi.</p>
+                  </div>
                 </div>
               </div>
 
-              <a
-                href="http://187.127.223.53:5678"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
-              >
-                <span>Editor n8n</span>
-                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-              </a>
             </div>
           </div>
         )}
