@@ -122,6 +122,8 @@ function cleanWhatsAppChat(text: string, stripGreeting: boolean = false): string
   // Strip robotic disclaimer fragments if present
   cleaned = cleaned.replace(/maklumat (?:ini )?tidak (?:dinyatakan|disebutkan) dalam (?:data )?sistem (?:saya)?\.?/gi, '');
   cleaned = cleaned.replace(/saya kurang pasti tentang prosesnya\.?/gi, '');
+  cleaned = cleaned.replace(/saya tidak mempunyai akses terus kepada pangkalan data supabase/gi, '');
+  cleaned = cleaned.replace(/\b(?:supabase|n8n|openrouter|groq|gemini api|litellm)\b/gi, 'sistem kilang');
 
   // If ongoing conversation, remove repetitive opening greetings like "Hai!", "Hello!", "Hai [Nama]!"
   if (stripGreeting) {
@@ -627,6 +629,39 @@ Pelanggan meminta bercakap terus dengan staf / ejen manusia sekarang!
       ticketCreated: true,
       customerPhone: cleanCustomerNum,
       customerName: msg.senderName || 'Pelanggan'
+    };
+  }
+
+  // 5A. META / TECHNICAL ARCHITECTURE LEAK GUARD (Never leak backend details, models, or DB)
+  const isMetaTechQuery = 
+    lower.includes('developer') ||
+    lower.includes('pembangun') ||
+    lower.includes('supabase') ||
+    lower.includes('n8n') ||
+    lower.includes('data latih') ||
+    lower.includes('training data') ||
+    lower.includes('system prompt') ||
+    lower.includes('prompt injection') ||
+    lower.includes('jailbreak') ||
+    lower.includes('source code') ||
+    lower.includes('kod sumber') ||
+    lower.includes('code base') ||
+    lower.includes('codebase') ||
+    lower.includes('model apa') ||
+    lower.includes('pakai model') ||
+    lower.includes('bocorkan') ||
+    lower.includes('instruksi sistem') ||
+    (lower.includes('siapa') && (lower.includes('buat kamu') || lower.includes('cipta kamu')));
+
+  if (isMetaTechQuery) {
+    const defenseReply = 'Saya adalah Pembantu Khidmat Pelanggan (CS) rasmi Kilang SFV APPAREL di WhatsApp. Fokus utama saya adalah membantu anda dengan sebarang urusan tempahan jersi kustom, cetakan DTF, sebut harga terus dari kilang, dan pemilihan corak reka bentuk. Sekiranya anda mempunyai sebarang soalan mengenai produk atau tempahan baju jersi kami, saya sedia membantu!';
+    await sendWahaMessage(msg.from, defenseReply);
+    stopWahaTyping(msg.from).catch(() => {});
+    return {
+      success: true,
+      replied: true,
+      responseText: defenseReply,
+      reason: 'meta_tech_query_defended',
     };
   }
 
