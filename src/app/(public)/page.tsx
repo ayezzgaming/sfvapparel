@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { 
   Play,
   Plus,
+  ChevronLeft,
   ChevronRight, 
   ShieldCheck,
   Truck,
@@ -962,24 +963,45 @@ export default function HomePage() {
           )}
         </div>
 
-        <div className="flex justify-center items-center gap-1.5 pt-2">
-          {activeGallery.map((_, idx) => {
-            const isActive = idx === activeGalleryIndex;
-            return (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => scrollToGallery(idx)}
-                aria-label={`Lihat hasil produksi ${idx + 1}`}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  isActive 
-                    ? 'w-6 bg-[#00BDFF]' 
-                    : 'w-2 bg-slate-300 hover:bg-slate-400'
-                }`}
+        {activeGallery.length > 1 && (
+          <div className="flex justify-between items-center px-1 pt-2">
+            {/* Sleek Progress Bar Indicator */}
+            <div className="flex-1 max-w-[130px] sm:max-w-[180px] h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-[#00BDFF] rounded-full transition-all duration-300"
+                style={{ 
+                  width: `${Math.max(12, 100 / activeGallery.length)}%`,
+                  transform: `translateX(${activeGalleryIndex * (100 / (activeGallery.length - 1 || 1)) * (1 - (Math.max(12, 100 / activeGallery.length) / 100))}%)`
+                }}
               />
-            );
-          })}
-        </div>
+            </div>
+
+            {/* Clean Compact Counter & Navigation Buttons */}
+            <div className="flex items-center gap-1.5 bg-white border border-slate-200/80 px-2 py-1 rounded-full shadow-xs">
+              <button
+                type="button"
+                onClick={() => scrollToGallery(Math.max(0, activeGalleryIndex - 1))}
+                disabled={activeGalleryIndex === 0}
+                className="w-6 h-6 rounded-full flex items-center justify-center text-slate-500 disabled:opacity-25 disabled:pointer-events-none hover:bg-slate-100 active:scale-95 transition-all"
+                aria-label="Sebelumnya"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <span className="text-[11px] font-medium text-slate-400 px-1">
+                <strong className="text-slate-800 font-bold">{activeGalleryIndex + 1}</strong> / {activeGallery.length}
+              </span>
+              <button
+                type="button"
+                onClick={() => scrollToGallery(Math.min(activeGallery.length - 1, activeGalleryIndex + 1))}
+                disabled={activeGalleryIndex === activeGallery.length - 1}
+                className="w-6 h-6 rounded-full flex items-center justify-center text-slate-500 disabled:opacity-25 disabled:pointer-events-none hover:bg-slate-100 active:scale-95 transition-all"
+                aria-label="Seterusnya"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* =========================================================================
@@ -1045,24 +1067,45 @@ export default function HomePage() {
           })}
         </div>
 
-        <div className="flex justify-center items-center gap-1.5 pt-3">
-          {activeTestimonials.map((_, idx) => {
-            const isActive = idx === activeTestiIndex;
-            return (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => scrollToTestimonial(idx)}
-                aria-label={`Lihat testimoni ${idx + 1}`}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  isActive 
-                    ? 'w-6 bg-[#00BDFF]' 
-                    : 'w-2 bg-slate-300 hover:bg-slate-400'
-                }`}
+        {activeTestimonials.length > 1 && (
+          <div className="flex justify-between items-center px-1 pt-2">
+            {/* Sleek Progress Bar Indicator */}
+            <div className="flex-1 max-w-[130px] sm:max-w-[180px] h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-[#00BDFF] rounded-full transition-all duration-300"
+                style={{ 
+                  width: `${Math.max(15, 100 / activeTestimonials.length)}%`,
+                  transform: `translateX(${activeTestiIndex * (100 / (activeTestimonials.length - 1 || 1)) * (1 - (Math.max(15, 100 / activeTestimonials.length) / 100))}%)`
+                }}
               />
-            );
-          })}
-        </div>
+            </div>
+
+            {/* Clean Compact Counter & Navigation Buttons */}
+            <div className="flex items-center gap-1.5 bg-white border border-slate-200/80 px-2 py-1 rounded-full shadow-xs">
+              <button
+                type="button"
+                onClick={() => scrollToTestimonial(Math.max(0, activeTestiIndex - 1))}
+                disabled={activeTestiIndex === 0}
+                className="w-6 h-6 rounded-full flex items-center justify-center text-slate-500 disabled:opacity-25 disabled:pointer-events-none hover:bg-slate-100 active:scale-95 transition-all"
+                aria-label="Testimoni Sebelumnya"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <span className="text-[11px] font-medium text-slate-400 px-1">
+                <strong className="text-slate-800 font-bold">{activeTestiIndex + 1}</strong> / {activeTestimonials.length}
+              </span>
+              <button
+                type="button"
+                onClick={() => scrollToTestimonial(Math.min(activeTestimonials.length - 1, activeTestiIndex + 1))}
+                disabled={activeTestiIndex === activeTestimonials.length - 1}
+                className="w-6 h-6 rounded-full flex items-center justify-center text-slate-500 disabled:opacity-25 disabled:pointer-events-none hover:bg-slate-100 active:scale-95 transition-all"
+                aria-label="Testimoni Seterusnya"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* =========================================================================
