@@ -125,21 +125,18 @@ function cleanWhatsAppChat(text: string, stripGreeting: boolean = false): string
   cleaned = cleaned.replace(/saya tidak mempunyai akses terus kepada pangkalan data supabase/gi, '');
   cleaned = cleaned.replace(/\b(?:supabase|n8n|openrouter|groq|gemini api|litellm)\b/gi, 'sistem kilang');
 
+  // Strip emojis safely while preserving all newlines, punctuation, and numbers
+  try {
+    cleaned = cleaned.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+  } catch {}
+
   // If ongoing conversation, remove repetitive opening greetings like "Hai!", "Hello!", "Hai [Nama]!"
   if (stripGreeting) {
     cleaned = cleaned.replace(/^(?:Hai|Hello|Halo|Salam)[^.!\n]*[!.?,\s]+/i, '').trim();
   }
 
-  // Strip all emojis and emoticons safely
-  try {
-    cleaned = cleaned.replace(/[^a-zA-Z0-9\s.,!?:;/@#$%&*()_\-+=\[\]{}'"<>]/g, ' ').replace(/\s+/g, ' ');
-  } catch {}
-
-  // Format numbered lists with clean line breaks if mashed together (e.g. "1) ... 2) ...")
-  cleaned = cleaned.replace(/(\d+[\.\)])\s+/g, '\n$1 ');
-
-  // Clean dashes and excessive blank lines
-  cleaned = cleaned.replace(/---+/g, '');
+  // Clean horizontal spacing without destroying newlines (\n)
+  cleaned = cleaned.replace(/[^\S\r\n]+/g, ' ');
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
 
   return cleaned;
@@ -752,8 +749,9 @@ ${calc.formattedSummary}
     if (phoneLookup) liveOrderContext = phoneLookup;
   }
 
-  // 9. Check if user is asking about a specific design/catalog product
-  const designMatch = lower.match(/(?:sfv-?|des-?)\d+/i);
+  // 9. Check if user is asking about a specific design/catalog product (e.g. SVF0071, SFV0083, DES-01, Polo, etc.)
+  const rawCodeMatch = lower.match(/(?:sfv|svf|des|kod)?[-_\s]?(\d{2,5})/i);
+  const detectedCodeNum = rawCodeMatch && rawCodeMatch[1] ? rawCodeMatch[1] : '';
   let liveDesignContext = '';
   let targetDesignImage: string | null = null;
   let targetDesignTitle: string | null = null;
@@ -762,15 +760,16 @@ ${calc.formattedSummary}
     const designsRes = await getDesignsDb();
     const liveDesigns = designsRes.success && designsRes.designs ? designsRes.designs : [];
 
-    if (designMatch || lower.includes('polo') || lower.includes('jersi') || lower.includes('baju')) {
-      const rawSearch = (designMatch ? designMatch[0] : '').toLowerCase().replace('-', '');
+    if (detectedCodeNum || lower.includes('polo') || lower.includes('jersi') || lower.includes('baju') || lower.includes('corak') || lower.includes('katalog')) {
+      const rawSearch = (rawCodeMatch ? rawCodeMatch[0] : '').toLowerCase().replace(/[-_\s]/g, '');
       const foundDesign = liveDesigns.find(d => {
-        const dCode = (d.code || d.id || '').toLowerCase().replace('-', '');
-        const dId = d.id.toLowerCase().replace('-', '');
+        const dCode = (d.code || d.id || '').toLowerCase().replace(/[-_\s]/g, '');
+        const dId = String(d.id).toLowerCase().replace(/[-_\s]/g, '');
         const titleLower = d.title.toLowerCase();
-        if (rawSearch && (dCode.includes(rawSearch) || dId.includes(rawSearch) || titleLower.includes(rawSearch))) {
-          return true;
-        }
+        
+        if (detectedCodeNum && (dCode.includes(detectedCodeNum) || dId.includes(detectedCodeNum))) return true;
+        if (rawSearch && (dCode.includes(rawSearch) || dId.includes(rawSearch))) return true;
+        if (lower.includes(titleLower)) return true;
         return false;
       });
 
@@ -780,11 +779,17 @@ ${calc.formattedSummary}
           ? (foundDesign.mockup_front_url || foundDesign.thumbnail_url) 
           : null;
 
+        const directLink = `https://sfvapparel.my/customize/${foundDesign.id}`;
+        const searchLink = `https://sfvapparel.my/catalog?search=${encodeURIComponent(foundDesign.code || foundDesign.title)}`;
+
         liveDesignContext = `
-REKAAN DITANYA DARI PANGKALAN DATA SUPABASE:
+REKAAN SPESIFIK DITEMUI DARI PANGKALAN DATA SUPABASE:
 - Kod: ${foundDesign.code || foundDesign.id} | Nama: ${foundDesign.title}
-- Cetakan: ${foundDesign.print_type === 'sublimation' ? 'Sublimasi Penuh' : 'DTF'}
-- Fabrik Standard: Drifit Milano 165gsm & Microfiber Eyelet (kain sukan cepat kering)
+- Kategori: ${foundDesign.category || 'Jersi Sukan'} | Cetakan: ${foundDesign.print_type === 'sublimation' ? 'Sublimasi Penuh' : 'DTF'}
+- Fabrik Standard: Drifit Milano 165gsm & Microfiber Eyelet (kain sukan sejuk cepat kering)
+- Pautan Terus Tempah: ${directLink}
+- Pautan Carian Katalog: ${searchLink}
+(Nota: Gambar visual rekaan ini akan dihantar secara automatik ke WhatsApp pelanggan).
         `.trim();
       }
     }
@@ -862,36 +867,36 @@ WAKTU SEMASA KILANG:
 
   // 11. Master System Prompt Grounded in Live System & Database Facts
   const systemPrompt = `Anda adalah Pembantu Khidmat Pelanggan (CS) rasmi Kilang SFV APPAREL di WhatsApp.
-Bercakaplah dengan gaya staf jurujual manusia yang ramah, yakin, bersahaja dan ringkas (1-2 perenggan pendek). SIFAR EMOJI.
+Bercakaplah dengan gaya staf jurujual manusia sebenar yang mesra, ringkas, bersahaja, terus ke topik soalan (2-4 ayat pendek sahaja). SIFAR EMOJI.
 
 ${livingSystemContext}
 
-=== PERATURAN TINGKAH LAKU & JAWAPAN (WAJIB PATUH) ===
+=== PERATURAN TINGKAH LAKU & GAYA PENULISAN MANUSIAWI (WAJIB PATUH) ===
 1. PERATURAN SAPAAN (PENTING):
    - Jika pelanggan memberi salam "Assalamualaikum / Salam", jawab "Waalaikumussalam".
    - Jika pelanggan hanya menyapa (contohnya "Hai", "Hello", "P"), balas sapaan neutral "Hai${greetingName}!".
-   - JIKA PELANGGAN BERTANYA SOALAN ATAU MEMINTA MAKLUMAT (contohnya "berapa harga", "boleh bayar full", "alamat kat mana", "bisa siap 1 hari", "berapa lama selesai", dll): DILARANG SAMA SEKALI memulakan jawapan dengan "Hai!" atau "Hello!". TERUS JAWAB soalan pelanggan secara terus, mesra dan natural.
+   - JIKA PELANGGAN BERTANYA SOALAN ATAU MEMINTA MAKLUMAT (contohnya "berapa harga", "boleh bayar full", "alamat kat mana", "bisa siap 1 hari", "berapa lama selesai", "katalog SVF0071", "batal pesanan", dll): DILARANG SAMA SEKALI memulakan jawapan dengan "Hai!" atau "Hello!". TERUS JAWAB soalan pelanggan secara terus, natural, dan ringkas.
 
-2. DILARANG MENGGUNAKAN AYAT ROBOT / DISCLAIMER:
-   - DILARANG KERAS menggunakan frasa: "maklumat tidak disebutkan dalam sistem", "saya kurang pasti", "data sistem saya", atau "saya hanyalah AI".
-   - Anda adalah staf CS kilang berpengalaman. Jawab soalan pelanggan dengan yakin berdasarkan fakta operasi kilang di atas.
+2. GAYA PENULISAN MANUSIAWI REALISTIK (HUMAN CS TONE):
+   - Jawab seperti staf jurujual WhatsApp manusia: Ringkas, padat (2-4 ayat), bersahaja dan fokus kepada apa yang ditanya pelanggan.
+   - JANGAN menulis esei panjang lebar atau menyenaraikan manual prosedur yang tidak diminta.
+   - Gunakan susunan perenggan ringkas dan baris baru (ENTER) yang kemas.
 
 3. PANDUAN JAWAPAN SOALAN LAZIM:
-   - *Tempoh Siap (Berapa lama selesai/siap?):* Siap pantas dalam 5 HINGGA 7 HARI BEKERJA (Express Siap) selepas rekaan mockup disahkan. Untuk kuantiti pukal besar (>500 helai), tempoh 2-3 minggu.
-   - *Caj Custom Design (Ada tambahan biaya/caj reka bentuk?):* 100% PERCUMA / TIADA SEBARANG CAJ TAMBAHAN. Pelanggan boleh guna corak katalog atau hantar fail/gambar idea sendiri terus di WhatsApp.
-   - *Bayaran Penuh (Boleh bayar full?):* Ya, BOLEH dan amat dialu-alukan! Pelanggan boleh bayar penuh 100% terus atau bayar deposit 50% untuk mula cetak dan 50% baki sebelum pos melalui FPX di https://sfvapparel.my.
-   - *Alamat Kilang / Scammer ke?:* SFV APPAREL beroperasi secara rasmi di No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor (SFV Ventures Marketing, SSM 202303194821). Bukan scammer; pelanggan boleh jejak status dan invois di https://sfvapparel.my/history. Jaminan 1-to-1 QC.
-   - *Bisa siap 1 hari?:* Untuk tempoh 1 hari (super rush), maklumkan bahawa kilang perlu menyemak kekosongan slot mesin cetak ekspres hari ini dan minta pelanggan kongsi rekaan & kuantiti segera.
+   - *Tempoh Siap:* 5 hingga 7 hari bekerja (Express Siap) selepas mockup disahkan. Pukal besar (>500 helai): 2-3 minggu.
+   - *Kefahaman Tarikh Semasa:* Hari ini adalah ${klDateStr}. Jika pelanggan menyebut tarikh yang sudah berlalu (contohnya tarikh semalam atau bulan lepas), maklumkan dengan santun dan bersahaja bahawa tarikh itu sudah lepas dan tanyakan tarikh baharu yang dirancang.
+   - *Caj Custom Design:* 100% PERCUMA / TIADA SEBARANG CAJ TAMBAHAN. Pereka grafik kami buat visual proof percuma.
+   - *Bayaran Penuh vs Deposit:* Boleh bayar penuh 100% terus atau deposit 50% untuk mula cetak dan 50% sebelum pos melalui FPX di https://sfvapparel.my.
+   - *Polisi Pembatalan (Hangus ke duit?):* Jika sebelum cetakan bermula, deposit 50% boleh dipulangkan. Namun jika proses cetakan/jahitan sudah berjalan di kilang, deposit tidak dapat dipulangkan kerana kos bahan dan cetakan telah dikeluarkan.
+   - *Alamat Kilang / Sah:* No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor (SFV Ventures Marketing, SSM 202303194821). Jaminan 1-to-1 QC.
+   - *Bisa siap 1 hari?:* Untuk tempoh 1 hari (super rush), maklumkan bahawa kilang perlu semak kekosongan slot mesin cetak ekspres hari ini dan minta pelanggan kongsi rekaan & kuantiti segera.
 
-4. JIKA SUDAH ADA DESAIN SENDIRI:
-   - Minta pelanggan terus kongsikan fail/gambar di sini di WhatsApp dan tanyakan anggaran kuantiti helai.
+4. JIKA BERTANYA CORAK / KOD KATALOG (CONTOH: SVF0071 / SFV0083):
+   - Jika maklumat rekaan ada di bawah, terangkan secara ringkas corak dan warnanya (1-2 ayat) dan sertakan pautan terus tempahan atau carian katalog (contoh: https://sfvapparel.my/customize/[id] atau https://sfvapparel.my/catalog?search=[kod]).
+   - Sistem akan menghantar foto visual rekaan tersebut terus ke WhatsApp secara automatik.
 
-5. KEMAS & BERPERENGGAN:
-   - Gunakan perenggan ringkas dan kemas dengan baris baru (ENTER).
-
-6. KESEDARAN PENUH SISTEM & PANGKALAN DATA (JIKA DITANYA TENTANG AKSES / DATABASE / TEKNIKAL):
-   - Anda mempunyai sambungan masa nyata (real-time live grounding) ke seluruh pangkalan data Supabase SFV APPAREL (Katalog Reka Bentuk, Formula Harga & Diskaun Kuantiti, Profil Syarikat, Pengesanan Status Pesanan, dan Enjin Penglihatan Visual AI untuk gambar).
-   - DILARANG sesekali mengaku bahawa anda tidak terhubung ke pangkalan data atau mereka-reka kekurangan teknikal yang tidak wujud.
+5. DILARANG MENGGUNAKAN AYAT ROBOT / DISCLAIMER:
+   - DILARANG KERAS menggunakan frasa: "maklumat tidak disebutkan dalam sistem", "saya kurang pasti", "data sistem saya", atau "saya hanyalah AI". Jawab dengan yakin dan ramah.
 
 ${liveTimeContext}
 ${liveOrderContext ? `\n${liveOrderContext}\n` : ''}
