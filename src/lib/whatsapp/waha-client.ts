@@ -429,3 +429,40 @@ export async function stopWahaTyping(to: string): Promise<boolean> {
   }
 }
 
+/**
+ * Fetch media file from WAHA and convert to base64 Data URL for Vision AI
+ */
+export async function fetchWahaMediaAsBase64(mediaUrlOrPath: string): Promise<{ base64DataUrl: string; mimeType: string } | null> {
+  if (!mediaUrlOrPath) return null;
+  try {
+    let targetUrl = '';
+    const decoded = decodeURIComponent(mediaUrlOrPath);
+    if (decoded.startsWith('http://') || decoded.startsWith('https://')) {
+      targetUrl = decoded;
+    } else {
+      const cleanPath = decoded.replace(/^\/+/, '').replace(/^api\/files\//, '');
+      targetUrl = `${WAHA_URL}/api/files/${cleanPath}`;
+    }
+
+    const res = await fetch(targetUrl, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) {
+      console.warn(`[WAHA Client] Failed to fetch media from ${targetUrl}: HTTP ${res.status}`);
+      return null;
+    }
+
+    const mimeType = res.headers.get('content-type') || 'image/jpeg';
+    const arrayBuffer = await res.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString('base64');
+    return {
+      base64DataUrl: `data:${mimeType};base64,${base64}`,
+      mimeType,
+    };
+  } catch (err) {
+    console.error('[WAHA Client] Error converting media to base64:', err);
+    return null;
+  }
+}
+
+

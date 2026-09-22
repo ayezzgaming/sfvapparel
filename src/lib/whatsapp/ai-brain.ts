@@ -1,4 +1,4 @@
-import { sendWahaMessage, sendWahaImage, formatChatId, getWahaMessages, startWahaTyping, stopWahaTyping } from './waha-client';
+import { sendWahaMessage, sendWahaImage, formatChatId, getWahaMessages, startWahaTyping, stopWahaTyping, fetchWahaMediaAsBase64 } from './waha-client';
 import { getCmsDataDb } from '@/app/actions/cmsActions';
 import { getDesignsDb } from '@/app/actions/designActions';
 import { getMasterPricingDb } from '@/app/actions/pricingActions';
@@ -72,7 +72,11 @@ export interface IncomingWahaMessage {
   from: string;
   fromMe: boolean;
   body: string;
+  caption?: string;
   senderName?: string;
+  hasMedia?: boolean;
+  mediaUrl?: string;
+  mediaMimetype?: string;
 }
 
 /**
@@ -251,6 +255,112 @@ async function callLlmWithFallback(
 
   return null;
 }
+
+/**
+ * Multi-Provider Vision LLM Caller using OpenRouter Free Vision-Language Models (Ling 3.0 Flash VL / Nemotron Omni / Gemini)
+ */
+async function callVisionLlmWithFallback(
+  prompt: string,
+  imageBase64Url: string,
+  temperature: number = 0.50,
+  maxTokens: number = 1000
+): Promise<string | null> {
+  const openRouterKey = process.env.OPENROUTER_API_KEY || OPENROUTER_API_KEY;
+
+  // 1. Try OpenRouter Vision-Language Free Models
+  if (openRouterKey) {
+    const visionModels = [
+      'inclusionai/ling-3.0-flash-vl:free',
+      'nvidia/nemotron-3-nano-omni:free',
+      'google/gemma-4-26b-a4b-it:free',
+      'google/gemma-4-31b-it:free'
+    ];
+
+    for (const model of visionModels) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          signal: controller.signal,
+          headers: {
+            'Authorization': `Bearer ${openRouterKey}`,
+            'HTTP-Referer': 'https://sfvapparel.my',
+            'X-Title': 'SFV Apparel Vision AI',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  { type: 'text', text: prompt },
+                  { type: 'image_url', image_url: { url: imageBase64Url } }
+                ]
+              }
+            ],
+            temperature,
+            max_tokens: maxTokens,
+          }),
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          const content = data.choices?.[0]?.message?.content?.trim();
+          if (content && content.length > 5) return content;
+        }
+      } catch (e) {
+        console.warn(`[AI Vision] Error calling model ${model}:`, e);
+      }
+    }
+  }
+
+  // 2. Try Google Gemini Vision Fallback
+  if (GEMINI_API_KEY) {
+    try {
+      const base64Data = imageBase64Url.split(',')[1] || imageBase64Url;
+      const mimeMatch = imageBase64Url.match(/^data:([^;]+);base64,/);
+      const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+
+      const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+      const res = await fetch(geminiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                { text: prompt },
+                {
+                  inline_data: {
+                    mime_type: mimeType,
+                    data: base64Data
+                  }
+                }
+              ]
+            }
+          ],
+          generationConfig: { temperature, maxOutputTokens: maxTokens },
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        if (content && content.length > 5) return content;
+      }
+    } catch (e) {
+      console.warn('[AI Vision] Error calling Gemini vision:', e);
+    }
+  }
+
+  return null;
+}
+
 
 function parseMalaysianQuantity(text: string): number | null {
   const lower = text.toLowerCase();
@@ -483,6 +593,66 @@ Pelanggan meminta bercakap terus dengan staf / ejen manusia sekarang!
       customerPhone: cleanCustomerNum,
       customerName: msg.senderName || 'Pelanggan'
     };
+  }
+
+  // 5B. MULTIMODAL VISION AI INSPECTOR (Process Incoming Jersey Images & Match Supabase Catalog)
+  if (msg.hasMedia) {
+    try {
+      console.log(`[AI Brain] Processing incoming media via Vision AI for ${msg.from}`);
+      let targetMediaUrl = msg.mediaUrl || '';
+      if (!targetMediaUrl) {
+        try {
+          const recentMsgs = await getWahaMessages(msg.from, 2);
+          const mediaMsg = recentMsgs?.find(m => m.hasMedia && m.mediaUrl);
+          if (mediaMsg?.mediaUrl) targetMediaUrl = mediaMsg.mediaUrl;
+        } catch {}
+      }
+
+      if (targetMediaUrl) {
+        const mediaData = await fetchWahaMediaAsBase64(targetMediaUrl);
+        if (mediaData && mediaData.base64DataUrl) {
+          const designsRes = await getDesignsDb();
+          const liveDesigns = designsRes.success && designsRes.designs ? designsRes.designs : [];
+          const catalogList = liveDesigns
+            .slice(0, 60)
+            .map(d => `- [${d.id}] ${d.title} (Kategori: ${d.category || 'Sublimasi'}, Corak: ${d.description || 'Polo/Jersi Sukan'}) -> https://sfvapparel.my/customize/${d.id}`)
+            .join('\n');
+
+          const visionPrompt = `Anda adalah Pembantu Khidmat Pelanggan (CS) & Pereka Jersi Kilang SFV APPAREL di WhatsApp.
+Pelanggan telah memuat naik gambar jersi/pakaian di WhatsApp dengan pertanyaan: "${userText}".
+
+=== SENARAI 84 KATALOG REKA BENTUK TEMPLAT KILANG SFV APPAREL ===
+${catalogList}
+
+=== TUGAS ANDA (VISION AI MATCHING) ===
+1. Analisis gambar yang dihantar oleh pelanggan:
+   - Warna baju (contohnya putih & biru diraja, hitam & merah jambu, dsb.).
+   - Jenis kolar (contohnya Berkolar Polo / Polo Collar atau Leher Bulat / Round Neck).
+   - Corak grafik pada jersi.
+2. Padankan dengan katalog jersi di atas:
+   - Jika gambar jersi polo putih-biru, padankan dengan "SFV0084 - WHITE BLUE POLO" (atau templat polo berkaitan).
+   - Beritahu pelanggan dengan ramah bahawa kilang kita ada templat yang sepadan tersebut dan kongsikan nama templat serta pautan terus untuk mereka lihat atau kustomisasi di laman web: https://sfvapparel.my/customize/[id] atau https://sfvapparel.my/catalog.
+3. Beritahu juga bahawa jika pelanggan mahu cetak 100% reka bentuk mereka sendiri mengikut gambar tersebut, kilang kita sedia mencetaknya terus.
+4. Tanyakan anggaran kuantiti helai jersi yang ingin ditempah.
+5. Gaya percakapan staf jurujual manusia yang sangat ramah, sopan, dan ringkas (1-2 perenggan pendek). SIFAR EMOJI.`;
+
+          const visionReply = await callVisionLlmWithFallback(visionPrompt, mediaData.base64DataUrl, 0.50, 800);
+          if (visionReply) {
+            const cleanedReply = cleanWhatsAppChat(visionReply);
+            await sendWahaMessage(msg.from, cleanedReply);
+            stopWahaTyping(msg.from).catch(() => {});
+            return {
+              success: true,
+              replied: true,
+              responseText: cleanedReply,
+              reason: 'vision_ai_catalog_matched',
+            };
+          }
+        }
+      }
+    } catch (visionErr) {
+      console.error('[AI Brain] Vision AI processing error:', visionErr);
+    }
   }
 
   // 6. Fetch Live System Manifest & Dynamic System Grounding

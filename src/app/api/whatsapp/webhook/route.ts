@@ -35,16 +35,27 @@ export async function POST(req: Request) {
     }
 
     const data = payload.payload || payload.data || payload;
-    if (!data || (!data.body && !data.text)) {
-      return NextResponse.json({ success: true, message: 'No message body' });
+    if (!data) {
+      return NextResponse.json({ success: true, message: 'No data in payload' });
     }
 
     // Extract Message ID for absolute deduplication
     const msgId = data.id?._serialized || data.id?.id || data.id || data._data?.id?._serialized || '';
     const from = data.from || '';
     const fromMe = !!data.fromMe || !!data.id?.fromMe;
-    const body = (data.body || data.text || '').trim();
+    const rawText = (data.body || data.text || data._data?.body || '').trim();
+    const rawCaption = (data.caption || data._data?.caption || '').trim();
+    const hasMedia = !!(data.hasMedia || data.mediaUrl || data.media?.url || (data._data?.mimetype && !data._data?.mimetype.startsWith('text')));
+    const mediaUrl = data.mediaUrl || data.media?.url || (data.media?.id ? `/api/files/${data.media.id}` : '') || '';
+    const mediaMimetype = data.media?.mimetype || data._data?.mimetype || '';
     const senderName = data._data?.notifyName || data.notifyName || data.pushName || '';
+
+    // If message is media, prioritize caption or generate contextual prompt
+    const effectiveBody = rawCaption || rawText || (hasMedia ? 'Pelanggan menghantar gambar jersi untuk disemak dan dipadankan dengan katalog kilang.' : '');
+
+    if (!effectiveBody && !hasMedia) {
+      return NextResponse.json({ success: true, message: 'No text or media content found' });
+    }
 
     cleanDeduplicationCache();
 
@@ -70,7 +81,7 @@ export async function POST(req: Request) {
     }
     RECENT_REPLIES.set(from, Date.now());
 
-    console.log(`[WhatsApp Webhook] Processing incoming message from: ${from}, text: "${body.slice(0, 40)}"`);
+    console.log(`[WhatsApp Webhook] Processing incoming message from: ${from}, text: "${effectiveBody.slice(0, 40)}", hasMedia: ${hasMedia}`);
 
     // 1. Forward directly to n8n Super Power Multi-Agent AI Engine on VPS (100% n8n Orchestration)
     try {
@@ -81,7 +92,11 @@ export async function POST(req: Request) {
           body: {
             from,
             fromMe,
-            body,
+            body: effectiveBody,
+            caption: rawCaption,
+            hasMedia,
+            mediaUrl,
+            mediaMimetype,
             senderName,
             id: msgId
           }
@@ -100,8 +115,11 @@ export async function POST(req: Request) {
     const aiResult = await processAiCustomerReply({
       from,
       fromMe,
-      body,
+      body: effectiveBody,
       senderName,
+      hasMedia,
+      mediaUrl,
+      mediaMimetype,
     });
 
     return NextResponse.json({ success: true, engine: 'safety_fallback', aiResult });
