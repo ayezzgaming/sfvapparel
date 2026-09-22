@@ -1,0 +1,125 @@
+{
+  "name": "SFV Apparel - Ulasan Pelanggan & Baucar 10% Lepas Hantar",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 12
+            }
+          ]
+        }
+      },
+      "name": "Jadual Pemeriksaan 12 Jam",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "id": "node-cron-delivered"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "trigger-post-delivery-review",
+        "options": {}
+      },
+      "name": "Webhook Pemicu Manual",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 480],
+      "id": "node-manual-review-trigger"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://sfvapparel.vercel.app/api/orders/delivered-recent",
+        "options": {}
+      },
+      "name": "Dapatkan Pesanan Selesai (>3 Hari)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [480, 380],
+      "id": "node-fetch-delivered-orders"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Ulang Setiap Pelanggan",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [700, 380],
+      "id": "node-loop-delivered-orders"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://187.127.223.53:3000/api/sendText",
+        "headers": {
+          "X-Api-Key": "sfv_waha_master_key_2026",
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": $json.customer_phone.replace(/[^0-9]/g, '') + \"@c.us\",\n  \"text\": \"*TERIMA KASIH DARI SFV APPAREL!*\\n========================================\\nHai *\" + $json.customer_name + \"*,\\n\\nKami harap anda dan skuad berpuas hati dengan kualiti jersi *\" + $json.design_title + \"* (No: *\" + $json.order_number + \"*) yang telah diterima!\\n\\n*HADIAH REPEAT ORDER (DISKAUN 10%):*\\nGunakan kod promo khas ini untuk tempahan seterusnya:\\nKod: *SFVIP10* (Diskaun 10%)\\n\\nBina jersi baharu anda di:\\nhttps://sfvapparel.my/customize\\n\\nTerima kasih atas sokongan padu anda!\"\n}",
+        "options": {}
+      },
+      "name": "Hantar WhatsApp Review & Baucar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [920, 380],
+      "id": "node-send-review-wa"
+    }
+  ],
+  "connections": {
+    "Jadual Pemeriksaan 12 Jam": {
+      "main": [
+        [
+          {
+            "node": "Dapatkan Pesanan Selesai (>3 Hari)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Pemicu Manual": {
+      "main": [
+        [
+          {
+            "node": "Dapatkan Pesanan Selesai (>3 Hari)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dapatkan Pesanan Selesai (>3 Hari)": {
+      "main": [
+        [
+          {
+            "node": "Ulang Setiap Pelanggan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ulang Setiap Pelanggan": {
+      "main": [
+        [
+          {
+            "node": "Hantar WhatsApp Review & Baucar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

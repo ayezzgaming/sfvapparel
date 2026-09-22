@@ -11,6 +11,7 @@ import {
 import { PaymentGatewayConfig, PaymentStatus, Order } from '@/types/database';
 import { getServiceSupabase } from '@/lib/supabase/serverClient';
 import { sendOrderInvoiceWhatsApp } from '@/lib/whatsapp/order-notifier';
+import { triggerStaffProductionAlert } from '@/lib/n8n/n8n-client';
 
 /**
  * Server Action: Get client-safe Payment Gateway configuration
@@ -170,14 +171,36 @@ export async function updateOrderPaymentStatusDb(
       if (paymentMethod) updatePayload.payment_method = paymentMethod;
     }
 
-    const { error } = await supabase
+    const { data: updatedOrder, error } = await supabase
       .from('orders')
       .update(updatePayload)
-      .eq('order_number', baseOrderNumber);
+      .eq('order_number', baseOrderNumber)
+      .select()
+      .maybeSingle();
 
     if (error) {
       console.warn('[updateOrderPaymentStatusDb] Supabase update warning:', error.message);
       return { success: false, message: error.message };
+    }
+
+    // Trigger WhatsApp Official Invoice & n8n Staff Production queue asynchronously
+    if (updatedOrder && paymentStatus === 'paid') {
+      const order = updatedOrder as Order;
+      const notifType = isBalancePayment ? 'balance_paid' : 'deposit_confirmed';
+
+      sendOrderInvoiceWhatsApp(order, notifType).catch((e) =>
+        console.error('[updateOrderPaymentStatusDb] WA Invoice notification error:', e)
+      );
+
+      triggerStaffProductionAlert({
+        orderNumber: order.order_number,
+        customerName: order.customer_name,
+        status: isBalancePayment ? 'LUNAS (100% Sedia Pos)' : 'DEPOSIT DITERIMA (Barisan Cetakan)',
+        itemCount: order.total_quantity || 1,
+        totalAmount: Number(order.total_amount) || 0,
+      }).catch((e) =>
+        console.error('[updateOrderPaymentStatusDb] n8n production trigger error:', e)
+      );
     }
 
     return { success: true };
@@ -186,6 +209,7 @@ export async function updateOrderPaymentStatusDb(
     return { success: false, message: msg };
   }
 }
+
 
 /**
  * Server Action: Authoritatively confirm payment on successful gateway return

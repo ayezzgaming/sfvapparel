@@ -106,3 +106,128 @@ Terima kasih atas tempahan anda bersama SFV Apparel!`;
     return { success: false, error };
   }
 }
+
+/**
+ * Sends a milestone status update to the customer via WhatsApp
+ */
+export async function sendOrderStatusMilestoneWhatsApp(
+  order: Order,
+  status: string,
+  trackingNumber?: string,
+  courier?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (!order.customer_phone) {
+      return { success: false, error: 'Nombor telefon pelanggan tidak ditemui.' };
+    }
+
+    const host = process.env.NEXT_PUBLIC_APP_URL || 'https://sfvapparel.my';
+    const trackingLink = `${host}/history/${order.order_number}`;
+
+    const statusMap: Record<string, { title: string; desc: string }> = {
+      pending_proof: {
+        title: 'PENYEDIAAN MOCKUP REKA BENTUK',
+        desc: 'Pereka grafik kami sedang menyediakan mockup jersi rasmi anda untuk pengesahan.',
+      },
+      proof_approved: {
+        title: 'REKA BENTUK DISAHKAN & SEDIA DICETAK',
+        desc: 'Mockup telah disahkan! Pesanan anda telah dijadualkan ke barisan pencetakan sublimasi.',
+      },
+      printing: {
+        title: 'PROSES CETAKAN SUBLIMASI DIMULAKAN',
+        desc: 'Kain jersi anda sedang dicetak menggunakan teknologi Full Sublimation HD terkini kilang kami.',
+      },
+      sewing: {
+        title: 'PROSES JAHITAN & KEKALAN KUALITI',
+        desc: 'Kain yang dicetak kini dalam fasa potongan dan jahitan teliti oleh tukang jahit pakar kami.',
+      },
+      qc_packing: {
+        title: 'PEMERIKSAAN KUALITI (QC) & BUNGKUSAN',
+        desc: 'Jersi anda telah siap dijahit dan sedang menjalani pemeriksaan kualiti (QC) sebelum dibungkus.',
+      },
+      shipped: {
+        title: 'PESANAN TELAH DIHANTAR / DIPOS',
+        desc: `Pesanan anda telah diserahkan kepada pihak kurier (${courier || order.shipping_courier || 'Kurier'}). Sila semak tracking number di bawah.`,
+      },
+      delivered: {
+        title: 'PESANAN TELAH SELESAI / DITERIMA',
+        desc: 'Pesanan jersi anda telah berjaya diterima. Terima kasih kerana mempercayai SFV Apparel!',
+      },
+      cancelled: {
+        title: 'PESANAN DIBATALKAN',
+        desc: 'Pesanan ini telah dibatalkan. Sila hubungi khidmat pelanggan kami jika terdapat sebarang pertanyaan.',
+      },
+    };
+
+    const info = statusMap[status] || {
+      title: status.toUpperCase().replace(/_/g, ' '),
+      desc: 'Status pengeluaran jersi anda telah dikemas kini.',
+    };
+
+    const message = `*KEMASKINI STATUS TEMPAHAN JERSI*
+*SFV APPAREL*
+========================================
+*No. Pesanan:* ${order.order_number}
+*Pelanggan:* ${order.customer_name}
+*Rekaan:* ${order.design_title} (${order.total_quantity} helai)
+
+*STATUS TERKINI: ${info.title}*
+${info.desc}
+
+${trackingNumber ? `*Maklumat Penghantaran:*
+• *Kurier:* ${courier || order.shipping_courier || 'J&T / PosLaju'}
+• *No. Tracking:* *${trackingNumber}*` : ''}
+
+========================================
+*Jejak Status Terperinci Di Sini:*
+${trackingLink}
+
+Sebarang pertanyaan, anda boleh terus membalas mesej ini.`;
+
+    return await sendWahaMessage(order.customer_phone, message);
+  } catch (err: unknown) {
+    const error = err instanceof Error ? err.message : 'Gagal menghantar status WhatsApp';
+    console.error('[sendOrderStatusMilestoneWhatsApp] Error:', error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Sends a review request and repeat customer discount voucher
+ */
+export async function sendPostDeliveryReviewWhatsApp(
+  order: Order,
+  discountCode: string = 'SFVIP10'
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (!order.customer_phone) {
+      return { success: false, error: 'Nombor telefon pelanggan tidak ditemui.' };
+    }
+
+    const host = process.env.NEXT_PUBLIC_APP_URL || 'https://sfvapparel.my';
+
+    const message = `*TERIMA KASIH DARI SFV APPAREL!*
+========================================
+Hai *${order.customer_name}*,
+
+Kami harap anda dan pasukan berpuas hati dengan kualiti jersi *${order.design_title}* (No: ${order.order_number}) yang telah diterima!
+
+*KONGSI PENDAPAT ANDA:*
+Bantuan maklum balas anda amat berharga bagi kilang kami untuk terus meningkatkan kualiti jahitan dan cetakan.
+
+*HADIAH REPEAT ORDER (DISKAUN 10%):*
+Sebagai tanda penghargaan, gunakan kod promo khas ini untuk tempahan jersi anda yang seterusnya di portal kami:
+Kod Promo: *${discountCode}* (Diskaun 10%)
+
+Layari dan reka jersi baru anda di:
+${host}/customize
+
+Terima kasih atas sokongan berterusan anda!`;
+
+    return await sendWahaMessage(order.customer_phone, message);
+  } catch (err: unknown) {
+    const error = err instanceof Error ? err.message : 'Gagal menghantar review WhatsApp';
+    return { success: false, error };
+  }
+}
+

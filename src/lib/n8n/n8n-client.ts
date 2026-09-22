@@ -150,3 +150,29 @@ export async function triggerStaffProductionAlert(orderData: {
     order: orderData,
   });
 }
+
+/**
+ * Trigger 50% Balance Due Reminder Workflow
+ */
+export async function triggerBalanceDueReminder(orderData: {
+  order_number: string;
+  customer_name: string;
+  customer_phone: string;
+  balance_amount: number;
+  payment_status: string;
+}): Promise<N8nWorkflowTriggerResult> {
+  return triggerN8nWorkflow('balance-due-reminder', {
+    action: 'BALANCE_DUE_ALERT',
+    order: orderData,
+  });
+}
+
+/**
+ * Trigger Post-Delivery Customer Review & Coupon Workflow
+ */
+export async function triggerPostDeliveryReviewCheck(): Promise<N8nWorkflowTriggerResult> {
+  return triggerN8nWorkflow('trigger-post-delivery-review', {
+    action: 'CHECK_POST_DELIVERY_REVIEWS',
+  });
+}
+

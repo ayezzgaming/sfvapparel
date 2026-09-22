@@ -2,7 +2,8 @@
 
 import { getServiceSupabase } from '@/lib/supabase/serverClient';
 import { Order, OrderStatus } from '@/types/database';
-import { sendOrderInvoiceWhatsApp } from '@/lib/whatsapp/order-notifier';
+import { sendOrderInvoiceWhatsApp, sendOrderStatusMilestoneWhatsApp } from '@/lib/whatsapp/order-notifier';
+import { triggerStaffProductionAlert } from '@/lib/n8n/n8n-client';
 
 export async function getOrdersDb(): Promise<{ success: boolean; orders?: Order[]; message?: string }> {
   try {
@@ -271,14 +272,44 @@ export async function updateOrderStatusDb(
     if (trackingNumber !== undefined) updates.tracking_number = trackingNumber;
     if (notes !== undefined) updates.production_notes = notes;
 
-    const { error } = await supabase
+    const { data: updatedOrder, error } = await supabase
       .from('orders')
       .update(updates)
-      .eq('id', orderId);
+      .eq('id', orderId)
+      .select()
+      .single();
 
     if (error) {
       console.error('[orderActions] updateOrderStatusDb error:', error.message);
       return { success: false, message: error.message };
+    }
+
+    if (updatedOrder) {
+      const order = updatedOrder as Order;
+
+      // 1. Trigger n8n Staff Production Alert (asynchronously)
+      triggerStaffProductionAlert({
+        orderNumber: order.order_number,
+        customerName: order.customer_name,
+        status: order.status,
+        itemCount: order.total_quantity || 1,
+        totalAmount: Number(order.total_amount) || 0,
+      }).catch((err) => console.warn('[updateOrderStatusDb] n8n production trigger error:', err));
+
+      // 2. Trigger Customer WhatsApp Milestone Status Notification (asynchronously)
+      sendOrderStatusMilestoneWhatsApp(
+        order,
+        status,
+        trackingNumber || order.tracking_number || undefined,
+        order.shipping_courier || undefined
+      ).catch((err) => console.warn('[updateOrderStatusDb] WA status notification error:', err));
+
+      // 3. If QC completed / ready to ship and balance is still due, send balance reminder
+      if ((status === 'qc_check' || status === 'ready_to_ship') && order.payment_status === 'deposit_paid') {
+        sendOrderInvoiceWhatsApp(order, 'balance_reminder').catch((err) =>
+          console.warn('[updateOrderStatusDb] WA balance reminder error:', err)
+        );
+      }
     }
 
     return { success: true };
@@ -287,6 +318,7 @@ export async function updateOrderStatusDb(
     return { success: false, message };
   }
 }
+
 
 export async function deleteOrderDb(orderIdOrNumber: string): Promise<{ success: boolean; message?: string }> {
   try {

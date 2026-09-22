@@ -46,6 +46,8 @@ import { SupportTicket } from '@/app/api/whatsapp/tickets/route';
 import whatsappAiRouterJson from '@/lib/n8n/workflows/whatsapp-ai-router.json';
 import orderFollowupCronJson from '@/lib/n8n/workflows/order-followup-cron.json';
 import staffProductionAlertJson from '@/lib/n8n/workflows/staff-production-alert.json';
+import balanceDueReminderJson from '@/lib/n8n/workflows/balance-due-reminder.json';
+import postDeliveryReviewJson from '@/lib/n8n/workflows/post-delivery-review.json';
 
 type HubSectionKey = 'inbox' | 'device' | 'automation' | 'tickets' | 'tester';
 
@@ -1517,7 +1519,7 @@ export default function WhatsAppHubPage() {
                 </div>
               )}
 
-              {/* SECTION: 3 PRE-BUILT WORKFLOW TEMPLATES */}
+              {/* SECTION: 5 PRE-BUILT WORKFLOW TEMPLATES */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
@@ -1530,7 +1532,7 @@ export default function WhatsAppHubPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
                   
                   {/* Card 1: AI Router */}
                   <div className="p-4.5 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-3 flex flex-col justify-between">
@@ -1636,7 +1638,7 @@ export default function WhatsAppHubPage() {
                         disabled={triggeringWorkflow === 'staff'}
                         onClick={() => handleTestTrigger('staff', 'staff-production-alert', { 
                           order: {
-                            orderNumber: 'INV-2026-TEST',
+                            orderNumber: 'SFV-2609-TEST',
                             customerName: 'Pelanggan Ujian',
                             itemCount: 50,
                             status: 'PRINTING'
@@ -1650,8 +1652,97 @@ export default function WhatsAppHubPage() {
                     </div>
                   </div>
 
+                  {/* Card 4: Balance Due Reminder */}
+                  <div className="p-4.5 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-3 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-600 flex items-center justify-center font-bold text-xs">
+                          04
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                          Baki & Pos
+                        </span>
+                      </div>
+                      <h5 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
+                        Peringatan Baki 50% & Sedia Pos
+                      </h5>
+                      <p className="text-[11.5px] text-slate-500 leading-relaxed">
+                        Menghantar pautan pelunasan baki 50% secara automatik ke WhatsApp apabila pesanan siap QC sebelum dipos.
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadWorkflow('sfv-balance-due-reminder.json', balanceDueReminderJson)}
+                        className="flex-1 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200 dark:border-zinc-700 text-[11px] font-semibold text-slate-700 dark:text-zinc-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Muat Turun JSON</span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={triggeringWorkflow === 'balance'}
+                        onClick={() => handleTestTrigger('balance', 'balance-due-reminder', { 
+                          order: {
+                            order_number: 'SFV-2609-TEST',
+                            customer_name: 'Pelanggan Ujian',
+                            customer_phone: '60148599138',
+                            balance_amount: 450,
+                            payment_status: 'deposit_paid'
+                          }
+                        })}
+                        className="p-1.5 rounded-full bg-[#00BDFF]/10 text-[#00BDFF] hover:bg-[#00BDFF] hover:text-white transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+                        title="Uji Peringatan Baki"
+                      >
+                        <Zap className={`w-3.5 h-3.5 ${triggeringWorkflow === 'balance' ? 'animate-spin' : ''}`} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card 5: Post-Delivery Review & Coupon */}
+                  <div className="p-4.5 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs space-y-3 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="w-8 h-8 rounded-xl bg-teal-50 dark:bg-teal-950 text-teal-600 flex items-center justify-center font-bold text-xs">
+                          05
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
+                          Review & Loyaliti
+                        </span>
+                      </div>
+                      <h5 className="text-xs font-bold text-slate-900 dark:text-zinc-100">
+                        Ulasan & Baucar 10% Lepas Hantar
+                      </h5>
+                      <p className="text-[11.5px] text-slate-500 leading-relaxed">
+                        Menghantar mesej terima kasih, ulasan Google, dan kod baucar diskaun 10% 3 hari selepas barangan diterima.
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadWorkflow('sfv-post-delivery-review.json', postDeliveryReviewJson)}
+                        className="flex-1 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200 dark:border-zinc-700 text-[11px] font-semibold text-slate-700 dark:text-zinc-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Muat Turun JSON</span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={triggeringWorkflow === 'review'}
+                        onClick={() => handleTestTrigger('review', 'trigger-post-delivery-review', { action: 'CHECK_POST_DELIVERY_REVIEWS' })}
+                        className="p-1.5 rounded-full bg-[#00BDFF]/10 text-[#00BDFF] hover:bg-[#00BDFF] hover:text-white transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+                        title="Uji Review & Baucar"
+                      >
+                        <Zap className={`w-3.5 h-3.5 ${triggeringWorkflow === 'review' ? 'animate-spin' : ''}`} />
+                      </button>
+                    </div>
+                  </div>
+
                 </div>
               </div>
+
 
               {/* QUICK GUIDE: CARA IMPORT KE N8N */}
               <div className="p-5 rounded-3xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700/80 space-y-3">

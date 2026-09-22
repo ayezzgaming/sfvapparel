@@ -1,0 +1,81 @@
+{
+  "name": "SFV Apparel - Peringatan Baki 50% & Sedia Pos",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "balance-due-reminder",
+        "options": {}
+      },
+      "name": "Webhook Peringatan Baki",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "id": "node-balance-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.body.order.payment_status === 'deposit_paid' }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Adakah Baki Belum Lunas?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "id": "node-check-balance"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://187.127.223.53:3000/api/sendText",
+        "headers": {
+          "X-Api-Key": "sfv_waha_master_key_2026",
+          "Content-Type": "application/json"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": $json.body.order.customer_phone.replace(/[^0-9]/g, '') + \"@c.us\",\n  \"text\": \"*PERINGATAN PELUNASAN BAKI 50% (SEDIA DIPOS)*\\n*SFV APPAREL*\\n========================================\\nHai *\" + $json.body.order.customer_name + \"*,\\n\\nTempahan jersi anda (No: *\" + $json.body.order.order_number + \"*) telah melepasi fasa pemeriksaan kualiti (QC) dan sedia untuk dibungkus serta dihantar!\\n\\n*Baki Bayaran:* *RM \" + ($json.body.order.balance_amount || '0.00') + \"*\\n\\nSila buat pelunasan baki bagi membolehkan pihak kurier membuat penghantaran ke alamat anda:\\nhttps://sfvapparel.my/history/\" + $json.body.order.order_number + \"\\n\\nTerima kasih!\"\n}",
+        "options": {}
+      },
+      "name": "Hantar WhatsApp Peringatan Baki",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [700, 260],
+      "id": "node-send-balance-wa"
+    }
+  ],
+  "connections": {
+    "Webhook Peringatan Baki": {
+      "main": [
+        [
+          {
+            "node": "Adakah Baki Belum Lunas?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adakah Baki Belum Lunas?": {
+      "main": [
+        [
+          {
+            "node": "Hantar WhatsApp Peringatan Baki",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
