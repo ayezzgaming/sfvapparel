@@ -343,6 +343,7 @@ export async function sendWahaMessage(to: string, text: string): Promise<{ succe
         session: DEFAULT_SESSION,
         chatId,
         text,
+        linkPreview: false,
       }),
     });
 
