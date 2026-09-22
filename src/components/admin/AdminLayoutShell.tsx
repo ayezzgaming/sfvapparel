@@ -40,6 +40,34 @@ export default function AdminLayoutShell({
 }) {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [whatsappStatus, setWhatsappStatus] = React.useState<'WORKING' | 'SCAN_QR_CODE' | 'DISCONNECTED' | 'LOADING'>('LOADING');
+
+  // Live check of WhatsApp engine status
+  React.useEffect(() => {
+    let isMounted = true;
+    const checkWaStatus = async () => {
+      try {
+        const res = await fetch('/api/whatsapp/status', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted) {
+            setWhatsappStatus(data.status === 'WORKING' ? 'WORKING' : 'SCAN_QR_CODE');
+          }
+        } else if (isMounted) {
+          setWhatsappStatus('DISCONNECTED');
+        }
+      } catch {
+        if (isMounted) setWhatsappStatus('DISCONNECTED');
+      }
+    };
+
+    checkWaStatus();
+    const interval = setInterval(checkWaStatus, 20000); // Check every 20 seconds
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   // Find active nav item for breadcrumb
   const activeNavItem = ADMIN_NAV.find((item) =>
@@ -85,8 +113,29 @@ export default function AdminLayoutShell({
           )}
         </div>
 
-        {/* Right: Quick Action +, Apps Grid, Profile Avatar */}
-        <div className="flex items-center space-x-2">
+        {/* Right: WhatsApp Live Status Alert Pill, Quick Action +, Apps Grid, Profile Avatar */}
+        <div className="flex items-center space-x-2.5">
+          {/* Live WhatsApp Connection Monitor Badge */}
+          {whatsappStatus === 'WORKING' ? (
+            <Link
+              href="/admin/whatsapp-hub"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs font-semibold hover:bg-emerald-100 transition-colors shadow-2xs"
+              title="WhatsApp AI CS Aktif"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>WhatsApp Aktif</span>
+            </Link>
+          ) : whatsappStatus !== 'LOADING' ? (
+            <Link
+              href="/admin/whatsapp-hub"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 border border-rose-300 text-rose-700 text-xs font-bold hover:bg-rose-100 transition-colors shadow-xs animate-bounce"
+              title="WhatsApp Terputus! Klik untuk Scan QR"
+            >
+              <span className="w-2 h-2 rounded-full bg-rose-600 animate-ping" />
+              <span>⚠️ WhatsApp Terputus - Scan QR</span>
+            </Link>
+          ) : null}
+
           {/* Quick Add Action */}
           <Link
             href="/admin/catalog"
