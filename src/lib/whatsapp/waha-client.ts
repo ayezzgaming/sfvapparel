@@ -252,10 +252,15 @@ export async function getWahaChats(limit: number = 50): Promise<WahaChatSummary[
 export async function getWahaMessages(chatId: string, limit: number = 50): Promise<WahaChatMessage[]> {
   try {
     const formattedId = formatChatId(chatId);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+
     const res = await fetch(`${WAHA_URL}/api/${DEFAULT_SESSION}/chats/${encodeURIComponent(formattedId)}/messages?limit=${limit}`, {
       headers: getHeaders(),
+      signal: controller.signal,
       cache: 'no-store',
     });
+    clearTimeout(timeoutId);
 
     if (!res.ok) return [];
 
