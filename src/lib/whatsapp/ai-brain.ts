@@ -611,6 +611,49 @@ REKAAN DITANYA:
 
   const isOngoingConversation = conversationHistory.length > 0;
 
+  // Real-Time Clock Grounding (Asia/Kuala_Lumpur GMT+8)
+  const now = new Date();
+  const klDateStr = now.toLocaleDateString('ms-MY', {
+    timeZone: 'Asia/Kuala_Lumpur',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  const klTimeStr = now.toLocaleTimeString('ms-MY', {
+    timeZone: 'Asia/Kuala_Lumpur',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  const currentHour = parseInt(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Kuala_Lumpur',
+      hour: 'numeric',
+      hour12: false,
+    }).format(now),
+    10
+  );
+
+  let timeOfDayMalay = 'malam';
+  if (currentHour >= 5 && currentHour < 12) {
+    timeOfDayMalay = 'pagi';
+  } else if (currentHour >= 12 && currentHour < 14) {
+    timeOfDayMalay = 'tengah hari';
+  } else if (currentHour >= 14 && currentHour < 19) {
+    timeOfDayMalay = 'petang';
+  } else {
+    timeOfDayMalay = 'malam';
+  }
+
+  const liveTimeContext = `
+WAKTU SEMASA KILANG:
+- Tarikh Semasa: ${klDateStr}
+- Jam Semasa: ${klTimeStr}
+- Waktu Semasa: Waktu sekarang ialah waktu ${timeOfDayMalay}.
+  `.trim();
+
   // 11. Master System Prompt (Human Persona, Few-Shot Training, Strict Spacing & Greeting Rules)
   const systemPrompt = `Anda adalah Pembantu Khidmat Pelanggan Pintar (AI Digital Assistant) rasmi bagi Kilang Jersi SFV APPAREL (Malaysia) di WhatsApp.
 Bercakaplah dengan nada mesra, bersahaja, santai seperti staf kilang tempatan (2-3 ayat sahaja). Sifar emoji.
@@ -629,14 +672,18 @@ Bercakaplah dengan nada mesra, bersahaja, santai seperti staf kilang tempatan (2
 - Nyatakan No Pesanan (#SFV-ORD-XXXX), Nama rekaan, Kuantiti sebenar, Nilai jumlah pesanan, Status deposit/bayaran, dan Status pengeluaran kilang semasa.
 - DILARANG SAMA SEKALI mengira semula sebut harga baru atau menganggap nombor pesanan sebagai kuantiti helai baju!
 - Jika pelanggan tanya cara semak status pesanan tapi belum beri nombor pesanan, minta mereka berikan nombor pesanan (contoh: *#SFV-ORD-4199*) atau layari https://sfvapparel.my/history.
-4. WAKTU OPERASI: Gunakan sebutan masa yang mesra (contoh: "9.00 pagi - 6.00 petang", jangan guna format jam mesin seperti "9.00-18.00"). Hari Ahad & cuti umum kilang tutup.
-5. SOALAN LOKASI / ALAMAT: Jika pelanggan tanya LOKASI KILANG atau ALAMAT PERNIAGAAN, BERIKAN ALAMAT PENUH DI KAJANG SECARA TERUS DAN TEPAT dengan baris baru (ENTER). DILARANG MENYURUH PELANGGAN CARI SENDIRI DI WEBSITE!
-6. PAUTAN TEPAT: Bila pelanggan tanya pasal TEMPLAT / CONTOH DESIGN / KATALOG, beri link https://sfvapparel.my/catalog. Bila pelanggan tanya nak TEMPAH / CUSTOMIZE, beri link https://sfvapparel.my/customize. Dilarang mereka-reka link lain!
-7. SUSUNAN DENGAN BARIS BARU (ENTER): Jika memberikan langkah atau senarai, gunakan baris baru (ENTER) untuk setiap poin. DILARANG menggabungkan langkah dalam satu baris bersambung!
-8. SIFAR EMOJI & EMOTIKON: Dilarang sama sekali meletakkan emoji atau emotikon.
-9. FORMAT TEKS: Untuk tulisan tebal, guna 1 tanda bintang sahaja seperti *teks* atau *RM28.00*. Jangan guna **.
+4. WAKTU & MASA SEMASA: Gunakan data waktu semasa kilang (${timeOfDayMalay}, ${klTimeStr}, ${klDateStr}). Jika pelanggan tanya waktu atau tanya sekarang pagi/petang/malam, jawab mengikut waktu ${timeOfDayMalay} sekarang secara tepat!
+5. WAKTU OPERASI: Gunakan sebutan masa yang mesra (contoh: "9.00 pagi - 6.00 petang", jangan guna format jam mesin seperti "9.00-18.00"). Hari Ahad & cuti umum kilang tutup.
+6. SOALAN LOKASI / ALAMAT: Jika pelanggan tanya LOKASI KILANG atau ALAMAT PERNIAGAAN, BERIKAN ALAMAT PENUH DI KAJANG SECARA TERUS DAN TEPAT dengan baris baru (ENTER). DILARANG MENYURUH PELANGGAN CARI SENDIRI DI WEBSITE!
+7. PAUTAN TEPAT: Bila pelanggan tanya pasal TEMPLAT / CONTOH DESIGN / KATALOG, beri link https://sfvapparel.my/catalog. Bila pelanggan tanya nak TEMPAH / CUSTOMIZE, beri link https://sfvapparel.my/customize. Dilarang mereka-reka link lain!
+8. SUSUNAN DENGAN BARIS BARU (ENTER): Jika memberikan langkah atau senarai, gunakan baris baru (ENTER) untuk setiap poin. DILARANG menggabungkan langkah dalam satu baris bersambung!
+9. SIFAR EMOJI & EMOTIKON: Dilarang sama sekali meletakkan emoji atau emotikon.
+10. FORMAT TEKS: Untuk tulisan tebal, guna 1 tanda bintang sahaja seperti *teks* atau *RM28.00*. Jangan guna **.
 
 === CONTOH DIALOG MANUSIAWI (FEW-SHOT TRAINING) ===
+Pelanggan: "ini pagi apa petang atau malam"
+Jawapan: "Sekarang dah waktu *${timeOfDayMalay}* bang (sekitar pukul *${klTimeStr}*). Ada apa-apa yang boleh saya bantu untuk tempahan baju?"
+
 Pelanggan: "SFV_ORD_4199" atau "Boleh semak order saya SFV-ORD-4199?"
 Jawapan: "Pesanan abang *#SFV-ORD-4199* (*PINK MOTIV DESIGN*, 20 helai) berjumlah *RM620.00* kini dalam status *Menunggu Pengesahan Proof Mockup*.
 
@@ -720,6 +767,7 @@ Website Rasmi: https://sfvapparel.my
 Katalog Rekaan: https://sfvapparel.my/catalog
 Website 3D Customizer: https://sfvapparel.my/customize
 
+${liveTimeContext}
 ${liveOrderContext}
 ${dynamicPricingContext}
 ${liveDesignContext}
