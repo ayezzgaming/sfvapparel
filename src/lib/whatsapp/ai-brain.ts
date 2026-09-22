@@ -21,6 +21,9 @@ import {
   INITIAL_APPAREL_CUTS
 } from '../store/seed-data';
 
+import { getFormattedSystemContext } from '@/lib/ai/system-manifest';
+import { executeLivePricingCalculator, executeOrderLookup } from '@/lib/ai/tools';
+
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 const LITELLM_URL = process.env.LITELLM_API_URL || 'http://187.127.223.53:4000';
 const LITELLM_KEY = process.env.LITELLM_API_KEY || 'sfv_litellm_master_2026';
@@ -484,151 +487,32 @@ Pelanggan meminta bercakap terus dengan staf / ejen manusia sekarang!
     };
   }
 
-  // 6. Fetch Live Database Context (with fallback to default seed data)
-  let companySettings: Partial<CmsCompanySettings> = INITIAL_CMS_COMPANY_SETTINGS;
-  let services: CmsService[] = INITIAL_CMS_SERVICES;
-  let quantityTiers: QuantityTierDiscount[] = INITIAL_QUANTITY_TIERS;
-  let designs: Design[] = INITIAL_DESIGNS;
-
-  try {
-    const [cmsRes, designsRes, pricingRes] = await Promise.allSettled([
-      getCmsDataDb(),
-      getDesignsDb(),
-      getMasterPricingDb(),
-    ]);
-
-    if (cmsRes.status === 'fulfilled' && cmsRes.value.success && cmsRes.value.data) {
-      if (cmsRes.value.data.companySettings) companySettings = cmsRes.value.data.companySettings;
-      if (cmsRes.value.data.services?.length) services = cmsRes.value.data.services;
-    }
-
-    if (designsRes.status === 'fulfilled' && designsRes.value.success && designsRes.value.designs?.length) {
-      designs = designsRes.value.designs;
-    }
-
-    if (pricingRes.status === 'fulfilled' && pricingRes.value.success && pricingRes.value.data?.tiers?.length) {
-      quantityTiers = pricingRes.value.data.tiers;
-    }
-  } catch (err) {
-    console.warn('[AI Brain] Fallback to seed data due to DB fetch error:', err);
-  }
+  // 6. Fetch Live System Manifest & Dynamic System Grounding
+  const livingSystemContext = await getFormattedSystemContext();
 
   // 7. Dynamic Price & Manufacturing Lead Time Calculation
   let dynamicPricingContext = '';
   const detectedQty = parseMalaysianQuantity(userText);
   if (detectedQty !== null && detectedQty > 0) {
-    const defaultFabric = INITIAL_FABRIC_MATERIALS[0];
-    const defaultCut = INITIAL_APPAREL_CUTS[0];
-    const quote = calculateSublimationPrice({
-      fabric: defaultFabric,
-      cut: defaultCut,
-      quantity: Math.min(detectedQty, 5000),
-      tiers: quantityTiers,
-    });
-
+    const calc = await executeLivePricingCalculator({ quantity: detectedQty });
     const turnaround = getTurnaroundTimeline(detectedQty);
 
     dynamicPricingContext = `
-FAKTA KIRAAN PENGELUARAN KILANG (GUNAKAN INI BILA JAWAB KUANTITI ${detectedQty.toLocaleString()} HELAI):
-- Kuantiti Ditanya: ${detectedQty.toLocaleString()} helai
-- TEMPOH SIAP KILANG LOGIK: ${turnaround.timeline}
+KIRAAN SEBUT HARGA SEBENAR DARI PANGKALAN DATA (${detectedQty.toLocaleString()} HELAI):
+${calc.formattedSummary}
+- Tempoh Siap Kilang: ${turnaround.timeline}
 - Nota Kapasiti: ${turnaround.notes}
-- Harga Asal: ${formatCurrency(quote.rawUnitPrice)} sehelai
-- Diskaun Diberi: ${quote.discountPercentage}% (Tier ${quote.tierLabel})
-- Harga Bersih Sehelai: ${formatCurrency(quote.finalUnitPrice)}
-- Anggaran Jumlah: ${formatCurrency(quote.finalUnitPrice * detectedQty)}
-- Percuma: Cetakan nama, nombor pemain & logo pasukan.
     `.trim();
   }
 
-  // 8. Check if user is asking about Order Status (by Order Number or Customer Phone)
+  // 8. Live Database Order Lookup (if customer is inquiring about an order)
   let liveOrderContext = '';
-  let foundOrder: Order | null = null;
-
-  const orderNumMatch = lower.match(/sfv[-_]?ord[-_]?\d+|ord[-_]?\d+|sfv[-_]?\d{4,}/i);
-  if (orderNumMatch) {
-    const rawMatched = orderNumMatch[0].toUpperCase().replace(/_/g, '-');
-    const normalizedOrderNum = rawMatched.startsWith('ORD-') ? `SFV-${rawMatched}` : rawMatched;
-    const digitsMatch = rawMatched.match(/\d+/);
-    const digits = digitsMatch ? digitsMatch[0] : '';
-
-    try {
-      const res = await getCustomerOrdersDb(normalizedOrderNum);
-      if (res.success && res.orders && res.orders.length > 0) {
-        foundOrder = res.orders[0];
-      } else if (digits) {
-        const fallbackRes = await getCustomerOrdersDb(digits);
-        if (fallbackRes.success && fallbackRes.orders && fallbackRes.orders.length > 0) {
-          foundOrder = fallbackRes.orders.find(o => o.order_number.includes(digits)) || fallbackRes.orders[0];
-        }
-      }
-    } catch (err) {
-      console.warn('[AI Brain] Order DB lookup error:', err);
-    }
-
-    if (!foundOrder) {
-      foundOrder = INITIAL_ORDERS.find(o => 
-        o.order_number.toUpperCase().replace(/_/g, '-') === normalizedOrderNum ||
-        (digits && o.order_number.includes(digits))
-      ) || null;
-    }
-  }
-
-  // If order not found by ID yet, check by customer WhatsApp phone if asking about order
-  if (!foundOrder && (lower.includes('order') || lower.includes('pesanan') || lower.includes('tempahan') || lower.includes('status') || lower.includes('invois') || lower.includes('invoice') || lower.includes('cek'))) {
-    try {
-      const phoneRes = await getCustomerOrdersDb(msg.from);
-      if (phoneRes.success && phoneRes.orders && phoneRes.orders.length > 0) {
-        foundOrder = phoneRes.orders[0];
-      }
-    } catch (err) {}
-
-    if (!foundOrder) {
-      const cleanFrom = msg.from.replace(/\D/g, '');
-      foundOrder = INITIAL_ORDERS.find(o => o.customer_phone.replace(/\D/g, '').includes(cleanFrom.slice(-7))) || null;
-    }
-  }
-
-  if (foundOrder) {
-    const statusLabels: Record<string, string> = {
-      pending_proof: 'Menunggu Pengesahan Proof Mockup (Design sedia disemak pelanggan)',
-      proof_approved: 'Proof Mockup Telah Diluluskan (Sedia masuk giliran cetakan)',
-      printing: 'Sedang Dicetak (Fasa cetakan sublimasi kilang)',
-      heat_press: 'Sedang Heat Press (Pindahan haba ke kain jersi)',
-      sewing: 'Sedang Dijahit (Proses cantuman & jahitan)',
-      qc_check: 'Pemeriksaan Kualiti / QC (Semakan kualiti akhir)',
-      ready_to_ship: 'Sedia Untuk Dipos / Dihantar',
-      delivered: 'Pesanan Telah Dihantar / Selesai',
-      cancelled: 'Pesanan Dibatalkan',
-    };
-
-    const paymentLabels: Record<string, string> = {
-      unpaid: 'Menunggu Bayaran Deposit 50%',
-      deposit_paid: 'Deposit 50% Telah Diterima (Baki 50% belum dibayar)',
-      paid: 'Telah Dibayar Penuh (Lunas)',
-    };
-
-    const sizingSummary = Object.entries(foundOrder.sizing_breakdown || {})
-      .filter(([_, qty]) => Number(qty) > 0)
-      .map(([size, qty]) => `${size}:${qty}`)
-      .join(', ');
-
-    const depositVal = Number(foundOrder.deposit_amount || foundOrder.total_amount * 0.5);
-    const balanceVal = Number(foundOrder.balance_amount || foundOrder.total_amount * 0.5);
-
-    liveOrderContext = `
-=== MAKLUMAT STATUS PESANAN PELANGGAN DI DALAM PANGKALAN DATA (WAJIB GUNAKAN MAKLUMAT INI) ===
-- No Pesanan: #${foundOrder.order_number}
-- Nama Pelanggan: ${foundOrder.customer_name || 'Pelanggan'}
-- Rekaan: ${foundOrder.design_title || 'Custom Jersey'}
-- Jumlah Kuantiti: ${foundOrder.total_quantity} helai ${sizingSummary ? `(Pecahan Saiz: ${sizingSummary})` : ''}
-- Jumlah Nilai Pesanan: RM ${Number(foundOrder.total_amount).toFixed(2)}
-- Deposit 50%: RM ${depositVal.toFixed(2)} (${paymentLabels[foundOrder.payment_status || 'unpaid'] || foundOrder.payment_status})
-- Baki 50%: RM ${balanceVal.toFixed(2)}
-- Status Pengeluaran Kilang Semasa: ${statusLabels[foundOrder.status] || foundOrder.status}
-- Tracking Kurier: ${foundOrder.tracking_number ? `${foundOrder.shipping_courier || 'Kurier'}: ${foundOrder.tracking_number}` : 'Belum dikeluarkan (pesanan masih dalam fasa pengeluaran)'}
-- Pautan Semak Butiran & Invois: https://sfvapparel.my/history
-    `.trim();
+  const orderLookupRes = await executeOrderLookup(userText);
+  if (orderLookupRes) {
+    liveOrderContext = orderLookupRes;
+  } else if (lower.includes('order') || lower.includes('pesanan') || lower.includes('tempahan') || lower.includes('status') || lower.includes('invois') || lower.includes('invoice') || lower.includes('cek')) {
+    const phoneLookup = await executeOrderLookup(msg.from);
+    if (phoneLookup) liveOrderContext = phoneLookup;
   }
 
   // 9. Check if user is asking about a specific design/catalog product
@@ -639,7 +523,7 @@ FAKTA KIRAAN PENGELUARAN KILANG (GUNAKAN INI BILA JAWAB KUANTITI ${detectedQty.t
 
   if (designMatch) {
     const rawSearch = designMatch[0].toLowerCase().replace('-', '');
-    const foundDesign = designs.find(d => {
+    const foundDesign = INITIAL_DESIGNS.find(d => {
       const dCode = (d.code || d.id || '').toLowerCase().replace('-', '');
       const dId = d.id.toLowerCase().replace('-', '');
       return dCode === rawSearch || dId === rawSearch || d.title.toLowerCase().includes(rawSearch);
@@ -728,71 +612,33 @@ WAKTU SEMASA KILANG:
 - Waktu Semasa: Waktu sekarang ialah waktu ${timeOfDayMalay}.
   `.trim();
 
-  // 11. Master System Prompt (Professional, Natural Malaysian Apparel CS)
+  // 11. Master System Prompt Grounded in Live System & Database Facts
   const systemPrompt = `Anda adalah Pembantu Khidmat Pelanggan (CS) rasmi Kilang Jersi & Pakaian SFV APPAREL (Kajang, Selangor) di WhatsApp.
 Bercakaplah dengan gaya staf jurujual manusia yang ramah, sopan, bersahaja dan ringkas (1-2 perenggan pendek sahaja). Sifar emoji.
 
-=== FAKTA SEBENAR OPERASI KILANG SFV APPAREL ===
-- Tempahan: Pelanggan boleh pilih corak daripada katalog rasmi kilang di https://sfvapparel.my/catalog ATAU hantar rekaan/corak sendiri di WhatsApp.
-- Borang: Borang senarai nama, nombor & saiz jersi boleh diisi terus di WhatsApp atau melalui borang tempahan rasmi.
-- Kuantiti: Kilang menerima tempahan daripada kuantiti pasukan kecil (1-5 helai, 10 helai) hingga kuantiti pukal ratusan helai (diskaun tier diberi mengikut kuantiti).
-- Fabrik: Drifit Milano 165gsm (paling popular untuk jersi sukan) & Microfiber Eyelet (kain sejuk cepat kering).
-- Alamat Kilang: No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor.
-- Waktu Operasi: Isnin - Jumaat (9.00 pagi - 6.00 petang) & Sabtu (9.00 pagi - 1.00 tengah hari). Ahad tutup.
-- Pautan Semak Status Order: https://sfvapparel.my/history
+${livingSystemContext}
 
 === PANDUAN INTERAKSI MANUSIAWI (PENTING) ===
 1. JIKA PELANGGAN KATA "SUDAH ADA DESAIN" / "ADA GAMBAR SENDIRI":
-Minta pelanggan kongsikan gambar atau fail tersebut terus di sini di WhatsApp. Tanyakan anggaran kuantiti helai.
-DILARANG menyuruh pelanggan buka website atau membuang link apabila pelanggan sudah ada rekaan sendiri di WhatsApp!
+Minta pelanggan kongsikan gambar atau fail tersebut terus di sini di WhatsApp. Tanyakan anggaran kuantiti helai. Jangan menyuruh pelanggan membuka pautan jika mereka sudah bersedia dengan fail di WhatsApp.
 
-2. JIKA PELANGGAN TANYA TEMPLAT / KATALOG:
-Berikan pautan katalog rasmi: https://sfvapparel.my/catalog dan tanya corak jenis apa yang mereka minati.
+2. JIKA PELANGGAN BELUM ADA IDEA / TANYA CONTOH KATALOG:
+Cadangkan mereka melihat koleksi templat rasmi di https://sfvapparel.my/catalog dan tanya corak yang mereka minati.
 
-3. JANGAN MEMBEBERKAN INFO YANG TIDAK DITANYA:
-Jangan menceritakan syarat bayaran deposit 50% jika pelanggan tidak bertanya tentang bayaran. Jawab tepat dan fokus pada soalan pelanggan sahaja.
+3. JAWAB TEPAT PADA SOALAN:
+Fokus hanya pada apa yang ditanya. Jangan menyenaraikan maklumat harga atau bayaran deposit yang tidak berkaitan jika pelanggan belum bertanya tentang bayaran.
 
-4. TIADA ANDAIAN JANTINA / AGAMA:
-Gunakan kata ganti "anda" atau nama WhatsApp pelanggan (${greetingName ? `sapa "${customerFirstName}"` : 'guna "anda"'}).
-Jika pelanggan beri salam "Assalamualaikum / Salam", barulah jawab "Waalaikumussalam". Jika perbualan baru, sapa neutral "Hai${greetingName}!". ${isOngoingConversation ? 'Perbualan sudah berlangsung, terus jawab soalan tanpa ulang sapaan.' : ''}
+4. KESOPANAN & IDENTITI:
+Gunakan kata ganti sopan "anda" atau sapa nama pelanggan (${greetingName ? `sapa "${customerFirstName}"` : 'guna "anda"'}).
+Jika pelanggan beri salam "Assalamualaikum / Salam", jawab "Waalaikumussalam". Jika perbualan baru, sapa neutral "Hai${greetingName}!". ${isOngoingConversation ? 'Perbualan sedang berlangsung, teruskan menjawab soalan pelanggan.' : ''}
 
 5. SUSUNAN DENGAN BARIS BARU (ENTER):
 Gunakan perenggan ringkas dan kemas dengan baris baru (ENTER).
 
-=== CONTOH DIALOG SEBENAR CS KILANG ===
-Pelanggan: "Saya nak buat baju. tapi saya sudah punya desain"
-Jawapan: "Boleh sangat! Boleh terus kongsikan gambar atau fail rekaan tersebut di sini di WhatsApp.
-
-Staf kami boleh tolong semakkan kualiti fail dan sediakan sebut harga. Boleh kami tahu anda merancang nak buat anggaran berapa helai ya?"
-
-Pelanggan: "Saya belum ada template, macam mana nak tengok contoh?"
-Jawapan: "Anda boleh lihat koleksi templat rekaan jersi kami di katalog rasmi ini:
-
-https://sfvapparel.my/catalog
-
-Ada corak sukan atau korporat yang anda berkenan?"
-
-Pelanggan: "Minimum order berapa helai ya?"
-Jawapan: "Untuk tempahan jersi kilang kami, kuantiti kecil untuk sampel atau satu pasukan (bawah 10 helai) pun kami terima. Untuk kuantiti yang lebih banyak (20, 40, 50 helai ke atas), kami tawarkan harga diskaun pukal yang lebih jimat. Anda merancang nak buat berapa helai ya?"
-
-Pelanggan: "Kalau 40 helai berapa lama siap ?"
-Jawapan: "Untuk tempahan 40 helai, tempoh siap kilang biasanya sekitar *7 hingga 10 hari bekerja*. Jika ada tarikh acara khusus yang anda kejar, kami boleh bantu semakkan slot produksi kilang."
-
-Pelanggan: "SFV_ORD_4199" atau "Boleh semak order saya SFV-ORD-4199?"
-Jawapan: "Pesanan anda *#SFV-ORD-4199* (*PINK MOTIV DESIGN*, 20 helai) berjumlah *RM620.00* kini dalam status *Menunggu Pengesahan Proof Mockup*. Anda boleh semak butiran penuh atau muat turun invois di https://sfvapparel.my/history ya."
-
-Pelanggan: "Dimana lokasi kilang ?"
-Jawapan: "Kilang kami beroperasi di Kajang:
-
-*SFV APPAREL*
-No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor.
-
-Waktu operasi kami Isnin hingga Jumaat (9.00 pagi - 6.00 petang) dan Sabtu (9.00 pagi - 1.00 tengah hari). Ahad tutup."
-
 ${liveTimeContext}
-${liveOrderContext}
-${dynamicPricingContext}
-${liveDesignContext}
+${liveOrderContext ? `\n${liveOrderContext}\n` : ''}
+${dynamicPricingContext ? `\n${dynamicPricingContext}\n` : ''}
+${liveDesignContext ? `\n${liveDesignContext}\n` : ''}
 `.trim();
 
   const messagesToSend = [
