@@ -1,4 +1,4 @@
-import { sendWahaMessage, sendWahaImage, formatChatId, getWahaMessages } from './waha-client';
+import { sendWahaMessage, sendWahaImage, formatChatId, getWahaMessages, startWahaTyping, stopWahaTyping } from './waha-client';
 import { getCmsDataDb } from '@/app/actions/cmsActions';
 import { getDesignsDb } from '@/app/actions/designActions';
 import { getMasterPricingDb } from '@/app/actions/pricingActions';
@@ -72,11 +72,14 @@ export interface IncomingWahaMessage {
 }
 
 /**
- * Clean & Humanize WhatsApp response text
+ * Clean & Humanize WhatsApp response text while preserving clean paragraph line breaks
  */
 function cleanWhatsAppChat(text: string): string {
   if (!text) return '';
   let cleaned = text;
+
+  // Replace any stale vercel.app links with official sfvapparel.my
+  cleaned = cleaned.replace(/https?:\/\/[a-zA-Z0-9_-]+\.vercel\.app/gi, 'https://sfvapparel.my');
 
   // Remove markdown tables
   cleaned = cleaned.replace(/\|[^\n]+\|/g, '');
@@ -94,7 +97,10 @@ function cleanWhatsAppChat(text: string): string {
     cleaned = cleaned.replace(new RegExp('[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+|[\\u2600-\\u27BF]', 'g'), '');
   } catch {}
 
-  // Clean multiple blank lines and dashes
+  // Format numbered lists with clean line breaks if mashed together (e.g. "1) ... 2) ...")
+  cleaned = cleaned.replace(/(\d+[\.\)])\s+/g, '\n$1 ');
+
+  // Clean dashes and excessive blank lines
   cleaned = cleaned.replace(/---+/g, '');
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
 
@@ -102,39 +108,14 @@ function cleanWhatsAppChat(text: string): string {
 }
 
 /**
- * Multi-Provider LLM Caller with automatic fallback
+ * Multi-Provider LLM Caller with ultra-fast Groq prioritized
  */
 async function callLlmWithFallback(
   messages: { role: string; content: string }[],
   temperature: number = 0.35,
-  maxTokens: number = 300
+  maxTokens: number = 350
 ): Promise<string | null> {
-  // 1. Try LiteLLM Router on VPS port 4000
-  try {
-    const res = await fetch(`${LITELLM_URL}/v1/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${LITELLM_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'sfv-ai-brain',
-        messages,
-        temperature,
-        max_tokens: maxTokens,
-      }),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      const content = data.choices?.[0]?.message?.content?.trim();
-      if (content && content.length > 5) return content;
-    }
-  } catch (err) {
-    console.warn('[AI Brain] LiteLLM unavailable, falling back to Groq / Gemini:', err);
-  }
-
-  // 2. Try Groq (Llama 3.3 70B / Qwen)
+  // 1. Try Groq first for ultra-fast <800ms inference
   if (GROQ_API_KEY) {
     const groqModels = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b'];
     for (const model of groqModels) {
@@ -160,6 +141,31 @@ async function callLlmWithFallback(
         }
       } catch {}
     }
+  }
+
+  // 2. Try LiteLLM Router on VPS port 4000
+  try {
+    const res = await fetch(`${LITELLM_URL}/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${LITELLM_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'sfv-ai-brain',
+        messages,
+        temperature,
+        max_tokens: maxTokens,
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const content = data.choices?.[0]?.message?.content?.trim();
+      if (content && content.length > 5) return content;
+    }
+  } catch (err) {
+    console.warn('[AI Brain] LiteLLM unavailable:', err);
   }
 
   // 3. Try Google Gemini
@@ -221,6 +227,9 @@ export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<
     return { success: true, replied: false, reason: 'empty_message' };
   }
 
+  // START TYPING INDICATOR IMMEDIATELY (Customer sees "mengetik..." on WhatsApp)
+  startWahaTyping(msg.from).catch(() => {});
+
   // 5. Intent & Human Handover Keywords Check
   const lower = userText.toLowerCase();
   if (
@@ -234,6 +243,7 @@ export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<
     pauseContact(msg.from, 60);
     const handoverText = 'Baik bang, mesej anda telah dimaklumkan kepada staf bertugas kilang kami. Staf kami akan menyambung perbualan sebentar lagi.';
     await sendWahaMessage(msg.from, handoverText);
+    stopWahaTyping(msg.from).catch(() => {});
     return { success: true, replied: true, responseText: handoverText, reason: 'human_handover_triggered' };
   }
 
@@ -345,27 +355,39 @@ REKAAN DITANYA:
     console.warn('[AI Brain] Could not fetch chat history, proceeding single-turn:', err);
   }
 
-  // 10. Master System Prompt (Human Persona, Few-Shot Training, Strict Concise Guardrails)
-  const systemPrompt = `Anda adalah Pegawai Khidmat Pelanggan Kilang Jersi SFV APPAREL (Malaysia) di WhatsApp.
-Bercakaplah seperti staf manusia sebenar di WhatsApp: ringkas, padat, mesra santai, dan terus menjawab soalan dalam 2 hingga 3 ayat sahaja. Sifar emoji.
+  const isOngoingConversation = conversationHistory.length > 0;
 
-=== PERATURAN MUTLAK GAYA BAHASA WHATSAPP ===
-1. JAWAP HANYA APA YANG DITANYA: Jangan buat karangan panjang, jangan beri senarai berbutir panjang melainkan diminta, dan jangan buat jadual.
-2. JANGAN DUMP MAKLUMAT SYARIKAT: Jangan sebut nombor pendaftaran syarikat, alamat penuh, atau waktu operasi melainkan pelanggan bertanya secara khusus.
-3. NADA PERBUALAN NATURAL: Gunakan Bahasa Melayu santai yang biasa digunakan di WhatsApp perniagaan Malaysia (contoh: "Salam bang...", "Boleh bang, untuk...", "Ada contoh design?").
-4. SIFAR EMOJI & EMOTIKON: Dilarang sama sekali meletakkan emoji dalam sebarang respons.
+  // 10. Master System Prompt (Human Persona, Few-Shot Training, Strict Spacing & Greeting Rules)
+  const systemPrompt = `Anda adalah Pegawai Khidmat Pelanggan Kilang Jersi SFV APPAREL (Malaysia) di WhatsApp.
+Bercakaplah seperti staf jurujual manusia sebenar: ringkas, padat, mesra santai (2-3 ayat sahaja). Sifar emoji.
+
+=== PERATURAN MUTLAK GAYA BAHASA & FORMAT WHATSAPP ===
+1. ${isOngoingConversation ? 'PERBUALAN INI SUDAH BERLANGSUNG: DILARANG mengucap "Salam", "Salam bang", "Hai", atau membuat pembukaan sapaan lagi. Terus jawab soalan pelanggan secara langsung.' : 'PERBUALAN BARU: Mulakan dengan sapaan ringkas seperti "Salam bang!" atau "Hai bang!"'}
+2. SUSUNAN DENGAN BARIS BARU (ENTER): Jika memberikan langkah atau senarai, gunakan baris baru (ENTER) untuk setiap poin. DILARANG menggabungkan langkah 1), 2), 3) dalam satu baris bersambung tanpa enter!
+3. PAUTAN RASMI: Gunakan HANYA domain rasmi https://sfvapparel.my atau https://sfvapparel.my/customize. Dilarang memberi link vercel.app.
+4. SIFAR EMOJI & EMOTIKON: Dilarang sama sekali meletakkan emoji atau emotikon.
 5. FORMAT TEKS: Untuk tulisan tebal, guna 1 tanda bintang sahaja seperti *teks* atau *RM28.00*. Jangan guna **.
-6. JANGAN SEBUT ID SISTEM: Jangan sebut kod UUID, perkataan bot/AI, atau istilah teknikal sistem.
+6. JANGAN DUMP MAKLUMAT SYARIKAT: Jangan sebut nombor pendaftaran syarikat atau alamat penuh melainkan diminta.
 
 === CONTOH DIALOG MANUSIAWI (FEW-SHOT TRAINING) ===
-Pelanggan: "Berapa harga baju"
-Jawapan: "Salam bang! Harga jersi sublimasi penuh kilang kami bermula dari *RM28.00* sehelai siap percuma cetak nama, nombor dan logo (untuk kuantiti 30 helai ke atas). Abang nak buat anggaran untuk berapa helai ya?"
+Pelanggan: "macam mana nak tempah kat web tu"
+Jawapan: "Langkah tempahan mudah je bang:
 
-Pelanggan: "Berapa harga 30 helai jersi?"
-Jawapan: "Salam bang, untuk 30 helai jersi sublimasi penuh siap cetak nama/nombor/logo, harga kilang kami *RM28.00* sehelai (diskaun 15%). Abang dah ada contoh design atau nak kami sediakan?"
+1. Layari https://sfvapparel.my/customize
+2. Pilih corak jersi, jenis kolar & fabrik
+3. Masukkan kuantiti & teruskan ke checkout deposit 50%
+
+Atau kalau abang nak kami bantu buatkan order terus di WhatsApp pun boleh!"
+
+Pelanggan: "Berapa harga baju"
+Jawapan: "Harga jersi sublimasi penuh kilang kami bermula dari *RM28.00* sehelai siap percuma cetak nama, nombor & logo (untuk kuantiti 30 helai ke atas).
+
+Abang nak buat anggaran untuk berapa helai ya?"
 
 Pelanggan: "Ada kain apa ya?"
-Jawapan: "Kami guna kain Drifit Milano 165gsm (sejuk cepat kering) dan Microfiber Eyelet. Sangat selesa untuk sukan atau jersi skuad. Abang nak buat baju untuk sukan apa ya?"
+Jawapan: "Kami guna kain Drifit Milano 165gsm (sejuk cepat kering) dan Microfiber Eyelet. Sangat selesa untuk sukan atau jersi skuad.
+
+Abang nak buat baju untuk sukan apa ya?"
 
 Pelanggan: "Berapa lama siap?"
 Jawapan: "Tempoh siap biasanya 7 ke 10 hari bekerja selepas confirm design dan deposit 50% bang."
@@ -373,12 +395,10 @@ Jawapan: "Tempoh siap biasanya 7 ke 10 hari bekerja selepas confirm design dan d
 Pelanggan: "Boleh buat kolar tak?"
 Jawapan: "Boleh bang, ada pilihan Roundneck biasa, Kolar Polo (+RM3), V-Neck, dan Raglan. Abang nak pakai jenis kolar mana?"
 
-Pelanggan: "Minima order berapa helai?"
-Jawapan: "Minima tempahan serendah 10 helai sahaja bang, dah siap percuma cetak nama, nombor dan logo pasukan."
-
 === DATA RUJUKAN KILANG ===
-Nama Jenama: ${companySettings.brand_name || 'SFV APPAREL'} (Pakar Jersi Sublimasi & Cetakan DTF)
-Website 3D Customizer: ${companySettings.website_url || 'https://sfvapparel.vercel.app/customize'}
+Nama Jenama: ${companySettings.brand_name || 'SFV APPAREL'} (Pakar Jersi Sublimasi Penuh & Cetakan DTF)
+Website Rasmi: https://sfvapparel.my
+Website 3D Customizer: https://sfvapparel.my/customize
 
 ${dynamicPricingContext}
 ${liveDesignContext}
@@ -398,15 +418,17 @@ ${liveDesignContext}
   }
 
   // 11. Execute LLM Call
-  const rawReply = await callLlmWithFallback(messagesToSend, 0.35, 250);
+  const rawReply = await callLlmWithFallback(messagesToSend, 0.35, 300);
 
   if (!rawReply) {
+    stopWahaTyping(msg.from).catch(() => {});
     return { success: false, replied: false, reason: 'llm_service_unavailable' };
   }
 
   const replyContent = cleanWhatsAppChat(rawReply);
 
   if (!replyContent) {
+    stopWahaTyping(msg.from).catch(() => {});
     return { success: false, replied: false, reason: 'empty_after_formatting' };
   }
 
@@ -417,6 +439,7 @@ ${liveDesignContext}
   }
 
   await sendWahaMessage(msg.from, replyContent);
+  stopWahaTyping(msg.from).catch(() => {});
 
   return {
     success: true,
@@ -424,5 +447,6 @@ ${liveDesignContext}
     responseText: replyContent,
   };
 }
+
 
 

@@ -383,3 +383,44 @@ export async function sendWahaImage(to: string, fileUrl: string, caption?: strin
     return { success: false, error };
   }
 }
+
+/**
+ * Send typing presence (Mengetik...) to WhatsApp
+ */
+export async function startWahaTyping(to: string): Promise<boolean> {
+  try {
+    const chatId = formatChatId(to);
+    const res = await fetch(`${WAHA_URL}/api/startTyping`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({
+        session: DEFAULT_SESSION,
+        chatId,
+      }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Stop typing presence
+ */
+export async function stopWahaTyping(to: string): Promise<boolean> {
+  try {
+    const chatId = formatChatId(to);
+    const res = await fetch(`${WAHA_URL}/api/stopTyping`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({
+        session: DEFAULT_SESSION,
+        chatId,
+      }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
