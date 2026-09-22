@@ -1,7 +1,8 @@
-import { sendWahaMessage, sendWahaImage, formatChatId } from './waha-client';
+import { sendWahaMessage, sendWahaImage, formatChatId, getWahaMessages } from './waha-client';
 import { getCmsDataDb } from '@/app/actions/cmsActions';
 import { getDesignsDb } from '@/app/actions/designActions';
 import { getMasterPricingDb } from '@/app/actions/pricingActions';
+import { calculateSublimationPrice, formatCurrency } from '@/lib/pricing-calculator';
 import { 
   CmsCompanySettings, 
   CmsService, 
@@ -13,11 +14,15 @@ import {
   INITIAL_CMS_SERVICES, 
   INITIAL_QUANTITY_TIERS,
   INITIAL_ORDERS,
-  INITIAL_DESIGNS
+  INITIAL_DESIGNS,
+  INITIAL_FABRIC_MATERIALS,
+  INITIAL_APPAREL_CUTS
 } from '../store/seed-data';
 
 const LITELLM_URL = process.env.LITELLM_API_URL || 'http://187.127.223.53:4000';
 const LITELLM_KEY = process.env.LITELLM_API_KEY || 'sfv_litellm_master_2026';
+const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
 // Store paused contacts (contactId -> timestamp when pause expires)
 const PAUSED_CONTACTS = new Map<string, number>();
@@ -67,7 +72,127 @@ export interface IncomingWahaMessage {
 }
 
 /**
- * Process incoming message with AI Brain, Intent Classifier, and Live DB Context
+ * Clean & Humanize WhatsApp response text
+ */
+function cleanWhatsAppChat(text: string): string {
+  if (!text) return '';
+  let cleaned = text;
+
+  // Remove markdown tables
+  cleaned = cleaned.replace(/\|[^\n]+\|/g, '');
+
+  // Convert markdown double bold **word** to WhatsApp single bold *word*
+  cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '*$1*');
+
+  // Remove raw UUIDs or internal system tokens
+  cleaned = cleaned.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '');
+  cleaned = cleaned.replace(/\[ID TIKET:[^\]]+\]/gi, '');
+  cleaned = cleaned.replace(/ID SISTEM:[^\n]+/gi, '');
+
+  // Strip all emojis and emoticons
+  try {
+    cleaned = cleaned.replace(new RegExp('[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+|[\\u2600-\\u27BF]', 'g'), '');
+  } catch {}
+
+  // Clean multiple blank lines and dashes
+  cleaned = cleaned.replace(/---+/g, '');
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+
+  return cleaned;
+}
+
+/**
+ * Multi-Provider LLM Caller with automatic fallback
+ */
+async function callLlmWithFallback(
+  messages: { role: string; content: string }[],
+  temperature: number = 0.35,
+  maxTokens: number = 300
+): Promise<string | null> {
+  // 1. Try LiteLLM Router on VPS port 4000
+  try {
+    const res = await fetch(`${LITELLM_URL}/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${LITELLM_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'sfv-ai-brain',
+        messages,
+        temperature,
+        max_tokens: maxTokens,
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const content = data.choices?.[0]?.message?.content?.trim();
+      if (content && content.length > 5) return content;
+    }
+  } catch (err) {
+    console.warn('[AI Brain] LiteLLM unavailable, falling back to Groq / Gemini:', err);
+  }
+
+  // 2. Try Groq (Llama 3.3 70B / Qwen)
+  if (GROQ_API_KEY) {
+    const groqModels = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b'];
+    for (const model of groqModels) {
+      try {
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${GROQ_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model,
+            messages,
+            temperature,
+            max_tokens: maxTokens,
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const content = data.choices?.[0]?.message?.content?.trim();
+          if (content && content.length > 5) return content;
+        }
+      } catch {}
+    }
+  }
+
+  // 3. Try Google Gemini
+  if (GEMINI_API_KEY) {
+    try {
+      const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+      const contents = messages.map((m) => ({
+        role: m.role === 'system' || m.role === 'user' ? 'user' : 'model',
+        parts: [{ text: m.content }],
+      }));
+
+      const res = await fetch(geminiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents,
+          generationConfig: { temperature, maxOutputTokens: maxTokens },
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        if (content && content.length > 5) return content;
+      }
+    } catch {}
+  }
+
+  return null;
+}
+
+/**
+ * Process incoming message with AI Brain, Intent Classifier, Conversation Memory, and Live DB Context
  */
 export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<{ success: boolean; replied: boolean; responseText?: string; reason?: string }> {
   // 1. If message is from admin (fromMe = true), automatically PAUSE bot for this customer
@@ -107,7 +232,7 @@ export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<
     lower.includes('hubungi staf')
   ) {
     pauseContact(msg.from, 60);
-    const handoverText = 'Baik, mesej anda telah dimaklumkan kepada pegawai khidmat pelanggan kilang kami. Staf bertugas akan menyambung perbualan ini sebentar lagi.';
+    const handoverText = 'Baik bang, mesej anda telah dimaklumkan kepada staf bertugas kilang kami. Staf kami akan menyambung perbualan sebentar lagi.';
     await sendWahaMessage(msg.from, handoverText);
     return { success: true, replied: true, responseText: handoverText, reason: 'human_handover_triggered' };
   }
@@ -141,26 +266,38 @@ export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<
     console.warn('[AI Brain] Fallback to seed data due to DB fetch error:', err);
   }
 
-  const companyInfo = `
-NAMA KILANG: ${companySettings.brand_name || 'SFV APPAREL'} (${companySettings.company_name || 'SFV APPAREL SDN BHD'})
-NO PENDAFTARAN: ${companySettings.registration_number || '202301048821'}
-ALAMAT KILANG: ${companySettings.address || 'No. 12, Jalan Industri 3/1, Kawasan Perindustrian Rawang Perdana, 48000 Rawang, Selangor'}
-WAKTU OPERASI: ${companySettings.working_hours || 'Isnin - Jumaat: 8:30 AM - 6:00 PM | Sabtu: 8:30 AM - 1:00 PM'}
-LAMAN WEB RASMI: ${companySettings.website_url || 'https://sfvapparel.vercel.app'}
-WHATSAPP KILANG: ${companySettings.whatsapp_number ? `+${companySettings.whatsapp_number}` : 'Rujuk laman web rasmi'}
-`.trim();
+  // 7. Dynamic Price Calculation if quantity is mentioned in inquiry
+  let dynamicPricingContext = '';
+  const qtyMatch = userText.match(/(\d+)\s*(helai|pcs|pasang|baju|jersi)?/i);
+  if (qtyMatch && qtyMatch[1]) {
+    const qty = parseInt(qtyMatch[1], 10);
+    if (qty > 0 && qty <= 5000) {
+      const defaultFabric = INITIAL_FABRIC_MATERIALS[0];
+      const defaultCut = INITIAL_APPAREL_CUTS[0];
+      const quote = calculateSublimationPrice({
+        fabric: defaultFabric,
+        cut: defaultCut,
+        quantity: qty,
+        tiers: quantityTiers,
+      });
 
-  const servicesInfo = services.filter(s => s.is_active).map(s => 
-    `- ${s.title} (${s.category}): ${s.headline}. Harga bermula: ${s.price_prefix} ${s.price_amount} ${s.price_unit}. ${s.highlight}`
-  ).join('\n');
+      dynamicPricingContext = `
+FAKTA KIRAAN HARGA TEPAT DARI PANGKALAN DATA (GUNAKAN INI BILA JAWAB HARGA):
+- Kuantiti: ${qty} helai
+- Harga Asal: ${formatCurrency(quote.rawUnitPrice)} sehelai
+- Diskaun Diberi: ${quote.discountPercentage}% (Tier ${quote.tierLabel})
+- Harga Tawaran Bersih: ${formatCurrency(quote.finalUnitPrice)} sehelai
+- Jumlah Keseluruhan: ${formatCurrency(quote.finalTotal)}
+- Deposit 50%: ${formatCurrency(Math.round(quote.finalTotal * 0.5 * 100) / 100)}
+- Tempoh Siap: 7 hingga 10 hari bekerja
+- Percuma: Cetakan nama, nombor pemain & logo pasukan.
+      `.trim();
+    }
+  }
 
-  const pricingTiersInfo = quantityTiers.map(t => 
-    `- Kuantiti ${t.min_qty} hingga ${t.max_qty || 'ke atas'} helai: Diskaun ${t.discount_percentage}% (Penjimatan harga pukal direct kilang).`
-  ).join('\n');
-
-  // Check if user is asking about a specific design/catalog product (e.g. DES-1, DES-01)
+  // 8. Check if user is asking about a specific design/catalog product
   const designMatch = lower.match(/des-?[\w\d]+/i);
-  let liveDesignContext = 'Tiada rujukan ID produk khusus dalam mesej ini.';
+  let liveDesignContext = '';
   let targetDesignImage: string | null = null;
   let targetDesignTitle: string | null = null;
 
@@ -179,150 +316,110 @@ WHATSAPP KILANG: ${companySettings.whatsapp_number ? `+${companySettings.whatsap
         : null;
 
       liveDesignContext = `
-PRODUK / REKAAN DITANYA OLEH PELANGGAN:
-- Kod/ID Produk: ${foundDesign.code || foundDesign.id}
-- Nama Rekaan: ${foundDesign.title}
-- Kategori: ${foundDesign.category}
-- Jenis Cetakan: ${foundDesign.print_type === 'sublimation' ? 'Sublimasi Penuh (Full Sublimation)' : 'Cetakan DTF'}
-- Penerangan: ${foundDesign.description || 'Pakaian kustom berkualiti tinggi dari kilang SFV Apparel'}
-- Pilihan Kain Sesuai: Drifit Milano 165gsm (Breathable cepat kering), Microfiber Eyelet, atau Cotton Comb 24s
-- Tempoh Siap: ${foundDesign.print_type === 'sublimation' ? '7 hingga 10 hari bekerja' : '3 hingga 5 hari bekerja'}
+REKAAN DITANYA:
+- Kod: ${foundDesign.code || foundDesign.id} | Nama: ${foundDesign.title}
+- Cetakan: ${foundDesign.print_type === 'sublimation' ? 'Sublimasi Penuh' : 'DTF'}
+- Fabrik Standard: Drifit Milano 165gsm & Microfiber Eyelet (kain sukan cepat kering)
       `.trim();
     }
   }
 
-  // Check if user is asking for order tracking
-  const orderMatch = lower.match(/ord-\d{4}-\d{3,4}/i);
-  let liveOrderContext = 'Tiada rujukan nombor pesanan dalam mesej ini.';
-  if (orderMatch) {
-    const targetOrderNum = orderMatch[0].toUpperCase();
-    const foundOrder = INITIAL_ORDERS.find(o => o.order_number.toUpperCase() === targetOrderNum);
-    if (foundOrder) {
-      liveOrderContext = `
-DATA PESANAN DITEMUI DALAM SISTEM:
-- No Pesanan: ${foundOrder.order_number}
-- Nama Pelanggan: ${foundOrder.customer_name}
-- Rekaan: ${foundOrder.design_title} (${foundOrder.print_type === 'sublimation' ? 'Sublimasi Penuh' : 'DTF'})
-- Kuantiti: ${foundOrder.total_quantity} helai (Jumlah: RM${foundOrder.total_amount})
-- Status Semasa: ${foundOrder.status.replace('_', ' ').toUpperCase()}
-- No Tracking Pos: ${foundOrder.tracking_number || 'Belum dipos / dalam fasa cetakan kilang'}
-- Nota Pengeluaran: ${foundOrder.production_notes || 'Tiada'}
-      `.trim();
+  // 9. Fetch Recent Conversation History for Context Memory
+  let conversationHistory: { role: string; content: string }[] = [];
+  try {
+    const recentMsgs = await getWahaMessages(msg.from, 6);
+    if (recentMsgs && recentMsgs.length > 1) {
+      // Sort oldest to newest, excluding current message
+      const sorted = recentMsgs
+        .filter(m => m.body && !m.body.startsWith('[Media') && !m.body.startsWith('BEGIN:VCARD'))
+        .slice(-5);
+
+      for (const m of sorted) {
+        conversationHistory.push({
+          role: m.fromMe ? 'assistant' : 'user',
+          content: m.body,
+        });
+      }
     }
+  } catch (err) {
+    console.warn('[AI Brain] Could not fetch chat history, proceeding single-turn:', err);
   }
 
-  // 7. Format clean WhatsApp message
-  function cleanWhatsAppChat(text: string): string {
-    if (!text) return '';
-    let cleaned = text;
+  // 10. Master System Prompt (Human Persona, Few-Shot Training, Strict Concise Guardrails)
+  const systemPrompt = `Anda adalah Pegawai Khidmat Pelanggan Kilang Jersi SFV APPAREL (Malaysia) di WhatsApp.
+Bercakaplah seperti staf manusia sebenar di WhatsApp: ringkas, padat, mesra santai, dan terus menjawab soalan dalam 2 hingga 3 ayat sahaja. Sifar emoji.
 
-    // Remove markdown tables
-    cleaned = cleaned.replace(/\|[^\n]+\|/g, '');
+=== PERATURAN MUTLAK GAYA BAHASA WHATSAPP ===
+1. JAWAP HANYA APA YANG DITANYA: Jangan buat karangan panjang, jangan beri senarai berbutir panjang melainkan diminta, dan jangan buat jadual.
+2. JANGAN DUMP MAKLUMAT SYARIKAT: Jangan sebut nombor pendaftaran syarikat, alamat penuh, atau waktu operasi melainkan pelanggan bertanya secara khusus.
+3. NADA PERBUALAN NATURAL: Gunakan Bahasa Melayu santai yang biasa digunakan di WhatsApp perniagaan Malaysia (contoh: "Salam bang...", "Boleh bang, untuk...", "Ada contoh design?").
+4. SIFAR EMOJI & EMOTIKON: Dilarang sama sekali meletakkan emoji dalam sebarang respons.
+5. FORMAT TEKS: Untuk tulisan tebal, guna 1 tanda bintang sahaja seperti *teks* atau *RM28.00*. Jangan guna **.
+6. JANGAN SEBUT ID SISTEM: Jangan sebut kod UUID, perkataan bot/AI, atau istilah teknikal sistem.
 
-    // Convert markdown double bold **word** to WhatsApp single bold *word*
-    cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '*$1*');
+=== CONTOH DIALOG MANUSIAWI (FEW-SHOT TRAINING) ===
+Pelanggan: "Berapa harga 30 helai jersi?"
+Jawapan: "Salam bang, untuk 30 helai jersi sublimasi penuh siap cetak nama/nombor/logo, harga kilang kami RM28.00 sehelai (diskaun 15%). Abang dah ada contoh design ke?"
 
-    // Remove raw UUIDs or internal system tokens
-    cleaned = cleaned.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '');
-    cleaned = cleaned.replace(/\[ID TIKET:[^\]]+\]/gi, '');
-    cleaned = cleaned.replace(/ID SISTEM:[^\n]+/gi, '');
+Pelanggan: "Ada kain apa ya?"
+Jawapan: "Kami guna kain Drifit Milano 165gsm (sejuk cepat kering) dan Microfiber Eyelet. Sangat sesuai dan selesa untuk sukan atau jersi pasukan."
 
-    // Strip all emojis and emoticons
-    try {
-      cleaned = cleaned.replace(new RegExp('[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+|[\\u2600-\\u27BF]', 'g'), '');
-    } catch {}
+Pelanggan: "Berapa lama siap?"
+Jawapan: "Tempoh siap biasanya 7 ke 10 hari bekerja selepas confirm design dan bayaran deposit 50% bang."
 
-    // Clean multiple blank lines and dashes
-    cleaned = cleaned.replace(/---+/g, '');
-    cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+Pelanggan: "Boleh buat kolar tak?"
+Jawapan: "Boleh bang, kami ada pilihan Roundneck, Kolar Polo (+RM3), V-Neck, dan Raglan. Abang nak guna kolar jenis mana?"
 
-    return cleaned;
-  }
+Pelanggan: "Minima order berapa helai?"
+Jawapan: "Minima tempahan serendah 10 helai sahaja bang, dan kami sediakan servis percuma untuk masukkan nama, nombor dan logo pasukan."
 
-  // 8. Build Master System Prompt (Concise, Natural, Human-like CS)
-  const systemPrompt = `
-Anda adalah Pegawai Khidmat Pelanggan Kilang Pakaian SFV APPAREL (Malaysia) yang sedang membalas perbualan WhatsApp pelanggan.
-Bercakaplah seperti staf manusia sebenar di WhatsApp: ringkas, mesra, sopan, bersahaja, dan terus menjawab soalan dalam 2 hingga 4 ayat sahaja.
+=== DATA RUJUKAN KILANG ===
+Nama Jenama: ${companySettings.brand_name || 'SFV APPAREL'} (Pakar Jersi Sublimasi & Cetakan DTF)
+Website 3D Customizer: ${companySettings.website_url || 'https://sfvapparel.vercel.app/customize'}
 
-=== PANDUAN KETAT KOMUNIKASI WHATSAPP ===
-1. JAWAPAN RINGKAS & PADAT: Jawab HANYA apa yang ditanya oleh pelanggan. Jangan buat karangan panjang, jangan buat jadual markdown (|---|), dan jangan beri maklumat yang tidak ditanya.
-2. NADA MANUSIAWI: Gunakan Bahasa Melayu yang santun dan natural seperti staf kilang sebenar (contoh: "Salam sejahtera...", "Boleh, untuk...").
-3. SIFAR EMOJI: Dilarang sama sekali meletakkan emoji atau emotikon.
-4. FORMAT WHATSAPP: Untuk tulisan tebal, gunakan 1 tanda bintang sahaja seperti *teks* atau *RM25.20*. Jangan guna **.
-5. JANGAN SEBUT ID SISTEM: Jangan sebut kod UUID, ID sistem dalaman, atau istilah bot/AI.
-6. Berpandukan data kilang di bawah untuk harga dan maklumat tepat:
-
-DATA KILANG SFV APPAREL:
-${companyInfo}
-
-SERVIS KILANG:
-${servicesInfo}
-
-STRUKTUR DISKAUN KUANTITI:
-${pricingTiersInfo}
-
-REKAAN / PRODUK DITANYA:
+${dynamicPricingContext}
 ${liveDesignContext}
-
-SEMAKAN STATUS PESANAN:
-${liveOrderContext}
 `.trim();
 
-  // 9. Request LiteLLM Router
-  try {
-    const res = await fetch(`${LITELLM_URL}/v1/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${LITELLM_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'sfv-ai-brain',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userText },
-        ],
-        temperature: 0.4,
-        max_tokens: 600, // headroom for reasoning tokens + concise reply
-      }),
-    });
+  const messagesToSend = [
+    { role: 'system', content: systemPrompt },
+    ...(conversationHistory.length > 0 ? conversationHistory : [{ role: 'user', content: userText }]),
+  ];
 
-    if (!res.ok) {
-      const err = await res.text();
-      return { success: false, replied: false, reason: `LiteLLM Error: ${err}` };
+  // If conversation history didn't include the current userText, ensure it's at the end
+  if (conversationHistory.length > 0) {
+    const lastMsg = conversationHistory[conversationHistory.length - 1];
+    if (lastMsg.content !== userText) {
+      messagesToSend.push({ role: 'user', content: userText });
     }
-
-    const data = await res.json();
-    const rawReply = data.choices?.[0]?.message?.content?.trim();
-
-    if (!rawReply) {
-      return { success: false, replied: false, reason: 'no_content_from_llm' };
-    }
-
-    const replyContent = cleanWhatsAppChat(rawReply);
-
-    if (!replyContent) {
-      return { success: false, replied: false, reason: 'empty_after_formatting' };
-    }
-
-    // 10. Deliver WhatsApp Reply to Customer
-    // If target design has a valid image mockup, send the image first
-    if (targetDesignImage) {
-      await sendWahaImage(msg.from, targetDesignImage, `Rekaan: ${targetDesignTitle || 'Katalog SFV Apparel'}`);
-      await new Promise(r => setTimeout(r, 600));
-    }
-
-    await sendWahaMessage(msg.from, replyContent);
-
-    return {
-      success: true,
-      replied: true,
-      responseText: replyContent,
-    };
-  } catch (err: unknown) {
-    const error = err instanceof Error ? err.message : 'Ralat pemprosesan AI';
-    console.error('[AI Brain Processing Error]', error);
-    return { success: false, replied: false, reason: error };
   }
+
+  // 11. Execute LLM Call
+  const rawReply = await callLlmWithFallback(messagesToSend, 0.35, 250);
+
+  if (!rawReply) {
+    return { success: false, replied: false, reason: 'llm_service_unavailable' };
+  }
+
+  const replyContent = cleanWhatsAppChat(rawReply);
+
+  if (!replyContent) {
+    return { success: false, replied: false, reason: 'empty_after_formatting' };
+  }
+
+  // 12. Deliver WhatsApp Reply to Customer
+  if (targetDesignImage) {
+    await sendWahaImage(msg.from, targetDesignImage, `Rekaan: ${targetDesignTitle || 'Katalog SFV Apparel'}`);
+    await new Promise(r => setTimeout(r, 600));
+  }
+
+  await sendWahaMessage(msg.from, replyContent);
+
+  return {
+    success: true,
+    replied: true,
+    responseText: replyContent,
+  };
 }
+
 
