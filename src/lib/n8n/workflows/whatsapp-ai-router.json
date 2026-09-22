@@ -40,7 +40,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "http://187.127.223.53:3000/api/whatsapp/ai-context",
+        "url": "https://sfvapparel.my/api/whatsapp/ai-context",
         "options": {
           "timeout": 5000
         }
@@ -324,9 +324,10 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://187.127.223.53:3001/api/sendText",
+        "url": "http://187.127.223.53:3000/api/sendText",
         "headers": {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "X-Api-Key": "sfv_waha_master_key_2026"
         },
         "sendBody": true,
         "specifyBody": "json",
@@ -459,9 +460,10 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://187.127.223.53:3001/api/sendText",
+        "url": "http://187.127.223.53:3000/api/sendText",
         "headers": {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "X-Api-Key": "sfv_waha_master_key_2026"
         },
         "sendBody": true,
         "specifyBody": "json",

@@ -70,9 +70,33 @@ export async function POST(req: Request) {
     }
     RECENT_REPLIES.set(from, Date.now());
 
-    console.log(`[WhatsApp Webhook] Processing single incoming message from: ${from}, text: "${body.slice(0, 40)}"`);
+    console.log(`[WhatsApp Webhook] Processing incoming message from: ${from}, text: "${body.slice(0, 40)}"`);
 
-    // Process AI response
+    // 1. Forward directly to n8n Super Power Multi-Agent AI Engine on VPS (100% n8n Orchestration)
+    try {
+      const n8nRes = await fetch('http://187.127.223.53:5678/webhook/whatsapp-incoming', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          body: {
+            from,
+            fromMe,
+            body,
+            senderName,
+            id: msgId
+          }
+        }),
+      });
+
+      if (n8nRes.ok) {
+        console.log(`[WhatsApp Webhook] Dispatched to n8n VPS Engine successfully for ${from}`);
+        return NextResponse.json({ success: true, engine: 'n8n_superpower_vps' });
+      }
+    } catch (n8nErr) {
+      console.warn('[WhatsApp Webhook] n8n engine unreachable, activating safety fallback:', n8nErr);
+    }
+
+    // 2. Safety Fallback: Process AI response locally if VPS n8n is offline
     const aiResult = await processAiCustomerReply({
       from,
       fromMe,
@@ -80,7 +104,7 @@ export async function POST(req: Request) {
       senderName,
     });
 
-    return NextResponse.json({ success: true, aiResult });
+    return NextResponse.json({ success: true, engine: 'safety_fallback', aiResult });
   } catch (err: unknown) {
     const error = err instanceof Error ? err.message : 'Webhook error';
     console.error('[AI WhatsApp Webhook Error]', err);
