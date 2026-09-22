@@ -85,9 +85,20 @@ export async function POST(req: Request) {
 
     console.log(`[WhatsApp Webhook] Processing incoming message from: ${from}, text: "${effectiveBody.slice(0, 40)}", hasMedia: ${hasMedia}`);
 
-    // 1. Forward directly to n8n Super Power Multi-Agent AI Engine on VPS (100% n8n Orchestration)
+    // 1. Process AI response directly (Grounded in live Supabase DB, OpenRouter Free LLMs & Vision AI)
+    const aiResult = await processAiCustomerReply({
+      from,
+      fromMe,
+      body: effectiveBody,
+      senderName,
+      hasMedia,
+      mediaUrl,
+      mediaMimetype,
+    });
+
+    // 2. Also forward to n8n in background for webhook logging & automation triggers
     try {
-      const n8nRes = await fetch('http://187.127.223.53:5678/webhook/whatsapp-incoming', {
+      fetch('http://187.127.223.53:5678/webhook/whatsapp-incoming', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -100,31 +111,14 @@ export async function POST(req: Request) {
             mediaUrl,
             mediaMimetype,
             senderName,
-            id: msgId
+            id: msgId,
+            aiResult
           }
         }),
-      });
+      }).catch(() => {});
+    } catch {}
 
-      if (n8nRes.ok) {
-        console.log(`[WhatsApp Webhook] Dispatched to n8n VPS Engine successfully for ${from}`);
-        return NextResponse.json({ success: true, engine: 'n8n_superpower_vps' });
-      }
-    } catch (n8nErr) {
-      console.warn('[WhatsApp Webhook] n8n engine unreachable, activating safety fallback:', n8nErr);
-    }
-
-    // 2. Safety Fallback: Process AI response locally if VPS n8n is offline
-    const aiResult = await processAiCustomerReply({
-      from,
-      fromMe,
-      body: effectiveBody,
-      senderName,
-      hasMedia,
-      mediaUrl,
-      mediaMimetype,
-    });
-
-    return NextResponse.json({ success: true, engine: 'safety_fallback', aiResult });
+    return NextResponse.json({ success: true, aiResult });
   } catch (err: unknown) {
     const error = err instanceof Error ? err.message : 'Webhook error';
     console.error('[AI WhatsApp Webhook Error]', err);
