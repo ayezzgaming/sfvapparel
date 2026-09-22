@@ -1,5 +1,5 @@
 {
-  "name": "SFV Apparel - Peringatan Deposit & Follow-up 24 Jam",
+  "name": "SFV Apparel - Peringatan Deposit & Follow-up 24 Jam (AI Powered)",
   "nodes": [
     {
       "parameters": {
@@ -7,51 +7,62 @@
           "interval": [
             {
               "field": "hours",
-              "hoursInterval": 4
+              "hoursInterval": 12
             }
           ]
         }
       },
-      "name": "Jadual Setiap 4 Jam",
+      "name": "Jadual Cron 12 Jam",
       "type": "n8n-nodes-base.cron",
       "typeVersion": 1,
-      "position": [240, 300],
-      "id": "node-cron-schedule"
-    },
-    {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "order-followup",
-        "options": {}
-      },
-      "name": "Webhook Pemicu Manual",
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1,
-      "position": [240, 480],
-      "id": "node-manual-webhook"
+      "position": [
+        100,
+        300
+      ],
+      "id": "node-cron-deposit"
     },
     {
       "parameters": {
         "method": "GET",
-        "url": "https://sfvapparel.vercel.app/api/orders/pending-deposits",
+        "url": "https://solfhbixctrcqthhithr.supabase.co/rest/v1/orders?payment_status=eq.unpaid&status=eq.pending_proof&select=*",
+        "headers": {
+          "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvbGZoYml4Y3RyY3F0aGhpdGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NTU1NjcsImV4cCI6MjEwNTIzMTU2N30.auWBL0Q_lkXE3JwswOVPgtSynK9TxBZcR56mC1865Qs",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvbGZoYml4Y3RyY3F0aGhpdGhyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTY1NTU2NywiZXhwIjoyMTA1MjMxNTY3fQ.yZhSFQdJvFSRJzSx6VRg5wFvlyCFDUwvJo6Jlflxu-o"
+        },
         "options": {}
       },
-      "name": "Dapatkan Senarai Tempahan Tertunggak",
+      "name": "Ambil Tempahan Belum Bayar (Supabase)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [500, 380],
-      "id": "node-fetch-pending"
+      "position": [
+        340,
+        300
+      ],
+      "id": "node-get-unpaid-orders"
     },
     {
       "parameters": {
-        "batchSize": 1,
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://sfvapparel.my",
+          "X-Title": "SFV Apparel Deposit Followup"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"nvidia/nemotron-3.5-lightning:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Manajer Operasi SFV APPAREL Kajang. Tuliskan pesanan follow-up WhatsApp yang sangat mesra dan sopan untuk mengingatkan pelanggan tentang proof design jersi mereka (#SFV-ORD-{{ $json.order_number }}) yang sedang menunggu bayaran deposit 50% (RM{{ ($json.total_amount * 0.5).toFixed(2) }}). Pautan invois: https://sfvapparel.my/history. Sifar emoji.\"\n    }\n  ],\n  \"temperature\": 0.7\n}",
         "options": {}
       },
-      "name": "Ulang Setiap Pelanggan",
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 2,
-      "position": [720, 380],
-      "id": "node-split-batch"
+      "name": "Divisi 6: Nemotron 3.5 Lightning (Draf Mesej)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        580,
+        300
+      ],
+      "id": "node-ai-draft-deposit"
     },
     {
       "parameters": {
@@ -63,62 +74,52 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": $json.customerPhone + \"@c.us\",\n  \"text\": \"Salam sejahtera *\" + $json.customerName + \"*,\\n\\nPesanan jersi anda (*\" + $json.orderNumber + \"*) bersedia untuk dicetak. Sila sahkan deposit untuk kami memulakan barisan produksi kilang segera.\\n\\n👉 Semak invois: https://sfvapparel.com/history/\" + $json.orderNumber\n}",
+        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": {{ JSON.stringify(($node['Ambil Tempahan Belum Bayar (Supabase)'].json.customer_phone || '').replace(/\\D/g, '') + '@c.us') }},\n  \"text\": {{ JSON.stringify($json.choices[0].message.content.trim()) }}\n}",
         "options": {}
       },
-      "name": "Hantar Peringatan WhatsApp",
+      "name": "Hantar Follow-up ke WhatsApp Pelanggan",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [960, 380],
-      "id": "node-send-reminder"
+      "position": [
+        820,
+        300
+      ],
+      "id": "node-send-deposit-wa"
     }
   ],
   "connections": {
-    "Jadual Setiap 4 Jam": {
+    "Jadual Cron 12 Jam": {
       "main": [
         [
           {
-            "node": "Dapatkan Senarai Tempahan Tertunggak",
+            "node": "Ambil Tempahan Belum Bayar (Supabase)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Webhook Pemicu Manual": {
+    "Ambil Tempahan Belum Bayar (Supabase)": {
       "main": [
         [
           {
-            "node": "Dapatkan Senarai Tempahan Tertunggak",
+            "node": "Divisi 6: Nemotron 3.5 Lightning (Draf Mesej)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Dapatkan Senarai Tempahan Tertunggak": {
+    "Divisi 6: Nemotron 3.5 Lightning (Draf Mesej)": {
       "main": [
         [
           {
-            "node": "Ulang Setiap Pelanggan",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Ulang Setiap Pelanggan": {
-      "main": [
-        [
-          {
-            "node": "Hantar Peringatan WhatsApp",
+            "node": "Hantar Follow-up ke WhatsApp Pelanggan",
             "type": "main",
             "index": 0
           }
         ]
       ]
     }
-  },
-  "active": false,
-  "settings": {}
+  }
 }

@@ -1,56 +1,68 @@
 {
-  "name": "SFV Apparel - Ulasan Pelanggan & Baucar 10% Lepas Hantar",
+  "name": "SFV Apparel - Ulasan Pelanggan & Baucar 10% Lepas Hantar (AI Powered)",
   "nodes": [
     {
       "parameters": {
         "rule": {
           "interval": [
             {
-              "field": "hours",
-              "hoursInterval": 12
+              "field": "days",
+              "daysInterval": 1
             }
           ]
         }
       },
-      "name": "Jadual Pemeriksaan 12 Jam",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.1,
-      "position": [240, 300],
-      "id": "node-cron-delivered"
-    },
-    {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "trigger-post-delivery-review",
-        "options": {}
-      },
-      "name": "Webhook Pemicu Manual",
-      "type": "n8n-nodes-base.webhook",
+      "name": "Jadual Harian 10.00 Pagi",
+      "type": "n8n-nodes-base.cron",
       "typeVersion": 1,
-      "position": [240, 480],
-      "id": "node-manual-review-trigger"
+      "position": [
+        100,
+        300
+      ],
+      "id": "node-cron-review"
     },
     {
       "parameters": {
         "method": "GET",
-        "url": "https://sfvapparel.vercel.app/api/orders/delivered-recent",
+        "url": "https://solfhbixctrcqthhithr.supabase.co/rest/v1/orders?status=eq.delivered&select=*",
+        "headers": {
+          "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvbGZoYml4Y3RyY3F0aGhpdGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NTU1NjcsImV4cCI6MjEwNTIzMTU2N30.auWBL0Q_lkXE3JwswOVPgtSynK9TxBZcR56mC1865Qs",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvbGZoYml4Y3RyY3F0aGhpdGhyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTY1NTU2NywiZXhwIjoyMTA1MjMxNTY3fQ.yZhSFQdJvFSRJzSx6VRg5wFvlyCFDUwvJo6Jlflxu-o"
+        },
         "options": {}
       },
-      "name": "Dapatkan Pesanan Selesai (>3 Hari)",
+      "name": "Cari Pesanan Telah Dihantar (Delivered)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [480, 380],
-      "id": "node-fetch-delivered-orders"
+      "position": [
+        340,
+        300
+      ],
+      "id": "node-get-delivered-orders"
     },
     {
       "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "=Bearer {{ $env.OPENROUTER_API_KEY }}",
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://sfvapparel.my",
+          "X-Title": "SFV Apparel Review Campaign"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"thinkingmachines/inkling-small:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Khidmat Pelanggan SFV APPAREL Kajang. Tuliskan mesej penghargaan ringkas kerana sudi menempah jersi (#SFV-ORD-{{ $json.order_number }}). Berikan kod baucar diskaun 10% *SFVVIP10* untuk tempahan kelab seterusnya. Minta ulasan maklum balas jersi. Sifar emoji.\"\n    }\n  ],\n  \"temperature\": 0.7\n}",
         "options": {}
       },
-      "name": "Ulang Setiap Pelanggan",
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 3,
-      "position": [700, 380],
-      "id": "node-loop-delivered-orders"
+      "name": "Divisi 7: Inkling Small (Draf Baucar VIP)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        580,
+        300
+      ],
+      "id": "node-ai-draft-review"
     },
     {
       "parameters": {
@@ -62,64 +74,52 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": $json.customer_phone.replace(/[^0-9]/g, '') + \"@c.us\",\n  \"text\": \"*TERIMA KASIH DARI SFV APPAREL!*\\n========================================\\nHai *\" + $json.customer_name + \"*,\\n\\nKami harap anda dan skuad berpuas hati dengan kualiti jersi *\" + $json.design_title + \"* (No: *\" + $json.order_number + \"*) yang telah diterima!\\n\\n*HADIAH REPEAT ORDER (DISKAUN 10%):*\\nGunakan kod promo khas ini untuk tempahan seterusnya:\\nKod: *SFVIP10* (Diskaun 10%)\\n\\nBina jersi baharu anda di:\\nhttps://sfvapparel.my/customize\\n\\nTerima kasih atas sokongan padu anda!\"\n}",
+        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": {{ JSON.stringify(($node['Cari Pesanan Telah Dihantar (Delivered)'].json.customer_phone || '').replace(/\\D/g, '') + '@c.us') }},\n  \"text\": {{ JSON.stringify($json.choices[0].message.content.trim()) }}\n}",
         "options": {}
       },
-      "name": "Hantar WhatsApp Review & Baucar",
+      "name": "Hantar Baucar VIP ke WhatsApp Pelanggan",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [920, 380],
+      "position": [
+        820,
+        300
+      ],
       "id": "node-send-review-wa"
     }
   ],
   "connections": {
-    "Jadual Pemeriksaan 12 Jam": {
+    "Jadual Harian 10.00 Pagi": {
       "main": [
         [
           {
-            "node": "Dapatkan Pesanan Selesai (>3 Hari)",
+            "node": "Cari Pesanan Telah Dihantar (Delivered)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Webhook Pemicu Manual": {
+    "Cari Pesanan Telah Dihantar (Delivered)": {
       "main": [
         [
           {
-            "node": "Dapatkan Pesanan Selesai (>3 Hari)",
+            "node": "Divisi 7: Inkling Small (Draf Baucar VIP)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Dapatkan Pesanan Selesai (>3 Hari)": {
+    "Divisi 7: Inkling Small (Draf Baucar VIP)": {
       "main": [
         [
           {
-            "node": "Ulang Setiap Pelanggan",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Ulang Setiap Pelanggan": {
-      "main": [
-        [
-          {
-            "node": "Hantar WhatsApp Review & Baucar",
+            "node": "Hantar Baucar VIP ke WhatsApp Pelanggan",
             "type": "main",
             "index": 0
           }
         ]
       ]
     }
-  },
-  "active": true,
-  "settings": {
-    "executionOrder": "v1"
   }
 }

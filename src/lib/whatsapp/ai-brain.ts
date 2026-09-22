@@ -125,7 +125,16 @@ async function callLlmWithFallback(
       'inclusionai/ling-3.0-flash-fin:free',
       'nvidia/nemotron-3-super-120b-a12b:free',
       'qwen/qwen3.8-27b:free',
-      'nvidia/nemotron-3-ultra-550b-a55b:free'
+      'nvidia/nemotron-3-ultra-550b-a55b:free',
+      'google/gemma-4-31b-it:free',
+      'google/gemma-4-26b-a4b-it:free',
+      'nvidia/nemotron-3.5-lightning:free',
+      'thinkingmachines/inkling:free',
+      'thinkingmachines/inkling-small:free',
+      'z-ai/glm-5.2:free',
+      'dots-studio/dots-3-note-preview:free',
+      'liquid/lfm-2.5-2.6b:free',
+      'nex-agi/nex-n2.5-mini:free'
     ];
 
     for (const model of openRouterFreeModels) {
