@@ -21,6 +21,8 @@ export interface SystemFeature {
 export interface LiveSystemManifest {
   brand: {
     name: string;
+    companyRegistration?: string;
+    companyOfficialName?: string;
     address: string;
     workingHours: string;
     contactPhone: string;
@@ -113,11 +115,13 @@ export async function getLiveSystemManifest(): Promise<LiveSystemManifest> {
   return {
     brand: {
       name: company.brand_name || 'SFV APPAREL',
+      companyRegistration: company.registration_number || '202303194821 (003492811-M)',
+      companyOfficialName: company.company_name || 'SFV Ventures Marketing',
       address: company.address || 'No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor, Malaysia',
       workingHours: company.working_hours || 'Isnin - Jumaat: 9.00 AM - 6.00 PM | Sabtu: 9.00 AM - 1.00 PM | Ahad & Cuti Umum: Tutup',
       contactPhone: company.phone || '+60 14-859 9138',
       websiteUrl: 'https://sfvapparel.my',
-      coverage: 'Penghantaran kurier ke seluruh Semenanjung Malaysia, Sabah, Sarawak & Singapura',
+      coverage: 'Penghantaran kurier pantas (Lalamove Klang Valley / PosLaju / J&T Express) ke seluruh Semenanjung Malaysia, Sabah, Sarawak & Singapura',
     },
     navigationAndFeatures: [
       {
@@ -140,11 +144,11 @@ export async function getLiveSystemManifest(): Promise<LiveSystemManifest> {
       },
     ],
     orderingWorkflow: [
-      '1. Pemilihan Rekaan: Pelanggan boleh memilih templat corak di https://sfvapparel.my/catalog ATAU kongsikan gambar fail rekaan sendiri terus di WhatsApp.',
+      '1. Pemilihan Rekaan: Pelanggan boleh memilih templat corak di https://sfvapparel.my/catalog ATAU kongsikan gambar fail rekaan sendiri terus di WhatsApp (TIADA CAJ REKAAN / FREE DESIGN).',
       '2. Pengisian Maklumat: Pelanggan menyatakan kuantiti anggaran dan senarai nama, nombor serta pecahan saiz (melalui WhatsApp atau borang tempahan).',
-      '3. Sebut Harga & Deposit: Kilang menyediakan sebut harga rasmi dan pelanggan menjelaskan bayaran deposit 50% untuk pengesahan.',
-      '4. Visual Proof & Cetakan: Pasukan grafik kilang menyediakan visual proof mockup sebelum proses cetakan sublimasi, jahitan dan kawalan kualiti (QC) dimulakan.',
-      '5. Siap & Penghantaran: Selepas jersi siap diperiksa, baki dijelaskan dan pesanan dipos terus ke alamat pelanggan dengan nombor tracking kurier.',
+      '3. Sebut Harga & Pembayaran: Kilang menyediakan sebut harga rasmi. Pelanggan boleh bayar deposit 50% untuk mula cetak, atau boleh juga buat bayaran penuh 100% terus melalui FPX / Online Banking.',
+      '4. Visual Proof & Cetakan: Pasukan grafik kilang menyediakan visual proof mockup (PERCUMA) sebelum proses cetakan sublimasi, jahitan dan kawalan kualiti (QC) dimulakan.',
+      '5. Siap (5-7 Hari Bekerja) & Penghantaran: Selepas jersi siap diperiksa QC, pesanan dipos terus ke alamat pelanggan dengan nombor tracking kurier.',
     ],
     fabricCatalog: fabrics.filter(f => f.is_active).map(f => ({
       name: f.name,
@@ -217,11 +221,31 @@ export async function getFormattedSystemContext(): Promise<string> {
 
   return `
 === MAKLUMAT HIDUP KILANG & SISTEM SFV APPAREL (SUMBER DATA SEBENAR) ===
-Jenama: ${manifest.brand.name}
-Alamat Kilang: ${manifest.brand.address}
+Jenama: ${manifest.brand.name} (Syarikat Berdaftar: SFV Ventures Marketing - SSM: 202303194821 / 003492811-M)
+Alamat Kilang Rasmi: ${manifest.brand.address}
 Waktu Operasi: ${manifest.brand.workingHours}
 Kawasan Liputan: ${manifest.brand.coverage}
 Website Rasmi: ${manifest.brand.websiteUrl}
+
+DASAR OPERASI & JAWAPAN UTAMA KILANG:
+1. TEMPOH SIAP PENGELUARAN (LEAD TIME):
+   - Pesanan Standard (5 - 500 helai): Siap pantas dalam 5 HINGGA 7 HARI BEKERJA selepas mockup visual proof & bayaran deposit diluluskan.
+   - Pukal Besar (>500 helai): 2 hingga 3 minggu (atau jadual berperingkat).
+   - Rush Order / Siap Cepat (1-3 hari): Boleh dibincangkan mengikut kekosongan slot mesin produksi kilang semasa. Pelanggan diminta kongsi rekaan & kuantiti untuk staf semak slot ekspres.
+
+2. CAJ REKA BENTUK KUSTOM (CUSTOM DESIGN FEE):
+   - PERCUMA 100% / TIADA CAJ TAMBAHAN!
+   - Pelanggan boleh pilih ratusan templat sedia ada di katalog ATAU hantar rekaan/gambar/lakaran sendiri terus di WhatsApp. Pereka grafik kilang akan buat visual proof digital secara PERCUMA.
+
+3. MINIMUM ORDER (MOQ):
+   - Minimum order sangat rendah iaitu 5 HELAI sahaja untuk jersi kustom & DTF (1 helai sampel pun kilang boleh buat).
+
+4. PILIHAN BAYARAN (DEPOSIT & FULL PAYMENT):
+   - Pelanggan BOLEH bayar DEPOSIT 50% untuk mula cetak dan 50% sebelum pos, ATAU boleh juga bayar PENUH 100% terus secara sekaligus melalui FPX / Online Banking di portal https://sfvapparel.my.
+
+5. BUKAN SCAMMER / JAMINAN KUALITI:
+   - SFV APPAREL adalah kilang sah beroperasi di Kajang, Selangor. Status tempahan dan invois boleh dijejak secara telus di https://sfvapparel.my/history.
+   - Jaminan 1-to-1 QC Replacement jika berlaku kecacatan cetakan atau jahitan dari pihak kilang.
 
 HALAMAN AKTIF SISTEM:
 ${navText}
@@ -234,7 +258,7 @@ PANDUAN LANGKAH SEBENAR MEMBUAT TEMPAHAN DI LAMAN WEB SFV APPAREL:
    - Masukkan Kuantiti & Pecahan Saiz (Dewasa XS-8XL, Kanak-Kanak, Muslimah)
    - Masukkan Senarai Nama & Nombor Pemain (Roster)
    - Masukkan Poskod & Alamat Penghantaran (Kiraan Pos Semenanjung/Sabah/Sarawak automatik)
-4. Semak ringkasan sebut harga dan buat bayaran deposit 50% melalui FPX secara langsung.
+4. Semak ringkasan sebut harga dan buat bayaran deposit 50% atau bayaran penuh 100% melalui FPX secara langsung.
 5. Selepas bayaran dibuat, status tempahan & invois boleh disemak di https://sfvapparel.my/history.
 *PERINGATAN: Di laman web SFV APPAREL TIADA butang 'Add to Cart' atau 'Submit Order'. Jangan gunakan terma tersebut!*
 

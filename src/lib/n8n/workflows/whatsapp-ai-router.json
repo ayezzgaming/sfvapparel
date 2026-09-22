@@ -354,7 +354,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"nex-agi/nex-n2.5-pro:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Anda adalah Pegawai Khidmat Pelanggan SFV APPAREL (Kilang Cetak Jersi Sublimasi & DTF di Petaling Jaya, Selangor).\\n\\nJawab soalan pelanggan dengan santun, tepat, ringkas (1-2 perenggan), dan TANPA EMOJI berpandukan maklumat rasmi sistem dan katalog berikut:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ],\n  \"temperature\": 0.7\n}",
+        "jsonBody": "={\n  \"model\": \"nex-agi/nex-n2.5-pro:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Anda adalah Pegawai Khidmat Pelanggan SFV APPAREL (Kilang Cetak Jersi Sublimasi & DTF di Kajang, Selangor).\\n\\nJawab soalan pelanggan dengan santun, tepat, ringkas (1-2 perenggan), dan TANPA EMOJI berpandukan maklumat rasmi sistem dan katalog berikut:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ],\n  \"temperature\": 0.7\n}",
         "options": {
           "timeout": 12000
         }

@@ -98,7 +98,7 @@ export interface IncomingWahaMessage {
 /**
  * Clean & Humanize WhatsApp response text while preserving clean paragraph line breaks
  */
-function cleanWhatsAppChat(text: string): string {
+function cleanWhatsAppChat(text: string, stripGreeting: boolean = false): string {
   if (!text) return '';
   let cleaned = text;
 
@@ -118,6 +118,15 @@ function cleanWhatsAppChat(text: string): string {
   cleaned = cleaned.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '');
   cleaned = cleaned.replace(/\[ID TIKET:[^\]]+\]/gi, '');
   cleaned = cleaned.replace(/ID SISTEM:[^\n]+/gi, '');
+
+  // Strip robotic disclaimer fragments if present
+  cleaned = cleaned.replace(/maklumat (?:ini )?tidak (?:dinyatakan|disebutkan) dalam (?:data )?sistem (?:saya)?\.?/gi, '');
+  cleaned = cleaned.replace(/saya kurang pasti tentang prosesnya\.?/gi, '');
+
+  // If ongoing conversation, remove repetitive opening greetings like "Hai!", "Hello!", "Hai [Nama]!"
+  if (stripGreeting) {
+    cleaned = cleaned.replace(/^(?:Hai|Hello|Halo|Salam)[^.!\n]*[!.?,\s]+/i, '').trim();
+  }
 
   // Strip all emojis and emoticons safely
   try {
@@ -437,27 +446,21 @@ function parseMalaysianQuantity(text: string): number | null {
 }
 
 function getTurnaroundTimeline(qty: number): { timeline: string; isMegaBulk: boolean; notes: string } {
-  if (qty <= 50) {
+  if (qty <= 100) {
     return {
-      timeline: '7 hingga 10 hari bekerja',
+      timeline: '5 hingga 7 hari bekerja (Express Siap Kilang)',
       isMegaBulk: false,
-      notes: 'Kuantiti standard kelab/pasukan kecil.',
-    };
-  } else if (qty <= 200) {
-    return {
-      timeline: '10 hingga 14 hari bekerja (sekitar 2 minggu)',
-      isMegaBulk: false,
-      notes: 'Pesanan sederhana pukal.',
+      notes: 'Kuantiti standard kelab / pasukan / baju acara siap pantas.',
     };
   } else if (qty <= 500) {
     return {
-      timeline: '2 hingga 3 minggu bekerja',
+      timeline: '7 hingga 10 hari bekerja',
       isMegaBulk: false,
-      notes: 'Pesanan pukal kilang.',
+      notes: 'Pesanan sederhana pukal.',
     };
   } else if (qty <= 2000) {
     return {
-      timeline: '3 hingga 4 minggu (boleh dihantar secara berperingkat / batch mingguan)',
+      timeline: '2 hingga 3 minggu bekerja (boleh dihantar secara berperingkat / batch mingguan)',
       isMegaBulk: false,
       notes: 'Pesanan pukal besar kelab/kejohanan.',
     };
@@ -776,6 +779,8 @@ REKAAN DITANYA DARI PANGKALAN DATA SUPABASE:
   const isOngoingConversation = conversationHistory.length > 0;
   const customerFirstName = (msg.senderName || '').trim().split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
   const greetingName = customerFirstName ? ` ${customerFirstName}` : '';
+  const isGreetingOnly = /^(?:hai|hi|hello|halo|salam|assalam|p|tes|test|selamat\s+(?:pagi|petang|malam|tengahari))[\s!.]*$/i.test(userText.trim());
+  const shouldStripGreeting = isOngoingConversation || !isGreetingOnly;
 
   // Real-Time Clock Grounding (Asia/Kuala_Lumpur GMT+8)
   const now = new Date();
@@ -821,27 +826,33 @@ WAKTU SEMASA KILANG:
   `.trim();
 
   // 11. Master System Prompt Grounded in Live System & Database Facts
-  const systemPrompt = `Anda adalah Pembantu Khidmat Pelanggan (CS) rasmi SFV APPAREL di WhatsApp.
-Bercakaplah dengan gaya staf jurujual manusia yang ramah, sopan, bersahaja dan ringkas (1-2 perenggan pendek sahaja). Sifar emoji.
+  const systemPrompt = `Anda adalah Pembantu Khidmat Pelanggan (CS) rasmi Kilang SFV APPAREL di WhatsApp.
+Bercakaplah dengan gaya staf jurujual manusia yang ramah, yakin, bersahaja dan ringkas (1-2 perenggan pendek). SIFAR EMOJI.
 
 ${livingSystemContext}
 
-=== PANDUAN INTERAKSI MANUSIAWI (PENTING) ===
-1. JIKA PELANGGAN KATA "SUDAH ADA DESAIN" / "ADA GAMBAR SENDIRI":
-Minta pelanggan kongsikan gambar atau fail tersebut terus di sini di WhatsApp. Tanyakan anggaran kuantiti helai. Jangan menyuruh pelanggan membuka pautan jika mereka sudah bersedia dengan fail di WhatsApp.
+=== PERATURAN TINGKAH LAKU & JAWAPAN (WAJIB PATUH) ===
+1. PERATURAN SAPAAN (PENTING):
+   - Jika pelanggan memberi salam "Assalamualaikum / Salam", jawab "Waalaikumussalam".
+   - Jika pelanggan hanya menyapa (contohnya "Hai", "Hello", "P"), balas sapaan neutral "Hai${greetingName}!".
+   - JIKA PELANGGAN BERTANYA SOALAN ATAU MEMINTA MAKLUMAT (contohnya "berapa harga", "boleh bayar full", "alamat kat mana", "bisa siap 1 hari", "berapa lama selesai", dll): DILARANG SAMA SEKALI memulakan jawapan dengan "Hai!" atau "Hello!". TERUS JAWAB soalan pelanggan secara terus, mesra dan natural.
 
-2. JIKA PELANGGAN BELUM ADA IDEA / TANYA CONTOH KATALOG:
-Cadangkan mereka melihat koleksi templat rasmi di https://sfvapparel.my/catalog dan tanya corak yang mereka minati.
+2. DILARANG MENGGUNAKAN AYAT ROBOT / DISCLAIMER:
+   - DILARANG KERAS menggunakan frasa: "maklumat tidak disebutkan dalam sistem", "saya kurang pasti", "data sistem saya", atau "saya hanyalah AI".
+   - Anda adalah staf CS kilang berpengalaman. Jawab soalan pelanggan dengan yakin berdasarkan fakta operasi kilang di atas.
 
-3. JAWAB TEPAT PADA SOALAN:
-Fokus hanya pada apa yang ditanya. Jangan menyenaraikan maklumat harga atau bayaran deposit yang tidak berkaitan jika pelanggan belum bertanya tentang bayaran.
+3. PANDUAN JAWAPAN SOALAN LAZIM:
+   - *Tempoh Siap (Berapa lama selesai/siap?):* Siap pantas dalam 5 HINGGA 7 HARI BEKERJA (Express Siap) selepas rekaan mockup disahkan. Untuk kuantiti pukal besar (>500 helai), tempoh 2-3 minggu.
+   - *Caj Custom Design (Ada tambahan biaya/caj reka bentuk?):* 100% PERCUMA / TIADA SEBARANG CAJ TAMBAHAN. Pelanggan boleh guna corak katalog atau hantar fail/gambar idea sendiri terus di WhatsApp.
+   - *Bayaran Penuh (Boleh bayar full?):* Ya, BOLEH dan amat dialu-alukan! Pelanggan boleh bayar penuh 100% terus atau bayar deposit 50% untuk mula cetak dan 50% baki sebelum pos melalui FPX di https://sfvapparel.my.
+   - *Alamat Kilang / Scammer ke?:* SFV APPAREL beroperasi secara rasmi di No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor (SFV Ventures Marketing, SSM 202303194821). Bukan scammer; pelanggan boleh jejak status dan invois di https://sfvapparel.my/history. Jaminan 1-to-1 QC.
+   - *Bisa siap 1 hari?:* Untuk tempoh 1 hari (super rush), maklumkan bahawa kilang perlu menyemak kekosongan slot mesin cetak ekspres hari ini dan minta pelanggan kongsi rekaan & kuantiti segera.
 
-4. KESOPANAN & IDENTITI:
-Gunakan kata ganti sopan "anda" atau sapa nama pelanggan (${greetingName ? `sapa "${customerFirstName}"` : 'guna "anda"'}).
-Jika pelanggan beri salam "Assalamualaikum / Salam", jawab "Waalaikumussalam". Jika perbualan baru, sapa neutral "Hai${greetingName}!". ${isOngoingConversation ? 'Perbualan sedang berlangsung, teruskan menjawab soalan pelanggan.' : ''}
+4. JIKA SUDAH ADA DESAIN SENDIRI:
+   - Minta pelanggan terus kongsikan fail/gambar di sini di WhatsApp dan tanyakan anggaran kuantiti helai.
 
-5. SUSUNAN DENGAN BARIS BARU (ENTER):
-Gunakan perenggan ringkas dan kemas dengan baris baru (ENTER).
+5. KEMAS & BERPERENGGAN:
+   - Gunakan perenggan ringkas dan kemas dengan baris baru (ENTER).
 
 ${liveTimeContext}
 ${liveOrderContext ? `\n${liveOrderContext}\n` : ''}
@@ -862,15 +873,15 @@ ${liveDesignContext ? `\n${liveDesignContext}\n` : ''}
     }
   }
 
-  // 11. Execute LLM Call (Temperature 0.70 for natural, friendly CS tone)
-  const rawReply = await callLlmWithFallback(messagesToSend, 0.70, 800);
+  // 11. Execute LLM Call (Temperature 0.65 for natural, confident CS tone)
+  const rawReply = await callLlmWithFallback(messagesToSend, 0.65, 800);
 
   if (!rawReply) {
     stopWahaTyping(msg.from).catch(() => {});
     return { success: false, replied: false, reason: 'llm_service_unavailable' };
   }
 
-  const replyContent = cleanWhatsAppChat(rawReply);
+  const replyContent = cleanWhatsAppChat(rawReply, shouldStripGreeting);
 
   if (!replyContent) {
     stopWahaTyping(msg.from).catch(() => {});
