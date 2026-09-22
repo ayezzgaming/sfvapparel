@@ -286,10 +286,11 @@ async function callVisionLlmWithFallback(
   // 1. Try OpenRouter Vision-Language Free Models
   if (openRouterKey) {
     const visionModels = [
-      'inclusionai/ling-3.0-flash-vl:free',
-      'nvidia/nemotron-3-nano-omni:free',
-      'google/gemma-4-26b-a4b-it:free',
-      'google/gemma-4-31b-it:free'
+      'nex-agi/nex-n2.5-pro:free',
+      'dots-studio/dots-3-note-preview:free',
+      'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+      'nex-agi/nex-n2.5-mini:free',
+      'openrouter/free'
     ];
 
     for (const model of visionModels) {
