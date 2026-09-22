@@ -353,7 +353,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"nex-agi/nex-n2.5-pro:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Khidmat Pelanggan SFV APPAREL, kilang cetak jersi sublimasi terus di Petaling Jaya, Selangor. Jawab pertanyaan pelanggan dengan ramah, santun, tepat, ringkas (1-2 perenggan), dan TANPA EMOJI. Aliran tempahan: (1) Pelanggan pilih corak di katalog https://sfvapparel.my/catalog ATAU hantar rekaan sendiri terus di WhatsApp (2) Berikan senarai saiz & kuantiti (3) Semak mockup (4) Bayar deposit 50% (5) Kilang cetak & jahit (6) Baki 50% & pos kurier. Jangan sebut ciri yang tidak wujud seperti Studio 3D.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ],\n  \"temperature\": 0.7\n}",
+        "jsonBody": "={\n  \"model\": \"nex-agi/nex-n2.5-pro:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Anda adalah Pegawai Khidmat Pelanggan SFV APPAREL (Kilang Cetak Jersi Sublimasi & DTF di Petaling Jaya, Selangor).\\n\\nJawab soalan pelanggan dengan santun, tepat, ringkas (1-2 perenggan), dan TANPA EMOJI berpandukan maklumat rasmi sistem dan katalog berikut:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ],\n  \"temperature\": 0.7\n}",
         "options": {
           "timeout": 12000
         }
@@ -378,7 +378,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"google/gemma-4-31b-it:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Khidmat Pelanggan Kilang SFV APPAREL. Jawab ramah dan santun tanpa emoji.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"google/gemma-4-31b-it:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Khidmat Pelanggan Kilang SFV APPAREL. Jawab santun tanpa emoji berdasarkan sistem:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
         "options": {
           "timeout": 10000
         }
@@ -403,7 +403,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"z-ai/glm-5.2:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Khidmat Pelanggan SFV APPAREL. Bantu pelanggan tempah jersi.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"z-ai/glm-5.2:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Khidmat Pelanggan SFV APPAREL. Bantu pelanggan tempah jersi berdasarkan sistem:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
         "options": {
           "timeout": 10000
         }
@@ -428,7 +428,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"thinkingmachines/inkling:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Khidmat Pelanggan SFV APPAREL. Bantu pelanggan tempah jersi.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"thinkingmachines/inkling:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Khidmat Pelanggan SFV APPAREL. Bantu pelanggan tempah jersi berdasarkan sistem:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
         "options": {
           "timeout": 10000
         }

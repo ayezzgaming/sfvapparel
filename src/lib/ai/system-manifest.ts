@@ -8,6 +8,7 @@ import {
   INITIAL_FABRIC_MATERIALS,
   INITIAL_APPAREL_CUTS,
   INITIAL_DTF_DIMENSIONS,
+  INITIAL_DESIGNS,
 } from '@/lib/store/seed-data';
 
 export interface SystemFeature {
@@ -192,6 +193,10 @@ export async function getFormattedSystemContext(): Promise<string> {
     .map(n => `- ${n.name} (${n.urlPath}): ${n.description}`)
     .join('\n');
 
+  const designsList = INITIAL_DESIGNS
+    .map(d => `- [${d.id}] *${d.title}* (${d.category} - ${d.print_type === 'sublimation' ? 'Sublimasi' : 'DTF'}): ${d.description}`)
+    .join('\n');
+
   return `
 === MAKLUMAT HIDUP KILANG & SISTEM SFV APPAREL (SUMBER DATA SEBENAR) ===
 Jenama: ${manifest.brand.name}
@@ -203,16 +208,28 @@ Website Rasmi: ${manifest.brand.websiteUrl}
 HALAMAN AKTIF SISTEM:
 ${navText}
 
-ALUR SEBENAR TEMPAHAN KILANG:
-${manifest.orderingWorkflow.join('\n')}
+PANDUAN LANGKAH SEBENAR MEMBUAT TEMPAHAN DI LAMAN WEB SFV APPAREL:
+1. Buka laman https://sfvapparel.my/catalog dan klik mana-mana kad templat corak jersi/baju yang diminati.
+2. Pada paparan butiran yang muncul di bahagian bawah skrin, klik butang biru "Isi Borang Tempahan" (atau butang hijau "Diskusi di WhatsApp").
+3. Di dalam Borang Tempahan (/customize/[id]), lengkapkan:
+   - Pilih Jenis Fabrik & Gaya Kolar/Potongan
+   - Masukkan Kuantiti & Pecahan Saiz (Dewasa XS-8XL, Kanak-Kanak, Muslimah)
+   - Masukkan Senarai Nama & Nombor Pemain (Roster)
+   - Masukkan Poskod & Alamat Penghantaran (Kiraan Pos Semenanjung/Sabah/Sarawak automatik)
+4. Semak ringkasan sebut harga dan buat bayaran deposit 50% melalui FPX secara langsung.
+5. Selepas bayaran dibuat, status tempahan & invois boleh disemak di https://sfvapparel.my/history.
+*PERINGATAN: Di laman web SFV APPAREL TIADA butang 'Add to Cart' atau 'Submit Order'. Jangan gunakan terma tersebut!*
 
-PILIHAN FABRIK SEBENAR:
+SENARAI TEMPLAT & CORAK REKAAN SEBENAR DI KATALOG SFV APPAREL:
+${designsList}
+
+PILIHAN FABRIK SEBENAR DARI PANGKALAN DATA:
 ${fabricsText}
 
 PILIHAN KOLAR & POTONGAN:
 ${cutsText}
 
-TIER KUANTITI & DISKAUN FLEKSIBEL (KILANG MENERIMA DARI SAMPEL KECIL HINGGA PUKAL):
+TIER KUANTITI & DISKAUN FLEKSIBEL (KILANG MENERIMA DARI SAMPEL 1 HELAI HINGGA PUKAL):
 ${tiersText}
 `.trim();
 }
