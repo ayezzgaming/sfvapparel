@@ -197,6 +197,68 @@ async function callLlmWithFallback(
   return null;
 }
 
+function parseMalaysianQuantity(text: string): number | null {
+  const lower = text.toLowerCase();
+  
+  // Check for "ribu" / "k" (e.g. "100 ribu", "10 ribu", "100k", "50k")
+  const kMatch = lower.match(/(\d+)\s*(k|ribu)/i);
+  if (kMatch && kMatch[1]) {
+    return parseInt(kMatch[1], 10) * 1000;
+  }
+
+  // Check for numbers with commas/dots (e.g. "100,000", "1.000")
+  const commaMatch = lower.match(/(\d{1,3}(?:[,\.]\d{3})+)/);
+  if (commaMatch && commaMatch[1]) {
+    const cleanNum = commaMatch[1].replace(/[,\.]/g, '');
+    const n = parseInt(cleanNum, 10);
+    if (!isNaN(n)) return n;
+  }
+
+  // Check standard digits (e.g. "40 helai", "1000 pcs")
+  const stdMatch = lower.match(/(\d+)\s*(helai|pcs|pasang|baju|jersi|keping)?/i);
+  if (stdMatch && stdMatch[1]) {
+    const n = parseInt(stdMatch[1], 10);
+    if (!isNaN(n)) return n;
+  }
+
+  return null;
+}
+
+function getTurnaroundTimeline(qty: number): { timeline: string; isMegaBulk: boolean; notes: string } {
+  if (qty <= 50) {
+    return {
+      timeline: '7 hingga 10 hari bekerja',
+      isMegaBulk: false,
+      notes: 'Kuantiti standard kelab/pasukan kecil.',
+    };
+  } else if (qty <= 200) {
+    return {
+      timeline: '10 hingga 14 hari bekerja (sekitar 2 minggu)',
+      isMegaBulk: false,
+      notes: 'Pesanan sederhana pukal.',
+    };
+  } else if (qty <= 500) {
+    return {
+      timeline: '2 hingga 3 minggu bekerja',
+      isMegaBulk: false,
+      notes: 'Pesanan pukal kilang.',
+    };
+  } else if (qty <= 2000) {
+    return {
+      timeline: '3 hingga 4 minggu (boleh dihantar secara berperingkat / batch mingguan)',
+      isMegaBulk: false,
+      notes: 'Pesanan pukal besar kelab/kejohanan.',
+    };
+  } else {
+    // > 2000 helai (10,000 - 100,000 helai)
+    return {
+      timeline: 'Jadual fasa pengeluaran berperingkat (contohnya 10,000 hingga 15,000 helai setiap bulan mengikut kapasiti barisan mesin kilang)',
+      isMegaBulk: true,
+      notes: 'Kuantiti mega tender/korporat. Mesti disusun jadual penghantaran berfasa bersama Pengurus Produksi & akaun korporat.',
+    };
+  }
+}
+
 /**
  * Process incoming message with AI Brain, Intent Classifier, Conversation Memory, and Live DB Context
  */
@@ -276,34 +338,34 @@ export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<
     console.warn('[AI Brain] Fallback to seed data due to DB fetch error:', err);
   }
 
-  // 7. Dynamic Price Calculation if quantity is mentioned in inquiry
+  // 7. Dynamic Price & Manufacturing Lead Time Calculation
   let dynamicPricingContext = '';
-  const qtyMatch = userText.match(/(\d+)\s*(helai|pcs|pasang|baju|jersi)?/i);
-  if (qtyMatch && qtyMatch[1]) {
-    const qty = parseInt(qtyMatch[1], 10);
-    if (qty > 0 && qty <= 5000) {
-      const defaultFabric = INITIAL_FABRIC_MATERIALS[0];
-      const defaultCut = INITIAL_APPAREL_CUTS[0];
-      const quote = calculateSublimationPrice({
-        fabric: defaultFabric,
-        cut: defaultCut,
-        quantity: qty,
-        tiers: quantityTiers,
-      });
+  const detectedQty = parseMalaysianQuantity(userText);
+  if (detectedQty !== null && detectedQty > 0) {
+    const defaultFabric = INITIAL_FABRIC_MATERIALS[0];
+    const defaultCut = INITIAL_APPAREL_CUTS[0];
+    const quote = calculateSublimationPrice({
+      fabric: defaultFabric,
+      cut: defaultCut,
+      quantity: Math.min(detectedQty, 5000),
+      tiers: quantityTiers,
+    });
 
-      dynamicPricingContext = `
-FAKTA KIRAAN HARGA TEPAT DARI PANGKALAN DATA (GUNAKAN INI BILA JAWAB HARGA):
-- Kuantiti: ${qty} helai
+    const turnaround = getTurnaroundTimeline(detectedQty);
+
+    dynamicPricingContext = `
+FAKTA KIRAAN PENGELUARAN KILANG (GUNAKAN INI BILA JAWAB KUANTITI ${detectedQty.toLocaleString()} HELAI):
+- Kuantiti Ditanya: ${detectedQty.toLocaleString()} helai
+- TEMPOH SIAP KILANG LOGIK: ${turnaround.timeline}
+- Nota Kapasiti: ${turnaround.notes}
 - Harga Asal: ${formatCurrency(quote.rawUnitPrice)} sehelai
 - Diskaun Diberi: ${quote.discountPercentage}% (Tier ${quote.tierLabel})
-- Harga Tawaran Bersih: ${formatCurrency(quote.finalUnitPrice)} sehelai
-- Jumlah Keseluruhan: ${formatCurrency(quote.finalTotal)}
-- Deposit 50%: ${formatCurrency(Math.round(quote.finalTotal * 0.5 * 100) / 100)}
-- Tempoh Siap: 7 hingga 10 hari bekerja
+- Harga Bersih Sehelai: ${formatCurrency(quote.finalUnitPrice)}
+- Anggaran Jumlah: ${formatCurrency(quote.finalUnitPrice * detectedQty)}
 - Percuma: Cetakan nama, nombor pemain & logo pasukan.
-      `.trim();
-    }
+    `.trim();
   }
+
 
   // 8. Check if user is asking about a specific design/catalog product
   const designMatch = lower.match(/des-?[\w\d]+/i);
@@ -384,16 +446,25 @@ Jawapan: "Harga jersi sublimasi penuh kilang kami bermula dari *RM28.00* sehelai
 
 Abang nak buat anggaran untuk berapa helai ya?"
 
+Pelanggan: "Kalau 40 helai berapa lama siap ?"
+Jawapan: "Untuk 40 helai, tempoh siap standard sekitar *7 hingga 10 hari bekerja* selepas confirm design dan bayar deposit 50% bang."
+
+Pelanggan: "kalau 1000 pcs berapa hari ?"
+Jawapan: "Untuk tempahan pukal 1,000 helai, anggaran siap sekitar *3 ke 4 minggu bekerja* bang. Kami juga boleh sediakan penghantaran berperingkat (batch mingguan) jika abang perlukan sebahagian awal."
+
+Pelanggan: "Kalau 100 ribu pcs ?"
+Jawapan: "Untuk kuantiti mega 100,000 helai, pengeluaran dibuat secara berperingkat (biasanya batch 10,000 ke 15,000 helai setiap bulan mengikut barisan mesin kilang).
+
+Untuk kuantiti tender korporat seperti ini, saya boleh sambungkan abang terus kepada Pengurus Produksi kami untuk jadual rasmi dan kontrak harga khas. Ada nama syarikat atau persatuan abang?"
+
 Pelanggan: "Ada kain apa ya?"
 Jawapan: "Kami guna kain Drifit Milano 165gsm (sejuk cepat kering) dan Microfiber Eyelet. Sangat selesa untuk sukan atau jersi skuad.
 
 Abang nak buat baju untuk sukan apa ya?"
 
-Pelanggan: "Berapa lama siap?"
-Jawapan: "Tempoh siap biasanya 7 ke 10 hari bekerja selepas confirm design dan deposit 50% bang."
-
 Pelanggan: "Boleh buat kolar tak?"
 Jawapan: "Boleh bang, ada pilihan Roundneck biasa, Kolar Polo (+RM3), V-Neck, dan Raglan. Abang nak pakai jenis kolar mana?"
+
 
 === DATA RUJUKAN KILANG ===
 Nama Jenama: ${companySettings.brand_name || 'SFV APPAREL'} (Pakar Jersi Sublimasi Penuh & Cetakan DTF)
