@@ -98,9 +98,9 @@ function cleanWhatsAppChat(text: string): string {
   cleaned = cleaned.replace(/\[ID TIKET:[^\]]+\]/gi, '');
   cleaned = cleaned.replace(/ID SISTEM:[^\n]+/gi, '');
 
-  // Strip all emojis and emoticons
+  // Strip all emojis and emoticons safely
   try {
-    cleaned = cleaned.replace(new RegExp('[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+|[\\u2600-\\u27BF]', 'g'), '');
+    cleaned = cleaned.replace(/[^a-zA-Z0-9\s.,!?:;/@#$%&*()_\-+=\[\]{}'"<>]/g, ' ').replace(/\s+/g, ' ');
   } catch {}
 
   // Format numbered lists with clean line breaks if mashed together (e.g. "1) ... 2) ...")

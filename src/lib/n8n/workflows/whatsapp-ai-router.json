@@ -12,7 +12,7 @@
       "typeVersion": 1,
       "position": [
         100,
-        400
+        450
       ],
       "id": "node-webhook-waha"
     },
@@ -33,7 +33,7 @@
       "typeVersion": 1,
       "position": [
         320,
-        400
+        450
       ],
       "id": "node-filter-customer"
     },
@@ -50,7 +50,7 @@
       "typeVersion": 4.1,
       "position": [
         540,
-        400
+        450
       ],
       "id": "node-system-introspection",
       "continueOnFail": true
@@ -77,7 +77,7 @@
       "typeVersion": 4.1,
       "position": [
         780,
-        400
+        360
       ],
       "id": "node-dispatcher-t1",
       "continueOnFail": true
@@ -102,7 +102,7 @@
       "typeVersion": 4.1,
       "position": [
         780,
-        580
+        540
       ],
       "id": "node-dispatcher-t2",
       "continueOnFail": true
@@ -142,7 +142,7 @@
       "typeVersion": 1,
       "position": [
         1060,
-        400
+        450
       ],
       "id": "node-master-switch"
     },
@@ -156,7 +156,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"inclusionai/ling-3.0-flash-fin:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Pakar Kiraan Sebut Harga SFV APPAREL. Berikan sebut harga jersi sublimation yang pantas, tepat, tanpa emoji. Terangkan harga sehelai mengikut tier (1-5 pcs: RM45, 6-12 pcs: RM40, 13-24 pcs: RM35, 25-50 pcs: RM30, 51-100 pcs: RM28, 101+ pcs: RM25). Nyatakan deposit 50% & percuma cetakan nama/nombor/logo. Ringkas 1-2 perenggan.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ],\n  \"temperature\": 0.5\n}",
+        "jsonBody": "={\n  \"model\": \"inclusionai/ling-3.0-flash-fin:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Anda adalah Pakar Kiraan Sebut Harga SFV APPAREL. Berikan sebut harga jersi sublimation yang pantas, tepat, tanpa emoji berdasarkan data berikut:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ],\n  \"temperature\": 0.5\n}",
         "options": {
           "timeout": 12000
         }
@@ -181,7 +181,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"nvidia/nemotron-3.5-lightning:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Pakar Sebut Harga Kilang SFV APPAREL. Jawab ramah, tepat, santun tanpa emoji mengenai harga jersi dan deposit 50%.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"nvidia/nemotron-3.5-lightning:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Pakar Sebut Harga Kilang SFV APPAREL. Jawab ramah, tepat, santun tanpa emoji berdasarkan sistem:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
         "options": {
           "timeout": 10000
         }
@@ -190,7 +190,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        1600,
+        1620,
         100
       ],
       "id": "node-price-fb1",
@@ -206,7 +206,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"inclusionai/ling-3.0-vl:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Pakar Rekaan & Mockup Jersi SFV APPAREL. Analisis rekaan baju jersi pelanggan, sahkan bahawa kilang kami boleh mencetak rekaan ini secara cetakan sublimasi penuh HD. Minta pelanggan berikan kuantiti dan senarai saiz untuk kita sediakan sebut harga rasmi.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || 'Pelanggan berkongsi imej rekaan baju') }}\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"inclusionai/ling-3.0-vl:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Anda adalah Pakar Rekaan & Mockup Jersi SFV APPAREL. Analisis rekaan pelanggan berdasarkan sistem:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || 'Pelanggan berkongsi imej rekaan baju') }}\n    }\n  ]\n}",
         "options": {
           "timeout": 15000
         }
@@ -231,7 +231,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"google/gemma-4-26b-a4b-it:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Pakar Rekaan Jersi SFV APPAREL. Jawab ramah dan beritahu pelanggan kilang sedia mencetak corak tersebut.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"google/gemma-4-26b-a4b-it:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Pakar Rekaan Jersi SFV APPAREL. Jawab ramah berdasarkan sistem:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
         "options": {
           "timeout": 12000
         }
@@ -240,7 +240,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        1600,
+        1620,
         260
       ],
       "id": "node-vision-fb1",
@@ -256,7 +256,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"dots-studio/dots-3-note-preview:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Pegawai Semakan Status Kilang SFV APPAREL. Berikan maklumat bahawa pelanggan boleh menyemak status pesanan dan invois di portal rasmi https://sfvapparel.my/history menggunakan No Pesanan (#SFV-ORD-XXXX) atau nombor WhatsApp.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"dots-studio/dots-3-note-preview:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Anda adalah Pegawai Semakan Status Kilang SFV APPAREL. Berikan maklumat portal semakan status https://sfvapparel.my/history berdasarkan data sistem:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
         "options": {
           "timeout": 10000
         }
@@ -281,7 +281,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"nvidia/nemotron-3-ultra-550b-a55b:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Pengurus Akaun Korporat & Pesanan Pukal Kilang SFV APPAREL. Untuk pesanan pukal (100 helai ke atas), tawarkan harga kilang terus serendah RM25 sehelai, perkhidmatan sampel percuma, dan sambungkan pelanggan dengan Pegawai Khas kami.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"nvidia/nemotron-3-ultra-550b-a55b:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Anda adalah Pengurus Akaun Korporat & Pesanan Pukal Kilang SFV APPAREL. Tawarkan pakej istimewa 100 helai ke atas berdasarkan data sistem:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
         "options": {
           "timeout": 15000
         }
@@ -306,7 +306,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"liquid/lfm-2.5-2.6b:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Pengurus Pukal SFV APPAREL. Tawarkan pakej istimewa 100 helai ke atas.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"liquid/lfm-2.5-2.6b:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Pengurus Pukal SFV APPAREL berdasarkan sistem:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || '') }}\n    }\n  ]\n}",
         "options": {
           "timeout": 10000
         }
@@ -315,7 +315,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        1600,
+        1620,
         580
       ],
       "id": "node-bulk-fb1",
@@ -387,7 +387,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        1600,
+        1620,
         900
       ],
       "id": "node-cs-fb1",
@@ -412,7 +412,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        1860,
+        1900,
         900
       ],
       "id": "node-cs-fb2",
@@ -437,7 +437,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        2120,
+        2180,
         900
       ],
       "id": "node-cs-fb3",
@@ -445,13 +445,13 @@
     },
     {
       "parameters": {
-        "jsCode": "\nconst item = $input.first();\nlet rawText = '';\n\n// Extract reply text from whichever node succeeded\nif (item.json.choices && item.json.choices[0] && item.json.choices[0].message) {\n  rawText = item.json.choices[0].message.content || '';\n} else if (item.json.text) {\n  rawText = item.json.text;\n} else if (item.json.message) {\n  rawText = item.json.message;\n}\n\nif (!rawText) {\n  rawText = 'Hai! Terima kasih kerana menghubungi SFV APPAREL. Ada apa-apa yang boleh kami bantu mengenai tempahan jersi anda hari ini?';\n}\n\n// Clean and humanize\nlet cleaned = rawText;\n// Remove markdown tables\ncleaned = cleaned.replace(/\\|[^\\n]+\\|/g, '');\n// Format bolding **word** to *word*\ncleaned = cleaned.replace(/\\*\\*([^\\*]+)\\*\\*/g, '*$1*');\n// Remove UUIDs / system tokens\ncleaned = cleaned.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '');\n// Strip all emojis\ntry {\n  cleaned = cleaned.replace(new RegExp('[\\\\uD83C-\\\\uDBFF\\\\uDC00-\\\\uDFFF]+|[\\\\u2600-\\\\u27BF]', 'g'), '');\n} catch(e) {}\n// Clean excessive whitespace\ncleaned = cleaned.replace(/---+/g, '');\ncleaned = cleaned.replace(/\\n{3,}/g, '\\n\\n').trim();\n\n// Target customer phone number\nconst customerChatId = $('Filter Mesej Pelanggan').first().json.body.from || $('Filter Mesej Pelanggan').first().json.body.payload?.from || '';\n\nreturn [{\n  json: {\n    chatId: customerChatId,\n    replyText: cleaned,\n    processedAt: new Date().toISOString()\n  }\n}];\n"
+        "jsCode": "\nconst item = $input.first();\nlet rawText = '';\n\n// Extract reply text from whichever node succeeded\nif (item.json.choices && item.json.choices[0] && item.json.choices[0].message) {\n  rawText = item.json.choices[0].message.content || '';\n} else if (item.json.text) {\n  rawText = item.json.text;\n} else if (item.json.message) {\n  rawText = item.json.message;\n}\n\nif (!rawText) {\n  rawText = 'Hai! Terima kasih kerana menghubungi SFV APPAREL. Ada apa-apa yang boleh kami bantu mengenai tempahan jersi anda hari ini?';\n}\n\n// Clean and humanize\nlet cleaned = rawText;\n// Remove markdown tables\ncleaned = cleaned.replace(/\\|[^\\n]+\\|/g, '');\n// Format bolding **word** to *word*\ncleaned = cleaned.replace(/\\*\\*([^\\*]+)\\*\\*/g, '*$1*');\n// Remove UUIDs / system tokens\ncleaned = cleaned.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '');\n// Strip all emojis safely using clean ASCII character whitelist\ntry {\n  cleaned = cleaned.replace(/[^a-zA-Z0-9s.,!?:;/@#$%&*()_-+=[]{}'\"<>]/g, ' ').replace(/s+/g, ' ');\n} catch(e) {}\n// Clean excessive whitespace\ncleaned = cleaned.replace(/---+/g, '');\ncleaned = cleaned.replace(/\\n{3,}/g, '\\n\\n').trim();\n\n// Target customer phone number\nconst customerChatId = $('Filter Mesej Pelanggan').first().json.body.from || $('Filter Mesej Pelanggan').first().json.body.payload?.from || '';\n\nreturn [{\n  json: {\n    chatId: customerChatId,\n    replyText: cleaned,\n    processedAt: new Date().toISOString()\n  }\n}];\n"
       },
       "name": "Format & Sanitizer WhatsApp (Humanizer)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2380,
+        2460,
         450
       ],
       "id": "node-format-humanizer"
@@ -472,7 +472,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        2640,
+        2720,
         450
       ],
       "id": "node-send-customer"
@@ -508,11 +508,27 @@
             "node": "Divisi 1: Nemotron Super 120B (Dispatcher)",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Divisi 1 Fallback: Qwen 27B Dispatcher",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
     },
     "Divisi 1: Nemotron Super 120B (Dispatcher)": {
+      "main": [
+        [
+          {
+            "node": "Router Cabang Super Power",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Divisi 1 Fallback: Qwen 27B Dispatcher": {
       "main": [
         [
           {
@@ -573,7 +589,7 @@
       "main": [
         [
           {
-            "node": "Format & Sanitizer WhatsApp (Humanizer)",
+            "node": "Divisi 2 Fallback: Nemotron Lightning (Harga Fast)",
             "type": "main",
             "index": 0
           }
@@ -581,6 +597,72 @@
       ]
     },
     "Divisi 3: Ling 3.0 VL (Vision & Mockup Primary)": {
+      "main": [
+        [
+          {
+            "node": "Divisi 3 Fallback: Gemma 4 26B (Vision Fallback)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Divisi 5: Nemotron Ultra 550B (Pesanan Pukal & Korporat)": {
+      "main": [
+        [
+          {
+            "node": "Divisi 5 Fallback: Liquid LFM 2.5 (Bulk Fallback)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Divisi 6: Nex AGI Pro (CS Utama Primary)": {
+      "main": [
+        [
+          {
+            "node": "Divisi 6 Fallback: Gemma 4 31B (CS Backup)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Divisi 6 Fallback: Gemma 4 31B (CS Backup)": {
+      "main": [
+        [
+          {
+            "node": "Divisi 6 Fallback: GLM 5.2 (High Speed Fallback)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Divisi 6 Fallback: GLM 5.2 (High Speed Fallback)": {
+      "main": [
+        [
+          {
+            "node": "Divisi 6 Fallback: Inkling (Emergency CS)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Divisi 2 Fallback: Nemotron Lightning (Harga Fast)": {
+      "main": [
+        [
+          {
+            "node": "Format & Sanitizer WhatsApp (Humanizer)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Divisi 3 Fallback: Gemma 4 26B (Vision Fallback)": {
       "main": [
         [
           {
@@ -602,7 +684,7 @@
         ]
       ]
     },
-    "Divisi 5: Nemotron Ultra 550B (Pesanan Pukal & Korporat)": {
+    "Divisi 5 Fallback: Liquid LFM 2.5 (Bulk Fallback)": {
       "main": [
         [
           {
@@ -624,7 +706,7 @@
         ]
       ]
     },
-    "Divisi 6: Nex AGI Pro (CS Utama Primary)": {
+    "Divisi 6 Fallback: Inkling (Emergency CS)": {
       "main": [
         [
           {
