@@ -4,12 +4,14 @@ import { getDesignsDb } from '@/app/actions/designActions';
 import { getMasterPricingDb } from '@/app/actions/pricingActions';
 import { getCustomerOrdersDb } from '@/app/actions/orderActions';
 import { calculateSublimationPrice, formatCurrency } from '@/lib/pricing-calculator';
+import { getServiceSupabase } from '@/lib/supabase/serverClient';
 import { 
   CmsCompanySettings, 
   CmsService, 
   QuantityTierDiscount, 
   Design,
-  Order
+  Order,
+  Customer
 } from '@/types/database';
 import { 
   INITIAL_CMS_COMPANY_SETTINGS, 
@@ -21,6 +23,74 @@ import {
 
 import { getFormattedSystemContext } from '@/lib/ai/system-manifest';
 import { executeLivePricingCalculator, executeOrderLookup } from '@/lib/ai/tools';
+
+export interface ResolvedCustomerInfo {
+  name: string | null;
+  fullName: string | null;
+  isRegistered: boolean;
+  phoneDigits: string;
+}
+
+/**
+ * Intelligently resolve customer identity:
+ * 1. Checks Supabase 'customers' table by matching phone digits (last 8 digits)
+ * 2. Falls back to WhatsApp pushName if clean & authentic
+ * 3. Returns null name if user is unauthenticated / unknown
+ */
+export async function resolveCustomerIdentity(chatId: string, pushName?: string): Promise<ResolvedCustomerInfo> {
+  const cleanDigits = chatId.replace(/\D/g, '');
+  const last8 = cleanDigits.slice(-8);
+
+  let foundName: string | null = null;
+  let fullName: string | null = null;
+  let isRegistered = false;
+
+  // 1. Query Supabase customers table
+  try {
+    const supabase = getServiceSupabase();
+    if (supabase && last8.length >= 7) {
+      const { data } = await supabase
+        .from('customers')
+        .select('full_name, phone')
+        .or(`phone.ilike.%${last8}%`)
+        .limit(1)
+        .maybeSingle();
+
+      if (data?.full_name && data.full_name.trim().length > 1) {
+        const cleanFullName = data.full_name.trim();
+        fullName = cleanFullName;
+        const firstWord = cleanFullName.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
+        if (firstWord.length >= 2 && !/^\d+$/.test(firstWord)) {
+          foundName = firstWord;
+          isRegistered = true;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[AI Brain] resolveCustomerIdentity DB error:', err);
+  }
+
+  // 2. Fallback to WhatsApp profile pushName if authentic
+  if (!foundName && pushName) {
+    const cleanedPush = pushName.trim();
+    const isPhoneNumber = /^\+?[0-9\s\-()]+$/.test(cleanedPush);
+    const isGenericOrSystem = /^(user|pelanggan|customer|admin|unknown|sfv|svf|apparel|whatsapp|bot|owner)$/i.test(cleanedPush);
+    if (!isPhoneNumber && !isGenericOrSystem && cleanedPush.length >= 2) {
+      const firstWord = cleanedPush.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
+      if (firstWord.length >= 2 && !/^\d+$/.test(firstWord)) {
+        foundName = firstWord;
+        fullName = cleanedPush;
+      }
+    }
+  }
+
+  return {
+    name: foundName,
+    fullName: fullName || foundName,
+    isRegistered,
+    phoneDigits: cleanDigits,
+  };
+}
 
 function getEffectiveOpenRouterKey(): string {
   if (process.env.OPENROUTER_API_KEY) return process.env.OPENROUTER_API_KEY;
@@ -124,6 +194,19 @@ function cleanWhatsAppChat(text: string, stripGreeting: boolean = false): string
   cleaned = cleaned.replace(/saya kurang pasti tentang prosesnya\.?/gi, '');
   cleaned = cleaned.replace(/saya tidak mempunyai akses terus kepada pangkalan data supabase/gi, '');
   cleaned = cleaned.replace(/\b(?:supabase|n8n|openrouter|groq|gemini api|litellm)\b/gi, 'sistem kilang');
+
+  // Strip prompt leakages & self-correcting meta remarks (e.g. "Oh tunggu — tak boleh guna emoji")
+  cleaned = cleaned.replace(/Oh tunggu\s*[-—–]?\s*[^.\n]+[.\n]?/gi, '');
+  cleaned = cleaned.replace(/(?:tadi|sebentar)\s*[-—–]?\s*tak boleh guna emoji[^\n.]*[.\n]?/gi, '');
+  cleaned = cleaned.replace(/tidak boleh (?:menggunakan|guna) emoji[^\n.]*[.\n]?/gi, '');
+  cleaned = cleaned.replace(/peraturan sistem (?:tidak membenarkan|melarang)[^\n.]*[.\n]?/gi, '');
+
+  // Strip awkward "Tuan/Puan" combined slashes and replace with neutral "anda"
+  cleaned = cleaned.replace(/\bTuan\/Puan\b/gi, 'anda');
+  cleaned = cleaned.replace(/\bTuan \/ Puan\b/gi, 'anda');
+
+  // Strip patronizing elder suffix "nak" (e.g. ", nak." / " wajar, nak!" / " bayar siap, nak")
+  cleaned = cleaned.replace(/(?:,\s*|\s+)nak(?=[.!?\n,\s]|$)/gi, '');
 
   // Strip emojis safely while preserving all newlines, punctuation, and numbers
   try {
@@ -551,6 +634,11 @@ export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<
   // START TYPING INDICATOR IMMEDIATELY (Customer sees "mengetik..." on WhatsApp)
   startWahaTyping(msg.from).catch(() => {});
 
+  // 4A. Resolve Customer Identity (Supabase Customers Table or WhatsApp Profile)
+  const customerInfo = await resolveCustomerIdentity(msg.from, msg.senderName);
+  const resolvedName = customerInfo.name;
+  const customerDisplayName = customerInfo.fullName || customerInfo.name || msg.senderName || 'Pelanggan';
+
   // 5. Intent & Human Handover Keywords Check (Malay & Indonesian support)
   // Check recent conversation to see if the AI previously offered to connect to human agent
   let previousAssistantOfferedHandover = false;
@@ -607,7 +695,7 @@ export async function processAiCustomerReply(msg: IncomingWahaMessage): Promise<
     const adminAlertText = `🔔 *PERMINTAAN ESKALASI PELANGGAN SFV APPAREL*
 Pelanggan meminta bercakap terus dengan staf / ejen manusia sekarang!
 
-👤 *Nama:* ${msg.senderName || 'Pelanggan'}
+👤 *Nama:* ${customerDisplayName}${customerInfo.isRegistered ? ' (Pelanggan Berdaftar)' : ''}
 📱 *WhatsApp:* +${cleanCustomerNum}
 💬 *Mesej:* "${userText}"
 ⏰ *Masa:* ${timeNow}
@@ -625,7 +713,7 @@ Pelanggan meminta bercakap terus dengan staf / ejen manusia sekarang!
       reason: 'human_handover_escalated',
       ticketCreated: true,
       customerPhone: cleanCustomerNum,
-      customerName: msg.senderName || 'Pelanggan'
+      customerName: customerDisplayName
     };
   }
 
@@ -651,7 +739,7 @@ Pelanggan meminta bercakap terus dengan staf / ejen manusia sekarang!
     (lower.includes('siapa') && (lower.includes('buat kamu') || lower.includes('cipta kamu')));
 
   if (isMetaTechQuery) {
-    const defenseReply = 'Saya adalah Pembantu Khidmat Pelanggan (CS) rasmi Kilang SFV APPAREL di WhatsApp. Fokus utama saya adalah membantu anda dengan sebarang urusan tempahan jersi kustom, cetakan DTF, sebut harga terus dari kilang, dan pemilihan corak reka bentuk. Sekiranya anda mempunyai sebarang soalan mengenai produk atau tempahan baju jersi kami, saya sedia membantu!';
+    const defenseReply = 'Saya adalah Pembantu Khidmat Pelanggan rasmi Kilang SFV APPAREL di WhatsApp. Fokus utama saya adalah membantu anda dengan sebarang urusan tempahan jersi kustom, cetakan DTF, sebut harga terus dari kilang, dan pemilihan corak reka bentuk. Sekiranya anda mempunyai sebarang soalan mengenai produk atau tempahan baju jersi kami, saya sedia membantu!';
     await sendWahaMessage(msg.from, defenseReply);
     stopWahaTyping(msg.from).catch(() => {});
     return {
@@ -687,6 +775,9 @@ Pelanggan meminta bercakap terus dengan staf / ejen manusia sekarang!
           const visionPrompt = `Anda adalah Pembantu Khidmat Pelanggan (CS) & Pereka Jersi Kilang SFV APPAREL di WhatsApp.
 Pelanggan telah memuat naik gambar jersi/pakaian di WhatsApp dengan pertanyaan: "${userText}".
 
+=== IDENTITI PELANGGAN ===
+${resolvedName ? `- Nama Pelanggan: ${resolvedName}. Panggil pelanggan dengan nama ${resolvedName} secara mesra dan sopan.` : `- Pelanggan tanpa nama / belum log masuk. Gunakan kata ganti nama sopan: "anda".`}
+
 === SENARAI KATALOG REKA BENTUK LIVE KILANG SFV APPAREL (${liveDesigns.length} TEMPLAT AKTIF) ===
 ${catalogList}
 
@@ -700,7 +791,7 @@ ${catalogList}
    - Beritahu pelanggan dengan ramah bahawa kilang kita ada templat yang sepadan tersebut dan kongsikan nama templat serta pautan terus untuk mereka lihat atau kustomisasi di laman web: https://sfvapparel.my/customize/[id] atau https://sfvapparel.my/catalog.
 3. Beritahu juga bahawa jika pelanggan mahu cetak 100% reka bentuk mereka sendiri mengikut gambar tersebut, kilang kita sedia mencetaknya terus.
 4. Tanyakan anggaran kuantiti helai jersi yang ingin ditempah.
-5. Gaya percakapan staf jurujual manusia yang sangat ramah, sopan, dan ringkas (1-2 perenggan pendek). SIFAR EMOJI.`;
+5. Gaya percakapan staf jurujual manusia yang sangat ramah, sopan, dan ringkas (1-2 perenggan pendek).`;
 
           const visionReply = await callVisionLlmWithFallback(visionPrompt, mediaData.base64DataUrl, 0.50, 800);
           if (visionReply) {
@@ -817,8 +908,6 @@ REKAAN SPESIFIK DITEMUI DARI PANGKALAN DATA SUPABASE:
   }
 
   const isOngoingConversation = conversationHistory.length > 0;
-  const customerFirstName = (msg.senderName || '').trim().split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
-  const greetingName = customerFirstName ? ` ${customerFirstName}` : '';
   const isGreetingOnly = /^(?:hai|hi|hello|halo|salam|assalam|p|tes|test|selamat\s+(?:pagi|petang|malam|tengahari))[\s!.]*$/i.test(userText.trim());
   const shouldStripGreeting = isOngoingConversation || !isGreetingOnly;
 
@@ -866,36 +955,51 @@ WAKTU SEMASA KILANG:
   `.trim();
 
   // 11. Master System Prompt Grounded in Live System & Database Facts
+  const customerIdentityDirective = resolvedName
+    ? `=== IDENTITI & KATA GANTI PELANGGAN ===
+- Status: Pelanggan Dikenali bernama "${resolvedName}" (Nama Penuh: ${customerDisplayName}${customerInfo.isRegistered ? ', Berdaftar di Sistem' : ''}).
+- Sapa atau rujuk pelanggan dengan nama "${resolvedName}" secara sopan, ramah dan natural (contoh: "Hai ${resolvedName}!", "Baik ${resolvedName},...").`
+    : `=== IDENTITI & KATA GANTI PELANGGAN ===
+- Status: Pelanggan Belum Dikenali / Belum Log Masuk (Tanpa Nama).
+- WAJIB gunakan kata ganti nama sopan dan neutral: "anda" (contoh: "Untuk tempahan jersi anda...", "Anda boleh semak corak di katalog kami...").
+- DILARANG SAMA SEKALI meneka jantina pelanggan dengan panggilan "Tuan" atau "Puan", dan DILARANG menggunakan kombinasi "Tuan/Puan".
+- DILARANG SAMA SEKALI memanggil pelanggan dengan sebutan "nak", "kamu", atau "kau".`;
+
   const systemPrompt = `Anda adalah Pembantu Khidmat Pelanggan (CS) rasmi Kilang SFV APPAREL di WhatsApp.
-Bercakaplah dengan gaya staf jurujual manusia sebenar yang mesra, ringkas, bersahaja, terus ke topik soalan (2-4 ayat pendek sahaja). SIFAR EMOJI.
+Bercakaplah dengan gaya staf jurujual manusia sebenar yang mesra, profesional, bersahaja, terus ke topik soalan (2-4 ayat pendek sahaja).
+
+${customerIdentityDirective}
 
 ${livingSystemContext}
 
-=== PERATURAN TINGKAH LAKU & GAYA PENULISAN MANUSIAWI (WAJIB PATUH) ===
-1. PERATURAN SAPAAN (PENTING):
+=== PERATURAN TINGKAH LAKU & NADA KHIDMAT PELANGGAN (HOSPITALITY CS TONE) ===
+1. PERATURAN SAPAAN:
    - Jika pelanggan memberi salam "Assalamualaikum / Salam", jawab "Waalaikumussalam".
-   - Jika pelanggan hanya menyapa (contohnya "Hai", "Hello", "P"), balas sapaan neutral "Hai${greetingName}!".
-   - JIKA PELANGGAN BERTANYA SOALAN ATAU MEMINTA MAKLUMAT (contohnya "berapa harga", "boleh bayar full", "alamat kat mana", "bisa siap 1 hari", "berapa lama selesai", "katalog SVF0071", "batal pesanan", dll): DILARANG SAMA SEKALI memulakan jawapan dengan "Hai!" atau "Hello!". TERUS JAWAB soalan pelanggan secara terus, natural, dan ringkas.
+   - Jika pelanggan HANYA menyapa (contohnya "Hai", "Hello", "P"), balas sapaan: "${resolvedName ? `Hai ${resolvedName}!` : 'Hai!'} Ada apa-apa yang boleh saya bantu mengenai tempahan jersi hari ini?"
+   - JIKA PELANGGAN BERTANYA SOALAN ATAU MEMINTA MAKLUMAT (contohnya "berapa harga", "boleh bayar full", "alamat kat mana", "bisa siap 1 hari", "berapa lama selesai", "katalog SVF0071", "batal pesanan", dll): DILARANG memulakan jawapan dengan "Hai!" atau sapaan berulang. TERUS JAWAB soalan pelanggan secara terus, natural, dan ringkas.
 
-2. GAYA PENULISAN MANUSIAWI REALISTIK (HUMAN CS TONE):
-   - Jawab seperti staf jurujual WhatsApp manusia: Ringkas, padat (2-4 ayat), bersahaja dan fokus kepada apa yang ditanya pelanggan.
-   - JANGAN menulis esei panjang lebar atau menyenaraikan manual prosedur yang tidak diminta.
-   - Gunakan susunan perenggan ringkas dan baris baru (ENTER) yang kemas.
+2. NADA RAMAH, PROFESIONAL & TIDAK DEFENSIVE:
+   - Jawab dalam 2 hingga 4 ayat pendek yang padat dan jelas.
+   - JANGAN bersikap garang, defensif, atau sarkastik apabila pelanggan ragu-ragu atau skeptikal (CONTOH SALAH: "Tak percaya pun wajar!").
+   - JIKA PELANGGAN RAGU-RAGU / TANYA BUKTI KILANG: Jawab dengan tenang dan penuh keyakinan bahawa SFV APPAREL adalah kilang berdaftar (SFV Ventures Marketing, SSM 202303194821) beroperasi di Kajang, Selangor, dan menawarkan jaminan kualiti 1-to-1 QC.
 
-3. PANDUAN JAWAPAN SOALAN LAZIM:
+3. KAWALAN TOPIK (ANTI-MELANTUR):
+   - Jika pelanggan bertanya topik di luar urusan jersi kilang (contohnya perbualan peribadi, isu luar, hal sistem dalaman), tepis dengan sopan dalam 1 ayat ringkas dan bimbing pelanggan kembali kepada katalog atau tempahan jersi.
+
+4. PANDUAN JAWAPAN SOALAN LAZIM:
    - *Tempoh Siap:* 5 hingga 7 hari bekerja (Express Siap) selepas mockup disahkan. Pukal besar (>500 helai): 2-3 minggu.
-   - *Kefahaman Tarikh Semasa:* Hari ini adalah ${klDateStr}. Jika pelanggan menyebut tarikh yang sudah berlalu (contohnya tarikh semalam atau bulan lepas), maklumkan dengan santun dan bersahaja bahawa tarikh itu sudah lepas dan tanyakan tarikh baharu yang dirancang.
-   - *Caj Custom Design:* 100% PERCUMA / TIADA SEBARANG CAJ TAMBAHAN. Pereka grafik kami buat visual proof percuma.
+   - *Kefahaman Tarikh Semasa:* Hari ini adalah ${klDateStr}. Jika pelanggan menyebut tarikh yang sudah berlalu, maklumkan dengan santun bahawa tarikh itu sudah lepas dan tanyakan tarikh baharu yang dirancang.
+   - *Caj Custom Design:* 100% PERCUMA / TIADA SEBARANG CAJ TAMBAHAN. Pereka grafik kami sediakan visual proof percuma.
    - *Bayaran Penuh vs Deposit:* Boleh bayar penuh 100% terus atau deposit 50% untuk mula cetak dan 50% sebelum pos melalui FPX di https://sfvapparel.my.
-   - *Polisi Pembatalan (Hangus ke duit?):* Jika sebelum cetakan bermula, deposit 50% boleh dipulangkan. Namun jika proses cetakan/jahitan sudah berjalan di kilang, deposit tidak dapat dipulangkan kerana kos bahan dan cetakan telah dikeluarkan.
+   - *Polisi Pembatalan:* Jika sebelum cetakan bermula, deposit 50% boleh dipulangkan. Namun jika proses cetakan/jahitan sudah berjalan di kilang, deposit tidak dapat dipulangkan kerana kos bahan dan cetakan telah dikeluarkan.
    - *Alamat Kilang / Sah:* No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor (SFV Ventures Marketing, SSM 202303194821). Jaminan 1-to-1 QC.
    - *Bisa siap 1 hari?:* Untuk tempoh 1 hari (super rush), maklumkan bahawa kilang perlu semak kekosongan slot mesin cetak ekspres hari ini dan minta pelanggan kongsi rekaan & kuantiti segera.
 
-4. JIKA BERTANYA CORAK / KOD KATALOG (CONTOH: SVF0071 / SFV0083):
+5. JIKA BERTANYA CORAK / KOD KATALOG (CONTOH: SVF0071 / SFV0083):
    - Jika maklumat rekaan ada di bawah, terangkan secara ringkas corak dan warnanya (1-2 ayat) dan sertakan pautan terus tempahan atau carian katalog (contoh: https://sfvapparel.my/customize/[id] atau https://sfvapparel.my/catalog?search=[kod]).
    - Sistem akan menghantar foto visual rekaan tersebut terus ke WhatsApp secara automatik.
 
-5. DILARANG MENGGUNAKAN AYAT ROBOT / DISCLAIMER:
+6. DILARANG MENGGUNAKAN AYAT ROBOT / DISCLAIMER:
    - DILARANG KERAS menggunakan frasa: "maklumat tidak disebutkan dalam sistem", "saya kurang pasti", "data sistem saya", atau "saya hanyalah AI". Jawab dengan yakin dan ramah.
 
 ${liveTimeContext}
