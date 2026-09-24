@@ -173,7 +173,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             <Link
               href="/"
               draggable={false}
-              className="flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative group"
+              className="flex flex-col items-center justify-center flex-1 py-1 min-h-[48px] rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative group"
               style={{ color: isHome ? bottomActiveColor : bottomInactiveColor }}
             >
               <div className="flex items-center justify-center h-6 w-6">
@@ -192,7 +192,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             <Link
               href="/catalog"
               draggable={false}
-              className="flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative group"
+              className="flex flex-col items-center justify-center flex-1 py-1 min-h-[48px] rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative group"
               style={{ color: isCatalog ? bottomActiveColor : bottomInactiveColor }}
             >
               <div className="flex items-center justify-center h-6 w-6">
@@ -208,7 +208,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             </Link>
 
             {/* Tab 3 (Center): Raised Circular WhatsApp Action */}
-            <div className="flex flex-col items-center justify-center flex-1 -mt-5 relative z-10">
+            <div className="flex flex-col items-center justify-center flex-1 -mt-5 relative z-10 min-h-[48px]">
               <a
                 href={buildWhatsAppInquiryUrl({
                   phone: companySettings?.whatsapp_number,
@@ -223,7 +223,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               >
                 <FaWhatsapp className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
               </a>
-              <span className="text-[10px] tracking-tight mt-0.5 font-semibold text-slate-700">
+              <span className="text-[10px] tracking-tight mt-0.5 font-semibold text-slate-800">
                 WhatsApp
               </span>
             </div>
@@ -232,7 +232,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             <Link
               href="/history"
               draggable={false}
-              className="flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative group"
+              className="flex flex-col items-center justify-center flex-1 py-1 min-h-[48px] rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative group"
               style={{ color: isHistory ? bottomActiveColor : bottomInactiveColor }}
             >
               <div className="flex items-center justify-center h-6 w-6 relative">
@@ -254,7 +254,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
             <Link
               href="/profile"
               draggable={false}
-              className="flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative group"
+              className="flex flex-col items-center justify-center flex-1 py-1 min-h-[48px] rounded-xl transition-all active:scale-95 outline-none select-none touch-manipulation relative group"
               style={{ color: isProfile ? bottomActiveColor : bottomInactiveColor }}
             >
               <div className="flex items-center justify-center h-6 w-6">

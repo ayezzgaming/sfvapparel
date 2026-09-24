@@ -413,6 +413,8 @@ export default function HomePage() {
                     <img
                       src={banner.image_url}
                       alt={banner.title}
+                      width={800}
+                      height={450}
                       loading={isFirst ? 'eager' : 'lazy'}
                       decoding="async"
                       {...(isFirst ? { fetchPriority: 'high' } : {})}
@@ -617,7 +619,9 @@ export default function HomePage() {
                     <img
                       src={item.image_url}
                       alt={item.title}
-                      loading="eager"
+                      width={400}
+                      height={300}
+                      loading={index < 2 ? 'eager' : 'lazy'}
                       decoding="async"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
@@ -837,6 +841,8 @@ export default function HomePage() {
                       <img 
                         src={video.thumbnail_url} 
                         alt={video.title} 
+                        width={270}
+                        height={450}
                         loading="lazy"
                         decoding="async"
                         className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
@@ -902,7 +908,7 @@ export default function HomePage() {
               </div>
             ))
           ) : (
-            activeGallery.map((item, idx) => {
+            activeGallery.slice(0, 10).map((item, idx) => {
               const isActive = idx === activeGalleryIndex;
               return (
                 <div 
@@ -922,6 +928,8 @@ export default function HomePage() {
                     <img 
                       src={item.image_url} 
                       alt={item.title} 
+                      width={320}
+                      height={256}
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
@@ -1308,30 +1316,30 @@ export default function HomePage() {
                   <span className="font-light ml-1 text-slate-700 tracking-wide">APPAREL</span>
                 </span>
               </div>
-              <p className="text-[11.5px] text-slate-500 leading-snug">
+              <p className="text-[11.5px] text-slate-600 leading-snug">
                 {companySettings.tagline}
               </p>
-              <p className="text-[10.5px] text-slate-400 leading-snug">
-                sfvapparel.my dimiliki & diuruskan oleh <span className="font-medium text-slate-600">{companySettings.company_name}</span> (No. Pendaftaran Syarikat: <span className="font-mono">{companySettings.registration_number}</span>).
+              <p className="text-[10.5px] text-slate-600 leading-snug">
+                sfvapparel.my dimiliki & diuruskan oleh <span className="font-medium text-slate-800">{companySettings.company_name}</span> (No. Pendaftaran Syarikat: <span className="font-mono text-slate-700">{companySettings.registration_number}</span>).
               </p>
             </div>
 
             {/* Social Icons */}
-            <div className="flex items-center gap-1.5 pt-0.5">
-              <a href={companySettings.facebook_url} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-7 h-7 rounded-full bg-white shadow-xs border border-gray-200/60 flex items-center justify-center text-slate-600 hover:text-blue-600 transition-colors active:scale-90">
-                <FaFacebookF className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2 pt-0.5">
+              <a href={companySettings.facebook_url} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-white shadow-xs border border-gray-200/80 flex items-center justify-center text-slate-700 hover:text-blue-600 transition-colors active:scale-90 touch-manipulation">
+                <FaFacebookF className="w-4 h-4" />
               </a>
-              <a href={companySettings.instagram_url} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-7 h-7 rounded-full bg-white shadow-xs border border-gray-200/60 flex items-center justify-center text-slate-600 hover:text-pink-600 transition-colors active:scale-90">
-                <FaInstagram className="w-3.5 h-3.5" />
+              <a href={companySettings.instagram_url} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-white shadow-xs border border-gray-200/80 flex items-center justify-center text-slate-700 hover:text-pink-600 transition-colors active:scale-90 touch-manipulation">
+                <FaInstagram className="w-4 h-4" />
               </a>
-              <a href={companySettings.tiktok_url} target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="w-7 h-7 rounded-full bg-white shadow-xs border border-gray-200/60 flex items-center justify-center text-slate-600 hover:text-black transition-colors active:scale-90">
-                <FaTiktok className="w-3.5 h-3.5" />
+              <a href={companySettings.tiktok_url} target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-white shadow-xs border border-gray-200/80 flex items-center justify-center text-slate-700 hover:text-black transition-colors active:scale-90 touch-manipulation">
+                <FaTiktok className="w-4 h-4" />
               </a>
-              <a href={companySettings.telegram_catalog_url} target="_blank" rel="noopener noreferrer" aria-label="Telegram" className="w-7 h-7 rounded-full bg-white shadow-xs border border-gray-200/60 flex items-center justify-center text-slate-600 hover:text-sky-500 transition-colors active:scale-90">
-                <FaTelegram className="w-3.5 h-3.5" />
+              <a href={companySettings.telegram_catalog_url} target="_blank" rel="noopener noreferrer" aria-label="Telegram" className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-white shadow-xs border border-gray-200/80 flex items-center justify-center text-slate-700 hover:text-sky-500 transition-colors active:scale-90 touch-manipulation">
+                <FaTelegram className="w-4 h-4" />
               </a>
-              <a href={formatWhatsAppLink(companySettings?.whatsapp_number)} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="w-7 h-7 rounded-full bg-white shadow-xs border border-gray-200/60 flex items-center justify-center text-slate-600 hover:text-emerald-600 transition-colors active:scale-90">
-                <FaWhatsapp className="w-3.5 h-3.5" />
+              <a href={formatWhatsAppLink(companySettings?.whatsapp_number)} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-white shadow-xs border border-gray-200/80 flex items-center justify-center text-slate-700 hover:text-emerald-600 transition-colors active:scale-90 touch-manipulation">
+                <FaWhatsapp className="w-4 h-4" />
               </a>
             </div>
           </div>
