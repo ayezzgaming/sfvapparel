@@ -380,6 +380,9 @@ export default function HomePage() {
 
   return (
     <div className="w-full select-none font-ios">
+      {/* Primary Semantic H1 for Search Engine Crawlers */}
+      <h1 className="sr-only">Kilang Cetak Jersi Sublimasi &amp; Baju DTF | SFV APPAREL Malaysia</h1>
+
       {/* =========================================================================
           SECTION 1: HERO & PILIHAN SERVIS (iOS Canvas Tint - Kad Putih Timbul & Jelas)
          ========================================================================= */}
@@ -430,9 +433,9 @@ export default function HomePage() {
                     {/* Bottom Frosted Glass Panel - Light iOS Liquid Glass Theme */}
                     <div className="absolute inset-x-0 bottom-0 z-20 bg-white/80 backdrop-blur-xl border-t border-white/80 px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between shadow-xs">
                       <div className="space-y-0.5 pr-3 min-w-0">
-                        <h1 className="text-[15px] sm:text-[17px] font-bold text-slate-900 tracking-tight leading-tight truncate">
+                        <h2 className="text-[15px] sm:text-[17px] font-bold text-slate-900 tracking-tight leading-tight truncate">
                           {banner.title}
-                        </h1>
+                        </h2>
                         <p className="text-[11px] sm:text-xs font-medium text-slate-500 truncate">
                           {banner.tag_text}
                         </p>
@@ -1106,6 +1109,73 @@ export default function HomePage() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* =========================================================================
+          SECTION 4.5: SOALAN LAZIM (FAQ KILANG & KREDIBILITI)
+         ========================================================================= */}
+      <div className="w-full bg-slate-50/70 border-t border-slate-200/80 py-10 px-4 sm:px-6 space-y-6">
+        <div className="text-center space-y-1.5 max-w-lg mx-auto">
+          <span className="text-[11px] font-bold text-[#0052FF] uppercase tracking-wider bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+            Panduan & Soalan Lazim
+          </span>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+            Soalan Kerap Ditanya (FAQ)
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500">
+            Ketahui maklumat lengkap mengenai proses tempahan jersi & cetakan DTF terus dari kilang kami.
+          </p>
+        </div>
+
+        <div className="max-w-2xl mx-auto space-y-3">
+          <details className="group bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs transition-all [&_summary::-webkit-details-marker]:hidden cursor-pointer open:ring-1 open:ring-blue-500/30 open:border-blue-300">
+            <summary className="flex items-center justify-between font-semibold text-slate-900 text-[13px] sm:text-sm select-none">
+              <span>Berapakah minimum tempahan jersi di SFV APPAREL?</span>
+              <span className="ml-2 w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-open:rotate-180 group-open:bg-blue-50 group-open:text-blue-600 transition-transform">
+                ↓
+              </span>
+            </summary>
+            <p className="mt-3 text-xs sm:text-[13px] text-slate-600 leading-relaxed pt-2 border-t border-slate-100">
+              Tiada had minimum order (MOQ = 1 helai)! Anda boleh menempah 1 helai sampel sehingga ribuan helai dengan kualiti cetakan premium terus dari kilang.
+            </p>
+          </details>
+
+          <details className="group bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs transition-all [&_summary::-webkit-details-marker]:hidden cursor-pointer open:ring-1 open:ring-blue-500/30 open:border-blue-300">
+            <summary className="flex items-center justify-between font-semibold text-slate-900 text-[13px] sm:text-sm select-none">
+              <span>Berapa hari tempoh siap produksi?</span>
+              <span className="ml-2 w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-open:rotate-180 group-open:bg-blue-50 group-open:text-blue-600 transition-transform">
+                ↓
+              </span>
+            </summary>
+            <p className="mt-3 text-xs sm:text-[13px] text-slate-600 leading-relaxed pt-2 border-t border-slate-100">
+              Tempoh siap standard adalah 5 hingga 7 hari bekerja selepas pengesahan rekaan akhir (Design Proof). Kami juga menyediakan servis ekspres untuk acara kecemasan (bergantung kepada jadual kilang).
+            </p>
+          </details>
+
+          <details className="group bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs transition-all [&_summary::-webkit-details-marker]:hidden cursor-pointer open:ring-1 open:ring-blue-500/30 open:border-blue-300">
+            <summary className="flex items-center justify-between font-semibold text-slate-900 text-[13px] sm:text-sm select-none">
+              <span>Apakah format fail artwork yang diterima?</span>
+              <span className="ml-2 w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-open:rotate-180 group-open:bg-blue-50 group-open:text-blue-600 transition-transform">
+                ↓
+              </span>
+            </summary>
+            <p className="mt-3 text-xs sm:text-[13px] text-slate-600 leading-relaxed pt-2 border-t border-slate-100">
+              Kami menyokong format AI (Adobe Illustrator), PDF vektor, EPS, SVG, serta fail imej resolusi tinggi PNG/JPG (300 DPI). Jika anda belum mempunyai fail artwork siap, pereka grafik kilang kami sedia membantu melakar semula.
+            </p>
+          </details>
+
+          <details className="group bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs transition-all [&_summary::-webkit-details-marker]:hidden cursor-pointer open:ring-1 open:ring-blue-500/30 open:border-blue-300">
+            <summary className="flex items-center justify-between font-semibold text-slate-900 text-[13px] sm:text-sm select-none">
+              <span>Bagaimana liputan penghantaran tempahan?</span>
+              <span className="ml-2 w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-open:rotate-180 group-open:bg-blue-50 group-open:text-blue-600 transition-transform">
+                ↓
+              </span>
+            </summary>
+            <p className="mt-3 text-xs sm:text-[13px] text-slate-600 leading-relaxed pt-2 border-t border-slate-100">
+              Kami menghantar ke seluruh Semenanjung Malaysia, Sabah, Sarawak dan Singapura. Setiap bungkusan dihantar dengan nombor tracking kurier yang dimaklumkan terus ke WhatsApp anda.
+            </p>
+          </details>
+        </div>
       </div>
 
       {/* =========================================================================
