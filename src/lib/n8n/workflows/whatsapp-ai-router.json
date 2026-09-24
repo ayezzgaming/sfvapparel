@@ -19,11 +19,27 @@
     {
       "parameters": {
         "conditions": {
-          "string": [
+          "boolean": [
             {
               "value1": "={{ $json.body.fromMe || $json.body.payload?.fromMe || false }}",
-              "operation": "equal",
-              "value2": "false"
+              "operation": "false"
+            }
+          ],
+          "string": [
+            {
+              "value1": "={{ $json.body.from || $json.body.payload?.from || '' }}",
+              "operation": "notContains",
+              "value2": "@g.us"
+            },
+            {
+              "value1": "={{ $json.body.from || $json.body.payload?.from || '' }}",
+              "operation": "notContains",
+              "value2": "@broadcast"
+            },
+            {
+              "value1": "={{ $json.body.from || $json.body.payload?.from || '' }}",
+              "operation": "notContains",
+              "value2": "status@"
             }
           ]
         }
@@ -206,12 +222,12 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"inclusionai/ling-3.0-vl:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Anda adalah Pakar Rekaan & Mockup Jersi SFV APPAREL. Analisis rekaan pelanggan berdasarkan sistem:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || 'Pelanggan berkongsi imej rekaan baju') }}\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"google/gemma-4-27b-it:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": {{ JSON.stringify(\"Anda adalah Pakar Rekaan & Mockup Jersi SFV APPAREL. Analisis rekaan pelanggan dan berikan pandangan tentang rekaan jersi berdasarkan sistem:\\n\\n\" + ($node[\"Introspeksi Data Kilang SFV\"].json.systemManifestText || \"\")) }}\n    },\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($node[\"Filter Mesej Pelanggan\"].json.body.body || 'Pelanggan berkongsi imej rekaan baju') }}\n    }\n  ]\n}",
         "options": {
           "timeout": 15000
         }
       },
-      "name": "Divisi 3: Ling 3.0 VL (Vision & Mockup Primary)",
+      "name": "Divisi 3: Gemma 4 27B (Vision & Mockup Primary)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
@@ -446,7 +462,7 @@
     },
     {
       "parameters": {
-        "jsCode": "\nconst item = $input.first();\nlet rawText = '';\n\n// Extract reply text from whichever node succeeded\nif (item.json.choices && item.json.choices[0] && item.json.choices[0].message) {\n  rawText = item.json.choices[0].message.content || '';\n} else if (item.json.text) {\n  rawText = item.json.text;\n} else if (item.json.message) {\n  rawText = item.json.message;\n}\n\nif (!rawText) {\n  rawText = 'Hai! Terima kasih kerana menghubungi SFV APPAREL. Ada apa-apa yang boleh kami bantu mengenai tempahan jersi anda hari ini?';\n}\n\n// Clean and humanize\nlet cleaned = rawText;\n// Remove markdown tables\ncleaned = cleaned.replace(/\\|[^\\n]+\\|/g, '');\n// Format bolding **word** to *word*\ncleaned = cleaned.replace(/\\*\\*([^\\*]+)\\*\\*/g, '*$1*');\n// Remove UUIDs / system tokens\ncleaned = cleaned.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '');\n// Strip all emojis safely using clean ASCII character whitelist\ntry {\n  cleaned = cleaned.replace(/[^a-zA-Z0-9s.,!?:;/@#$%&*()_-+=[]{}'\"<>]/g, ' ').replace(/s+/g, ' ');\n} catch(e) {}\n// Clean excessive whitespace\ncleaned = cleaned.replace(/---+/g, '');\ncleaned = cleaned.replace(/\\n{3,}/g, '\\n\\n').trim();\n\n// Target customer phone number\nconst customerChatId = $('Filter Mesej Pelanggan').first().json.body.from || $('Filter Mesej Pelanggan').first().json.body.payload?.from || '';\n\nreturn [{\n  json: {\n    chatId: customerChatId,\n    replyText: cleaned,\n    processedAt: new Date().toISOString()\n  }\n}];\n"
+        "jsCode": "\nconst item = $input.first();\nlet rawText = '';\n\n// Extract reply text from whichever node succeeded\nif (item.json.choices && item.json.choices[0] && item.json.choices[0].message) {\n  rawText = item.json.choices[0].message.content || '';\n} else if (item.json.text) {\n  rawText = item.json.text;\n} else if (item.json.message) {\n  rawText = item.json.message;\n}\n\nif (!rawText || rawText.trim().length < 3) {\n  rawText = 'Hai! Terima kasih kerana menghubungi SFV APPAREL. Ada apa-apa yang boleh kami bantu mengenai tempahan jersi anda hari ini?';\n}\n\n// Clean and humanize\nlet cleaned = rawText;\n// Strip think blocks\ncleaned = cleaned.replace(/<think>[\\s\\S]*?<\\/think>/gi, '').trim();\n// Replace vercel.app with production domain\ncleaned = cleaned.replace(/https?:\\/\\/[a-zA-Z0-9_-]+\\.vercel\\.app/gi, 'https://sfvapparel.my');\n// Remove markdown tables\ncleaned = cleaned.replace(/\\|[^\\n]+\\|/g, '');\n// Format bolding **word** to *word*\ncleaned = cleaned.replace(/\\*\\*([^*]+)\\*\\*/g, '*$1*');\n// Remove UUIDs / system tokens\ncleaned = cleaned.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '');\n// Strip emojis cleanly\ntry {\n  cleaned = cleaned.replace(/\\p{Extended_Pictographic}/gu, '');\n} catch(e) {}\n// Clean excessive whitespace and dashes\ncleaned = cleaned.replace(/---+/g, '');\ncleaned = cleaned.replace(/[^\\S\\r\\n]+/g, ' ');\ncleaned = cleaned.replace(/\\n{3,}/g, '\\n\\n').trim();\n\n// Target customer phone number (filter out groups)\nconst from = $('Filter Mesej Pelanggan').first().json.body.from || $('Filter Mesej Pelanggan').first().json.body.payload?.from || '';\nconst customerChatId = from.includes('@g.us') || from.includes('@broadcast') ? '' : from;\n\nif (!customerChatId) {\n  return [{ json: { chatId: '', replyText: '', skipped: true, reason: 'group_or_broadcast' } }];\n}\n\nreturn [{\n  json: {\n    chatId: customerChatId,\n    replyText: cleaned,\n    processedAt: new Date().toISOString()\n  }\n}];\n"
       },
       "name": "Format & Sanitizer WhatsApp (Humanizer)",
       "type": "n8n-nodes-base.code",
@@ -552,7 +568,7 @@
         ],
         [
           {
-            "node": "Divisi 3: Ling 3.0 VL (Vision & Mockup Primary)",
+            "node": "Divisi 3: Gemma 4 27B (Vision & Mockup Primary)",
             "type": "main",
             "index": 0
           }
@@ -598,7 +614,7 @@
         ]
       ]
     },
-    "Divisi 3: Ling 3.0 VL (Vision & Mockup Primary)": {
+    "Divisi 3: Gemma 4 27B (Vision & Mockup Primary)": {
       "main": [
         [
           {

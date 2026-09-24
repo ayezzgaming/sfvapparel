@@ -1,5 +1,5 @@
 {
-  "name": "SFV Apparel - Peringatan Deposit & Follow-up 24 Jam (AI Powered)",
+  "name": "SFV Apparel - Peringatan Deposit & Follow-up 24 Jam (Safe Mode)",
   "nodes": [
     {
       "parameters": {
@@ -7,38 +7,50 @@
           "interval": [
             {
               "field": "hours",
-              "hoursInterval": 12
+              "hoursInterval": 24
             }
           ]
         }
       },
-      "name": "Jadual Cron 12 Jam",
+      "name": "Jadual Cron 24 Jam (Selamat)",
       "type": "n8n-nodes-base.cron",
       "typeVersion": 1,
-      "position": [
-        100,
-        300
-      ],
+      "position": [100, 300],
       "id": "node-cron-deposit"
     },
     {
       "parameters": {
         "method": "GET",
-        "url": "https://solfhbixctrcqthhithr.supabase.co/rest/v1/orders?payment_status=eq.unpaid&status=eq.pending_proof&select=*",
+        "url": "https://solfhbixctrcqthhithr.supabase.co/rest/v1/orders?status=eq.pending_proof&deposit_reminder_sent_at=is.null&reminder_count=lt.3&created_at=gte.{{ new Date(Date.now() - 7*24*60*60*1000).toISOString() }}&select=id,order_number,customer_name,customer_phone,total_amount,deposit_reminder_sent_at,reminder_count&limit=3",
         "headers": {
           "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvbGZoYml4Y3RyY3F0aGhpdGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NTU1NjcsImV4cCI6MjEwNTIzMTU2N30.auWBL0Q_lkXE3JwswOVPgtSynK9TxBZcR56mC1865Qs",
           "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvbGZoYml4Y3RyY3F0aGhpdGhyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTY1NTU2NywiZXhwIjoyMTA1MjMxNTY3fQ.yZhSFQdJvFSRJzSx6VRg5wFvlyCFDUwvJo6Jlflxu-o"
         },
         "options": {}
       },
-      "name": "Ambil Tempahan Belum Bayar (Supabase)",
+      "name": "Cari Pesanan Belum Bayar (Max 3, Belum Dihantar)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [
-        340,
-        300
-      ],
-      "id": "node-get-unpaid-orders"
+      "position": [340, 300],
+      "id": "node-get-unpaid-orders",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.customer_phone }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "name": "Filter: Hanya Jika Ada Nomor Telefon",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [560, 300],
+      "id": "node-filter-phone"
     },
     {
       "parameters": {
@@ -52,17 +64,28 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"nvidia/nemotron-3.5-lightning:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Manajer Operasi SFV APPAREL Kajang. Tuliskan pesanan follow-up WhatsApp yang sangat mesra dan sopan untuk mengingatkan pelanggan tentang proof design jersi mereka (#SFV-ORD-{{ $json.order_number }}) yang sedang menunggu bayaran deposit 50% (RM{{ ($json.total_amount * 0.5).toFixed(2) }}). Pautan invois: https://sfvapparel.my/history. Sifar emoji.\"\n    }\n  ],\n  \"temperature\": 0.7\n}",
-        "options": {}
+        "jsonBody": "={\n  \"model\": \"qwen/qwen3.8-27b:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Manajer Operasi SFV APPAREL Kajang. Tulis pesanan follow-up WhatsApp yang mesra dan sopan (TANPA EMOJI, TANPA MARKDOWN) untuk mengingatkan pelanggan tentang proof design jersi mereka yang sedang menunggu bayaran deposit 50%. Ringkas, 2-3 ayat sahaja.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"No Pesanan: #{{ $json.order_number }}. Pelanggan: {{ $json.customer_name }}. Jumlah: RM{{ ($json.total_amount * 0.5).toFixed(2) }}. Pautan invois: https://sfvapparel.my/history/{{ $json.order_number }}\"\n    }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 200\n}",
+        "options": {
+          "timeout": 15000
+        }
       },
-      "name": "Divisi 6: Nemotron 3.5 Lightning (Draf Mesej)",
+      "name": "AI: Jana Mesej Follow-up Deposit",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [
-        580,
-        300
-      ],
-      "id": "node-ai-draft-deposit"
+      "position": [780, 300],
+      "id": "node-ai-draft-deposit",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "unit": "seconds",
+        "amount": 60
+      },
+      "name": "Tunggu 60 Saat (Rate Limit)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1000, 300],
+      "id": "node-wait-60s"
     },
     {
       "parameters": {
@@ -74,52 +97,61 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": {{ JSON.stringify(($node['Ambil Tempahan Belum Bayar (Supabase)'].json.customer_phone || '').replace(/\\D/g, '') + '@c.us') }},\n  \"text\": {{ JSON.stringify($json.choices[0].message.content.trim()) }}\n}",
+        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": {{ JSON.stringify(($node['Cari Pesanan Belum Bayar (Max 3, Belum Dihantar)'].json.customer_phone || '').replace(/\\D/g, '') + '@c.us') }},\n  \"text\": {{ JSON.stringify(($json.choices?.[0]?.message?.content || 'Salam, kami ingin mengingatkan tentang bayaran deposit pesanan #' + $node['Cari Pesanan Belum Bayar (Max 3, Belum Dihantar)'].json.order_number + '. Sila semak di https://sfvapparel.my/history').trim()) }}\n}",
         "options": {}
       },
-      "name": "Hantar Follow-up ke WhatsApp Pelanggan",
+      "name": "Hantar Follow-up ke WhatsApp",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [
-        820,
-        300
-      ],
-      "id": "node-send-deposit-wa"
+      "position": [1220, 300],
+      "id": "node-send-deposit-wa",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://solfhbixctrcqthhithr.supabase.co/rest/v1/orders?id=eq.{{ $node['Cari Pesanan Belum Bayar (Max 3, Belum Dihantar)'].json.id }}",
+        "headers": {
+          "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvbGZoYml4Y3RyY3F0aGhpdGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NTU1NjcsImV4cCI6MjEwNTIzMTU2N30.auWBL0Q_lkXE3JwswOVPgtSynK9TxBZcR56mC1865Qs",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvbGZoYml4Y3RyY3F0aGhpdGhyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTY1NTU2NywiZXhwIjoyMTA1MjMxNTY3fQ.yZhSFQdJvFSRJzSx6VRg5wFvlyCFDUwvJo6Jlflxu-o",
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"deposit_reminder_sent_at\": \"{{ new Date().toISOString() }}\",\n  \"reminder_count\": {{ ($node['Cari Pesanan Belum Bayar (Max 3, Belum Dihantar)'].json.reminder_count || 0) + 1 }}\n}",
+        "options": {}
+      },
+      "name": "Kemaskini sent_at Flag Dalam Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1440, 300],
+      "id": "node-update-sent-flag",
+      "continueOnFail": true
     }
   ],
   "connections": {
-    "Jadual Cron 12 Jam": {
-      "main": [
-        [
-          {
-            "node": "Ambil Tempahan Belum Bayar (Supabase)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "Jadual Cron 24 Jam (Selamat)": {
+      "main": [[{ "node": "Cari Pesanan Belum Bayar (Max 3, Belum Dihantar)", "type": "main", "index": 0 }]]
     },
-    "Ambil Tempahan Belum Bayar (Supabase)": {
-      "main": [
-        [
-          {
-            "node": "Divisi 6: Nemotron 3.5 Lightning (Draf Mesej)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "Cari Pesanan Belum Bayar (Max 3, Belum Dihantar)": {
+      "main": [[{ "node": "Filter: Hanya Jika Ada Nomor Telefon", "type": "main", "index": 0 }]]
     },
-    "Divisi 6: Nemotron 3.5 Lightning (Draf Mesej)": {
-      "main": [
-        [
-          {
-            "node": "Hantar Follow-up ke WhatsApp Pelanggan",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "Filter: Hanya Jika Ada Nomor Telefon": {
+      "main": [[{ "node": "AI: Jana Mesej Follow-up Deposit", "type": "main", "index": 0 }]]
+    },
+    "AI: Jana Mesej Follow-up Deposit": {
+      "main": [[{ "node": "Tunggu 60 Saat (Rate Limit)", "type": "main", "index": 0 }]]
+    },
+    "Tunggu 60 Saat (Rate Limit)": {
+      "main": [[{ "node": "Hantar Follow-up ke WhatsApp", "type": "main", "index": 0 }]]
+    },
+    "Hantar Follow-up ke WhatsApp": {
+      "main": [[{ "node": "Kemaskini sent_at Flag Dalam Supabase", "type": "main", "index": 0 }]]
     }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
   }
 }

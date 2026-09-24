@@ -1,5 +1,5 @@
 {
-  "name": "SFV Apparel - Peringatan Baki 50% & Sedia Pos (AI Powered)",
+  "name": "SFV Apparel - Peringatan Baki 50% Sedia Pos (Safe Mode)",
   "nodes": [
     {
       "parameters": {
@@ -7,38 +7,50 @@
           "interval": [
             {
               "field": "hours",
-              "hoursInterval": 6
+              "hoursInterval": 24
             }
           ]
         }
       },
-      "name": "Jadual Semakan 6 Jam",
+      "name": "Jadual Semakan 24 Jam (Selamat)",
       "type": "n8n-nodes-base.cron",
       "typeVersion": 1,
-      "position": [
-        100,
-        300
-      ],
+      "position": [100, 300],
       "id": "node-cron-balance"
     },
     {
       "parameters": {
         "method": "GET",
-        "url": "https://solfhbixctrcqthhithr.supabase.co/rest/v1/orders?payment_status=eq.deposit_paid&status=eq.ready_to_ship&select=*",
+        "url": "https://solfhbixctrcqthhithr.supabase.co/rest/v1/orders?status=eq.ready_to_ship&balance_reminder_sent_at=is.null&reminder_count=lt.3&select=id,order_number,customer_name,customer_phone,total_amount,balance_amount,balance_reminder_sent_at,reminder_count&limit=3",
         "headers": {
           "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvbGZoYml4Y3RyY3F0aGhpdGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NTU1NjcsImV4cCI6MjEwNTIzMTU2N30.auWBL0Q_lkXE3JwswOVPgtSynK9TxBZcR56mC1865Qs",
           "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvbGZoYml4Y3RyY3F0aGhpdGhyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTY1NTU2NywiZXhwIjoyMTA1MjMxNTY3fQ.yZhSFQdJvFSRJzSx6VRg5wFvlyCFDUwvJo6Jlflxu-o"
         },
         "options": {}
       },
-      "name": "Cari Jersi Siap Jahit Belum Lunas",
+      "name": "Cari Jersi Siap Jahit (Max 3, Belum Dihantar Notis)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [
-        340,
-        300
-      ],
-      "id": "node-get-ready-orders"
+      "position": [340, 300],
+      "id": "node-get-ready-orders",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.customer_phone }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "name": "Filter: Ada Nomor Telefon",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [560, 300],
+      "id": "node-filter-phone-balance"
     },
     {
       "parameters": {
@@ -52,17 +64,28 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"thinkingmachines/inkling:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Bahagian Penghantaran Kilang SFV APPAREL. Beritahu pelanggan dengan teruja bahawa jersi mereka (#SFV-ORD-{{ $json.order_number }}) telah siap dijahit & lulus QC! Minta baki 50% (RM{{ ($json.balance_amount || $json.total_amount * 0.5).toFixed(2) }}) dijelaskan dan minta sahkan alamat pos. Bayar di: https://sfvapparel.my/history.\"\n    }\n  ],\n  \"temperature\": 0.7\n}",
-        "options": {}
+        "jsonBody": "={\n  \"model\": \"thinkingmachines/inkling:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Bahagian Penghantaran Kilang SFV APPAREL. Tulis mesej WhatsApp (TANPA EMOJI, TANPA MARKDOWN) untuk memberitahu pelanggan bahawa jersi mereka telah siap dijahit dan lulus QC! Minta baki 50% dijelaskan dan sahkan alamat pos. Ringkas, professional, 2-3 ayat.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"No Pesanan: #{{ $json.order_number }}. Pelanggan: {{ $json.customer_name }}. Baki: RM{{ (($json.balance_amount || $json.total_amount * 0.5)).toFixed(2) }}. Bayar di: https://sfvapparel.my/history/{{ $json.order_number }}\"\n    }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 200\n}",
+        "options": {
+          "timeout": 15000
+        }
       },
-      "name": "Divisi 7: Inkling 1M (Draf Mesej Teruja)",
+      "name": "AI: Jana Notis Baki Selesai",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [
-        580,
-        300
-      ],
-      "id": "node-ai-draft-balance"
+      "position": [780, 300],
+      "id": "node-ai-draft-balance",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "unit": "seconds",
+        "amount": 60
+      },
+      "name": "Tunggu 60 Saat (Rate Limit)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1000, 300],
+      "id": "node-wait-60s-balance"
     },
     {
       "parameters": {
@@ -74,52 +97,61 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": {{ JSON.stringify(($node['Cari Jersi Siap Jahit Belum Lunas'].json.customer_phone || '').replace(/\\D/g, '') + '@c.us') }},\n  \"text\": {{ JSON.stringify($json.choices[0].message.content.trim()) }}\n}",
+        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": {{ JSON.stringify(($node['Cari Jersi Siap Jahit (Max 3, Belum Dihantar Notis)'].json.customer_phone || '').replace(/\\D/g, '') + '@c.us') }},\n  \"text\": {{ JSON.stringify(($json.choices?.[0]?.message?.content || 'Salam, jersi pesanan #' + $node['Cari Jersi Siap Jahit (Max 3, Belum Dihantar Notis)'].json.order_number + ' telah siap! Sila jelaskan baki untuk penghantaran. Semak di https://sfvapparel.my/history').trim()) }}\n}",
         "options": {}
       },
-      "name": "Hantar Notis Baki ke WhatsApp Pelanggan",
+      "name": "Hantar Notis Baki ke WhatsApp",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [
-        820,
-        300
-      ],
-      "id": "node-send-balance-wa"
+      "position": [1220, 300],
+      "id": "node-send-balance-wa",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://solfhbixctrcqthhithr.supabase.co/rest/v1/orders?id=eq.{{ $node['Cari Jersi Siap Jahit (Max 3, Belum Dihantar Notis)'].json.id }}",
+        "headers": {
+          "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvbGZoYml4Y3RyY3F0aGhpdGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NTU1NjcsImV4cCI6MjEwNTIzMTU2N30.auWBL0Q_lkXE3JwswOVPgtSynK9TxBZcR56mC1865Qs",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvbGZoYml4Y3RyY3F0aGhpdGhyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4OTY1NTU2NywiZXhwIjoyMTA1MjMxNTY3fQ.yZhSFQdJvFSRJzSx6VRg5wFvlyCFDUwvJo6Jlflxu-o",
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"balance_reminder_sent_at\": \"{{ new Date().toISOString() }}\",\n  \"reminder_count\": {{ ($node['Cari Jersi Siap Jahit (Max 3, Belum Dihantar Notis)'].json.reminder_count || 0) + 1 }}\n}",
+        "options": {}
+      },
+      "name": "Kemaskini balance_reminder_sent_at",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1440, 300],
+      "id": "node-update-balance-flag",
+      "continueOnFail": true
     }
   ],
   "connections": {
-    "Jadual Semakan 6 Jam": {
-      "main": [
-        [
-          {
-            "node": "Cari Jersi Siap Jahit Belum Lunas",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "Jadual Semakan 24 Jam (Selamat)": {
+      "main": [[{ "node": "Cari Jersi Siap Jahit (Max 3, Belum Dihantar Notis)", "type": "main", "index": 0 }]]
     },
-    "Cari Jersi Siap Jahit Belum Lunas": {
-      "main": [
-        [
-          {
-            "node": "Divisi 7: Inkling 1M (Draf Mesej Teruja)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "Cari Jersi Siap Jahit (Max 3, Belum Dihantar Notis)": {
+      "main": [[{ "node": "Filter: Ada Nomor Telefon", "type": "main", "index": 0 }]]
     },
-    "Divisi 7: Inkling 1M (Draf Mesej Teruja)": {
-      "main": [
-        [
-          {
-            "node": "Hantar Notis Baki ke WhatsApp Pelanggan",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "Filter: Ada Nomor Telefon": {
+      "main": [[{ "node": "AI: Jana Notis Baki Selesai", "type": "main", "index": 0 }]]
+    },
+    "AI: Jana Notis Baki Selesai": {
+      "main": [[{ "node": "Tunggu 60 Saat (Rate Limit)", "type": "main", "index": 0 }]]
+    },
+    "Tunggu 60 Saat (Rate Limit)": {
+      "main": [[{ "node": "Hantar Notis Baki ke WhatsApp", "type": "main", "index": 0 }]]
+    },
+    "Hantar Notis Baki ke WhatsApp": {
+      "main": [[{ "node": "Kemaskini balance_reminder_sent_at", "type": "main", "index": 0 }]]
     }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
   }
 }

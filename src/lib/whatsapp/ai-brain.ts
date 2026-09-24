@@ -110,8 +110,6 @@ function getEffectiveGroqKey(): string {
   }
 }
 
-const LITELLM_URL = process.env.LITELLM_API_URL || 'http://187.127.223.53:4000';
-const LITELLM_KEY = process.env.LITELLM_API_KEY || 'sfv_litellm_master_2026';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
 // Store paused contacts (contactId -> timestamp when pause expires)
@@ -237,15 +235,15 @@ async function callLlmWithFallback(
   if (openRouterKey) {
     const openRouterFreeModels = [
       'qwen/qwen3.8-27b:free',
-      'inclusionai/ling-3.0-flash-fin:free',
       'nex-agi/nex-n2.5-pro:free',
+      'google/gemma-4-31b-it:free',
       'thinkingmachines/inkling:free',
-      'thinkingmachines/inkling-small:free',
       'nvidia/nemotron-3-super-120b-a12b:free',
+      'inclusionai/ling-3.0-flash-fin:free',
       'z-ai/glm-5.2:free',
       'dots-studio/dots-3-note-preview:free',
       'liquid/lfm-2.5-2.6b:free',
-      'nex-agi/nex-n2.5-mini:free'
+      'thinkingmachines/inkling-small:free'
     ];
 
     for (const model of openRouterFreeModels) {
@@ -309,31 +307,6 @@ async function callLlmWithFallback(
     }
   }
 
-  // 3. Try LiteLLM Router on VPS port 4000
-  try {
-    const res = await fetch(`${LITELLM_URL}/v1/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${LITELLM_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'sfv-ai-brain',
-        messages,
-        temperature,
-        max_tokens: maxTokens,
-      }),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      const content = data.choices?.[0]?.message?.content?.trim();
-      if (content && content.length > 5) return content;
-    }
-  } catch (err) {
-    console.warn('[AI Brain] LiteLLM unavailable:', err);
-  }
-
   // 3. Try Google Gemini
   if (GEMINI_API_KEY) {
     try {
@@ -377,11 +350,11 @@ async function callVisionLlmWithFallback(
   // 1. Try OpenRouter Vision-Language Free Models
   if (openRouterKey) {
     const visionModels = [
+      'google/gemma-4-27b-it:free',
       'nex-agi/nex-n2.5-pro:free',
       'dots-studio/dots-3-note-preview:free',
-      'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-      'nex-agi/nex-n2.5-mini:free',
-      'openrouter/free'
+      'qwen/qwen3.8-27b:free',
+      'nvidia/nemotron-3-super-120b-a12b:free'
     ];
 
     for (const model of visionModels) {
