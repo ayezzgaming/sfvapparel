@@ -562,45 +562,52 @@ export default function CustomizePage() {
       ? logoList.map((l, i) => `${i + 1}. ${l.fileName} [${l.placement === 'Lain-lain (Khas)' ? (l.customPlacement || 'Khas') : l.placement}]`).join('\n')
       : 'Tiada fail logo (Bincang di WA)';
 
-    // 0. Muat naik fail Logo & Roster ke Supabase Storage (Bucket designs)
+    // 0. Muat naik fail Logo & Roster ke VPS Media Storage Vault (0 byte Supabase quota)
     let uploadedArtworkUrl: string | null = null;
     const uploadedAssetLinks: string[] = [];
 
-    const supabase = createClient();
-    if (supabase) {
-      for (const logo of logoList) {
-        if (logo.file) {
-          try {
-            const cleanName = logo.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
-            const path = `order-artwork/${Date.now()}-${Math.random().toString(36).substring(2, 6)}-${cleanName}`;
-            const { error: upErr } = await supabase.storage.from('designs').upload(path, logo.file, { upsert: false });
-            if (!upErr) {
-              const { data: pub } = supabase.storage.from('designs').getPublicUrl(path);
-              if (pub?.publicUrl) {
-                if (!uploadedArtworkUrl) uploadedArtworkUrl = pub.publicUrl;
-                uploadedAssetLinks.push(`Logo (${logo.placement}): ${pub.publicUrl}`);
-              }
-            }
-          } catch (e) {
-            console.warn('[CustomizePage] Logo upload error:', e);
-          }
-        }
-      }
-
-      if (rosterMode === 'upload' && rosterFile) {
+    // 1. Upload Logo files to VPS Media Vault
+    for (const logo of logoList) {
+      if (logo.file) {
         try {
-          const cleanName = rosterFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-          const path = `order-rosters/${Date.now()}-${Math.random().toString(36).substring(2, 6)}-${cleanName}`;
-          const { error: upErr } = await supabase.storage.from('designs').upload(path, rosterFile, { upsert: false });
-          if (!upErr) {
-            const { data: pub } = supabase.storage.from('designs').getPublicUrl(path);
-            if (pub?.publicUrl) {
-              uploadedAssetLinks.push(`Fail Roster: ${pub.publicUrl}`);
+          const fd = new FormData();
+          fd.append('file', logo.file);
+          fd.append('folder', 'order-artwork');
+          const upRes = await fetch('/api/media/upload', {
+            method: 'POST',
+            body: fd,
+          });
+          if (upRes.ok) {
+            const upData = await upRes.json();
+            if (upData.success && upData.url) {
+              if (!uploadedArtworkUrl) uploadedArtworkUrl = upData.url;
+              uploadedAssetLinks.push(`Logo (${logo.placement}): ${upData.url}`);
             }
           }
         } catch (e) {
-          console.warn('[CustomizePage] Roster upload error:', e);
+          console.warn('[CustomizePage] Logo upload error:', e);
         }
+      }
+    }
+
+    // 2. Upload Roster file to VPS Media Vault
+    if (rosterMode === 'upload' && rosterFile) {
+      try {
+        const fd = new FormData();
+        fd.append('file', rosterFile);
+        fd.append('folder', 'order-rosters');
+        const upRes = await fetch('/api/media/upload', {
+          method: 'POST',
+          body: fd,
+        });
+        if (upRes.ok) {
+          const upData = await upRes.json();
+          if (upData.success && upData.url) {
+            uploadedAssetLinks.push(`Fail Roster: ${upData.url}`);
+          }
+        }
+      } catch (e) {
+        console.warn('[CustomizePage] Roster upload error:', e);
       }
     }
 
