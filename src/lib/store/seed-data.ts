@@ -205,7 +205,7 @@ export const INITIAL_ORDERS: Order[] = [];
 export const INITIAL_CMS_HERO_BANNERS = [
   {
     id: 'hero-1',
-    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-banner-opt-1790288662585-34yrma.webp',
+    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-ultra-1790289960989-6ku36.webp',
     status_pill: 'Harga Direct Kilang',
     tag_text: 'Pengeluar No. 1 Malaysia',
     title: 'Kilang Cetak Jersi Sublimasi & Baju DTF',
@@ -216,7 +216,7 @@ export const INITIAL_CMS_HERO_BANNERS = [
   },
   {
     id: 'hero-2',
-    image_url: '/images/prod_sportswear.webp',
+    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-ultra-1790289961687-533nt.webp',
     status_pill: 'Sublimasi Penuh HD',
     tag_text: 'Sukan, E-Sukan & Korporat',
     title: 'Jersi Sublimasi Kustom Berkualiti',
@@ -227,7 +227,7 @@ export const INITIAL_CMS_HERO_BANNERS = [
   },
   {
     id: 'hero-3',
-    image_url: '/images/prod_tshirt.webp',
+    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-ultra-1790289962213-598jg.webp',
     status_pill: 'Tiada Minimum Order',
     tag_text: 'Kapas 100% & Dakwat Jepun',
     title: 'Cetakan Baju DTF Berkualiti Tinggi',

@@ -124,7 +124,7 @@ export default function RootLayout({
         {/* Preconnect & Preload for 0ms initial LCP */}
         <link rel="preconnect" href="https://solfhbixctrcqthhithr.supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://solfhbixctrcqthhithr.supabase.co" />
-        <link rel="preload" as="image" href="https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-banner-opt-1790288662585-34yrma.webp" fetchPriority="high" type="image/webp" />
+        <link rel="preload" as="image" href="https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-ultra-1790289960989-6ku36.webp" fetchPriority="high" type="image/webp" />
         
         {/* Google Analytics GA4 Script (Deferred to idle to achieve 0ms TBT & 0ms main-thread contention) */}
         <Script

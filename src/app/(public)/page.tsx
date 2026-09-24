@@ -399,7 +399,7 @@ export default function HomePage() {
             return (
               <div
                 key={banner.id}
-                className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+                className={`absolute inset-0 w-full h-full ${index !== 0 ? 'transition-opacity duration-700 ease-in-out' : ''} ${
                   isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
@@ -408,8 +408,8 @@ export default function HomePage() {
                 <img
                   src={banner.image_url}
                   alt={banner.title}
-                  width={540}
-                  height={304}
+                  width={480}
+                  height={270}
                   loading={isFirst ? 'eager' : 'lazy'}
                   decoding="async"
                   {...(isFirst ? { fetchPriority: 'high' } : {})}
@@ -419,7 +419,7 @@ export default function HomePage() {
                 {/* Top Status Pill - Clean Light Frosted Glass */}
                 <div className="absolute top-3.5 left-3.5 z-20 flex items-center gap-2">
                   <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-white/80 text-slate-900 shadow-xs">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-400/40 shrink-0" />
                     <span className="text-[11px] font-bold tracking-tight text-slate-900">
                       {banner.status_pill}
                     </span>
@@ -450,7 +450,7 @@ export default function HomePage() {
             );
           })}
 
-          {/* Hero Banner Auto-Timer / Play Loading Glassmorphic Ring */}
+          {/* Hero Banner Auto-Timer / Play Glassmorphic Button */}
           {bannersToRender.length > 1 && (
             <button
               type="button"
@@ -459,33 +459,10 @@ export default function HomePage() {
                 setActiveBannerIndex((prev) => (prev + 1) % bannersToRender.length);
               }}
               aria-label="Slaid seterusnya"
-              className="absolute top-3.5 right-3.5 z-30 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md border border-white/80 shadow-xs flex items-center justify-center text-slate-900 hover:bg-white active:scale-90 transition-all cursor-pointer group"
+              className="absolute top-3.5 right-3.5 z-30 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md border border-white/80 shadow-xs flex items-center justify-center text-slate-900 hover:bg-white active:scale-90 transition-transform cursor-pointer group"
               title="Slaid seterusnya"
             >
-              <svg className="w-5 h-5 -rotate-90 pointer-events-none" viewBox="0 0 24 24">
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="9"
-                  fill="none"
-                  stroke="#E2E8F0"
-                  strokeWidth="2"
-                />
-                <circle
-                  key={`banner-ring-${activeBannerIndex}`}
-                  cx="12"
-                  cy="12"
-                  r="9"
-                  fill="none"
-                  stroke="#0052FF"
-                  strokeWidth="2"
-                  strokeDasharray="56.54"
-                  strokeDashoffset="56.54"
-                  strokeLinecap="round"
-                  className="animate-banner-progress"
-                />
-              </svg>
-              <Play className="w-2.5 h-2.5 fill-[#0052FF] text-[#0052FF] ml-0.5 absolute pointer-events-none group-hover:scale-110 transition-transform" />
+              <ChevronRight className="w-4 h-4 text-[#0052FF] pointer-events-none group-hover:translate-x-0.5 transition-transform" />
             </button>
           )}
         </div>
@@ -577,7 +554,7 @@ export default function HomePage() {
                 <div
                   key={item.id}
                   onClick={() => handleOpenProduct(item)}
-                  className="group rounded-[24px] overflow-hidden bg-white w-[235px] flex-shrink-0 snap-start border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer select-none active:scale-[0.98] flex flex-col justify-between"
+                  className="group rounded-[24px] overflow-hidden bg-white w-[235px] flex-shrink-0 snap-start border border-slate-200/80 shadow-sm hover:shadow-md transition-transform duration-200 cursor-pointer select-none active:scale-[0.98] flex flex-col justify-between"
                 >
                   {/* Bagian Gambar dengan Badge Khas */}
                   <div className="relative w-full h-44 bg-slate-100 overflow-hidden">
@@ -883,7 +860,7 @@ export default function HomePage() {
                     scrollToGallery(idx);
                     handleOpenGalleryItem(item);
                   }}
-                  className={`shrink-0 w-[82vw] max-w-[320px] bg-white rounded-3xl overflow-hidden snap-center border transition-all duration-300 cursor-pointer flex flex-col justify-between group ${
+                  className={`shrink-0 w-[82vw] max-w-[320px] bg-white rounded-3xl overflow-hidden snap-center border cursor-pointer flex flex-col justify-between group ${
                     isActive 
                       ? 'border-[#00BDFF] shadow-md shadow-blue-500/10 ring-2 ring-blue-500/20' 
                       : 'border-slate-200/80 shadow-sm opacity-90'
@@ -1011,7 +988,7 @@ export default function HomePage() {
               <div 
                 key={t.id}
                 onClick={() => scrollToTestimonial(idx)}
-                className={`shrink-0 w-[80vw] max-w-[320px] bg-white rounded-[24px] p-5 snap-center border transition-all duration-300 flex flex-col justify-between cursor-pointer ${
+                className={`shrink-0 w-[80vw] max-w-[320px] bg-white rounded-[24px] p-5 snap-center border flex flex-col justify-between cursor-pointer ${
                   isActive 
                     ? 'border-blue-200 shadow-md shadow-blue-900/5 ring-1 ring-blue-500/20' 
                     : 'border-gray-100 shadow-sm opacity-90'

@@ -138,20 +138,8 @@ html, body, html.k-ios, body.k-ios, .k-ios, #app {
 }
 
 /* =========================================================================
-   HERO BANNER CIRCULAR LOADING PROGRESS & TRUST CARD TRANSITIONS
+   TRUST CARD TRANSITIONS
    ========================================================================= */
-@keyframes bannerProgress {
-  0% {
-    stroke-dashoffset: 56.54;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-
-.animate-banner-progress {
-  animation: bannerProgress 4.5s linear infinite;
-}
 
 @keyframes trustFadeIn {
   0% {
