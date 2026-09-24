@@ -526,25 +526,10 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Visual Indicator Dots (Accessible & Non-interactive to prevent touch conflict) */}
-            {safeTrustBadges.length > 1 && (
-              <div aria-hidden="true" className="flex items-center gap-1.5 shrink-0 pl-1">
-                {safeTrustBadges.map((badge, idx) => {
-                  const isActive = idx === activeTrustIndex;
-                  const theme = BADGE_THEMES[badge.color_theme] || BADGE_THEMES.sky;
-                  return (
-                    <span
-                      key={badge.id}
-                      className={`transition-all duration-300 rounded-full block ${
-                        isActive 
-                          ? `w-4 h-1.5 ${theme.dotActive} shadow-xs` 
-                          : 'w-1.5 h-1.5 bg-slate-300'
-                      }`}
-                    />
-                  );
-                })}
-              </div>
-            )}
+            {/* Chevron Right subtle affordance */}
+            <div className="shrink-0 pl-1 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all duration-200">
+              <ChevronRight className="w-4 h-4" />
+            </div>
           </div>
         </div>
 
@@ -1207,10 +1192,10 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl overflow-hidden shadow-sm shadow-blue-900/5 border border-blue-100/70 divide-y divide-gray-100">
+        <div className="bg-white rounded-2xl overflow-hidden shadow-xs border border-blue-100/70 divide-y divide-gray-100">
           {/* FAQ 1 */}
           <details className="group">
-            <summary className="flex items-center pl-3.5 pr-3.5 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+            <summary className="flex items-center px-4 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
               <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#00BDFF] group-hover:text-white flex items-center justify-center text-[#00BDFF] font-bold text-xs transition-colors duration-200">
                 01
               </div>
@@ -1219,16 +1204,16 @@ export default function HomePage() {
                   Berapakah minimum tempahan jersi di SFV APPAREL?
                 </h3>
               </div>
-              <ChevronDown className="w-4 h-4 text-slate-300 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
+              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
             </summary>
-            <div className="pl-14.5 pr-4 pb-3.5 text-[11.5px] text-slate-500 leading-relaxed border-t border-gray-50 bg-slate-50/30">
+            <div className="px-4 py-3.5 bg-slate-50/70 border-t border-gray-100 text-xs text-slate-600 leading-relaxed">
               Tiada had minimum order (MOQ = 1 helai). Anda boleh menempah 1 helai sampel sehingga ribuan helai dengan kualiti cetakan premium kilang.
             </div>
           </details>
 
           {/* FAQ 2 */}
           <details className="group">
-            <summary className="flex items-center pl-3.5 pr-3.5 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+            <summary className="flex items-center px-4 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
               <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#00BDFF] group-hover:text-white flex items-center justify-center text-[#00BDFF] font-bold text-xs transition-colors duration-200">
                 02
               </div>
@@ -1237,16 +1222,16 @@ export default function HomePage() {
                   Berapa hari tempoh siap produksi?
                 </h3>
               </div>
-              <ChevronDown className="w-4 h-4 text-slate-300 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
+              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
             </summary>
-            <div className="pl-14.5 pr-4 pb-3.5 text-[11.5px] text-slate-500 leading-relaxed border-t border-gray-50 bg-slate-50/30">
+            <div className="px-4 py-3.5 bg-slate-50/70 border-t border-gray-100 text-xs text-slate-600 leading-relaxed">
               Tempoh standard adalah 5 hingga 7 hari bekerja selepas pengesahan rekaan akhir. Servis ekspres juga disediakan mengikut jadual kilang.
             </div>
           </details>
 
           {/* FAQ 3 */}
           <details className="group">
-            <summary className="flex items-center pl-3.5 pr-3.5 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+            <summary className="flex items-center px-4 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
               <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#00BDFF] group-hover:text-white flex items-center justify-center text-[#00BDFF] font-bold text-xs transition-colors duration-200">
                 03
               </div>
@@ -1255,16 +1240,16 @@ export default function HomePage() {
                   Apakah format fail artwork yang diterima?
                 </h3>
               </div>
-              <ChevronDown className="w-4 h-4 text-slate-300 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
+              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
             </summary>
-            <div className="pl-14.5 pr-4 pb-3.5 text-[11.5px] text-slate-500 leading-relaxed border-t border-gray-50 bg-slate-50/30">
+            <div className="px-4 py-3.5 bg-slate-50/70 border-t border-gray-100 text-xs text-slate-600 leading-relaxed">
               Kami menyokong format AI (Adobe Illustrator), PDF vektor, EPS, SVG, serta gambar resolusi tinggi PNG/JPG (300 DPI). Pereka kami juga sedia membantu melakar artwork anda.
             </div>
           </details>
 
           {/* FAQ 4 */}
           <details className="group">
-            <summary className="flex items-center pl-3.5 pr-3.5 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+            <summary className="flex items-center px-4 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
               <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#00BDFF] group-hover:text-white flex items-center justify-center text-[#00BDFF] font-bold text-xs transition-colors duration-200">
                 04
               </div>
@@ -1273,9 +1258,9 @@ export default function HomePage() {
                   Bagaimana liputan penghantaran tempahan?
                 </h3>
               </div>
-              <ChevronDown className="w-4 h-4 text-slate-300 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
+              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
             </summary>
-            <div className="pl-14.5 pr-4 pb-3.5 text-[11.5px] text-slate-500 leading-relaxed border-t border-gray-50 bg-slate-50/30">
+            <div className="px-4 py-3.5 bg-slate-50/70 border-t border-gray-100 text-xs text-slate-600 leading-relaxed">
               Penghantaran ke seluruh Semenanjung Malaysia, Sabah, Sarawak dan Singapura bersama nombor penjejakan (tracking number) kurier yang dikemas kini secara automatik.
             </div>
           </details>
