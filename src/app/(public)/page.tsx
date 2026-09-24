@@ -587,7 +587,7 @@ export default function HomePage() {
                       alt={item.title}
                       width={400}
                       height={300}
-                      loading={index < 2 ? 'eager' : 'lazy'}
+                      loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
