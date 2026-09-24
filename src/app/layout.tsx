@@ -97,8 +97,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
   viewportFit: 'cover',
   themeColor: '#FFFFFF',
 };
@@ -120,15 +120,19 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="msapplication-navbutton-color" content="#FFFFFF" />
+
+        {/* Preconnect to Image & Asset CDNs for 0ms initial latency */}
+        <link rel="preconnect" href="https://solfhbixctrcqthhithr.supabase.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://solfhbixctrcqthhithr.supabase.co" />
         
-        {/* Google Analytics GA4 Script (Non-blocking) */}
+        {/* Google Analytics GA4 Script (LazyOnload to maximize performance & TBT) */}
         <Script
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
         />
         <Script
           id="google-analytics"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];

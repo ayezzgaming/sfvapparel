@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const sessionToken = req.cookies.get('svf_session')?.value;
 
     if (!sessionToken) {
-      return NextResponse.json({ success: false, customer: null }, { status: 401 });
+      return NextResponse.json({ success: false, customer: null, authenticated: false }, { status: 200 });
     }
 
     const supabase = getServiceSupabase();
@@ -23,13 +23,13 @@ export async function GET(req: NextRequest) {
       .single();
 
     if (error || !session) {
-      return NextResponse.json({ success: false, customer: null }, { status: 401 });
+      return NextResponse.json({ success: false, customer: null, authenticated: false }, { status: 200 });
     }
 
     // Check session expiry
     if (new Date(session.expires_at) < new Date()) {
       await supabase.from('customer_sessions').delete().eq('session_token', sessionToken);
-      const res = NextResponse.json({ success: false, customer: null, reason: 'expired' }, { status: 401 });
+      const res = NextResponse.json({ success: false, customer: null, reason: 'expired', authenticated: false }, { status: 200 });
       res.cookies.delete('svf_session');
       return res;
     }

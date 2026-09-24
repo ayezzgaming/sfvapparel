@@ -76,8 +76,8 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
   
   const bottomNavBg = themeSettings?.bottom_nav_bg || 'rgba(255, 255, 255, 0.95)';
   const isBottomNavDark = themeSettings?.bottom_nav_style === 'solid_blue' || bottomNavBg === '#00BDFF' || bottomNavBg === '#0052FF';
-  const bottomActiveColor = themeSettings?.bottom_nav_active_color || (isBottomNavDark ? '#FFFFFF' : '#00BDFF');
-  const bottomInactiveColor = themeSettings?.bottom_nav_inactive_color || (isBottomNavDark ? '#93C5FD' : '#94A3B8');
+  const bottomActiveColor = themeSettings?.bottom_nav_active_color || (isBottomNavDark ? '#FFFFFF' : '#0052FF');
+  const bottomInactiveColor = themeSettings?.bottom_nav_inactive_color || (isBottomNavDark ? '#E2E8F0' : '#475569');
   const whatsappFabBg = themeSettings?.whatsapp_fab_bg || '#25D366';
 
   // Filter full design objects that are favorited
@@ -105,6 +105,8 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 <img
                   src="/logo.svg"
                   alt="SFV APPAREL"
+                  width={30}
+                  height={30}
                   className="h-7 sm:h-7.5 w-auto object-contain shrink-0 pointer-events-none group-active:scale-95 transition-transform"
                 />
                 <span className="text-[15px] sm:text-base tracking-tight text-slate-900 leading-none flex items-center">
@@ -221,7 +223,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
               >
                 <FaWhatsapp className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
               </a>
-              <span className="text-[10px] tracking-tight mt-0.5 font-semibold text-slate-500">
+              <span className="text-[10px] tracking-tight mt-0.5 font-semibold text-slate-700">
                 WhatsApp
               </span>
             </div>

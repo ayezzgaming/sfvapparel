@@ -547,12 +547,16 @@ export default function HomePage() {
                         setActiveTrustIndex(idx);
                       }}
                       aria-label={`Slide ke ${badge.title}`}
-                      className={`transition-all duration-300 rounded-full ${
-                        isActive 
-                          ? `w-4 h-1.5 ${theme.dotActive} shadow-xs` 
-                          : 'w-1.5 h-1.5 bg-slate-300/80 hover:bg-slate-400'
-                      }`}
-                    />
+                      className="p-2 -m-1 flex items-center justify-center cursor-pointer touch-manipulation"
+                    >
+                      <span
+                        className={`transition-all duration-300 rounded-full block ${
+                          isActive 
+                            ? `w-4 h-1.5 ${theme.dotActive} shadow-xs` 
+                            : 'w-1.5 h-1.5 bg-slate-400 hover:bg-slate-500'
+                        }`}
+                      />
+                    </button>
                   );
                 })}
               </div>
@@ -567,7 +571,7 @@ export default function HomePage() {
               <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                 Pilihan Servis
               </h2>
-              <p className="text-xs text-slate-500 font-normal tracking-wide mt-0.5">
+              <p className="text-xs text-slate-600 font-normal tracking-wide mt-0.5">
                 Cetakan & jahitan pakaian kustom terus dari kilang
               </p>
             </div>
@@ -636,7 +640,7 @@ export default function HomePage() {
                       <h3 className="font-bold text-[15px] text-slate-900 leading-snug group-hover:text-[#0052FF] transition-colors line-clamp-1">
                         {item.title}
                       </h3>
-                      <p className="text-slate-500 text-xs mt-0.5 line-clamp-2 leading-relaxed">
+                      <p className="text-slate-600 text-xs mt-0.5 line-clamp-2 leading-relaxed">
                         {item.headline || item.highlight || 'Pilihan fabrik microfiber berkualiti tinggi dan cetakan tahan lasak.'}
                       </p>
                     </div>
@@ -652,7 +656,7 @@ export default function HomePage() {
                             {item.price_amount}
                           </span>
                           {item.price_unit && (
-                            <span className="text-[10.5px] font-medium text-slate-400">
+                            <span className="text-[10.5px] font-semibold text-slate-600">
                               {item.price_unit}
                             </span>
                           )}
@@ -1044,8 +1048,8 @@ export default function HomePage() {
                       {t.initial}
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-900 text-[14px] leading-tight">{t.name}</h4>
-                      <p className="text-[11.5px] text-slate-500 mt-0.5">{t.location}</p>
+                      <h3 className="font-bold text-slate-900 text-[14px] leading-tight">{t.name}</h3>
+                      <p className="text-[11.5px] text-slate-600 mt-0.5">{t.location}</p>
                     </div>
                   </div>
                   
@@ -1455,9 +1459,9 @@ export default function HomePage() {
         {/* 2. Link Columns */}
         <div className="grid grid-cols-2 gap-6 pt-5 border-t border-gray-200/70 text-xs">
           <div className="space-y-2.5">
-            <h4 className="font-bold text-[11px] uppercase tracking-wider text-slate-900">
+            <h3 className="font-bold text-[11px] uppercase tracking-wider text-slate-900">
               Services
-            </h4>
+            </h3>
             <ul className="space-y-2 text-slate-600 text-[12px]">
               <li>
                 <Link href="/customize/sublimation" className="hover:text-blue-600 transition-colors block">
@@ -1483,9 +1487,9 @@ export default function HomePage() {
           </div>
 
           <div className="space-y-2.5">
-            <h4 className="font-bold text-[11px] uppercase tracking-wider text-slate-900">
+            <h3 className="font-bold text-[11px] uppercase tracking-wider text-slate-900">
               Policies & Help
-            </h4>
+            </h3>
             <ul className="space-y-2 text-slate-600 text-[12px]">
               <li>
                 <Link
@@ -1543,6 +1547,8 @@ export default function HomePage() {
               <img
                 src="/payments/logobaru/FPX Logo Vector.svg"
                 alt="FPX Online Banking"
+                width={48}
+                height={16}
                 className="h-3.5 sm:h-4 w-auto max-w-[48px] object-contain block"
               />
             </div>
@@ -1553,6 +1559,8 @@ export default function HomePage() {
               <img
                 src="/payments/logobaru/duitnow.svg"
                 alt="DuitNow QR"
+                width={36}
+                height={16}
                 className="h-3.5 sm:h-4 w-auto max-w-[36px] object-contain block"
               />
             </div>
@@ -1563,6 +1571,8 @@ export default function HomePage() {
               <img
                 src="/payments/logobaru/Touch_'n_Go_eWallet_logo.svg"
                 alt="Touch 'n Go eWallet"
+                width={36}
+                height={16}
                 className="h-3.5 sm:h-4 w-auto max-w-[36px] object-contain block"
               />
             </div>
@@ -1573,6 +1583,8 @@ export default function HomePage() {
               <img
                 src="/payments/logobaru/maybank-vector-logo.svg"
                 alt="Maybank"
+                width={46}
+                height={16}
                 className="h-3.5 sm:h-4 w-auto max-w-[46px] object-contain block"
               />
             </div>
@@ -1583,6 +1595,8 @@ export default function HomePage() {
               <img
                 src="/payments/logobaru/Visa_Inc._logo_(2021–present).svg"
                 alt="Visa"
+                width={38}
+                height={12}
                 className="h-2.5 sm:h-3 w-auto max-w-[38px] object-contain block"
               />
             </div>
@@ -1593,6 +1607,8 @@ export default function HomePage() {
               <img
                 src="/payments/logobaru/Mastercard-logo.svg"
                 alt="Mastercard"
+                width={34}
+                height={16}
                 className="h-3.5 sm:h-4 w-auto max-w-[34px] object-contain block"
               />
             </div>
@@ -1865,16 +1881,18 @@ export default function HomePage() {
         <div className="space-y-4 select-none pb-2">
           {/* Map Container */}
           <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-100">
-            <iframe
-              title="Peta Lokasi Kilang SFV Apparel"
-              src={`https://maps.google.com/maps?q=${encodeURIComponent(companySettings.address || 'No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor')}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="w-full h-full"
-            />
+            {isLocationSheetOpen && (
+              <iframe
+                title="Peta Lokasi Kilang SFV Apparel"
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(companySettings.address || 'No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor')}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full h-full"
+              />
+            )}
           </div>
 
           {/* Alamat Penuh Card */}
