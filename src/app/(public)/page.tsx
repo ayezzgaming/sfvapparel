@@ -408,8 +408,8 @@ export default function HomePage() {
                 <img
                   src={banner.image_url}
                   alt={banner.title}
-                  width={800}
-                  height={450}
+                  width={540}
+                  height={304}
                   loading={isFirst ? 'eager' : 'lazy'}
                   decoding="async"
                   {...(isFirst ? { fetchPriority: 'high' } : {})}

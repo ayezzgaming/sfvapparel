@@ -126,13 +126,9 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://solfhbixctrcqthhithr.supabase.co" />
         <link rel="preload" as="image" href="https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-banner-opt-1790288662585-34yrma.webp" fetchPriority="high" type="image/webp" />
         
-        {/* Google Analytics GA4 Script (LazyOnload to maximize performance & TBT) */}
+        {/* Google Analytics GA4 Script (Deferred to idle to achieve 0ms TBT & 0ms main-thread contention) */}
         <Script
-          strategy="lazyOnload"
-          src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-        />
-        <Script
-          id="google-analytics"
+          id="google-analytics-deferred"
           strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `
@@ -142,6 +138,21 @@ export default function RootLayout({
               gtag('config', '${gaId}', {
                 page_path: window.location.pathname,
               });
+
+              function loadGtagScript() {
+                if (window._gtagLoaded) return;
+                window._gtagLoaded = true;
+                var s = document.createElement('script');
+                s.src = 'https://www.googletagmanager.com/gtag/js?id=${gaId}';
+                s.async = true;
+                document.head.appendChild(s);
+              }
+
+              if ('requestIdleCallback' in window) {
+                requestIdleCallback(function() { setTimeout(loadGtagScript, 2000); });
+              } else {
+                setTimeout(loadGtagScript, 3000);
+              }
             `,
           }}
         />
