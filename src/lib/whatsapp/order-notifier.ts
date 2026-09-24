@@ -127,23 +127,39 @@ export async function sendOrderStatusMilestoneWhatsApp(
     const statusMap: Record<string, { title: string; desc: string }> = {
       pending_proof: {
         title: 'PENYEDIAAN MOCKUP REKA BENTUK',
-        desc: 'Pereka grafik kami sedang menyediakan mockup jersi rasmi anda untuk pengesahan.',
+        desc: 'Pereka grafik kami sedang menyediakan mockup jersi rasmi anda untuk semakan & pengesahan.',
       },
       proof_approved: {
-        title: 'REKA BENTUK DISAHKAN & SEDIA DICETAK',
-        desc: 'Mockup telah disahkan! Pesanan anda telah dijadualkan ke barisan pencetakan sublimasi.',
+        title: 'MOCKUP DISAHKAN & MASUK JADUAL KILANG',
+        desc: 'Mockup rekaan telah disahkan! Pesanan anda kini memasuki jadual pencetakan kilang.',
+      },
+      in_printing: {
+        title: 'PROSES CETAKAN SUBLIMASI / DTF DIMULAKAN',
+        desc: 'Fabrik jersi anda sedang dicetak menggunakan teknologi Full Sublimation HD terkini kilang kami.',
       },
       printing: {
-        title: 'PROSES CETAKAN SUBLIMASI DIMULAKAN',
-        desc: 'Kain jersi anda sedang dicetak menggunakan teknologi Full Sublimation HD terkini kilang kami.',
+        title: 'PROSES CETAKAN SUBLIMASI / DTF DIMULAKAN',
+        desc: 'Fabrik jersi anda sedang dicetak menggunakan teknologi Full Sublimation HD terkini kilang kami.',
+      },
+      heat_press: {
+        title: 'PROSES PEMINDAHAN HABA (HEAT PRESS)',
+        desc: 'Proses penyerapan warna haba tinggi sedang dijalankan untuk ketahanan warna optimum.',
       },
       sewing: {
-        title: 'PROSES JAHITAN & KEKALAN KUALITI',
-        desc: 'Kain yang dicetak kini dalam fasa potongan dan jahitan teliti oleh tukang jahit pakar kami.',
+        title: 'PROSES JAHITAN & KEMASAN POLA',
+        desc: 'Pola kain yang siap dicetak kini dalam fasa jahitan kemas oleh tukang jahit berpengalaman.',
+      },
+      qc_check: {
+        title: 'PEMERIKSAAN KUALITI (QC) & BUNGKUSAN',
+        desc: 'Jersi anda telah siap dijahit dan sedang menjalani pemeriksaan kualiti ketat sebelum dibungkus.',
       },
       qc_packing: {
         title: 'PEMERIKSAAN KUALITI (QC) & BUNGKUSAN',
-        desc: 'Jersi anda telah siap dijahit dan sedang menjalani pemeriksaan kualiti (QC) sebelum dibungkus.',
+        desc: 'Jersi anda telah siap dijahit dan sedang menjalani pemeriksaan kualiti ketat sebelum dibungkus.',
+      },
+      ready_to_ship: {
+        title: 'JERSI SIAP & SEDIA UNTUK DIPOS / DIAMBIL',
+        desc: 'Tempahan jersi anda telah siap sepenuhnya! Bungkusan sedia diambil oleh kurier untuk penghantaran.',
       },
       shipped: {
         title: 'PESANAN TELAH DIHANTAR / DIPOS',

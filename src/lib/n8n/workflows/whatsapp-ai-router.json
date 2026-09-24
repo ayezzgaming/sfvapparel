@@ -347,7 +347,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": \"60148599138@c.us\",\n  \"text\": \"🚨 *PERMINTAAN STAF SEBENAR SFV APPAREL*\\nPelanggan minta bantuan staf sekarang!\\n\\n📱 No: +{{ ($node[\"Filter Mesej Pelanggan\"].json.body.from || '').replace('@c.us', '') }}\\n💬 Mesej: \\\"{{ $node[\"Filter Mesej Pelanggan\"].json.body.body || '' }}\\\"\"\n}",
+        "jsonBody": "={\n  \"session\": \"default\",\n  \"chatId\": \"{{ (($node[\"Introspeksi Data Kilang SFV\"].json.companySettings?.whatsapp_number || $node[\"Introspeksi Data Kilang SFV\"].json.companySettings?.phone || '60148599138').replace(/\\D/g, '')) + '@c.us' }}\",\n  \"text\": \"🚨 *PERMINTAAN STAF SEBENAR SFV APPAREL*\\nPelanggan minta bantuan staf sekarang!\\n\\n📱 No: +{{ ($node[\"Filter Mesej Pelanggan\"].json.body.from || '').replace('@c.us', '') }}\\n💬 Mesej: \\\"{{ $node[\"Filter Mesej Pelanggan\"].json.body.body || '' }}\\\"\"\n}",
         "options": {}
       },
       "name": "Alert Admin WhatsApp Staf",

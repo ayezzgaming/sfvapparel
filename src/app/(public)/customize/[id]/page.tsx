@@ -45,6 +45,7 @@ import {
   buildCustomOrderWhatsAppUrl 
 } from '@/lib/whatsapp/dynamic-link';
 import { useAuth } from '@/hooks/useAuth';
+import { createClient } from '@/lib/supabase/client';
 
 const SIZE_GROUPS = {
   dewasa: {
@@ -81,6 +82,7 @@ interface CustomLogoItem {
   previewUrl: string | null;
   placement: string;
   customPlacement?: string;
+  file?: File;
 }
 
 interface PlayerEntry {
@@ -166,6 +168,7 @@ export default function CustomizePage() {
   const rosterInputRef = useRef<HTMLInputElement>(null);
   const [rosterMode, setRosterMode] = useState<'upload' | 'manual'>('manual');
   const [rosterFileName, setRosterFileName] = useState<string>('');
+  const [rosterFile, setRosterFile] = useState<File | null>(null);
   const [manualRoster, setManualRoster] = useState<Record<string, PlayerEntry[]>>({});
 
   // Maklumat Pelanggan & Alamat (Persis seperti profil dengan API Poskod Malaysia)
@@ -345,6 +348,7 @@ export default function CustomizePage() {
             {
               id,
               fileName: file.name,
+              file,
               previewUrl: reader.result as string,
               placement: defaultPlacement,
               customPlacement: '',
@@ -358,6 +362,7 @@ export default function CustomizePage() {
           {
             id,
             fileName: file.name,
+            file,
             previewUrl: null,
             placement: defaultPlacement,
             customPlacement: '',
@@ -392,11 +397,13 @@ export default function CustomizePage() {
     const file = e.target.files?.[0];
     if (file) {
       setRosterFileName(file.name);
+      setRosterFile(file);
     }
   };
 
   const handleRemoveRosterFile = () => {
     setRosterFileName('');
+    setRosterFile(null);
     if (rosterInputRef.current) rosterInputRef.current.value = '';
   };
 
@@ -555,12 +562,55 @@ export default function CustomizePage() {
       ? logoList.map((l, i) => `${i + 1}. ${l.fileName} [${l.placement === 'Lain-lain (Khas)' ? (l.customPlacement || 'Khas') : l.placement}]`).join('\n')
       : 'Tiada fail logo (Bincang di WA)';
 
+    // 0. Muat naik fail Logo & Roster ke Supabase Storage (Bucket designs)
+    let uploadedArtworkUrl: string | null = null;
+    const uploadedAssetLinks: string[] = [];
+
+    const supabase = createClient();
+    if (supabase) {
+      for (const logo of logoList) {
+        if (logo.file) {
+          try {
+            const cleanName = logo.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const path = `order-artwork/${Date.now()}-${Math.random().toString(36).substring(2, 6)}-${cleanName}`;
+            const { error: upErr } = await supabase.storage.from('designs').upload(path, logo.file, { upsert: false });
+            if (!upErr) {
+              const { data: pub } = supabase.storage.from('designs').getPublicUrl(path);
+              if (pub?.publicUrl) {
+                if (!uploadedArtworkUrl) uploadedArtworkUrl = pub.publicUrl;
+                uploadedAssetLinks.push(`Logo (${logo.placement}): ${pub.publicUrl}`);
+              }
+            }
+          } catch (e) {
+            console.warn('[CustomizePage] Logo upload error:', e);
+          }
+        }
+      }
+
+      if (rosterMode === 'upload' && rosterFile) {
+        try {
+          const cleanName = rosterFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const path = `order-rosters/${Date.now()}-${Math.random().toString(36).substring(2, 6)}-${cleanName}`;
+          const { error: upErr } = await supabase.storage.from('designs').upload(path, rosterFile, { upsert: false });
+          if (!upErr) {
+            const { data: pub } = supabase.storage.from('designs').getPublicUrl(path);
+            if (pub?.publicUrl) {
+              uploadedAssetLinks.push(`Fail Roster: ${pub.publicUrl}`);
+            }
+          }
+        } catch (e) {
+          console.warn('[CustomizePage] Roster upload error:', e);
+        }
+      }
+    }
+
     const fullNotes = [
       teamName ? `Pasukan: ${teamName}` : '',
       `[Struktur Bayaran]: ${paymentTypeSelected === 'deposit_50' ? `Deposit 50% (Bayar RM${depositAmount.toFixed(2)}, Baki RM${balanceAmount.toFixed(2)} semasa siap)` : `Bayaran Penuh 100% (RM${grandTotalAmount.toFixed(2)})`}`,
       `[Kaedah Bayaran]: ${paymentMode === 'chip_online' ? 'CHIP Gateway (FPX/Kad/e-Wallet)' : 'Manual / WhatsApp'}`,
       `[Pilihan Kurier]: ${selectedCourier.name} (${shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)})`,
       `[Logo & Penaja]:\n${logoInfo}`,
+      uploadedAssetLinks.length > 0 ? `[Pautan Muat Turun Fail Artwork]:\n${uploadedAssetLinks.join('\n')}` : '',
       `[Senarai Nama & Nombor]:\n${rosterInfo}`,
       additionalNotes ? `Nota Khas: ${additionalNotes}` : '',
     ].filter(Boolean).join('\n\n');
@@ -577,6 +627,7 @@ export default function CustomizePage() {
         design_id: design?.id,
         design_title: `${design?.title || 'Jersi Kustom'}${teamName ? ` (${teamName})` : ''}`,
         mockup_url: design?.mockup_front_url || design?.mockup_back_url || '',
+        custom_artwork_url: uploadedArtworkUrl || undefined,
         fabric_material_id: techniqueMode === 'sublimation' ? selectedFabric?.id : undefined,
         fabric_name: techniqueMode === 'sublimation' ? selectedFabric?.name : undefined,
         apparel_cut_id: techniqueMode === 'sublimation' ? selectedCut?.id : undefined,

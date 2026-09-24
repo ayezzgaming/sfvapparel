@@ -29,10 +29,12 @@ import {
   SlidersHorizontal,
   Sparkles,
   ArrowRight,
-  Layers
+  Layers,
+  Download,
+  ExternalLink
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
-import { getOrdersDb, deleteOrderDb, markOrderBalancePaidAction } from '@/app/actions/orderActions';
+import { getOrdersDb, deleteOrderDb, markOrderBalancePaidAction, updateOrderStatusDb } from '@/app/actions/orderActions';
 import OrderInvoiceModal from '@/components/invoice/OrderInvoiceModal';
 
 const STATUS_LIST: { status: OrderStatus; label: string; color: string; badgeBg: string }[] = [
@@ -236,25 +238,40 @@ export default function AdminOrdersPage() {
     setUpdateSaved(false);
   };
 
-  const handleSaveStatus = (e: React.FormEvent) => {
+  const handleSaveStatus = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeOrder) return;
 
-    updateOrderStatus(activeOrder.id, newStatus, newTracking, newNotes);
-    const updated = {
-      ...activeOrder,
-      status: newStatus,
-      tracking_number: newTracking || activeOrder.tracking_number,
-      production_notes: newNotes || activeOrder.production_notes,
-    };
-    setActiveOrder(updated);
-    setLiveOrders((prev) =>
-      prev.map((o) => (o.id === activeOrder.id ? updated : o))
-    );
-    setUpdateSaved(true);
-    setTimeout(() => {
-      setUpdateSaved(false);
-    }, 1500);
+    try {
+      // 1. Update in Supabase Database & trigger background WhatsApp + N8N alerts
+      const res = await updateOrderStatusDb(activeOrder.id, newStatus, newTracking, newNotes);
+      if (res.success) {
+        // 2. Update local state & Zustand store
+        updateOrderStatus(activeOrder.id, newStatus, newTracking, newNotes);
+        const updated = {
+          ...activeOrder,
+          status: newStatus,
+          tracking_number: newTracking || activeOrder.tracking_number,
+          production_notes: newNotes || activeOrder.production_notes,
+        };
+        setActiveOrder(updated);
+        setLiveOrders((prev) =>
+          prev.map((o) => (o.id === activeOrder.id ? updated : o))
+        );
+        setUpdateSaved(true);
+        setWaToast({ success: true, message: `Status pesanan #${activeOrder.order_number} berjaya disimpan & diselaraskan!` });
+      } else {
+        setWaToast({ success: false, message: res.message || 'Gagal menyimpan status ke pangkalan data.' });
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ralat semasa menyimpan status.';
+      setWaToast({ success: false, message: msg });
+    } finally {
+      setTimeout(() => {
+        setUpdateSaved(false);
+        setWaToast(null);
+      }, 3500);
+    }
   };
 
   return (
@@ -600,6 +617,22 @@ export default function AdminOrdersPage() {
                       <div>
                         <span className="text-[10px] text-slate-400 block font-semibold uppercase">Alamat Penghantaran</span>
                         <p className="text-slate-600 dark:text-zinc-300 text-xs leading-relaxed">{activeOrder.shipping_address}</p>
+                      </div>
+                    )}
+
+                    {activeOrder.custom_artwork_url && (
+                      <div className="pt-2 border-t border-slate-200/60 dark:border-zinc-700/60">
+                        <span className="text-[10px] text-slate-400 block font-semibold uppercase">Fail Logo / Artwork Kustom</span>
+                        <a
+                          href={activeOrder.custom_artwork_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-zinc-800 text-sky-700 dark:text-sky-300 font-semibold text-xs hover:bg-sky-100 transition-colors mt-1"
+                        >
+                          <Download className="w-3.5 h-3.5 text-[#00BDFF]" />
+                          <span>Muat Turun Artwork HD Pelanggan</span>
+                          <ExternalLink className="w-3 h-3 opacity-60 ml-0.5" />
+                        </a>
                       </div>
                     )}
                   </div>
