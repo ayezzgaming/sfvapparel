@@ -151,6 +151,7 @@ function CatalogContent() {
                       priority={isPriority}
                       loading={isPriority ? 'eager' : 'lazy'}
                       decoding="async"
+                      quality={75}
                     />
 
                     {/* Minimalist Clean Heart Button */}

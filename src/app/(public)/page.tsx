@@ -8,6 +8,7 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight, 
+  ChevronDown,
   ShieldCheck,
   Truck,
   Clock,
@@ -1116,246 +1117,178 @@ export default function HomePage() {
       </div>
 
       {/* =========================================================================
-          SECTION 4.2: PANDUAN TEKNOLOGI CETAKAN & PERBANDINGAN FABRIK KILANG
+          SECTION 4.2: PANDUAN TEKNOLOGI CETAKAN & SPESIFIKASI KILANG (Clean Style)
          ========================================================================= */}
-      <section className="w-full bg-white border-t border-slate-200/80 py-12 px-4 sm:px-6 space-y-8">
-        <div className="text-center space-y-2 max-w-2xl mx-auto">
-          <span className="text-[11px] font-bold text-[#0052FF] uppercase tracking-wider bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-            Panduan & Informasi Kilang
-          </span>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-            Panduan Teknologi Cetakan &amp; Piawaian Kualiti Pakaian Kustom
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-            SFV APPAREL merupakan pengeluar dan kilang cetak jersi sublimasi penuh serta pakaian kustom berpengalaman di Malaysia. Kami mengaplikasikan teknologi cetakan industri moden bagi menjamin ketajaman warna berdefinisi tinggi, ketahanan fabrik maksimum, serta kemasan jahitan standard antarabangsa untuk setiap tempahan sukan, e-sukan, kelab rekreasi mahupun korporat.
-          </p>
+      <div className="w-full bg-[#F8FAFC] py-8 px-4 space-y-5 border-t border-slate-200/80">
+        <div className="flex justify-between items-end">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Panduan Teknologi &amp; Spesifikasi</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Spesifikasi cetakan jersi &amp; piawaian saiz kilang SFV APPAREL</p>
+          </div>
         </div>
 
-        {/* 3 Pillars of Technology */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
-          {/* Pillar 1: Sublimasi */}
-          <div className="bg-slate-50/80 rounded-2xl p-5 border border-slate-200/80 space-y-3 shadow-2xs hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 rounded-xl bg-blue-100/80 text-blue-700 flex items-center justify-center font-bold text-sm">
+        {/* Clean Stacked Cards List (Matching Cara Tempahan Style) */}
+        <div className="bg-white rounded-2xl overflow-hidden shadow-sm shadow-blue-900/5 border border-blue-100/70 divide-y divide-gray-100">
+          {/* Item 1: Sublimasi */}
+          <div className="group flex items-start pl-3.5 bg-white hover:bg-blue-50/40 transition-colors">
+            <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 text-[#00BDFF] font-bold text-xs flex items-center justify-center mt-3.5">
               01
             </div>
-            <h3 className="font-bold text-slate-900 text-base">
-              Cetak Jersi Sublimasi Penuh (Full Sublimation)
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Teknologi pemindahan haba suhu tinggi (Heat Transfer Press) yang meresapkan dakwat pewarna terus ke dalam gentian fabrik Microfiber. Menghasilkan corak tanpa had warna, kecerunan (gradient) kompleks, dan grafik beresolusi ultra-tajam yang tidak akan merekah, mengelupas, atau luntur walaupun selepas ratusan kali basuhan mesin.
-            </p>
-            <ul className="text-[11px] text-slate-500 space-y-1.5 pt-2 border-t border-slate-200">
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                <span>Fabrik: Microfiber Eyelet, Interlock, Jacquard</span>
-              </li>
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                <span>Kesesuaian: Jersi Bola, Badminton, Futsal, Motosport &amp; E-Sukan</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Pillar 2: DTF */}
-          <div className="bg-slate-50/80 rounded-2xl p-5 border border-slate-200/80 space-y-3 shadow-2xs hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 rounded-xl bg-purple-100/80 text-purple-700 flex items-center justify-center font-bold text-sm">
-              02
-            </div>
-            <h3 className="font-bold text-slate-900 text-base">
-              Cetakan Baju DTF Premium (Direct-to-Film)
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Kaedah cetakan terkini di mana rekaan grafik berkualiti fotografi dicetak pada filem khas PET bersama serbuk perekat termo-polimer, lalu ditekan pada fabrik. Menyediakan hasil cetakan yang sangat elastik, kemas, warna padu (solid), dan mampu mencetak butiran halus (fine lines) pada pelbagai jenis fabrik semula jadi mahupun sintetik.
-            </p>
-            <ul className="text-[11px] text-slate-500 space-y-1.5 pt-2 border-t border-slate-200">
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                <span>Fabrik: 100% Combed Cotton 24s/30s, TC Cotton, Fleece</span>
-              </li>
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                <span>Kesesuaian: T-Shirt Acara, Baju Kelas, Merchandise &amp; Streetwear</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Pillar 3: Embroidery */}
-          <div className="bg-slate-50/80 rounded-2xl p-5 border border-slate-200/80 space-y-3 shadow-2xs hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100/80 text-emerald-700 flex items-center justify-center font-bold text-sm">
-              03
-            </div>
-            <h3 className="font-bold text-slate-900 text-base">
-              Sulaman Berkomputer &amp; Logo Korporat (Embroidery)
-            </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Jahitan benang sulam berkepadatan tinggi (high stitch density) menggunakan mesin sulaman berkomputer multi-kepala. Menampilkan kemasan timbul yang mewah, berwibawa, dan tahan lasak untuk identiti pakaian korporat, baju berkolar (polo shirt), jaket, serta uniform kerja profesional.
-            </p>
-            <ul className="text-[11px] text-slate-500 space-y-1.5 pt-2 border-t border-slate-200">
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Fabrik: Pique Cotton, Lacoste, Drill &amp; Oxford Fabric</span>
-              </li>
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Kesesuaian: Uniform Korporat, Baju Polo Eksekutif, Topi &amp; Jaket</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Comparison Table */}
-        <div className="max-w-4xl mx-auto overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs">
-          <div className="bg-slate-50 px-5 py-3 border-b border-slate-200">
-            <h3 className="font-bold text-slate-900 text-xs sm:text-sm">
-              Jadual Perbandingan Ciri &amp; Spesifikasi Servis Cetakan
-            </h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-600">
-              <thead className="bg-slate-50/50 text-[11px] font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200">
-                <tr>
-                  <th className="px-4 py-3">Ciri / Spesifikasi</th>
-                  <th className="px-4 py-3 text-blue-700">Jersi Sublimasi</th>
-                  <th className="px-4 py-3 text-purple-700">Cetakan DTF</th>
-                  <th className="px-4 py-3 text-emerald-700">Sulaman Logo</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-[11.5px]">
-                <tr className="hover:bg-slate-50/60">
-                  <td className="px-4 py-2.5 font-semibold text-slate-800">Had Bilangan Warna</td>
-                  <td className="px-4 py-2.5">Tiada Had (Full Colour / CMYK HD)</td>
-                  <td className="px-4 py-2.5">Tiada Had (Gradien &amp; Foto)</td>
-                  <td className="px-4 py-2.5">Sehingga 6-8 Warna Benang</td>
-                </tr>
-                <tr className="hover:bg-slate-50/60">
-                  <td className="px-4 py-2.5 font-semibold text-slate-800">Minimum Tempahan (MOQ)</td>
-                  <td className="px-4 py-2.5 font-medium text-emerald-600">Tiada (Bermula 1 Helai)</td>
-                  <td className="px-4 py-2.5 font-medium text-emerald-600">Tiada (Bermula 1 Helai)</td>
-                  <td className="px-4 py-2.5 font-medium text-slate-700">10 Helai Ke Atas</td>
-                </tr>
-                <tr className="hover:bg-slate-50/60">
-                  <td className="px-4 py-2.5 font-semibold text-slate-800">Sentuhan Rasa (Handfeel)</td>
-                  <td className="px-4 py-2.5">Sifar Sentuhan (Fabrik Bernafas)</td>
-                  <td className="px-4 py-2.5">Lembut, Rata &amp; Fleksibel</td>
-                  <td className="px-4 py-2.5">Tekstur Timbul Eksklusif</td>
-                </tr>
-                <tr className="hover:bg-slate-50/60">
-                  <td className="px-4 py-2.5 font-semibold text-slate-800">Tempoh Siap Standard</td>
-                  <td className="px-4 py-2.5">5 – 7 Hari Bekerja</td>
-                  <td className="px-4 py-2.5">3 – 5 Hari Bekerja</td>
-                  <td className="px-4 py-2.5">7 – 10 Hari Bekerja</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Sizing & Measurement Guide Section */}
-        <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50/60 to-slate-50 rounded-2xl p-6 border border-blue-100 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <h3 className="text-base font-bold text-slate-900">
-                Panduan Carta Saiz Piawai Malaysia (Asian Regular Fit)
+            <div className="flex-1 ml-3 py-3.5 pr-3.5 min-w-0">
+              <h3 className="text-[13.5px] font-semibold text-slate-900">
+                Cetak Jersi Sublimasi Penuh (Full Sublimation)
               </h3>
-              <p className="text-xs text-slate-600 mt-0.5">
-                Setiap potongan pola jersi dan t-shirt kami direka khas mengikut ukuran tubuh rakyat Malaysia bagi menjamin keselesaan optimum semasa beraksi di padang atau kegunaan santai harian.
+              <p className="text-[11.5px] text-slate-500 mt-0.5 leading-relaxed">
+                Pewarna meresap ke gentian fabrik Microfiber (Eyelet &amp; Interlock). Corak tanpa had warna, kalis luntur &amp; pengudaraan optimum sukan.
               </p>
             </div>
-            <Link
-              href="/catalog"
-              className="inline-flex items-center gap-1 px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shrink-0 transition-colors shadow-xs"
-            >
-              <span>Pilih Rekaan Sekarang</span>
-            </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div className="bg-white p-3 rounded-xl border border-slate-200/80 space-y-1 text-center">
-              <span className="font-bold text-slate-800 block text-sm">Kanak-kanak</span>
-              <span className="text-[11px] text-slate-500 block">Saiz 24 hingga 32</span>
-              <span className="text-[10px] text-blue-600 font-medium">Umur 3 - 12 Tahun</span>
+
+          {/* Item 2: DTF */}
+          <div className="group flex items-start pl-3.5 bg-white hover:bg-blue-50/40 transition-colors">
+            <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 text-[#00BDFF] font-bold text-xs flex items-center justify-center mt-3.5">
+              02
             </div>
-            <div className="bg-white p-3 rounded-xl border border-slate-200/80 space-y-1 text-center">
-              <span className="font-bold text-slate-800 block text-sm">Dewasa Standard</span>
-              <span className="text-[11px] text-slate-500 block">Saiz XS, S, M, L, XL</span>
-              <span className="text-[10px] text-blue-600 font-medium">Unisex Regular Fit</span>
+            <div className="flex-1 ml-3 py-3.5 pr-3.5 min-w-0">
+              <h3 className="text-[13.5px] font-semibold text-slate-900">
+                Cetakan Baju DTF Premium (Direct-to-Film)
+              </h3>
+              <p className="text-[11.5px] text-slate-500 mt-0.5 leading-relaxed">
+                Cetakan kualiti foto berdefinisi tinggi pada 100% Combed Cotton. Hasil cetakan sangat elastik, kemas, dan tiada had minimum tempahan.
+              </p>
             </div>
-            <div className="bg-white p-3 rounded-xl border border-slate-200/80 space-y-1 text-center">
-              <span className="font-bold text-slate-800 block text-sm">Plus Size Dewasa</span>
-              <span className="text-[11px] text-slate-500 block">Saiz 2XL hingga 7XL</span>
-              <span className="text-[10px] text-blue-600 font-medium">Koleksi Saiz Besar Sedia Ada</span>
+          </div>
+
+          {/* Item 3: Sulaman */}
+          <div className="group flex items-start pl-3.5 bg-white hover:bg-blue-50/40 transition-colors">
+            <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 text-[#00BDFF] font-bold text-xs flex items-center justify-center mt-3.5">
+              03
             </div>
-            <div className="bg-white p-3 rounded-xl border border-slate-200/80 space-y-1 text-center">
-              <span className="font-bold text-slate-800 block text-sm">Potongan Muslimah</span>
-              <span className="text-[11px] text-slate-500 block">Labuh A-Cut / Long Sleeves</span>
-              <span className="text-[10px] text-blue-600 font-medium">Patuh Syariah &amp; Selesa</span>
+            <div className="flex-1 ml-3 py-3.5 pr-3.5 min-w-0">
+              <h3 className="text-[13.5px] font-semibold text-slate-900">
+                Sulaman Berkomputer &amp; Logo Korporat
+              </h3>
+              <p className="text-[11.5px] text-slate-500 mt-0.5 leading-relaxed">
+                Jahitan berkepadatan tinggi untuk polo shirt &amp; uniform korporat. Kemasan timbul yang elegan, berwibawa, dan tahan lasak.
+              </p>
+            </div>
+          </div>
+
+          {/* Item 4: Carta Saiz Piawai Malaysia */}
+          <div className="group flex items-start pl-3.5 bg-white hover:bg-blue-50/40 transition-colors">
+            <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 text-[#00BDFF] font-bold text-xs flex items-center justify-center mt-3.5">
+              04
+            </div>
+            <div className="flex-1 ml-3 py-3.5 pr-3.5 min-w-0">
+              <h3 className="text-[13.5px] font-semibold text-slate-900">
+                Panduan Carta Saiz Piawaian Malaysia
+              </h3>
+              <p className="text-[11.5px] text-slate-500 mt-0.5 leading-relaxed">
+                Ukuran Asian Regular Fit: Kanak-kanak (24–32), Dewasa Standard (XS–XL), Plus Size (2XL–7XL), dan Potongan Muslimah Labuh A-Cut.
+              </p>
             </div>
           </div>
         </div>
-      </section>
+
+        {/* 3-Pill Clean Feature Bar (Exact match with Cara Tempahan) */}
+        <div className="bg-white rounded-2xl py-2 px-2.5 grid grid-cols-3 gap-2 items-center shadow-xs border border-slate-200/80">
+          <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-50/90 border border-slate-100/90 min-w-0">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
+            <span className="truncate">MOQ 1 Helai</span>
+          </div>
+          <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-50/90 border border-slate-100/90 min-w-0">
+            <Clock className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
+            <span className="truncate">Siap 5 - 7 Hari</span>
+          </div>
+          <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-50/90 border border-slate-100/90 min-w-0">
+            <Truck className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
+            <span className="truncate">Pos Seluruh MY</span>
+          </div>
+        </div>
+      </div>
 
       {/* =========================================================================
-          SECTION 4.5: SOALAN LAZIM (FAQ KILANG & KREDIBILITI)
+          SECTION 4.5: SOALAN KERAP DITANYA (FAQ - Clean Accordion Style)
          ========================================================================= */}
-      <div className="w-full bg-slate-50/70 border-t border-slate-200/80 py-10 px-4 sm:px-6 space-y-6">
-        <div className="text-center space-y-1.5 max-w-lg mx-auto">
-          <span className="text-[11px] font-bold text-[#0052FF] uppercase tracking-wider bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-            Panduan & Soalan Lazim
-          </span>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-            Soalan Kerap Ditanya (FAQ)
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500">
-            Ketahui maklumat lengkap mengenai proses tempahan jersi & cetakan DTF terus dari kilang kami.
-          </p>
+      <div className="w-full bg-[#F2F6FE] py-8 px-4 space-y-5 border-t border-blue-100/60">
+        <div className="flex justify-between items-end">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Soalan Kerap Ditanya</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Jawapan ringkas mengenai tempahan jersi &amp; cetakan terus dari kilang</p>
+          </div>
         </div>
 
-        <div className="max-w-2xl mx-auto space-y-3">
-          <details className="group bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs transition-all [&_summary::-webkit-details-marker]:hidden cursor-pointer open:ring-1 open:ring-blue-500/30 open:border-blue-300">
-            <summary className="flex items-center justify-between font-semibold text-slate-900 text-[13px] sm:text-sm select-none">
-              <span>Berapakah minimum tempahan jersi di SFV APPAREL?</span>
-              <span className="ml-2 w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-open:rotate-180 group-open:bg-blue-50 group-open:text-blue-600 transition-transform">
-                ↓
-              </span>
+        <div className="bg-white rounded-2xl overflow-hidden shadow-sm shadow-blue-900/5 border border-blue-100/70 divide-y divide-gray-100">
+          {/* FAQ 1 */}
+          <details className="group">
+            <summary className="flex items-center pl-3.5 pr-3.5 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+              <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#00BDFF] group-hover:text-white flex items-center justify-center text-[#00BDFF] font-bold text-xs transition-colors duration-200">
+                01
+              </div>
+              <div className="flex-1 ml-3 min-w-0 pr-2">
+                <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors duration-200">
+                  Berapakah minimum tempahan jersi di SFV APPAREL?
+                </h3>
+              </div>
+              <ChevronDown className="w-4 h-4 text-slate-300 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
             </summary>
-            <p className="mt-3 text-xs sm:text-[13px] text-slate-600 leading-relaxed pt-2 border-t border-slate-100">
-              Tiada had minimum order (MOQ = 1 helai)! Anda boleh menempah 1 helai sampel sehingga ribuan helai dengan kualiti cetakan premium terus dari kilang.
-            </p>
+            <div className="pl-14.5 pr-4 pb-3.5 text-[11.5px] text-slate-500 leading-relaxed border-t border-gray-50 bg-slate-50/30">
+              Tiada had minimum order (MOQ = 1 helai). Anda boleh menempah 1 helai sampel sehingga ribuan helai dengan kualiti cetakan premium kilang.
+            </div>
           </details>
 
-          <details className="group bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs transition-all [&_summary::-webkit-details-marker]:hidden cursor-pointer open:ring-1 open:ring-blue-500/30 open:border-blue-300">
-            <summary className="flex items-center justify-between font-semibold text-slate-900 text-[13px] sm:text-sm select-none">
-              <span>Berapa hari tempoh siap produksi?</span>
-              <span className="ml-2 w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-open:rotate-180 group-open:bg-blue-50 group-open:text-blue-600 transition-transform">
-                ↓
-              </span>
+          {/* FAQ 2 */}
+          <details className="group">
+            <summary className="flex items-center pl-3.5 pr-3.5 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+              <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#00BDFF] group-hover:text-white flex items-center justify-center text-[#00BDFF] font-bold text-xs transition-colors duration-200">
+                02
+              </div>
+              <div className="flex-1 ml-3 min-w-0 pr-2">
+                <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors duration-200">
+                  Berapa hari tempoh siap produksi?
+                </h3>
+              </div>
+              <ChevronDown className="w-4 h-4 text-slate-300 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
             </summary>
-            <p className="mt-3 text-xs sm:text-[13px] text-slate-600 leading-relaxed pt-2 border-t border-slate-100">
-              Tempoh siap standard adalah 5 hingga 7 hari bekerja selepas pengesahan rekaan akhir (Design Proof). Kami juga menyediakan servis ekspres untuk acara kecemasan (bergantung kepada jadual kilang).
-            </p>
+            <div className="pl-14.5 pr-4 pb-3.5 text-[11.5px] text-slate-500 leading-relaxed border-t border-gray-50 bg-slate-50/30">
+              Tempoh standard adalah 5 hingga 7 hari bekerja selepas pengesahan rekaan akhir. Servis ekspres juga disediakan mengikut jadual kilang.
+            </div>
           </details>
 
-          <details className="group bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs transition-all [&_summary::-webkit-details-marker]:hidden cursor-pointer open:ring-1 open:ring-blue-500/30 open:border-blue-300">
-            <summary className="flex items-center justify-between font-semibold text-slate-900 text-[13px] sm:text-sm select-none">
-              <span>Apakah format fail artwork yang diterima?</span>
-              <span className="ml-2 w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-open:rotate-180 group-open:bg-blue-50 group-open:text-blue-600 transition-transform">
-                ↓
-              </span>
+          {/* FAQ 3 */}
+          <details className="group">
+            <summary className="flex items-center pl-3.5 pr-3.5 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+              <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#00BDFF] group-hover:text-white flex items-center justify-center text-[#00BDFF] font-bold text-xs transition-colors duration-200">
+                03
+              </div>
+              <div className="flex-1 ml-3 min-w-0 pr-2">
+                <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors duration-200">
+                  Apakah format fail artwork yang diterima?
+                </h3>
+              </div>
+              <ChevronDown className="w-4 h-4 text-slate-300 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
             </summary>
-            <p className="mt-3 text-xs sm:text-[13px] text-slate-600 leading-relaxed pt-2 border-t border-slate-100">
-              Kami menyokong format AI (Adobe Illustrator), PDF vektor, EPS, SVG, serta fail imej resolusi tinggi PNG/JPG (300 DPI). Jika anda belum mempunyai fail artwork siap, pereka grafik kilang kami sedia membantu melakar semula.
-            </p>
+            <div className="pl-14.5 pr-4 pb-3.5 text-[11.5px] text-slate-500 leading-relaxed border-t border-gray-50 bg-slate-50/30">
+              Kami menyokong format AI (Adobe Illustrator), PDF vektor, EPS, SVG, serta gambar resolusi tinggi PNG/JPG (300 DPI). Pereka kami juga sedia membantu melakar artwork anda.
+            </div>
           </details>
 
-          <details className="group bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs transition-all [&_summary::-webkit-details-marker]:hidden cursor-pointer open:ring-1 open:ring-blue-500/30 open:border-blue-300">
-            <summary className="flex items-center justify-between font-semibold text-slate-900 text-[13px] sm:text-sm select-none">
-              <span>Bagaimana liputan penghantaran tempahan?</span>
-              <span className="ml-2 w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-open:rotate-180 group-open:bg-blue-50 group-open:text-blue-600 transition-transform">
-                ↓
-              </span>
+          {/* FAQ 4 */}
+          <details className="group">
+            <summary className="flex items-center pl-3.5 pr-3.5 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+              <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#00BDFF] group-hover:text-white flex items-center justify-center text-[#00BDFF] font-bold text-xs transition-colors duration-200">
+                04
+              </div>
+              <div className="flex-1 ml-3 min-w-0 pr-2">
+                <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors duration-200">
+                  Bagaimana liputan penghantaran tempahan?
+                </h3>
+              </div>
+              <ChevronDown className="w-4 h-4 text-slate-300 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
             </summary>
-            <p className="mt-3 text-xs sm:text-[13px] text-slate-600 leading-relaxed pt-2 border-t border-slate-100">
-              Kami menghantar ke seluruh Semenanjung Malaysia, Sabah, Sarawak dan Singapura. Setiap bungkusan dihantar dengan nombor tracking kurier yang dimaklumkan terus ke WhatsApp anda.
-            </p>
+            <div className="pl-14.5 pr-4 pb-3.5 text-[11.5px] text-slate-500 leading-relaxed border-t border-gray-50 bg-slate-50/30">
+              Penghantaran ke seluruh Semenanjung Malaysia, Sabah, Sarawak dan Singapura bersama nombor penjejakan (tracking number) kurier yang dikemas kini secara automatik.
+            </div>
           </details>
         </div>
       </div>
