@@ -121,9 +121,10 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="msapplication-navbutton-color" content="#FFFFFF" />
 
-        {/* Preconnect to Image & Asset CDNs for 0ms initial latency */}
+        {/* Preconnect & Preload for 0ms initial LCP */}
         <link rel="preconnect" href="https://solfhbixctrcqthhithr.supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://solfhbixctrcqthhithr.supabase.co" />
+        <link rel="preload" as="image" href="/hero1.webp" fetchPriority="high" type="image/webp" />
         
         {/* Google Analytics GA4 Script (LazyOnload to maximize performance & TBT) */}
         <Script

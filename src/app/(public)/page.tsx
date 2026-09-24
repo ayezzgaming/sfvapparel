@@ -43,7 +43,7 @@ import {
   CmsPolicy,
   CmsTrustBadge
 } from '@/types/database';
-import { INITIAL_CMS_TRUST_BADGES } from '@/lib/store/seed-data';
+import { INITIAL_CMS_TRUST_BADGES, INITIAL_CMS_HERO_BANNERS } from '@/lib/store/seed-data';
 import { BADGE_THEMES, getTrustIconComponent } from '@/lib/cms/trust-badge-utils';
 
 interface StepDetail {
@@ -377,7 +377,9 @@ export default function HomePage() {
   const TrustIcon = getTrustIconComponent(currentTrust.icon_name);
   const currentTheme = BADGE_THEMES[currentTrust.color_theme] || BADGE_THEMES.sky;
 
-  const currentBanner = activeBanners[activeBannerIndex] || activeBanners[0] || null;
+  const bannersToRender = (activeBanners && activeBanners.length > 0)
+    ? activeBanners
+    : INITIAL_CMS_HERO_BANNERS;
 
   return (
     <div className="w-full select-none font-ios">
@@ -390,112 +392,101 @@ export default function HomePage() {
       <div className="w-full bg-[#F2F2F7] pt-3 pb-8 px-4 space-y-6">
         {/* 1. DYNAMIC HERO SECTION WITH MULTI-SLIDE BANNER (Liquid Frosted Glass Design) */}
         <div className="relative w-full h-[255px] sm:h-[280px] rounded-[28px] sm:rounded-[32px] overflow-hidden shadow-md shadow-slate-200/60 border border-white/80 bg-slate-100 group">
-          {isLoadingCms && activeBanners.length === 0 ? (
-            /* Skeleton sementara data dimuatkan */
-            <div className="w-full h-full bg-slate-200/80 animate-pulse">
-              <div className="absolute inset-x-4 bottom-4 h-16 bg-white/70 backdrop-blur-md rounded-2xl" />
-            </div>
-          ) : (
-            <>
-              {/* Stacked All Banner Layers for Silky Smooth Cross-Fade */}
-              {activeBanners.map((banner, index) => {
-                const isActive = index === activeBannerIndex;
-                const isFirst = index === 0;
-                return (
-                  <div
-                    key={banner.id}
-                    className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
-                      isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
-                    }`}
-                  >
-                    {/* Full-bleed Natural Photo (No dark overlay) */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={banner.image_url}
-                      alt={banner.title}
-                      width={800}
-                      height={450}
-                      loading={isFirst ? 'eager' : 'lazy'}
-                      decoding="async"
-                      {...(isFirst ? { fetchPriority: 'high' } : {})}
-                      className={`w-full h-full object-cover object-[center_20%] transition-transform duration-[7000ms] ease-out ${
-                        isActive ? 'scale-105' : 'scale-100'
-                      }`}
-                    />
+          {/* Stacked All Banner Layers for Silky Smooth Cross-Fade */}
+          {bannersToRender.map((banner, index) => {
+            const isActive = index === activeBannerIndex;
+            const isFirst = index === 0;
+            return (
+              <div
+                key={banner.id}
+                className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+                  isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+                }`}
+              >
+                {/* Full-bleed Natural Photo (No dark overlay) */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={banner.image_url}
+                  alt={banner.title}
+                  width={800}
+                  height={450}
+                  loading={isFirst ? 'eager' : 'lazy'}
+                  decoding="async"
+                  {...(isFirst ? { fetchPriority: 'high' } : {})}
+                  className="w-full h-full object-cover object-[center_20%] transform-gpu will-change-transform"
+                />
 
-                    {/* Top Status Pill - Clean Light Frosted Glass */}
-                    <div className="absolute top-3.5 left-3.5 z-20 flex items-center gap-2">
-                      <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-slate-800 shadow-xs">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[11px] font-semibold tracking-tight text-slate-800">
-                          {banner.status_pill}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Bottom Frosted Glass Panel - Light iOS Liquid Glass Theme */}
-                    <div className="absolute inset-x-0 bottom-0 z-20 bg-white/80 backdrop-blur-xl border-t border-white/80 px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between shadow-xs">
-                      <div className="space-y-0.5 pr-3 min-w-0">
-                        <h2 className="text-[15px] sm:text-[17px] font-bold text-slate-900 tracking-tight leading-tight truncate">
-                          {banner.title}
-                        </h2>
-                        <p className="text-[11px] sm:text-xs font-medium text-slate-500 truncate">
-                          {banner.tag_text}
-                        </p>
-                      </div>
-
-                      {/* Action Capsule Button */}
-                      <Link
-                        href={banner.button_link || '/catalog'}
-                        className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 active:scale-95 text-white text-xs font-semibold tracking-tight shadow-sm transition-all flex items-center space-x-1 shrink-0"
-                      >
-                        <span>{banner.button_text}</span>
-                        <ChevronRight className="w-3.5 h-3.5 text-white/90" />
-                      </Link>
-                    </div>
+                {/* Top Status Pill - Clean Light Frosted Glass */}
+                <div className="absolute top-3.5 left-3.5 z-20 flex items-center gap-2">
+                  <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-white/80 text-slate-900 shadow-xs">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[11px] font-bold tracking-tight text-slate-900">
+                      {banner.status_pill}
+                    </span>
                   </div>
-                );
-              })}
+                </div>
 
-              {/* Hero Banner Auto-Timer / Play Loading Glassmorphic Ring */}
-              {activeBanners.length > 1 && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveBannerIndex((prev) => (prev + 1) % activeBanners.length);
-                  }}
-                  aria-label="Slaid seterusnya"
-                  className="absolute top-3.5 right-3.5 z-30 w-7 h-7 rounded-full bg-white/85 backdrop-blur-md border border-white/70 shadow-xs flex items-center justify-center text-slate-800 hover:bg-white active:scale-90 transition-all cursor-pointer group"
-                  title="Slaid seterusnya"
-                >
-                  <svg className="w-5 h-5 -rotate-90 pointer-events-none" viewBox="0 0 24 24">
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="9"
-                      fill="none"
-                      stroke="#E2E8F0"
-                      strokeWidth="2"
-                    />
-                    <circle
-                      key={`banner-ring-${activeBannerIndex}`}
-                      cx="12"
-                      cy="12"
-                      r="9"
-                      fill="none"
-                      stroke="#0052FF"
-                      strokeWidth="2"
-                      strokeDasharray="56.54"
-                      strokeDashoffset="56.54"
-                      strokeLinecap="round"
-                      className="animate-banner-progress"
-                    />
-                  </svg>
-                  <Play className="w-2.5 h-2.5 fill-[#0052FF] text-[#0052FF] ml-0.5 absolute pointer-events-none group-hover:scale-110 transition-transform" />
-                </button>
-              )}
-            </>
+                {/* Bottom Frosted Glass Panel - Light iOS Liquid Glass Theme */}
+                <div className="absolute inset-x-0 bottom-0 z-20 bg-white/85 backdrop-blur-xl border-t border-white/80 px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between shadow-xs">
+                  <div className="space-y-0.5 pr-3 min-w-0">
+                    <h2 className="text-[15px] sm:text-[17px] font-bold text-slate-900 tracking-tight leading-tight truncate">
+                      {banner.title}
+                    </h2>
+                    <p className="text-[11px] sm:text-xs font-semibold text-slate-600 truncate">
+                      {banner.tag_text}
+                    </p>
+                  </div>
+
+                  {/* Action Capsule Button */}
+                  <Link
+                    href={banner.button_link || '/catalog'}
+                    className="px-3.5 py-1.5 sm:px-4 sm:py-2 min-h-[36px] rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 active:scale-95 text-white text-xs font-bold tracking-tight shadow-sm transition-all flex items-center space-x-1 shrink-0"
+                  >
+                    <span>{banner.button_text}</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-white/90" />
+                  </Link>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Hero Banner Auto-Timer / Play Loading Glassmorphic Ring */}
+          {bannersToRender.length > 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveBannerIndex((prev) => (prev + 1) % bannersToRender.length);
+              }}
+              aria-label="Slaid seterusnya"
+              className="absolute top-3.5 right-3.5 z-30 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md border border-white/80 shadow-xs flex items-center justify-center text-slate-900 hover:bg-white active:scale-90 transition-all cursor-pointer group"
+              title="Slaid seterusnya"
+            >
+              <svg className="w-5 h-5 -rotate-90 pointer-events-none" viewBox="0 0 24 24">
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="9"
+                  fill="none"
+                  stroke="#E2E8F0"
+                  strokeWidth="2"
+                />
+                <circle
+                  key={`banner-ring-${activeBannerIndex}`}
+                  cx="12"
+                  cy="12"
+                  r="9"
+                  fill="none"
+                  stroke="#0052FF"
+                  strokeWidth="2"
+                  strokeDasharray="56.54"
+                  strokeDashoffset="56.54"
+                  strokeLinecap="round"
+                  className="animate-banner-progress"
+                />
+              </svg>
+              <Play className="w-2.5 h-2.5 fill-[#0052FF] text-[#0052FF] ml-0.5 absolute pointer-events-none group-hover:scale-110 transition-transform" />
+            </button>
           )}
         </div>
 
@@ -525,41 +516,31 @@ export default function HomePage() {
                   <span className="text-[12px] sm:text-[13px] font-bold text-slate-900 tracking-tight leading-tight">
                     {currentTrust.title}
                   </span>
-                  <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md border ${currentTheme.pillStyle} tracking-wide`}>
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${currentTheme.pillStyle} tracking-wide`}>
                     {currentTrust.pill}
                   </span>
                 </div>
-                <p className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium mt-0.5 truncate">
+                <p className="text-[10px] sm:text-[10.5px] text-slate-600 font-medium mt-0.5 truncate">
                   {currentTrust.desc}
                 </p>
               </div>
             </div>
 
-            {/* Slide Navigation & Mini Soft Indicator Dots */}
+            {/* Visual Indicator Dots (Accessible & Non-interactive to prevent touch conflict) */}
             {safeTrustBadges.length > 1 && (
-              <div className="flex items-center gap-1 shrink-0 pl-1">
+              <div aria-hidden="true" className="flex items-center gap-1.5 shrink-0 pl-1">
                 {safeTrustBadges.map((badge, idx) => {
                   const isActive = idx === activeTrustIndex;
                   const theme = BADGE_THEMES[badge.color_theme] || BADGE_THEMES.sky;
                   return (
-                    <button
+                    <span
                       key={badge.id}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveTrustIndex(idx);
-                      }}
-                      aria-label={`Slide ke ${badge.title}`}
-                      className="p-2 -m-1 flex items-center justify-center cursor-pointer touch-manipulation"
-                    >
-                      <span
-                        className={`transition-all duration-300 rounded-full block ${
-                          isActive 
-                            ? `w-4 h-1.5 ${theme.dotActive} shadow-xs` 
-                            : 'w-1.5 h-1.5 bg-slate-400 hover:bg-slate-500'
-                        }`}
-                      />
-                    </button>
+                      className={`transition-all duration-300 rounded-full block ${
+                        isActive 
+                          ? `w-4 h-1.5 ${theme.dotActive} shadow-xs` 
+                          : 'w-1.5 h-1.5 bg-slate-300'
+                      }`}
+                    />
                   );
                 })}
               </div>
