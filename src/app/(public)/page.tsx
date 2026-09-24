@@ -1276,7 +1276,7 @@ export default function HomePage() {
             <div className="space-y-1.5 max-w-[240px]">
               <div className="inline-flex items-center gap-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo.svg" alt="SFV APPAREL" className="h-6 w-auto object-contain shrink-0" />
+                <img src="/logo.svg" alt="SFV APPAREL" width={24} height={24} className="h-6 w-auto object-contain shrink-0" />
                 <span className="text-sm tracking-tight text-slate-900 leading-none flex items-center">
                   <span className="font-extrabold tracking-normal">SFV</span>
                   <span className="font-light ml-1 text-slate-700 tracking-wide">APPAREL</span>

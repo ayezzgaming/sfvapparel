@@ -205,7 +205,7 @@ export const INITIAL_ORDERS: Order[] = [];
 export const INITIAL_CMS_HERO_BANNERS = [
   {
     id: 'hero-1',
-    image_url: '/hero1.webp',
+    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-banner-opt-1790288662585-34yrma.webp',
     status_pill: 'Harga Direct Kilang',
     tag_text: 'Pengeluar No. 1 Malaysia',
     title: 'Kilang Cetak Jersi Sublimasi & Baju DTF',
