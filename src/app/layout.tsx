@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   creator: 'SFV APPAREL',
   publisher: 'SFV Ventures Marketing',
   alternates: {
-    canonical: 'https://sfvapparel.my',
+    canonical: 'https://sfvapparel.my/',
   },
   robots: {
     index: true,
