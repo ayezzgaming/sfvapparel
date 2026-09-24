@@ -1201,13 +1201,13 @@ export default function HomePage() {
               </div>
               <div className="flex-1 ml-3 min-w-0 pr-2">
                 <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors duration-200">
-                  Berapakah minimum tempahan jersi di SFV APPAREL?
+                  Berapakah minimum tempahan (MOQ) di SFV APPAREL?
                 </h3>
               </div>
               <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
             </summary>
             <div className="px-4 py-3.5 bg-slate-50/70 border-t border-gray-100 text-xs text-slate-600 leading-relaxed">
-              Tiada had minimum order (MOQ = 1 helai). Anda boleh menempah 1 helai sampel sehingga ribuan helai dengan kualiti cetakan premium kilang.
+              Minimum tempahan adalah serendah <strong className="text-slate-800 font-semibold">5 helai (MOQ = 5 pcs)</strong> untuk jersi sublimasi kustom dan cetakan DTF. Kami juga menerima tempahan pukal kelab, sekolah, dan korporat sehingga ribuan helai dengan harga terus dari kilang.
             </div>
           </details>
 
@@ -1219,13 +1219,13 @@ export default function HomePage() {
               </div>
               <div className="flex-1 ml-3 min-w-0 pr-2">
                 <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors duration-200">
-                  Berapa hari tempoh siap produksi?
+                  Berapa hari tempoh siap produksi pesanan?
                 </h3>
               </div>
               <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
             </summary>
             <div className="px-4 py-3.5 bg-slate-50/70 border-t border-gray-100 text-xs text-slate-600 leading-relaxed">
-              Tempoh standard adalah 5 hingga 7 hari bekerja selepas pengesahan rekaan akhir. Servis ekspres juga disediakan mengikut jadual kilang.
+              Tempoh standard siap produksi adalah <strong className="text-slate-800 font-semibold">5 hingga 7 hari bekerja</strong> selepas pengesahan rekaan akhir (Design Proof) dan deposit. Servis ekspres juga disediakan mengikut jadual kapasiti kilang.
             </div>
           </details>
 
@@ -1243,7 +1243,7 @@ export default function HomePage() {
               <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
             </summary>
             <div className="px-4 py-3.5 bg-slate-50/70 border-t border-gray-100 text-xs text-slate-600 leading-relaxed">
-              Kami menyokong format AI (Adobe Illustrator), PDF vektor, EPS, SVG, serta gambar resolusi tinggi PNG/JPG (300 DPI). Pereka kami juga sedia membantu melakar artwork anda.
+              Kami menyokong format vektor seperti AI (Adobe Illustrator), PDF, EPS, SVG, serta gambar resolusi tinggi PNG/JPG (300 DPI). Pereka kami juga sedia membantu melakar artwork mockup anda secara percuma.
             </div>
           </details>
 
@@ -1255,13 +1255,13 @@ export default function HomePage() {
               </div>
               <div className="flex-1 ml-3 min-w-0 pr-2">
                 <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors duration-200">
-                  Bagaimana liputan penghantaran tempahan?
+                  Bagaimana pilihan penghantaran dan liputan kurier?
                 </h3>
               </div>
               <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
             </summary>
             <div className="px-4 py-3.5 bg-slate-50/70 border-t border-gray-100 text-xs text-slate-600 leading-relaxed">
-              Penghantaran ke seluruh Semenanjung Malaysia, Sabah, Sarawak dan Singapura bersama nombor penjejakan (tracking number) kurier yang dikemas kini secara automatik.
+              Penghantaran fleksibel melalui Lalamove (Klang Valley), J&amp;T Express, Pos Laju serta Bas Express ke seluruh Semenanjung Malaysia, Sabah, Sarawak dan Singapura bersama nombor penjejakan automatik.
             </div>
           </details>
         </div>

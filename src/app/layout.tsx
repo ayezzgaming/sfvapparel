@@ -216,7 +216,7 @@ export default function RootLayout({
                       name: 'Berapakah minimum tempahan untuk jersi sublimasi di SFV APPAREL?',
                       acceptedAnswer: {
                         '@type': 'Answer',
-                        text: 'Tiada minimum order! Anda boleh tempah bermula dari 1 helai sehingga ribuan helai dengan harga direct kilang.',
+                        text: 'Minimum tempahan adalah serendah 5 helai (MOQ = 5 pcs) untuk jersi sublimasi kustom dan cetakan DTF dengan harga direct terus dari kilang.',
                       },
                     },
                     {
