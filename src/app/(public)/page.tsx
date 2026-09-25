@@ -648,74 +648,65 @@ export default function HomePage() {
       </div>
 
       {/* =========================================================================
-          SECTION 2: CARA TEMPAHAN & INFO (Soft Ice-Blue Tint)
+          SECTION 2: CARA TEMPAHAN (Ultra Clean Minimalist Process List)
          ========================================================================= */}
-      <div className="w-full bg-gradient-to-b from-[#F2F6FE] to-[#F8FAFC] pt-8 pb-10 px-4 space-y-5 border-y border-blue-100/60">
+      <div className="w-full bg-[#F2F2F7] pt-8 pb-10 px-4 space-y-4 border-t border-slate-200/80">
         <div className="flex justify-between items-end">
           <div>
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Cara Tempahan</h2>
-            <p className="text-xs text-slate-500 mt-0.5">4 langkah ringkas untuk memulakan pesanan anda</p>
+            <p className="text-xs text-slate-500 mt-0.5">4 langkah mudah untuk memulakan pesanan anda</p>
           </div>
+          <span className="text-[11px] font-semibold text-slate-500 bg-white/90 border border-slate-200/80 px-2.5 py-1 rounded-full shadow-2xs">
+            Panduan Pesanan
+          </span>
         </div>
 
-        {/* Interactive 4-Step Process Flow Cards (Modern 2x2 Grid with Step Badges) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          {ORDER_STEPS.map((item) => {
-            const stepThemes = {
-              palette: { bg: 'bg-blue-50', text: 'text-[#00BDFF]', border: 'border-blue-100', pill: 'bg-blue-50 text-[#00BDFF]' },
-              users: { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-100', pill: 'bg-indigo-50 text-indigo-600' },
-              card: { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100', pill: 'bg-emerald-50 text-emerald-600' },
-              truck: { bg: 'bg-sky-50', text: 'text-sky-600', border: 'border-sky-100', pill: 'bg-sky-50 text-sky-600' },
+        {/* Clean Minimalist Stepped Flow Container (Apple/Stripe Style) */}
+        <div className="bg-white rounded-[24px] border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
+          {ORDER_STEPS.map((item, idx) => {
+            const stepIcons = {
+              palette: Palette,
+              users: Users,
+              card: CreditCard,
+              truck: Truck,
             };
-            const theme = stepThemes[item.iconName] || stepThemes.palette;
+            const IconComponent = stepIcons[item.iconName as keyof typeof stepIcons] || Palette;
 
             return (
               <div
                 key={item.step}
                 onClick={() => handleOpenStep(item)}
-                className="group bg-white rounded-2xl p-4 border border-blue-100/80 shadow-xs hover:border-[#00BDFF]/60 hover:shadow-sm transition-all duration-200 cursor-pointer select-none flex flex-col justify-between space-y-2.5 active:scale-[0.99]"
+                className="group p-4 flex items-center justify-between gap-3.5 hover:bg-slate-50/70 transition-all duration-150 cursor-pointer select-none active:bg-slate-100/60"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-xl ${theme.bg} ${theme.text} flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform`}>
-                      {item.iconName === 'palette' && <Palette className="w-4 h-4" />}
-                      {item.iconName === 'users' && <Users className="w-4 h-4" />}
-                      {item.iconName === 'card' && <CreditCard className="w-4 h-4" />}
-                      {item.iconName === 'truck' && <Truck className="w-4 h-4" />}
-                    </div>
-                    <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${theme.pill} tracking-tight`}>
-                      {item.step}
-                    </span>
+                <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                  {/* Step Index Badge with Icon */}
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/60 group-hover:border-[#00BDFF]/40 group-hover:bg-blue-50 text-slate-600 group-hover:text-[#00BDFF] flex items-center justify-center shrink-0 transition-all">
+                    <IconComponent className="w-4 h-4 transition-transform group-hover:scale-110" />
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#00BDFF] group-hover:translate-x-0.5 transition-all" />
+
+                  {/* Step Text Details */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-[#00BDFF] uppercase tracking-wider">
+                        0{idx + 1}
+                      </span>
+                      <h3 className="text-[13.5px] font-bold text-slate-900 group-hover:text-[#00BDFF] transition-colors truncate">
+                        {item.title}
+                      </h3>
+                    </div>
+                    <p className="text-[11.5px] text-slate-500 mt-0.5 line-clamp-1 leading-relaxed font-normal">
+                      {item.desc}
+                    </p>
+                  </div>
                 </div>
 
-                <div>
-                  <h3 className="text-[13.5px] font-bold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-[11.5px] text-slate-500 mt-1 leading-relaxed">
-                    {item.desc}
-                  </p>
+                {/* Clean Subtle Chevron Indicator */}
+                <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-slate-300 group-hover:text-[#00BDFF] group-hover:translate-x-0.5 transition-all">
+                  <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
             );
           })}
-        </div>
-
-        <div className="bg-white rounded-2xl py-2 px-2.5 grid grid-cols-3 gap-2 items-center shadow-xs border border-slate-200/80">
-          <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-50/90 border border-slate-100/90 min-w-0">
-            <Clock className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
-            <span className="truncate">5 - 9 Hari</span>
-          </div>
-          <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-50/90 border border-slate-100/90 min-w-0">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-            <span className="truncate">Jaminan Kilang</span>
-          </div>
-          <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-50/90 border border-slate-100/90 min-w-0">
-            <Truck className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
-            <span className="truncate">Pos Seluruh MY</span>
-          </div>
         </div>
       </div>
 
@@ -1181,22 +1172,6 @@ export default function HomePage() {
             <p className="text-xs text-slate-600 leading-relaxed">
               Ukuran standard Malaysia: Kanak-kanak (24–32), Dewasa Standard (XS–XL), Plus Size (2XL–7XL), dan Potongan Muslimah Labuh A-Cut.
             </p>
-          </div>
-        </div>
-
-        {/* 3-Pill Clean Feature Bar */}
-        <div className="bg-white rounded-2xl py-2 px-2.5 grid grid-cols-3 gap-2 items-center shadow-xs border border-slate-200/80">
-          <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-50/90 border border-slate-100/90 min-w-0">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
-            <span className="truncate">MOQ 5 Helai</span>
-          </div>
-          <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-50/90 border border-slate-100/90 min-w-0">
-            <Clock className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
-            <span className="truncate">Siap 5 - 7 Hari</span>
-          </div>
-          <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-50/90 border border-slate-100/90 min-w-0">
-            <Truck className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
-            <span className="truncate">Pos Seluruh MY</span>
           </div>
         </div>
       </div>
