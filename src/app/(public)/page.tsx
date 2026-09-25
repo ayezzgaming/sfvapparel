@@ -812,8 +812,8 @@ export default function HomePage() {
                         className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
                       />
                       
-                      {/* Smooth Full-Height Gradient Overlay (Darker at bottom, transparent across top 50%) */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 via-45% to-transparent pointer-events-none z-10" />
+                      {/* Smooth Full-Height Gradient Overlay - Light & Rich Brand Blue Theme */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#002B66]/90 via-[#0052FF]/40 via-45% to-transparent pointer-events-none z-10" />
 
                       {/* Play Button */}
                       <div className="absolute inset-0 flex items-center justify-center z-15">
@@ -822,7 +822,7 @@ export default function HomePage() {
                         </div>
                       </div>
 
-                      {/* Video Title and Details positioned gracefully over transparent gradient */}
+                      {/* Video Title and Details positioned gracefully over transparent blue gradient */}
                       <div className="absolute inset-x-0 bottom-0 p-5 pb-6 z-20 space-y-1.5 flex flex-col justify-end">
                         <span className="self-start bg-[#00BDFF] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
                           {video.category}
@@ -830,7 +830,7 @@ export default function HomePage() {
                         <h3 className="text-white font-bold text-[15px] sm:text-[16px] leading-snug drop-shadow-md">
                           {video.title}
                         </h3>
-                        <p className="text-white/90 text-xs font-medium pt-0.5 flex items-center gap-1 group-hover:text-white transition-colors leading-relaxed drop-shadow-sm">
+                        <p className="text-white/95 text-xs font-medium pt-0.5 flex items-center gap-1 group-hover:text-white transition-colors leading-relaxed drop-shadow-sm">
                           <span>Tonton rakaman</span>
                           <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                         </p>
@@ -1211,8 +1211,16 @@ export default function HomePage() {
             {/* Left Brand Details - Perfectly aligned left flush with logo */}
             <div className="space-y-2.5 max-w-[245px] sm:max-w-[270px]">
               <div className="flex items-center gap-2">
+                {/* Explicitly sized SVG Logo Icon */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo.svg" alt="SFV APPAREL" width={22} height={22} className="h-5.5 w-auto object-contain shrink-0" />
+                <img 
+                  src="/logo.svg" 
+                  alt="SFV APPAREL" 
+                  width={24} 
+                  height={24} 
+                  className="w-6 h-6 max-w-[24px] max-h-[24px] object-contain shrink-0" 
+                  style={{ width: '24px', height: '24px', minWidth: '24px', minHeight: '24px' }}
+                />
                 <span className="text-[15px] tracking-tight text-slate-900 leading-none flex items-center">
                   <span className="font-black tracking-tight">SFV</span>
                   <span className="font-light ml-1 text-slate-700 tracking-wide">APPAREL</span>
