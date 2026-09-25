@@ -862,14 +862,14 @@ export default function HomePage() {
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {isLoadingCms && activeGallery.length === 0 ? (
-            [1, 2].map((i) => (
+            [1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="shrink-0 w-[82vw] max-w-[320px] bg-white rounded-3xl overflow-hidden border border-slate-200/80 p-4 space-y-3 animate-pulse"
+                className="shrink-0 w-[170px] sm:w-[200px] bg-white rounded-2xl overflow-hidden border border-slate-200/80 p-2.5 space-y-2.5 animate-pulse"
               >
-                <div className="w-full aspect-[4/3.2] bg-slate-200 rounded-2xl" />
-                <div className="h-4 bg-slate-200 rounded w-2/3" />
-                <div className="h-3 bg-slate-100 rounded w-1/3" />
+                <div className="w-full aspect-square bg-slate-200 rounded-xl" />
+                <div className="h-3.5 bg-slate-200 rounded w-3/4" />
+                <div className="h-2.5 bg-slate-100 rounded w-1/2" />
               </div>
             ))
           ) : (
@@ -882,61 +882,41 @@ export default function HomePage() {
                     scrollToGallery(idx);
                     handleOpenGalleryItem(item);
                   }}
-                  className={`shrink-0 w-[82vw] max-w-[320px] bg-white rounded-3xl overflow-hidden snap-center border cursor-pointer flex flex-col justify-between group ${
+                  className={`shrink-0 w-[170px] sm:w-[200px] bg-white rounded-[20px] overflow-hidden snap-start border cursor-pointer select-none flex flex-col justify-between group transition-all duration-200 active:scale-[0.97] ${
                     isActive 
-                      ? 'border-[#00BDFF] shadow-md shadow-blue-500/10 ring-2 ring-blue-500/20' 
-                      : 'border-slate-200/80 shadow-sm opacity-90'
+                      ? 'border-slate-300 shadow-sm' 
+                      : 'border-slate-200/80 shadow-2xs hover:border-slate-300'
                   }`}
                 >
-                  <div className="relative w-full aspect-[4/3.2] bg-slate-100 overflow-hidden">
+                  {/* Clean Photography Image (No Overlapping Badges) */}
+                  <div className="relative w-full aspect-square bg-slate-100 overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={item.image_url} 
                       alt={item.title} 
-                      width={320}
-                      height={256}
+                      width={200}
+                      height={200}
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                     />
-                    <div className="absolute top-3 left-3">
-                      <span className="bg-white/95 backdrop-blur-md text-[#00BDFF] font-bold text-[10px] px-2.5 py-1 rounded-full shadow-xs border border-blue-100/60">
-                        {item.tag}
-                      </span>
-                    </div>
-
-                    {/* Zoom / Preview Hint Badge */}
-                    <div className="absolute top-3 right-3 bg-black/45 backdrop-blur-md text-white p-1.5 rounded-full shadow-xs group-hover:bg-[#00BDFF] transition-colors">
-                      <ZoomIn className="w-3.5 h-3.5" />
-                    </div>
+                    {item.tag && (
+                      <div className="absolute bottom-2 left-2">
+                        <span className="bg-black/60 backdrop-blur-md text-white font-medium text-[9.5px] px-2 py-0.5 rounded-full shadow-2xs">
+                          {item.tag}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="p-4 space-y-2 flex-1 flex flex-col justify-between bg-white">
-                    <div>
-                      <h3 className="font-bold text-[15px] text-slate-900 leading-snug group-hover:text-[#00BDFF] transition-colors">
-                        {item.title}
-                      </h3>
-                      <p className="text-[12px] text-slate-500 mt-1 line-clamp-1">
-                        {item.fabric}
-                      </p>
-                    </div>
-
-                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                      <span className="text-[11px] font-medium text-slate-400">
-                        {item.client}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenGalleryItem(item);
-                        }}
-                        className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[#00BDFF] hover:text-blue-700 transition-colors"
-                      >
-                        <ZoomIn className="w-3.5 h-3.5 text-[#00BDFF]" />
-                        <span>Lihat Perincian</span>
-                      </button>
-                    </div>
+                  {/* Clean Compact Details */}
+                  <div className="p-3 space-y-0.5 bg-white">
+                    <h3 className="font-bold text-[13px] text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors truncate">
+                      {item.title}
+                    </h3>
+                    <p className="text-[11px] text-slate-500 truncate font-normal">
+                      {item.fabric || item.client || 'Tempahan Rasmi'}
+                    </p>
                   </div>
                 </div>
               );
