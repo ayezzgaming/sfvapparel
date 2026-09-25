@@ -755,7 +755,7 @@ export default function HomePage() {
       </div>
 
       {/* =========================================================================
-          SECTION 3: PROSES PRODUKSI (DYNAMIC VIDEO REEL - WITH DARK OVERLAY)
+          SECTION 3: PROSES PRODUKSI (DYNAMIC VIDEO REEL - 100% COVER WITH GRADIENT OVERLAY)
          ========================================================================= */}
       {(isLoadingCms || activeVideos.length > 0) && (
         <div className="w-full bg-white pt-6 pb-12 px-4 border-t border-gray-100">
@@ -797,9 +797,10 @@ export default function HomePage() {
                     />
                   ) : (
                     <div 
-                      className="relative w-full h-full cursor-pointer group"
+                      className="relative w-full h-full cursor-pointer group overflow-hidden"
                       onClick={() => setActiveVideo(video.id)}
                     >
+                      {/* Full-bleed 100% cover thumbnail without solid cuts */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img 
                         src={video.thumbnail_url} 
@@ -811,8 +812,8 @@ export default function HomePage() {
                         className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
                       />
                       
-                      {/* Mandatory High-Contrast Dark Gradient Overlay covering bottom 60% */}
-                      <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/95 via-black/60 to-transparent pointer-events-none z-10" />
+                      {/* Smooth Full-Height Gradient Overlay (Darker at bottom, transparent across top 50%) */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 via-45% to-transparent pointer-events-none z-10" />
 
                       {/* Play Button */}
                       <div className="absolute inset-0 flex items-center justify-center z-15">
@@ -821,15 +822,15 @@ export default function HomePage() {
                         </div>
                       </div>
 
-                      {/* Video Title and Details with crisp contrast and drop shadow */}
-                      <div className="absolute inset-x-0 bottom-0 p-5 pb-6 z-20 space-y-1">
-                        <span className="bg-[#00BDFF] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider mb-1 inline-block shadow-sm">
+                      {/* Video Title and Details positioned gracefully over transparent gradient */}
+                      <div className="absolute inset-x-0 bottom-0 p-5 pb-6 z-20 space-y-1.5 flex flex-col justify-end">
+                        <span className="self-start bg-[#00BDFF] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
                           {video.category}
                         </span>
-                        <h3 className="text-white font-bold text-[15px] sm:text-[16px] leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                        <h3 className="text-white font-bold text-[15px] sm:text-[16px] leading-snug drop-shadow-md">
                           {video.title}
                         </h3>
-                        <p className="text-white/90 text-xs font-medium pt-1 flex items-center gap-1 group-hover:text-white transition-colors leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                        <p className="text-white/90 text-xs font-medium pt-0.5 flex items-center gap-1 group-hover:text-white transition-colors leading-relaxed drop-shadow-sm">
                           <span>Tonton rakaman</span>
                           <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                         </p>
@@ -1205,41 +1206,74 @@ export default function HomePage() {
           SECTION 5: FOOTER (DYNAMIC COMPANY SETTINGS FROM CMS STORE)
          ========================================================================= */}
       <footer className="w-full bg-[#F4F4F7] pt-10 pb-28 sm:pb-36 px-5 border-t border-slate-200/80 select-none space-y-8">
-        <div className="flex flex-col space-y-3.5">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1.5 max-w-[240px]">
-              <div className="inline-flex items-center gap-2">
+        <div className="flex flex-col space-y-4">
+          <div className="flex justify-between items-start gap-4">
+            {/* Left Brand Details - Perfectly aligned left flush with logo */}
+            <div className="space-y-2.5 max-w-[245px] sm:max-w-[270px]">
+              <div className="flex items-center gap-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo.svg" alt="SFV APPAREL" width={24} height={24} className="h-6 w-auto object-contain shrink-0" />
-                <span className="text-sm tracking-tight text-slate-900 leading-none flex items-center">
-                  <span className="font-extrabold tracking-normal">SFV</span>
+                <img src="/logo.svg" alt="SFV APPAREL" width={22} height={22} className="h-5.5 w-auto object-contain shrink-0" />
+                <span className="text-[15px] tracking-tight text-slate-900 leading-none flex items-center">
+                  <span className="font-black tracking-tight">SFV</span>
                   <span className="font-light ml-1 text-slate-700 tracking-wide">APPAREL</span>
                 </span>
               </div>
-              <p className="text-[11.5px] text-slate-600 leading-relaxed">
+              
+              <p className="text-xs text-slate-700 font-medium leading-relaxed">
                 {companySettings.tagline}
               </p>
-              <p className="text-[10.5px] text-slate-600 leading-relaxed">
-                sfvapparel.my dimiliki &amp; diuruskan oleh <span className="font-medium text-slate-800">{companySettings.company_name}</span> (No. Pendaftaran Syarikat: <span className="font-mono text-slate-700">{companySettings.registration_number}</span>).
+              
+              <p className="text-[11px] text-slate-500 font-normal leading-relaxed pt-0.5">
+                sfvapparel.my dimiliki &amp; diuruskan oleh <span className="font-semibold text-slate-700">{companySettings.company_name}</span> (No. Pendaftaran Syarikat: <span className="font-mono text-slate-600">{companySettings.registration_number}</span>).
               </p>
             </div>
 
-            {/* Social Icons */}
-            <div className="flex items-center gap-2 pt-0.5">
-              <a href={companySettings.facebook_url} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-white shadow-xs border border-gray-200/80 flex items-center justify-center text-slate-700 hover:text-blue-600 transition-colors active:scale-90 touch-manipulation">
-                <FaFacebookF className="w-4 h-4" />
+            {/* Pure Vector Social Icons (Minimalist, Compact, No Clunky White Circles) */}
+            <div className="flex items-center gap-2.5 pt-1 shrink-0">
+              <a 
+                href={companySettings.facebook_url} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                aria-label="Facebook" 
+                className="text-slate-400 hover:text-[#1877F2] active:scale-90 transition-colors p-1"
+              >
+                <FaFacebookF className="w-3.5 h-3.5" />
               </a>
-              <a href={companySettings.instagram_url} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-white shadow-xs border border-gray-200/80 flex items-center justify-center text-slate-700 hover:text-pink-600 transition-colors active:scale-90 touch-manipulation">
-                <FaInstagram className="w-4 h-4" />
+              <a 
+                href={companySettings.instagram_url} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                aria-label="Instagram" 
+                className="text-slate-400 hover:text-[#E4405F] active:scale-90 transition-colors p-1"
+              >
+                <FaInstagram className="w-3.5 h-3.5" />
               </a>
-              <a href={companySettings.tiktok_url} target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-white shadow-xs border border-gray-200/80 flex items-center justify-center text-slate-700 hover:text-black transition-colors active:scale-90 touch-manipulation">
-                <FaTiktok className="w-4 h-4" />
+              <a 
+                href={companySettings.tiktok_url} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                aria-label="TikTok" 
+                className="text-slate-400 hover:text-black active:scale-90 transition-colors p-1"
+              >
+                <FaTiktok className="w-3.5 h-3.5" />
               </a>
-              <a href={companySettings.telegram_catalog_url} target="_blank" rel="noopener noreferrer" aria-label="Telegram" className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-white shadow-xs border border-gray-200/80 flex items-center justify-center text-slate-700 hover:text-sky-500 transition-colors active:scale-90 touch-manipulation">
-                <FaTelegram className="w-4 h-4" />
+              <a 
+                href={companySettings.telegram_catalog_url} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                aria-label="Telegram" 
+                className="text-slate-400 hover:text-[#229ED9] active:scale-90 transition-colors p-1"
+              >
+                <FaTelegram className="w-3.5 h-3.5" />
               </a>
-              <a href={formatWhatsAppLink(companySettings?.whatsapp_number)} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-white shadow-xs border border-gray-200/80 flex items-center justify-center text-slate-700 hover:text-emerald-600 transition-colors active:scale-90 touch-manipulation">
-                <FaWhatsapp className="w-4 h-4" />
+              <a 
+                href={formatWhatsAppLink(companySettings?.whatsapp_number)} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                aria-label="WhatsApp" 
+                className="text-slate-400 hover:text-[#25D366] active:scale-90 transition-colors p-1"
+              >
+                <FaWhatsapp className="w-3.5 h-3.5" />
               </a>
             </div>
           </div>
@@ -1280,7 +1314,7 @@ export default function HomePage() {
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                 Waktu Operasi
               </span>
-              <p className="text-[11.5px] text-slate-600 font-medium leading-relaxed">
+              <p className="text-[11.5px] text-slate-600 font-normal leading-relaxed">
                 {companySettings.working_hours}
               </p>
             </div>
