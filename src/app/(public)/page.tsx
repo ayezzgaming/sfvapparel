@@ -812,28 +812,33 @@ export default function HomePage() {
                         className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
                       />
                       
-                      {/* Smooth Full-Height Gradient Overlay - Light & Rich Brand Blue Theme */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#002B66]/90 via-[#0052FF]/40 via-45% to-transparent pointer-events-none z-10" />
+                      {/* Natural subtle bottom shadow behind floating panel */}
+                      <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/60 to-transparent pointer-events-none z-10" />
 
-                      {/* Play Button */}
-                      <div className="absolute inset-0 flex items-center justify-center z-15">
-                        <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-white/35 group-hover:bg-[#00BDFF] backdrop-blur-xl border border-white/70 shadow-[0_8px_30px_rgba(0,0,0,0.3)] flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110">
-                          <Play className="w-7 h-7 sm:w-8 sm:h-8 ml-1 fill-white text-white drop-shadow-md" />
+                      {/* Play Button - Minimal Frosted Glass Circle */}
+                      <div className="absolute inset-0 flex items-center justify-center z-15 pointer-events-none">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-black/40 group-hover:bg-[#00BDFF] backdrop-blur-md border border-white/50 shadow-md flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110">
+                          <Play className="w-5 h-5 sm:w-6 sm:h-6 ml-0.5 fill-white text-white" />
                         </div>
                       </div>
 
-                      {/* Video Title and Details positioned gracefully over transparent blue gradient */}
-                      <div className="absolute inset-x-0 bottom-0 p-5 pb-6 z-20 space-y-1.5 flex flex-col justify-end">
-                        <span className="self-start bg-[#00BDFF] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider shadow-sm">
-                          {video.category}
-                        </span>
-                        <h3 className="text-white font-bold text-[15px] sm:text-[16px] leading-snug drop-shadow-md">
+                      {/* Floating iOS Frosted Glass Panel - Ultra Clean & Modern */}
+                      <div className="absolute inset-x-3 bottom-3 p-3.5 rounded-2xl bg-black/55 backdrop-blur-xl border border-white/20 text-white space-y-1 z-20 shadow-lg shadow-black/20">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-bold text-[#00BDFF] uppercase tracking-wider">
+                            {video.category}
+                          </span>
+                          <span className="text-[9.5px] font-semibold text-white/80 bg-white/15 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                            Video Kilang
+                          </span>
+                        </div>
+                        <h3 className="text-[13px] sm:text-[13.5px] font-bold text-white leading-snug line-clamp-2">
                           {video.title}
                         </h3>
-                        <p className="text-white/95 text-xs font-medium pt-0.5 flex items-center gap-1 group-hover:text-white transition-colors leading-relaxed drop-shadow-sm">
+                        <div className="flex items-center gap-1 text-[11px] font-semibold text-white/90 group-hover:text-[#00BDFF] transition-colors pt-0.5">
                           <span>Tonton rakaman</span>
                           <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                        </p>
+                        </div>
                       </div>
                     </div>
                   )}
