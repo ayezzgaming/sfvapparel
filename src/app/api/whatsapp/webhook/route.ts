@@ -104,33 +104,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, message: 'No text or media content found' });
     }
 
-    console.log(`[Webhook] Processing from: ${from} | "${effectiveBody.slice(0, 50)}" | media: ${hasMedia}`);
+    console.log(`[Webhook] Forwarding from: ${from} | "${effectiveBody.slice(0, 50)}" to n8n...`);
 
-    // ── Process AI Response ───────────────────────────────────────────────────
-    const aiResult = await processAiCustomerReply({
-      from,
-      fromMe,
-      body: effectiveBody,
-      senderName,
-      hasMedia,
-      mediaUrl,
-      mediaMimetype,
-    });
-
-    if (aiResult.replied) {
-      OUTBOUND_COUNTER.count++;
-    }
-
-    // ── Forward to N8N for logging (background, fire-and-forget) ─────────────
+    // ── Single Source of Truth: Forward to N8N Multi-Agent Workflow ─────────
     fetch('http://187.127.223.53:5678/webhook/whatsapp-incoming', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        body: { from, fromMe, body: effectiveBody, caption: rawCaption, hasMedia, mediaUrl, mediaMimetype, senderName, id: msgId, aiResult }
+        event: 'message',
+        session: 'default',
+        payload: {
+          from,
+          fromMe,
+          body: effectiveBody,
+          caption: rawCaption,
+          hasMedia,
+          mediaUrl,
+          mediaMimetype,
+          timestamp: Math.floor(Date.now() / 1000),
+          _data: { notifyName: senderName, from }
+        }
       }),
-    }).catch(() => {});
+    }).catch((err) => console.error('[Webhook Forward to n8n Failed]', err));
 
-    return NextResponse.json({ success: true, aiResult });
+    return NextResponse.json({ success: true, forwardedToN8n: true });
   } catch (err: unknown) {
     const error = err instanceof Error ? err.message : 'Webhook error';
     console.error('[AI WhatsApp Webhook Error]', err);
