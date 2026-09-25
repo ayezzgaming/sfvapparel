@@ -21,7 +21,6 @@ import {
   Maximize2,
   X,
   Star,
-  Sparkles,
   Award,
   ThumbsUp,
   MapPin,
@@ -654,9 +653,9 @@ export default function HomePage() {
         <div className="flex justify-between items-end">
           <div>
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Cara Tempahan</h2>
-            <p className="text-xs text-slate-500 mt-0.5">4 langkah mudah untuk memulakan pesanan anda</p>
+            <p className="text-xs text-slate-600 mt-1 leading-relaxed">4 langkah mudah untuk memulakan pesanan anda</p>
           </div>
-          <span className="text-[11px] font-semibold text-slate-500 bg-white/90 border border-slate-200/80 px-2.5 py-1 rounded-full shadow-2xs">
+          <span className="text-[11px] font-semibold text-slate-600 bg-white/90 border border-slate-200/80 px-2.5 py-1 rounded-full shadow-2xs">
             Panduan Pesanan
           </span>
         </div>
@@ -694,7 +693,7 @@ export default function HomePage() {
                         {item.title}
                       </h3>
                     </div>
-                    <p className="text-[11.5px] text-slate-500 mt-0.5 line-clamp-1 leading-relaxed font-normal">
+                    <p className="text-[12px] text-slate-600 mt-0.5 line-clamp-1 leading-relaxed font-normal">
                       {item.desc}
                     </p>
                   </div>
@@ -721,8 +720,7 @@ export default function HomePage() {
 
           <div className="relative z-10 space-y-3">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00BDFF]/10 text-[#00BDFF] text-[10.5px] font-bold tracking-wide">
-              <span>★</span>
-              <span>Kualiti & Servis Kilang</span>
+              <span>Kualiti &amp; Servis Kilang</span>
             </div>
 
             <h3 className="text-[19px] sm:text-[21px] font-extrabold text-slate-900 tracking-tight leading-snug">
@@ -733,10 +731,10 @@ export default function HomePage() {
             </h3>
 
             <div className="space-y-1.5 pt-1.5 border-t border-slate-200/60">
-              <p className="text-xs sm:text-[13px] font-bold text-slate-800 tracking-tight">
+              <p className="text-xs sm:text-[13px] font-bold text-slate-800 tracking-tight leading-relaxed">
                 {sloganQuote.question_text}
               </p>
-              <p className="text-[11.5px] sm:text-xs text-slate-500 leading-relaxed font-normal">
+              <p className="text-[12px] text-slate-600 leading-relaxed font-normal">
                 {sloganQuote.description_text}
               </p>
             </div>
@@ -764,7 +762,7 @@ export default function HomePage() {
           <div className="mb-5 flex justify-between items-end">
             <div>
               <h2 className="text-xl font-bold text-slate-900 tracking-tight">Proses Produksi</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Lihat kualiti cetakan & kemasan jersi anda dihasilkan</p>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed">Lihat kualiti cetakan &amp; kemasan jersi anda dihasilkan</p>
             </div>
           </div>
 
@@ -828,7 +826,7 @@ export default function HomePage() {
                         <h3 className="text-white font-bold text-[15px] sm:text-[16px] leading-snug drop-shadow-md">
                           {video.title}
                         </h3>
-                        <p className="text-white/80 text-[11px] font-medium mt-1 flex items-center gap-1 group-hover:text-white transition-colors">
+                        <p className="text-white/80 text-[11px] font-medium mt-1 flex items-center gap-1 group-hover:text-white transition-colors leading-relaxed">
                           <span>Tonton rakaman</span>
                           <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                         </p>
@@ -848,7 +846,7 @@ export default function HomePage() {
       <div className="w-full bg-[#F8FAFC] pt-10 pb-12 px-4 border-t border-slate-200/70">
         <div className="mb-5">
           <h2 className="text-xl font-bold text-slate-900 tracking-tight">Hasil Produksi Kilang</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Koleksi gambar sebenar tempahan jersi & pakaian siap</p>
+          <p className="text-xs text-slate-600 mt-1 leading-relaxed">Koleksi gambar sebenar tempahan jersi &amp; pakaian siap</p>
         </div>
 
         <div 
@@ -914,7 +912,7 @@ export default function HomePage() {
                     <h3 className="font-bold text-[13px] text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors truncate">
                       {item.title}
                     </h3>
-                    <p className="text-[11px] text-slate-500 truncate font-normal">
+                    <p className="text-[11.5px] text-slate-600 truncate font-normal leading-relaxed">
                       {item.fabric || item.client || 'Tempahan Rasmi'}
                     </p>
                   </div>
@@ -925,19 +923,8 @@ export default function HomePage() {
         </div>
 
         {activeGallery.length > 1 && (
-          <div className="flex justify-between items-center px-1 pt-2">
-            {/* Sleek Progress Bar Indicator */}
-            <div className="flex-1 max-w-[130px] sm:max-w-[180px] h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-[#00BDFF] rounded-full transition-all duration-300"
-                style={{ 
-                  width: `${Math.max(12, 100 / activeGallery.length)}%`,
-                  transform: `translateX(${activeGalleryIndex * (100 / (activeGallery.length - 1 || 1)) * (1 - (Math.max(12, 100 / activeGallery.length) / 100))}%)`
-                }}
-              />
-            </div>
-
-            {/* Clean Compact Counter & Navigation Buttons */}
+          <div className="flex justify-end items-center px-1 pt-2">
+            {/* Clean Compact Counter & Navigation Buttons (No Redundant Progress Line) */}
             <div className="flex items-center gap-1.5 bg-white border border-slate-200/80 px-2 py-1 rounded-full shadow-xs">
               <button
                 type="button"
@@ -948,7 +935,7 @@ export default function HomePage() {
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
-              <span className="text-[11px] font-medium text-slate-400 px-1">
+              <span className="text-[11px] font-medium text-slate-500 px-1">
                 <strong className="text-slate-800 font-bold">{activeGalleryIndex + 1}</strong> / {activeGallery.length}
               </span>
               <button
@@ -971,7 +958,7 @@ export default function HomePage() {
       <div className="w-full bg-[#F2F2F7] pt-10 pb-14 px-4 border-t border-gray-200/60">
         <div className="mb-5">
           <h2 className="text-xl font-bold text-slate-900 tracking-tight">Apa Kata Mereka</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Ribuan pelanggan telah mempercayai kualiti jersi kami</p>
+          <p className="text-xs text-slate-600 mt-1 leading-relaxed">Ribuan pelanggan telah mempercayai kualiti jersi kami</p>
         </div>
 
         <div 
@@ -1029,19 +1016,8 @@ export default function HomePage() {
         </div>
 
         {activeTestimonials.length > 1 && (
-          <div className="flex justify-between items-center px-1 pt-2">
-            {/* Sleek Progress Bar Indicator */}
-            <div className="flex-1 max-w-[130px] sm:max-w-[180px] h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-[#00BDFF] rounded-full transition-all duration-300"
-                style={{ 
-                  width: `${Math.max(15, 100 / activeTestimonials.length)}%`,
-                  transform: `translateX(${activeTestiIndex * (100 / (activeTestimonials.length - 1 || 1)) * (1 - (Math.max(15, 100 / activeTestimonials.length) / 100))}%)`
-                }}
-              />
-            </div>
-
-            {/* Clean Compact Counter & Navigation Buttons */}
+          <div className="flex justify-end items-center px-1 pt-2">
+            {/* Clean Compact Counter & Navigation Buttons (No Redundant Progress Line) */}
             <div className="flex items-center gap-1.5 bg-white border border-slate-200/80 px-2 py-1 rounded-full shadow-xs">
               <button
                 type="button"
@@ -1052,7 +1028,7 @@ export default function HomePage() {
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
-              <span className="text-[11px] font-medium text-slate-400 px-1">
+              <span className="text-[11px] font-medium text-slate-500 px-1">
                 <strong className="text-slate-800 font-bold">{activeTestiIndex + 1}</strong> / {activeTestimonials.length}
               </span>
               <button
@@ -1076,7 +1052,7 @@ export default function HomePage() {
         <div className="flex justify-between items-end">
           <div>
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Panduan Teknologi &amp; Spesifikasi</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Spesifikasi cetakan jersi &amp; piawaian saiz kilang SFV APPAREL</p>
+            <p className="text-xs text-slate-600 mt-1 leading-relaxed">Spesifikasi cetakan jersi &amp; piawaian saiz kilang SFV APPAREL</p>
           </div>
         </div>
 
@@ -1086,7 +1062,7 @@ export default function HomePage() {
           <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-2.5">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#00BDFF] flex items-center justify-center shrink-0">
-                <Sparkles className="w-4 h-4" />
+                <Layers className="w-4 h-4" />
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#00BDFF] block">Teknologi Fabrik</span>
@@ -1163,7 +1139,7 @@ export default function HomePage() {
         <div className="flex justify-between items-end">
           <div>
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Soalan Kerap Ditanya</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Jawapan ringkas mengenai tempahan jersi &amp; cetakan terus dari kilang</p>
+            <p className="text-xs text-slate-600 mt-1 leading-relaxed">Jawapan ringkas mengenai tempahan jersi &amp; cetakan terus dari kilang</p>
           </div>
         </div>
 
@@ -1176,8 +1152,8 @@ export default function HomePage() {
               </span>
               <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-4 pb-4 pt-1 bg-slate-50/60 border-t border-gray-100/80 text-xs text-slate-600 leading-relaxed">
-              Minimum tempahan adalah serendah <strong className="text-slate-800 font-semibold">5 helai (MOQ = 5 pcs)</strong> untuk jersi sublimasi kustom dan cetakan DTF. Kami juga menerima tempahan pukal kelab, sekolah, dan korporat sehingga ribuan helai dengan harga terus dari kilang.
+            <div className="px-4 pb-4 pt-1.5 bg-slate-50/60 border-t border-gray-100/80 text-[12.5px] text-slate-700 leading-relaxed">
+              Minimum tempahan adalah serendah <strong className="text-slate-900 font-semibold">5 helai (MOQ = 5 pcs)</strong> untuk jersi sublimasi kustom dan cetakan DTF. Kami juga menerima tempahan pukal kelab, sekolah, dan korporat sehingga ribuan helai dengan harga terus dari kilang.
             </div>
           </details>
 
@@ -1189,8 +1165,8 @@ export default function HomePage() {
               </span>
               <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-4 pb-4 pt-1 bg-slate-50/60 border-t border-gray-100/80 text-xs text-slate-600 leading-relaxed">
-              Tempoh standard siap produksi adalah <strong className="text-slate-800 font-semibold">5 hingga 7 hari bekerja</strong> selepas pengesahan rekaan akhir (Design Proof) dan deposit. Servis ekspres juga disediakan mengikut jadual kapasiti kilang.
+            <div className="px-4 pb-4 pt-1.5 bg-slate-50/60 border-t border-gray-100/80 text-[12.5px] text-slate-700 leading-relaxed">
+              Tempoh standard siap produksi adalah <strong className="text-slate-900 font-semibold">5 hingga 7 hari bekerja</strong> selepas pengesahan rekaan akhir (Design Proof) dan deposit. Servis ekspres juga disediakan mengikut jadual kapasiti kilang.
             </div>
           </details>
 
@@ -1202,7 +1178,7 @@ export default function HomePage() {
               </span>
               <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-4 pb-4 pt-1 bg-slate-50/60 border-t border-gray-100/80 text-xs text-slate-600 leading-relaxed">
+            <div className="px-4 pb-4 pt-1.5 bg-slate-50/60 border-t border-gray-100/80 text-[12.5px] text-slate-700 leading-relaxed">
               Kami menyokong format vektor seperti AI (Adobe Illustrator), PDF, EPS, SVG, serta gambar resolusi tinggi PNG/JPG (300 DPI). Pereka kami juga sedia membantu melakar artwork mockup anda secara percuma.
             </div>
           </details>
@@ -1215,7 +1191,7 @@ export default function HomePage() {
               </span>
               <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-4 pb-4 pt-1 bg-slate-50/60 border-t border-gray-100/80 text-xs text-slate-600 leading-relaxed">
+            <div className="px-4 pb-4 pt-1.5 bg-slate-50/60 border-t border-gray-100/80 text-[12.5px] text-slate-700 leading-relaxed">
               Penghantaran fleksibel melalui Lalamove (Klang Valley), J&amp;T Express, Pos Laju serta Bas Express ke seluruh Semenanjung Malaysia, Sabah, Sarawak dan Singapura bersama nombor penjejakan automatik.
             </div>
           </details>
@@ -1225,7 +1201,7 @@ export default function HomePage() {
       {/* =========================================================================
           SECTION 5: FOOTER (DYNAMIC COMPANY SETTINGS FROM CMS STORE)
          ========================================================================= */}
-      <footer className="w-full bg-[#F4F4F7] pt-10 pb-36 px-5 border-t border-gray-200/80 select-none space-y-7">
+      <footer className="w-full bg-[#F4F4F7] pt-10 pb-48 sm:pb-56 px-5 border-t border-slate-200/80 select-none space-y-8">
         <div className="flex flex-col space-y-3.5">
           <div className="flex justify-between items-start">
             <div className="space-y-1.5 max-w-[240px]">
@@ -1237,11 +1213,11 @@ export default function HomePage() {
                   <span className="font-light ml-1 text-slate-700 tracking-wide">APPAREL</span>
                 </span>
               </div>
-              <p className="text-[11.5px] text-slate-600 leading-snug">
+              <p className="text-[11.5px] text-slate-600 leading-relaxed">
                 {companySettings.tagline}
               </p>
-              <p className="text-[10.5px] text-slate-600 leading-snug">
-                sfvapparel.my dimiliki & diuruskan oleh <span className="font-medium text-slate-800">{companySettings.company_name}</span> (No. Pendaftaran Syarikat: <span className="font-mono text-slate-700">{companySettings.registration_number}</span>).
+              <p className="text-[10.5px] text-slate-600 leading-relaxed">
+                sfvapparel.my dimiliki &amp; diuruskan oleh <span className="font-medium text-slate-800">{companySettings.company_name}</span> (No. Pendaftaran Syarikat: <span className="font-mono text-slate-700">{companySettings.registration_number}</span>).
               </p>
             </div>
 
@@ -1340,7 +1316,7 @@ export default function HomePage() {
 
           <div className="space-y-2.5">
             <h3 className="font-bold text-[11px] uppercase tracking-wider text-slate-900">
-              Policies & Help
+              Policies &amp; Help
             </h3>
             <ul className="space-y-2 text-slate-600 text-[12px]">
               <li>
@@ -1387,9 +1363,9 @@ export default function HomePage() {
               <svg className="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
-              <span>Kaedah Pembayaran Selamat & Terpelihara</span>
+              <span>Kaedah Pembayaran Selamat &amp; Terpelihara</span>
             </div>
-            <span className="text-[10px] text-slate-400">Enkripsi 256-Bit SSL • Transaksi Disahkan</span>
+            <span className="text-[10px] text-slate-500">Enkripsi 256-Bit SSL • Transaksi Disahkan</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-0.5">
@@ -1469,12 +1445,12 @@ export default function HomePage() {
 
         {/* 4. Copyright & Developer Credit (Apple-grade Clean, Responsive & Beautiful) */}
         <div className="pt-6 border-t border-slate-200/80 flex flex-col items-center justify-center text-center space-y-2 select-none">
-          <p className="text-[11.5px] text-slate-500 font-medium">
-            &copy; {new Date().getFullYear()} <span className="font-bold text-slate-700">{companySettings.brand_name || 'SFV APPAREL'}</span>. Hak Cipta Terpelihara.
+          <p className="text-[11.5px] text-slate-600 font-medium">
+            &copy; {new Date().getFullYear()} <span className="font-bold text-slate-800">{companySettings.brand_name || 'SFV APPAREL'}</span>. Hak Cipta Terpelihara.
           </p>
           
           {/* Developer Credit: AYEZZ Global */}
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
             <span>Dibangunkan oleh</span>
             <a
               href={companySettings.developer_url || 'https://ayezz.com'}
@@ -1488,6 +1464,7 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+
 
       {/* =========================================================================
           DYNAMIC PRODUCT DETAILS BOTTOM SHEET MODAL
