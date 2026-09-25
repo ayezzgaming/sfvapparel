@@ -4,7 +4,8 @@
 
 @layer base {
   :root {
-    --font-sans: "Plus Jakarta Sans", "Outfit", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    --font-sans: var(--font-plus-jakarta-sans, 'Plus Jakarta Sans'), -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    --font-heading: var(--font-outfit, 'Outfit'), 'Plus Jakarta Sans', sans-serif;
   }
 }
 

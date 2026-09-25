@@ -28,7 +28,12 @@ import {
   Navigation,
   Copy,
   Check,
-  ExternalLink
+  ExternalLink,
+  Palette,
+  Users,
+  CreditCard,
+  Layers,
+  HelpCircle
 } from 'lucide-react';
 import { FaWhatsapp, FaTiktok, FaFacebookF, FaInstagram, FaTelegram } from 'react-icons/fa6';
 import { formatWhatsAppLink } from '@/lib/whatsapp/dynamic-link';
@@ -48,6 +53,8 @@ import { BADGE_THEMES, getTrustIconComponent } from '@/lib/cms/trust-badge-utils
 
 interface StepDetail {
   step: string;
+  stepNum: number;
+  iconName: 'palette' | 'users' | 'card' | 'truck';
   title: string;
   desc: string;
   detailTitle: string;
@@ -57,9 +64,11 @@ interface StepDetail {
 
 const ORDER_STEPS: StepDetail[] = [
   {
-    step: '01',
+    step: 'Langkah 1',
+    stepNum: 1,
+    iconName: 'palette',
     title: 'Pilih Rekaan & Fabrik',
-    desc: 'Pilih templat katalog atau muat naik fail rekaan khas anda.',
+    desc: 'Pilih templat katalog sedia ada atau muat naik fail artwork khas.',
     detailTitle: 'Langkah 1: Rekaan & Jenis Fabrik',
     detailDesc: 'Pilih mana-mana templat sedia ada dari galeri katalog kami, atau muat naik fail rekaan anda sendiri (AI/PDF). Pereka kami sedia membantu menghasilkan visual awal.',
     points: [
@@ -69,7 +78,9 @@ const ORDER_STEPS: StepDetail[] = [
     ]
   },
   {
-    step: '02',
+    step: 'Langkah 2',
+    stepNum: 2,
+    iconName: 'users',
     title: 'Tetapkan Saiz & Nama',
     desc: 'Senarai pecahan saiz pasukan dari saiz kanak-kanak hingga 7XL.',
     detailTitle: 'Langkah 2: Senarai Nama & Saiz',
@@ -81,9 +92,11 @@ const ORDER_STEPS: StepDetail[] = [
     ]
   },
   {
-    step: '03',
-    title: 'Pembayaran Downpayment (DP)',
-    desc: 'Buat bayaran deposit untuk pengesahan slot produksi kilang.',
+    step: 'Langkah 3',
+    stepNum: 3,
+    iconName: 'card',
+    title: 'Bayaran Deposit (DP)',
+    desc: 'Sahkan slot produksi kilang dengan deposit selamat atas talian.',
     detailTitle: 'Langkah 3: Pembayaran Downpayment (DP)',
     detailDesc: 'Selepas perincian pesanan dipersetujui, buat bayaran deposit (DownPayment) untuk mengesahkan slot pengeluaran kilang serta penyediaan fabrik dan bahan cetakan.',
     points: [
@@ -93,9 +106,11 @@ const ORDER_STEPS: StepDetail[] = [
     ]
   },
   {
-    step: '04',
+    step: 'Langkah 4',
+    stepNum: 4,
+    iconName: 'truck',
     title: 'Pengeluaran & Pos Pantas',
-    desc: 'Pesanan diproses kilang, lulus QC dan dihantar terus kepada anda.',
+    desc: 'Pesanan diproses kilang, lulus QC rapi dan dihantar terus ke alamat.',
     detailTitle: 'Langkah 4: Pengeluaran Kilang & Penghantaran',
     detailDesc: 'Pesanan anda terus memasuki barisan cetakan dan jahitan kilang berteknologi tinggi, melalui semakan kualiti (QC) rapi sebelum dipos terus ke alamat anda.',
     points: [
@@ -643,29 +658,45 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl overflow-hidden shadow-sm shadow-blue-900/5 border border-blue-100/70">
-          {ORDER_STEPS.map((item, idx) => {
-            const isLast = idx === ORDER_STEPS.length - 1;
+        {/* Interactive 4-Step Process Flow Cards (Modern 2x2 Grid with Step Badges) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          {ORDER_STEPS.map((item) => {
+            const stepThemes = {
+              palette: { bg: 'bg-blue-50', text: 'text-[#00BDFF]', border: 'border-blue-100', pill: 'bg-blue-50 text-[#00BDFF]' },
+              users: { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-100', pill: 'bg-indigo-50 text-indigo-600' },
+              card: { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100', pill: 'bg-emerald-50 text-emerald-600' },
+              truck: { bg: 'bg-sky-50', text: 'text-sky-600', border: 'border-sky-100', pill: 'bg-sky-50 text-sky-600' },
+            };
+            const theme = stepThemes[item.iconName] || stepThemes.palette;
+
             return (
               <div
                 key={item.step}
                 onClick={() => handleOpenStep(item)}
-                className="group flex items-center pl-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none"
+                className="group bg-white rounded-2xl p-4 border border-blue-100/80 shadow-xs hover:border-[#00BDFF]/60 hover:shadow-sm transition-all duration-200 cursor-pointer select-none flex flex-col justify-between space-y-2.5 active:scale-[0.99]"
               >
-                <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#00BDFF] group-hover:text-white group-hover:scale-105 group-hover:shadow-sm group-hover:shadow-blue-500/20 flex items-center justify-center text-[#00BDFF] font-bold text-xs transition-all duration-200">
-                  {item.step}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 rounded-xl ${theme.bg} ${theme.text} flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform`}>
+                      {item.iconName === 'palette' && <Palette className="w-4 h-4" />}
+                      {item.iconName === 'users' && <Users className="w-4 h-4" />}
+                      {item.iconName === 'card' && <CreditCard className="w-4 h-4" />}
+                      {item.iconName === 'truck' && <Truck className="w-4 h-4" />}
+                    </div>
+                    <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full ${theme.pill} tracking-tight`}>
+                      {item.step}
+                    </span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#00BDFF] group-hover:translate-x-0.5 transition-all" />
                 </div>
 
-                <div className={`flex-1 ml-3 py-3.5 pr-3.5 ${!isLast ? 'border-b border-gray-100' : ''} flex items-center justify-between min-w-0`}>
-                  <div className="min-w-0 pr-2">
-                    <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors duration-200">
-                      {item.title}
-                    </h3>
-                    <p className="text-[11.5px] text-slate-500 mt-0.5 line-clamp-2 leading-relaxed">
-                      {item.desc}
-                    </p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#00BDFF] group-hover:translate-x-0.5 shrink-0 ml-1.5 transition-all duration-200" />
+                <div>
+                  <h3 className="text-[13.5px] font-bold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-[11.5px] text-slate-500 mt-1 leading-relaxed">
+                    {item.desc}
+                  </p>
                 </div>
               </div>
             );
@@ -1068,7 +1099,7 @@ export default function HomePage() {
       </div>
 
       {/* =========================================================================
-          SECTION 4.2: PANDUAN TEKNOLOGI CETAKAN & SPESIFIKASI KILANG (Clean Style)
+          SECTION 4.2: PANDUAN TEKNOLOGI CETAKAN & SPESIFIKASI KILANG (Distinct 2x2 Feature Grid)
          ========================================================================= */}
       <div className="w-full bg-[#F8FAFC] py-8 px-4 space-y-5 border-t border-slate-200/80">
         <div className="flex justify-between items-end">
@@ -1078,74 +1109,86 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Clean Stacked Cards List (Matching Cara Tempahan Style) */}
-        <div className="bg-white rounded-2xl overflow-hidden shadow-sm shadow-blue-900/5 border border-blue-100/70 divide-y divide-gray-100">
-          {/* Item 1: Sublimasi */}
-          <div className="group flex items-start pl-3.5 bg-white hover:bg-blue-50/40 transition-colors">
-            <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 text-[#00BDFF] font-bold text-xs flex items-center justify-center mt-3.5">
-              01
+        {/* Distinct 2x2 Grid Cards (No repetitive numbers) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          {/* Card 1: Sublimasi */}
+          <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-2.5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#00BDFF] flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#00BDFF] block">Teknologi Fabrik</span>
+                <h3 className="text-sm font-bold text-slate-900 leading-snug">
+                  Cetak Jersi Sublimasi Penuh
+                </h3>
+              </div>
             </div>
-            <div className="flex-1 ml-3 py-3.5 pr-3.5 min-w-0">
-              <h3 className="text-[13.5px] font-semibold text-slate-900">
-                Cetak Jersi Sublimasi Penuh (Full Sublimation)
-              </h3>
-              <p className="text-[11.5px] text-slate-500 mt-0.5 leading-relaxed">
-                Pewarna meresap ke gentian fabrik Microfiber (Eyelet &amp; Interlock). Corak tanpa had warna, kalis luntur &amp; pengudaraan optimum sukan.
-              </p>
-            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Pewarna meresap terus ke gentian Microfiber Eyelet &amp; Interlock. Corak tanpa had warna, kalis luntur 100% dan pengudaraan optimum untuk sukan.
+            </p>
           </div>
 
-          {/* Item 2: DTF */}
-          <div className="group flex items-start pl-3.5 bg-white hover:bg-blue-50/40 transition-colors">
-            <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 text-[#00BDFF] font-bold text-xs flex items-center justify-center mt-3.5">
-              02
+          {/* Card 2: DTF */}
+          <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-2.5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+                <Zap className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-sky-600 block">Cetakan Foto</span>
+                <h3 className="text-sm font-bold text-slate-900 leading-snug">
+                  Cetakan Baju DTF Premium
+                </h3>
+              </div>
             </div>
-            <div className="flex-1 ml-3 py-3.5 pr-3.5 min-w-0">
-              <h3 className="text-[13.5px] font-semibold text-slate-900">
-                Cetakan Baju DTF Premium (Direct-to-Film)
-              </h3>
-              <p className="text-[11.5px] text-slate-500 mt-0.5 leading-relaxed">
-                Cetakan kualiti foto berdefinisi tinggi pada 100% Combed Cotton. Hasil cetakan sangat elastik, kemas, dan tiada had minimum tempahan.
-              </p>
-            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Cetakan kualiti foto berdefinisi tinggi pada 100% Combed Cotton. Hasil cetakan sangat elastik, kemas, dan tiada had minimum tempahan.
+            </p>
           </div>
 
-          {/* Item 3: Sulaman */}
-          <div className="group flex items-start pl-3.5 bg-white hover:bg-blue-50/40 transition-colors">
-            <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 text-[#00BDFF] font-bold text-xs flex items-center justify-center mt-3.5">
-              03
+          {/* Card 3: Sulaman */}
+          <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-2.5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                <Award className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 block">Kemasan Korporat</span>
+                <h3 className="text-sm font-bold text-slate-900 leading-snug">
+                  Sulaman Logo Berkomputer
+                </h3>
+              </div>
             </div>
-            <div className="flex-1 ml-3 py-3.5 pr-3.5 min-w-0">
-              <h3 className="text-[13.5px] font-semibold text-slate-900">
-                Sulaman Berkomputer &amp; Logo Korporat
-              </h3>
-              <p className="text-[11.5px] text-slate-500 mt-0.5 leading-relaxed">
-                Jahitan berkepadatan tinggi untuk polo shirt &amp; uniform korporat. Kemasan timbul yang elegan, berwibawa, dan tahan lasak.
-              </p>
-            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Jahitan berkepadatan tinggi untuk kemeja korporat &amp; polo shirt. Kemasan timbul yang kemas, eksklusif, dan tahan lasak basuhan.
+            </p>
           </div>
 
-          {/* Item 4: Carta Saiz Piawai Malaysia */}
-          <div className="group flex items-start pl-3.5 bg-white hover:bg-blue-50/40 transition-colors">
-            <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 text-[#00BDFF] font-bold text-xs flex items-center justify-center mt-3.5">
-              04
+          {/* Card 4: Carta Saiz */}
+          <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-2.5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 block">Piawaian Malaysia</span>
+                <h3 className="text-sm font-bold text-slate-900 leading-snug">
+                  Carta Saiz Asian Regular Fit
+                </h3>
+              </div>
             </div>
-            <div className="flex-1 ml-3 py-3.5 pr-3.5 min-w-0">
-              <h3 className="text-[13.5px] font-semibold text-slate-900">
-                Panduan Carta Saiz Piawaian Malaysia
-              </h3>
-              <p className="text-[11.5px] text-slate-500 mt-0.5 leading-relaxed">
-                Ukuran Asian Regular Fit: Kanak-kanak (24–32), Dewasa Standard (XS–XL), Plus Size (2XL–7XL), dan Potongan Muslimah Labuh A-Cut.
-              </p>
-            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Ukuran standard Malaysia: Kanak-kanak (24–32), Dewasa Standard (XS–XL), Plus Size (2XL–7XL), dan Potongan Muslimah Labuh A-Cut.
+            </p>
           </div>
         </div>
 
-        {/* 3-Pill Clean Feature Bar (Exact match with Cara Tempahan) */}
+        {/* 3-Pill Clean Feature Bar */}
         <div className="bg-white rounded-2xl py-2 px-2.5 grid grid-cols-3 gap-2 items-center shadow-xs border border-slate-200/80">
           <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-50/90 border border-slate-100/90 min-w-0">
             <ShieldCheck className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
-            <span className="truncate">MOQ 1 Helai</span>
+            <span className="truncate">MOQ 5 Helai</span>
           </div>
           <div className="flex items-center justify-center gap-1.5 text-slate-700 font-semibold text-[11px] py-1.5 px-1 rounded-xl bg-slate-50/90 border border-slate-100/90 min-w-0">
             <Clock className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
@@ -1159,7 +1202,7 @@ export default function HomePage() {
       </div>
 
       {/* =========================================================================
-          SECTION 4.5: SOALAN KERAP DITANYA (FAQ - Clean Accordion Style)
+          SECTION 4.5: SOALAN KERAP DITANYA (FAQ - Clean Minimalist Accordion)
          ========================================================================= */}
       <div className="w-full bg-[#F2F6FE] py-8 px-4 space-y-5 border-t border-blue-100/60">
         <div className="flex justify-between items-end">
@@ -1172,72 +1215,52 @@ export default function HomePage() {
         <div className="bg-white rounded-2xl overflow-hidden shadow-xs border border-blue-100/70 divide-y divide-gray-100">
           {/* FAQ 1 */}
           <details className="group">
-            <summary className="flex items-center px-4 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
-              <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#00BDFF] group-hover:text-white flex items-center justify-center text-[#00BDFF] font-bold text-xs transition-colors duration-200">
-                01
-              </div>
-              <div className="flex-1 ml-3 min-w-0 pr-2">
-                <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors duration-200">
-                  Berapakah minimum tempahan (MOQ) di SFV APPAREL?
-                </h3>
-              </div>
-              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
+            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-blue-50/30 active:bg-blue-50/60 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+              <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors">
+                Berapakah minimum tempahan (MOQ) di SFV APPAREL?
+              </span>
+              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-4 py-3.5 bg-slate-50/70 border-t border-gray-100 text-xs text-slate-600 leading-relaxed">
+            <div className="px-4 pb-4 pt-1 bg-slate-50/60 border-t border-gray-100/80 text-xs text-slate-600 leading-relaxed">
               Minimum tempahan adalah serendah <strong className="text-slate-800 font-semibold">5 helai (MOQ = 5 pcs)</strong> untuk jersi sublimasi kustom dan cetakan DTF. Kami juga menerima tempahan pukal kelab, sekolah, dan korporat sehingga ribuan helai dengan harga terus dari kilang.
             </div>
           </details>
 
           {/* FAQ 2 */}
           <details className="group">
-            <summary className="flex items-center px-4 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
-              <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#00BDFF] group-hover:text-white flex items-center justify-center text-[#00BDFF] font-bold text-xs transition-colors duration-200">
-                02
-              </div>
-              <div className="flex-1 ml-3 min-w-0 pr-2">
-                <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors duration-200">
-                  Berapa hari tempoh siap produksi pesanan?
-                </h3>
-              </div>
-              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
+            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-blue-50/30 active:bg-blue-50/60 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+              <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors">
+                Berapa hari tempoh siap produksi pesanan?
+              </span>
+              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-4 py-3.5 bg-slate-50/70 border-t border-gray-100 text-xs text-slate-600 leading-relaxed">
+            <div className="px-4 pb-4 pt-1 bg-slate-50/60 border-t border-gray-100/80 text-xs text-slate-600 leading-relaxed">
               Tempoh standard siap produksi adalah <strong className="text-slate-800 font-semibold">5 hingga 7 hari bekerja</strong> selepas pengesahan rekaan akhir (Design Proof) dan deposit. Servis ekspres juga disediakan mengikut jadual kapasiti kilang.
             </div>
           </details>
 
           {/* FAQ 3 */}
           <details className="group">
-            <summary className="flex items-center px-4 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
-              <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#00BDFF] group-hover:text-white flex items-center justify-center text-[#00BDFF] font-bold text-xs transition-colors duration-200">
-                03
-              </div>
-              <div className="flex-1 ml-3 min-w-0 pr-2">
-                <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors duration-200">
-                  Apakah format fail artwork yang diterima?
-                </h3>
-              </div>
-              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
+            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-blue-50/30 active:bg-blue-50/60 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+              <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors">
+                Apakah format fail artwork yang diterima?
+              </span>
+              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-4 py-3.5 bg-slate-50/70 border-t border-gray-100 text-xs text-slate-600 leading-relaxed">
+            <div className="px-4 pb-4 pt-1 bg-slate-50/60 border-t border-gray-100/80 text-xs text-slate-600 leading-relaxed">
               Kami menyokong format vektor seperti AI (Adobe Illustrator), PDF, EPS, SVG, serta gambar resolusi tinggi PNG/JPG (300 DPI). Pereka kami juga sedia membantu melakar artwork mockup anda secara percuma.
             </div>
           </details>
 
           {/* FAQ 4 */}
           <details className="group">
-            <summary className="flex items-center px-4 py-3.5 bg-white hover:bg-blue-50/40 active:bg-blue-50/70 transition-all duration-200 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
-              <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 group-hover:bg-[#00BDFF] group-hover:text-white flex items-center justify-center text-[#00BDFF] font-bold text-xs transition-colors duration-200">
-                04
-              </div>
-              <div className="flex-1 ml-3 min-w-0 pr-2">
-                <h3 className="text-[13.5px] font-semibold text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors duration-200">
-                  Bagaimana pilihan penghantaran dan liputan kurier?
-                </h3>
-              </div>
-              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 ml-1.5 transition-transform duration-200" />
+            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-blue-50/30 active:bg-blue-50/60 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+              <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors">
+                Bagaimana pilihan penghantaran dan liputan kurier?
+              </span>
+              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-4 py-3.5 bg-slate-50/70 border-t border-gray-100 text-xs text-slate-600 leading-relaxed">
+            <div className="px-4 pb-4 pt-1 bg-slate-50/60 border-t border-gray-100/80 text-xs text-slate-600 leading-relaxed">
               Penghantaran fleksibel melalui Lalamove (Klang Valley), J&amp;T Express, Pos Laju serta Bas Express ke seluruh Semenanjung Malaysia, Sabah, Sarawak dan Singapura bersama nombor penjejakan automatik.
             </div>
           </details>

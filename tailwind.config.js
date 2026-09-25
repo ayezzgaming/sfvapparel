@@ -10,14 +10,15 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
+        sans: ['var(--font-sans)', '"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        heading: ['var(--font-outfit)', '"Outfit"', '"Plus Jakarta Sans"', 'sans-serif'],
         ios: [
+          'var(--font-sans)',
+          '"Plus Jakarta Sans"',
           '-apple-system',
           'BlinkMacSystemFont',
           '"SF Pro Display"',
           '"SF Pro Text"',
-          '"Plus Jakarta Sans"',
-          '"Helvetica Neue"',
-          'Helvetica',
           'sans-serif',
         ],
       },
