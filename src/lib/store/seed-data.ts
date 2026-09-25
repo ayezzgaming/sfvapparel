@@ -205,7 +205,7 @@ export const INITIAL_ORDERS: Order[] = [];
 export const INITIAL_CMS_HERO_BANNERS = [
   {
     id: 'hero-1',
-    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-ultra-1790289960989-6ku36.webp',
+    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-hd-1790331893659-5ozr.webp',
     status_pill: 'Harga Direct Kilang',
     tag_text: 'Pengeluar No. 1 Malaysia',
     title: 'Kilang Cetak Jersi Sublimasi & Baju DTF',
@@ -216,7 +216,7 @@ export const INITIAL_CMS_HERO_BANNERS = [
   },
   {
     id: 'hero-2',
-    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-ultra-1790289961687-533nt.webp',
+    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-hd-1790331894966-xuol.webp',
     status_pill: 'Sublimasi Penuh HD',
     tag_text: 'Sukan, E-Sukan & Korporat',
     title: 'Jersi Sublimasi Kustom Berkualiti',
@@ -227,7 +227,7 @@ export const INITIAL_CMS_HERO_BANNERS = [
   },
   {
     id: 'hero-3',
-    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-ultra-1790289962213-598jg.webp',
+    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-hd-1790331895581-l8bm.webp',
     status_pill: 'Tiada Minimum Order',
     tag_text: 'Kapas 100% & Dakwat Jepun',
     title: 'Cetakan Baju DTF Berkualiti Tinggi',
@@ -291,7 +291,7 @@ export const INITIAL_CMS_SERVICES = [
     price_prefix: 'Bermula',
     price_amount: 'RM28',
     price_unit: '/ helai',
-    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/service-opt-1790288664711-d1b0n1.webp',
+    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/service-hd-1790331896258-yolz.webp',
     href: '/catalog?type=sublimation',
     sort_order: 1,
     is_active: true,
@@ -319,7 +319,7 @@ export const INITIAL_CMS_SERVICES = [
     price_prefix: 'Bermula',
     price_amount: 'RM18',
     price_unit: '/ helai',
-    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/service-opt-1790288664210-f17c9d.webp',
+    image_url: 'https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/service-hd-1790331896973-i5pz.webp',
     href: '/catalog?type=dtf',
     sort_order: 2,
     is_active: true,

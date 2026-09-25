@@ -525,7 +525,7 @@ export default function HomePage() {
             <Link
               href="/catalog"
               aria-label="Lihat Semua Servis"
-              className="px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 hover:text-[#0052FF] text-xs font-semibold flex items-center gap-1 transition-all active:scale-95 shadow-xs border border-slate-200/80"
+              className="px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 hover:text-[#00BDFF] text-xs font-semibold flex items-center gap-1 transition-all active:scale-95 shadow-xs border border-slate-200/80"
             >
               <span>Semua</span>
               <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -585,7 +585,7 @@ export default function HomePage() {
                   {/* Bagian Konten */}
                   <div className="p-3.5 flex flex-col justify-between flex-1 space-y-3">
                     <div>
-                      <h3 className="font-bold text-[15px] text-slate-900 leading-snug group-hover:text-[#0052FF] transition-colors line-clamp-1">
+                      <h3 className="font-bold text-[15px] text-slate-900 leading-snug group-hover:text-[#00BDFF] transition-colors line-clamp-1">
                         {item.title}
                       </h3>
                       <p className="text-slate-600 text-xs mt-0.5 line-clamp-2 leading-relaxed">
@@ -596,7 +596,7 @@ export default function HomePage() {
                     {/* Baris Harga & Butang Interaktif */}
                     <div className="pt-2.5 border-t border-slate-100 flex justify-between items-center">
                       <div className="flex flex-col">
-                        <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#0052FF]">
+                        <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#00BDFF]">
                           {item.price_prefix || 'Bermula'}
                         </span>
                         <div className="flex items-baseline gap-1">
@@ -851,7 +851,7 @@ export default function HomePage() {
               </div>
             ))
           ) : (
-            activeGallery.slice(0, 10).map((item, idx) => {
+            activeGallery.map((item, idx) => {
               const isActive = idx === activeGalleryIndex;
               return (
                 <div 
@@ -1538,7 +1538,7 @@ export default function HomePage() {
                 alt={selectedProduct.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute top-3 left-3 bg-[#0052FF] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-sm">
+              <div className="absolute top-3 left-3 bg-[#00BDFF] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-sm">
                 {selectedProduct.category}
               </div>
             </div>
@@ -1547,7 +1547,7 @@ export default function HomePage() {
               <h3 className="text-lg font-bold text-slate-900 tracking-tight">
                 {selectedProduct.headline}
               </h3>
-              <p className="text-xs text-[#0052FF] font-semibold mt-0.5">
+              <p className="text-xs text-[#00BDFF] font-semibold mt-0.5">
                 {selectedProduct.highlight}
               </p>
             </div>
@@ -1556,7 +1556,7 @@ export default function HomePage() {
               {selectedProduct.details?.map((detail, idx) => (
                 <div key={idx} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1">
                   <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0052FF] shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
                     <span>{detail.title}</span>
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed pl-5">
@@ -1588,7 +1588,7 @@ export default function HomePage() {
         onClose={() => setIsStepSheetOpen(false)}
         showCloseButton={false}
         badge={
-          <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-[#0052FF] text-[11px] font-bold border border-blue-100">
+          <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-[#00BDFF] text-[11px] font-bold border border-blue-100">
             Langkah {selectedStep.step}
           </span>
         }
@@ -1612,7 +1612,7 @@ export default function HomePage() {
                     key={i}
                     className="flex items-start gap-3 p-3.5 rounded-2xl bg-white border border-slate-100 shadow-2xs text-[12.5px] text-slate-700 leading-relaxed"
                   >
-                    <div className="w-5 h-5 rounded-full bg-blue-50 text-[#0052FF] border border-blue-100 flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">
+                    <div className="w-5 h-5 rounded-full bg-blue-50 text-[#00BDFF] border border-blue-100 flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">
                       ✓
                     </div>
                     <span className="font-medium">{pt}</span>
@@ -1693,7 +1693,7 @@ export default function HomePage() {
                 alt={selectedGalleryItem.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md text-[#0052FF] text-[11px] font-bold px-3 py-1 rounded-full shadow-sm border border-sky-100">
+              <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md text-[#00BDFF] text-[11px] font-bold px-3 py-1 rounded-full shadow-sm border border-sky-100">
                 {selectedGalleryItem.tag}
               </div>
 
@@ -1706,7 +1706,7 @@ export default function HomePage() {
             {/* Details Summary Card */}
             <div className="space-y-3 p-4 rounded-2xl bg-slate-50 border border-slate-200/70">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0052FF]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#00BDFF]">
                   Hasil Produksi Sebenar
                 </span>
                 <h3 className="text-base font-bold text-slate-900 tracking-tight leading-snug mt-0.5">

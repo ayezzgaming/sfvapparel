@@ -76,8 +76,8 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
   
   const bottomNavBg = themeSettings?.bottom_nav_bg || 'rgba(255, 255, 255, 0.95)';
   const isBottomNavDark = themeSettings?.bottom_nav_style === 'solid_blue' || bottomNavBg === '#00BDFF' || bottomNavBg === '#0052FF';
-  const bottomActiveColor = isBottomNavDark ? '#FFFFFF' : '#0052FF';
-  const bottomInactiveColor = isBottomNavDark ? '#E2E8F0' : '#475569';
+  const bottomActiveColor = isBottomNavDark ? '#FFFFFF' : '#00BDFF';
+  const bottomInactiveColor = isBottomNavDark ? '#E2E8F0' : '#64748B';
   const whatsappFabBg = themeSettings?.whatsapp_fab_bg || '#25D366';
 
   // Filter full design objects that are favorited
