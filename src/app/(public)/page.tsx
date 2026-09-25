@@ -43,7 +43,7 @@ import {
   CmsPolicy,
   CmsTrustBadge
 } from '@/types/database';
-import { INITIAL_CMS_TRUST_BADGES, INITIAL_CMS_HERO_BANNERS } from '@/lib/store/seed-data';
+import { INITIAL_CMS_TRUST_BADGES, INITIAL_CMS_HERO_BANNERS, INITIAL_CMS_SERVICES } from '@/lib/store/seed-data';
 import { BADGE_THEMES, getTrustIconComponent } from '@/lib/cms/trust-badge-utils';
 
 interface StepDetail {
@@ -1552,19 +1552,30 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="space-y-3 border-t border-slate-100 pt-4">
-              {selectedProduct.details?.map((detail, idx) => (
-                <div key={idx} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1">
-                  <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
-                    <span>{detail.title}</span>
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed pl-5">
-                    {detail.description}
-                  </p>
+            {(() => {
+              const defaultService = INITIAL_CMS_SERVICES.find(s => s.id === selectedProduct.id || s.category === selectedProduct.category || s.title === selectedProduct.title);
+              const detailsList = (selectedProduct.details && selectedProduct.details.length > 0)
+                ? selectedProduct.details
+                : (defaultService?.details || []);
+
+              if (!detailsList || detailsList.length === 0) return null;
+
+              return (
+                <div className="space-y-3 border-t border-slate-100 pt-4">
+                  {detailsList.map((detail, idx) => (
+                    <div key={idx} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1">
+                      <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
+                        <span>{detail.title}</span>
+                      </h4>
+                      <p className="text-xs text-slate-600 leading-relaxed pl-5">
+                        {detail.description}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              );
+            })()}
 
             <div className="pt-2 border-t border-slate-100">
               <Link
