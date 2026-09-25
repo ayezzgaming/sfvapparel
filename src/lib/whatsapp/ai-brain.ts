@@ -173,6 +173,10 @@ function cleanWhatsAppChat(text: string, stripGreeting: boolean = false): string
   // Strip <think>...</think> reasoning blocks
   cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 
+  // Strip English internal monologue / Chain of Thought patterns
+  cleaned = cleaned.replace(/^(?:Okay|Alright|Let me|The user|I need to|First, let's|Based on the|Earlier in the conversation|Looking at the)[\s\S]*?(?=\n\n(?:Hai|Salam|Waalaikum|Baik|Untuk|Terima|Boleh|Pakej|Jersi)|\n\n[A-Z]|$)/i, '').trim();
+  cleaned = cleaned.replace(/^[\s\S]*?(?=(?:Hai|Salam|Waalaikum|Baik|Untuk|Terima|Boleh|Pakej|Jersi)[\s,])/i, '').trim();
+
   // Replace any stale vercel.app links with official sfvapparel.my
   cleaned = cleaned.replace(/https?:\/\/[a-zA-Z0-9_-]+\.vercel\.app/gi, 'https://sfvapparel.my');
 
@@ -224,29 +228,84 @@ function cleanWhatsAppChat(text: string, stripGreeting: boolean = false): string
 }
 
 /**
- * Multi-Provider LLM Caller with OpenRouter Super Power Free Models Prioritized
+ * Multi-Provider LLM Caller prioritizing ultra-fast Groq LPU & Google Gemini with curated OpenRouter fallback
  */
 async function callLlmWithFallback(
   messages: { role: string; content: string }[],
-  temperature: number = 0.70,
-  maxTokens: number = 800
+  temperature: number = 0.50,
+  maxTokens: number = 400
 ): Promise<string | null> {
+  // 1. Try Groq for ultra-fast, high-speed LPU response
+  const groqKey = getEffectiveGroqKey();
+  if (groqKey) {
+    const groqModels = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
+    for (const model of groqModels) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${groqKey}`,
+          },
+          body: JSON.stringify({
+            model,
+            messages,
+            temperature,
+            max_tokens: maxTokens,
+          }),
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          const content = data.choices?.[0]?.message?.content?.trim();
+          if (content && content.length > 5 && !content.toLowerCase().startsWith('okay, the user')) return content;
+        }
+      } catch {}
+    }
+  }
+
+  // 2. Try Google Gemini
+  if (GEMINI_API_KEY) {
+    try {
+      const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+      const contents = messages.map((m) => ({
+        role: m.role === 'system' || m.role === 'user' ? 'user' : 'model',
+        parts: [{ text: m.content }],
+      }));
+
+      const res = await fetch(geminiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents,
+          generationConfig: { temperature, maxOutputTokens: maxTokens },
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        if (content && content.length > 5 && !content.toLowerCase().startsWith('okay, the user')) return content;
+      }
+    } catch {}
+  }
+
+  // 3. Try Curated OpenRouter Multilingual Models (Non-reasoning / Direct response only)
   const openRouterKey = getEffectiveOpenRouterKey();
   if (openRouterKey) {
-    const openRouterFreeModels = [
+    const openRouterModels = [
       'qwen/qwen3.8-27b:free',
-      'nex-agi/nex-n2.5-pro:free',
       'google/gemma-4-31b-it:free',
-      'thinkingmachines/inkling:free',
-      'nvidia/nemotron-3-super-120b-a12b:free',
-      'inclusionai/ling-3.0-flash-fin:free',
       'z-ai/glm-5.2:free',
-      'dots-studio/dots-3-note-preview:free',
-      'liquid/lfm-2.5-2.6b:free',
-      'thinkingmachines/inkling-small:free'
+      'liquid/lfm-2.5-2.6b:free'
     ];
 
-    for (const model of openRouterFreeModels) {
+    for (const model of openRouterModels) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 6000);
@@ -272,65 +331,10 @@ async function callLlmWithFallback(
         if (res.ok) {
           const data = await res.json();
           const content = data.choices?.[0]?.message?.content?.trim();
-          if (content && content.length > 5) return content;
+          if (content && content.length > 5 && !content.toLowerCase().startsWith('okay, the user')) return content;
         }
       } catch {}
     }
-  }
-
-  // 2. Try Groq for ultra-fast fallback
-  const groqKey = getEffectiveGroqKey();
-  if (groqKey) {
-    const groqModels = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b'];
-    for (const model of groqModels) {
-      try {
-        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${groqKey}`,
-          },
-          body: JSON.stringify({
-            model,
-            messages,
-            temperature,
-            max_tokens: maxTokens,
-          }),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          const content = data.choices?.[0]?.message?.content?.trim();
-          if (content && content.length > 5) return content;
-        }
-      } catch {}
-    }
-  }
-
-  // 3. Try Google Gemini
-  if (GEMINI_API_KEY) {
-    try {
-      const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-      const contents = messages.map((m) => ({
-        role: m.role === 'system' || m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.content }],
-      }));
-
-      const res = await fetch(geminiEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents,
-          generationConfig: { temperature, maxOutputTokens: maxTokens },
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-        if (content && content.length > 5) return content;
-      }
-    } catch {}
   }
 
   return null;
@@ -939,7 +943,11 @@ WAKTU SEMASA KILANG:
 - DILARANG SAMA SEKALI memanggil pelanggan dengan sebutan "nak", "kamu", atau "kau".`;
 
   const systemPrompt = `Anda adalah Pembantu Khidmat Pelanggan (CS) rasmi Kilang SFV APPAREL di WhatsApp.
-Bercakaplah dengan gaya staf jurujual manusia sebenar yang mesra, profesional, bersahaja, terus ke topik soalan (2-4 ayat pendek sahaja).
+
+=== PERATURAN BAHASA & FORMAT MUTLAK ===
+1. WAJIB 100% BAHASA MELAYU STANDARD / PASAR MALAYSIA YANG RAMAH, SOPAN & MESRA.
+2. DILARANG SAMA SEKALI BERFIKIR SECARA TERBUKA / MONOLOG DALAM BAHASA INGGERIS (CONTOH DILARANG KERAS: "Okay, the user just said...", "Let me recall...", "I need to confirm...", "Earlier in the conversation..."). TERUS BERIKAN JAWAPAN AKHIR SEBAGAI STAF MANUSIA!
+3. JAWAPAN WAJIB RINGKAS & PADAT: Maksimum 2 hingga 3 perenggan pendek sahaja (30 hingga 50 patah perkataan). Jangan buat karangan panjang lebar!
 
 ${customerIdentityDirective}
 
@@ -952,7 +960,7 @@ ${livingSystemContext}
    - JIKA PELANGGAN BERTANYA SOALAN ATAU MEMINTA MAKLUMAT (contohnya "berapa harga", "boleh bayar full", "alamat kat mana", "bisa siap 1 hari", "berapa lama selesai", "katalog SVF0071", "batal pesanan", dll): DILARANG memulakan jawapan dengan "Hai!" atau sapaan berulang. TERUS JAWAB soalan pelanggan secara terus, natural, dan ringkas.
 
 2. NADA RAMAH, PROFESIONAL & TIDAK DEFENSIVE:
-   - Jawab dalam 2 hingga 4 ayat pendek yang padat dan jelas.
+   - Jawab dalam 2 hingga 3 perenggan pendek yang padat dan jelas.
    - JANGAN bersikap garang, defensif, atau sarkastik apabila pelanggan ragu-ragu atau skeptikal (CONTOH SALAH: "Tak percaya pun wajar!").
    - JIKA PELANGGAN RAGU-RAGU / TANYA BUKTI KILANG: Jawab dengan tenang dan penuh keyakinan bahawa SFV APPAREL adalah kilang berdaftar (SFV Ventures Marketing, SSM 202303194821) beroperasi di Kajang, Selangor, dan menawarkan jaminan kualiti 1-to-1 QC.
 
