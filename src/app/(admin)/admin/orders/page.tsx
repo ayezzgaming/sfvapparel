@@ -32,7 +32,10 @@ import {
   Layers,
   Download,
   ExternalLink,
-  RotateCcw
+  RotateCcw,
+  UploadCloud,
+  Loader2,
+  Image as ImageIcon
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import {
@@ -81,11 +84,15 @@ export default function AdminOrdersPage() {
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
 
-  // Proofing & Revision Upload State
+  // Proofing & Revision Upload State (VPS Storage & Sharp HD Compression)
   const [proofFrontUrl, setProofFrontUrl] = useState('');
   const [proofBackUrl, setProofBackUrl] = useState('');
   const [proofDesignerNotes, setProofDesignerNotes] = useState('');
   const [isUploadingProof, setIsUploadingProof] = useState(false);
+  const [isUploadingFront, setIsUploadingFront] = useState(false);
+  const [isUploadingBack, setIsUploadingBack] = useState(false);
+  const [frontUploadMeta, setFrontUploadMeta] = useState<{ sizeBefore?: number; sizeAfter?: number; savedPercent?: number; name?: string } | null>(null);
+  const [backUploadMeta, setBackUploadMeta] = useState<{ sizeBefore?: number; sizeAfter?: number; savedPercent?: number; name?: string } | null>(null);
   const [selectedRevisionForModal, setSelectedRevisionForModal] = useState<ProofRevision | null>(null);
 
   // Authoritative Database Fetch directly from Supabase
@@ -251,17 +258,97 @@ export default function AdminOrdersPage() {
     setNewStatus(ord.status);
     setNewTracking(ord.tracking_number || '');
     setNewNotes(ord.production_notes || '');
-    setProofFrontUrl(ord.proof_artwork_url || '');
-    setProofBackUrl(ord.proof_artwork_back_url || '');
-    setProofDesignerNotes(ord.proof_notes || '');
+    setProofFrontUrl('');
+    setProofBackUrl('');
+    setProofDesignerNotes('');
+    setFrontUploadMeta(null);
+    setBackUploadMeta(null);
     setUpdateSaved(false);
+  };
+
+  const handleFileChangeFront = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeOrder) return;
+
+    setIsUploadingFront(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', `order-proofs/${activeOrder.order_number}`);
+
+      const res = await fetch('/api/media/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success && data.url) {
+        setProofFrontUrl(data.url);
+        setFrontUploadMeta({
+          sizeBefore: data.originalSizeBytes || file.size,
+          sizeAfter: data.sizeBytes,
+          savedPercent: data.savedPercentage,
+          name: file.name,
+        });
+        setWaToast({
+          success: true,
+          message: `Artwork Hadapan berjaya dimuat naik ke VPS & dioptimum (${data.savedPercentage || 0}% lebih padat)!`,
+        });
+      } else {
+        setWaToast({ success: false, message: data.message || 'Gagal memuat naik imej ke VPS.' });
+      }
+    } catch (err) {
+      setWaToast({ success: false, message: 'Ralat sambungan muat naik fail ke VPS.' });
+    } finally {
+      setIsUploadingFront(false);
+      setTimeout(() => setWaToast(null), 4000);
+    }
+  };
+
+  const handleFileChangeBack = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeOrder) return;
+
+    setIsUploadingBack(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', `order-proofs/${activeOrder.order_number}`);
+
+      const res = await fetch('/api/media/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success && data.url) {
+        setProofBackUrl(data.url);
+        setBackUploadMeta({
+          sizeBefore: data.originalSizeBytes || file.size,
+          sizeAfter: data.sizeBytes,
+          savedPercent: data.savedPercentage,
+          name: file.name,
+        });
+        setWaToast({
+          success: true,
+          message: `Artwork Belakang berjaya dimuat naik ke VPS & dioptimum (${data.savedPercentage || 0}% lebih padat)!`,
+        });
+      } else {
+        setWaToast({ success: false, message: data.message || 'Gagal memuat naik imej ke VPS.' });
+      }
+    } catch (err) {
+      setWaToast({ success: false, message: 'Ralat sambungan muat naik fail ke VPS.' });
+    } finally {
+      setIsUploadingBack(false);
+      setTimeout(() => setWaToast(null), 4000);
+    }
   };
 
   const handleUploadProof = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeOrder) return;
     if (!proofFrontUrl.trim()) {
-      setWaToast({ success: false, message: 'Sila masukkan URL / pautan Artwork Hadapan.' });
+      setWaToast({ success: false, message: 'Sila muat naik fail Artwork Hadapan terlebih dahulu.' });
       setTimeout(() => setWaToast(null), 3000);
       return;
     }
@@ -277,13 +364,18 @@ export default function AdminOrdersPage() {
       });
 
       if (res.success) {
-        setWaToast({ success: true, message: res.message || 'Visual Proof berjaya dimuat naik!' });
+        setWaToast({ success: true, message: res.message || 'Visual Proof berjaya dihantar ke pelanggan!' });
+        setProofFrontUrl('');
+        setProofBackUrl('');
+        setProofDesignerNotes('');
+        setFrontUploadMeta(null);
+        setBackUploadMeta(null);
         fetchLiveOrders();
       } else {
-        setWaToast({ success: false, message: res.message || 'Gagal memuat naik visual proof.' });
+        setWaToast({ success: false, message: res.message || 'Gagal menghantar visual proof.' });
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Ralat memuat naik visual proof';
+      const msg = err instanceof Error ? err.message : 'Ralat menghantar visual proof';
       setWaToast({ success: false, message: msg });
     } finally {
       setIsUploadingProof(false);
@@ -830,64 +922,185 @@ export default function AdminOrdersPage() {
                     </div>
                   )}
 
-                  {/* Upload / Submit New Revision Form */}
-                  <form onSubmit={handleUploadProof} className="p-3.5 bg-slate-50 dark:bg-zinc-800/40 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 space-y-3">
-                    <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 block">
-                      {activeOrder.proof_revisions && activeOrder.proof_revisions.length > 0
-                        ? `Muat Naik Draf Baharu (REVISI ${(activeOrder.proof_revisions.length || 0) + 1})`
-                        : 'Muat Naik Draf Mockup Pertama (REVISI 1)'}
-                    </span>
+                  {/* Upload / Submit New Revision Form (VPS Storage + Sharp HD Compression) */}
+                  <form onSubmit={handleUploadProof} className="p-4 bg-slate-50 dark:bg-zinc-800/40 rounded-2xl border border-slate-200/80 dark:border-zinc-700/80 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 block">
+                        {activeOrder.proof_revisions && activeOrder.proof_revisions.length > 0
+                          ? `Muat Naik Draf Baharu (REVISI ${(activeOrder.proof_revisions.length || 0) + 1})`
+                          : 'Muat Naik Draf Mockup Pertama (REVISI 1)'}
+                      </span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                        ⚡ HD Compressed • Storan VPS
+                      </span>
+                    </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div className="space-y-1">
-                        <label className="font-semibold text-slate-700 dark:text-zinc-300">
-                          URL Artwork Depan <span className="text-rose-500">*</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* FRONT ARTWORK UPLOAD DROPZONE */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-800 dark:text-zinc-200 flex items-center justify-between">
+                          <span>Artwork Hadapan (Front) <span className="text-rose-500">*</span></span>
+                          {proofFrontUrl && (
+                            <span className="text-[10px] text-emerald-600 font-semibold">Tersedia di VPS</span>
+                          )}
                         </label>
-                        <input
-                          type="url"
-                          value={proofFrontUrl}
-                          onChange={(e) => setProofFrontUrl(e.target.value)}
-                          placeholder="https://.../mockup-front.png"
-                          className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#00BDFF] font-mono"
-                          required
-                        />
+
+                        {proofFrontUrl ? (
+                          <div className="relative rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 p-2 group flex items-center gap-3">
+                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200 relative">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={proofFrontUrl} alt="Hadapan" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="min-w-0 flex-1 text-xs space-y-0.5">
+                              <p className="font-bold text-slate-800 dark:text-zinc-200 truncate">
+                                {frontUploadMeta?.name || 'artwork-front.webp'}
+                              </p>
+                              {frontUploadMeta?.sizeAfter && (
+                                <p className="text-[10.5px] text-slate-500">
+                                  Saiz: <span className="font-mono font-semibold">{(frontUploadMeta.sizeAfter / 1024).toFixed(0)} KB</span>
+                                  {frontUploadMeta.savedPercent ? ` • Jimat ${frontUploadMeta.savedPercent}%` : ''}
+                                </p>
+                              )}
+                              <span className="text-[9.5px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                                VPS Media Vault
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setProofFrontUrl('');
+                                setFrontUploadMeta(null);
+                              }}
+                              className="p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                              title="Padam & Muat Naik Semula"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <label className="border-2 border-dashed border-slate-300 dark:border-zinc-700 hover:border-[#00BDFF] bg-white dark:bg-zinc-900 rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-colors group relative min-h-[110px]">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileChangeFront}
+                              disabled={isUploadingFront}
+                              className="sr-only"
+                            />
+                            {isUploadingFront ? (
+                              <div className="flex flex-col items-center space-y-2 text-xs text-blue-600">
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <span className="font-semibold">Mengoptimum & Memampatkan ke VPS...</span>
+                              </div>
+                            ) : (
+                              <>
+                                <UploadCloud className="w-6 h-6 text-slate-400 group-hover:text-[#00BDFF] transition-colors mb-1.5" />
+                                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+                                  Pilih Fail Artwork Depan
+                                </span>
+                                <span className="text-[10px] text-slate-400 mt-0.5">
+                                  PNG, JPG, WebP (Auto-Compressed HD)
+                                </span>
+                              </>
+                            )}
+                          </label>
+                        )}
                       </div>
 
-                      <div className="space-y-1">
-                        <label className="font-semibold text-slate-700 dark:text-zinc-300">
-                          URL Artwork Belakang <span className="text-slate-400 font-normal">(Pilihan)</span>
+                      {/* BACK ARTWORK UPLOAD DROPZONE */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-800 dark:text-zinc-200 flex items-center justify-between">
+                          <span>Artwork Belakang (Back) <span className="text-slate-400 font-normal">(Pilihan)</span></span>
+                          {proofBackUrl && (
+                            <span className="text-[10px] text-emerald-600 font-semibold">Tersedia di VPS</span>
+                          )}
                         </label>
-                        <input
-                          type="url"
-                          value={proofBackUrl}
-                          onChange={(e) => setProofBackUrl(e.target.value)}
-                          placeholder="https://.../mockup-back.png"
-                          className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#00BDFF] font-mono"
-                        />
+
+                        {proofBackUrl ? (
+                          <div className="relative rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 p-2 group flex items-center gap-3">
+                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200 relative">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={proofBackUrl} alt="Belakang" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="min-w-0 flex-1 text-xs space-y-0.5">
+                              <p className="font-bold text-slate-800 dark:text-zinc-200 truncate">
+                                {backUploadMeta?.name || 'artwork-back.webp'}
+                              </p>
+                              {backUploadMeta?.sizeAfter && (
+                                <p className="text-[10.5px] text-slate-500">
+                                  Saiz: <span className="font-mono font-semibold">{(backUploadMeta.sizeAfter / 1024).toFixed(0)} KB</span>
+                                  {backUploadMeta.savedPercent ? ` • Jimat ${backUploadMeta.savedPercent}%` : ''}
+                                </p>
+                              )}
+                              <span className="text-[9.5px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                                VPS Media Vault
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setProofBackUrl('');
+                                setBackUploadMeta(null);
+                              }}
+                              className="p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                              title="Padam & Muat Naik Semula"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <label className="border-2 border-dashed border-slate-300 dark:border-zinc-700 hover:border-[#00BDFF] bg-white dark:bg-zinc-900 rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-colors group relative min-h-[110px]">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileChangeBack}
+                              disabled={isUploadingBack}
+                              className="sr-only"
+                            />
+                            {isUploadingBack ? (
+                              <div className="flex flex-col items-center space-y-2 text-xs text-blue-600">
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <span className="font-semibold">Mengoptimum & Memampatkan ke VPS...</span>
+                              </div>
+                            ) : (
+                              <>
+                                <UploadCloud className="w-6 h-6 text-slate-400 group-hover:text-[#00BDFF] transition-colors mb-1.5" />
+                                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+                                  Pilih Fail Artwork Belakang
+                                </span>
+                                <span className="text-[10px] text-slate-400 mt-0.5">
+                                  PNG, JPG, WebP (Pilihan)
+                                </span>
+                              </>
+                            )}
+                          </label>
+                        )}
                       </div>
                     </div>
 
                     <div className="space-y-1 text-xs">
-                      <label className="font-semibold text-slate-700 dark:text-zinc-300">
-                        Nota Designer untuk Pelanggan <span className="text-slate-400 font-normal">(Penerangan perubahan)</span>
+                      <label className="font-bold text-slate-700 dark:text-zinc-300 block">
+                        Nota Designer untuk Pelanggan <span className="text-slate-400 font-normal">(Penerangan penambahbaikan / pembetulan)</span>
                       </label>
                       <input
                         type="text"
                         value={proofDesignerNotes}
                         onChange={(e) => setProofDesignerNotes(e.target.value)}
                         placeholder="cth: Warna kolar ditukar kepada hitam, saiz logo dada dibesarkan 10% mengikut permintaan..."
-                        className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#00BDFF]"
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#00BDFF]"
                       />
                     </div>
 
-                    <div className="flex items-center justify-end gap-2 pt-1">
+                    <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-200/60 dark:border-zinc-700/60">
                       <button
                         type="submit"
-                        disabled={isUploadingProof || !proofFrontUrl.trim()}
-                        className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white font-bold text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                        disabled={isUploadingProof || isUploadingFront || isUploadingBack || !proofFrontUrl.trim()}
+                        className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#00BDFF] to-[#007AFF] hover:opacity-95 text-white font-bold text-xs shadow-md shadow-blue-500/20 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                       >
                         {isUploadingProof ? (
-                          <span>Menghantar Mockup...</span>
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>Menyimpan ke Log Audit...</span>
+                          </>
                         ) : (
                           <>
                             <Send className="w-3.5 h-3.5" />
