@@ -21,11 +21,16 @@ import {
   CreditCard,
   ShieldCheck,
   LogOut,
-  User,
   Settings,
   Loader2,
   ChevronDown,
-  AlertCircle
+  AlertCircle,
+  KeyRound,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  X,
+  Lock
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 
@@ -49,12 +54,22 @@ export default function AdminLayoutShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { admin, isAuthenticated, isLoading: authLoading, logout } = useAdminAuth();
+  const { admin, isAuthenticated, isLoading: authLoading, logout, updateProfile } = useAdminAuth();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [whatsappStatus, setWhatsappStatus] = useState<'WORKING' | 'SCAN_QR_CODE' | 'DISCONNECTED' | 'LOADING'>('LOADING');
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  
+  // Quick Change Password Modal
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordFeedback, setPasswordFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   // If on login page, render children directly without shell
@@ -107,6 +122,53 @@ export default function AdminLayoutShell({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleChangePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isChangingPassword) return;
+
+    setPasswordFeedback(null);
+
+    if (!currentPassword) {
+      setPasswordFeedback({ type: 'error', message: 'Sila masukkan kata laluan semasa anda.' });
+      return;
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      setPasswordFeedback({ type: 'error', message: 'Kata laluan baru mestilah sekurang-kurangnya 6 aksara.' });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordFeedback({ type: 'error', message: 'Pengesahan kata laluan baru tidak sepadan.' });
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const res = await updateProfile({
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+
+      if (res.success) {
+        setPasswordFeedback({ type: 'success', message: 'Kata laluan pentadbir berjaya ditukar!' });
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setTimeout(() => {
+          setIsPasswordModalOpen(false);
+          setPasswordFeedback(null);
+        }, 1500);
+      } else {
+        setPasswordFeedback({ type: 'error', message: res.message || 'Gagal menukar kata laluan.' });
+      }
+    } catch {
+      setPasswordFeedback({ type: 'error', message: 'Ralat sambungan pelayan.' });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   // Return bare page if on /admin/login
   if (isLoginPage) {
     return <>{children}</>;
@@ -115,9 +177,9 @@ export default function AdminLayoutShell({
   // Show auth loading state
   if (authLoading || !isAuthenticated) {
     return (
-      <div className="h-screen w-full bg-slate-950 flex flex-col items-center justify-center space-y-3">
+      <div className="h-screen w-full bg-slate-50 flex flex-col items-center justify-center space-y-3">
         <Loader2 className="w-8 h-8 animate-spin text-[#00BDFF]" />
-        <p className="text-xs text-slate-400 font-medium">Mengesahkan sesi pentadbir...</p>
+        <p className="text-xs text-slate-500 font-medium">Mengesahkan sesi pentadbir...</p>
       </div>
     );
   }
@@ -238,14 +300,22 @@ export default function AdminLayoutShell({
                 </div>
 
                 <div className="py-1">
-                  <Link
-                    href="/admin/admins?tab=team"
-                    onClick={() => setIsProfileMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 transition-colors"
+                  {/* DIRECT BUTTON: TUKAR KATA LALUAN */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      setPasswordFeedback(null);
+                      setCurrentPassword('');
+                      setNewPassword('');
+                      setConfirmPassword('');
+                      setIsPasswordModalOpen(true);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors text-left cursor-pointer"
                   >
-                    <Users className="w-4 h-4 text-slate-400" />
-                    <span>Pengurusan Pentadbir</span>
-                  </Link>
+                    <KeyRound className="w-4 h-4 text-[#0052FF]" />
+                    <span>Tukar Kata Laluan</span>
+                  </button>
 
                   <Link
                     href="/admin/admins?tab=profile"
@@ -253,7 +323,16 @@ export default function AdminLayoutShell({
                     className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 transition-colors"
                   >
                     <Settings className="w-4 h-4 text-slate-400" />
-                    <span>Tetapan Profil & Sekuriti</span>
+                    <span>Tetapan Emel & Profil</span>
+                  </Link>
+
+                  <Link
+                    href="/admin/admins?tab=team"
+                    onClick={() => setIsProfileMenuOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <Users className="w-4 h-4 text-slate-400" />
+                    <span>Pengurusan Pentadbir</span>
                   </Link>
                 </div>
 
@@ -383,6 +462,138 @@ export default function AdminLayoutShell({
         )}
       </div>
 
+      {/* =========================================================================
+          MODAL: DIRECT TUKAR KATA LALUAN (ACCESSIBLE FROM HEADER EVERYWHERE)
+         ========================================================================= */}
+      {isPasswordModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-scale-in">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#0052FF] flex items-center justify-center font-bold">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Tukar Kata Laluan Pentadbir</h3>
+                  <p className="text-[11px] text-slate-400">{admin?.email}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPasswordModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {passwordFeedback && (
+              <div
+                className={`p-3 rounded-2xl border text-xs flex items-start gap-2.5 ${
+                  passwordFeedback.type === 'success'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                    : 'bg-rose-50 border-rose-200 text-rose-700'
+                }`}
+              >
+                {passwordFeedback.type === 'success' ? (
+                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                )}
+                <span className="leading-snug">{passwordFeedback.message}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleChangePasswordSubmit} className="space-y-3.5">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Kata Laluan Semasa <span className="text-rose-500">*</span>
+                </label>
+                <div className="flex items-center rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 focus-within:bg-white focus-within:border-[#00BDFF] transition-all">
+                  <Lock className="w-4 h-4 text-slate-400 mr-2.5" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Masukkan kata laluan semasa"
+                    required
+                    className="w-full text-xs font-semibold text-slate-900 bg-transparent focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-slate-400 hover:text-slate-700 ml-2 focus:outline-none cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Kata Laluan Baru <span className="text-rose-500">*</span>
+                </label>
+                <div className="flex items-center rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 focus-within:bg-white focus-within:border-[#00BDFF] transition-all">
+                  <KeyRound className="w-4 h-4 text-slate-400 mr-2.5" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Min 6 aksara"
+                    required
+                    className="w-full text-xs font-semibold text-slate-900 bg-transparent focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Sahkan Kata Laluan Baru <span className="text-rose-500">*</span>
+                </label>
+                <div className="flex items-center rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 focus-within:bg-white focus-within:border-[#00BDFF] transition-all">
+                  <KeyRound className="w-4 h-4 text-slate-400 mr-2.5" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Ulang kata laluan baru"
+                    required
+                    className="w-full text-xs font-semibold text-slate-900 bg-transparent focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsPasswordModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs shadow-md shadow-blue-500/20 active:scale-95 disabled:opacity-40 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  {isChangingPassword ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Simpan Kata Laluan Baru</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Logout Confirmation Modal */}
       {isLogoutModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
@@ -402,7 +613,7 @@ export default function AdminLayoutShell({
               <button
                 type="button"
                 onClick={() => setIsLogoutModalOpen(false)}
-                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors w-1/2"
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors w-1/2 cursor-pointer"
               >
                 Batal
               </button>
@@ -412,7 +623,7 @@ export default function AdminLayoutShell({
                   setIsLogoutModalOpen(false);
                   logout();
                 }}
-                className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-500/20 active:scale-95 transition-all w-1/2 flex items-center justify-center gap-1.5"
+                className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-500/20 active:scale-95 transition-all w-1/2 flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Log Keluar</span>

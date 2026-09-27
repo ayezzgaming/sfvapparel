@@ -14,7 +14,9 @@ import {
   TrendingUp,
   Package,
   Layers,
-  CheckCircle2
+  CheckCircle2,
+  KeyRound,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
@@ -47,7 +49,14 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            href="/admin/admins?tab=password"
+            className="px-3.5 py-2 rounded-full bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 flex items-center gap-1.5 transition-all shadow-xs"
+          >
+            <KeyRound className="w-4 h-4 text-[#0052FF]" />
+            <span>Tukar Kata Laluan</span>
+          </Link>
           <Link
             href="/admin/catalog"
             className="px-4 py-2 rounded-full bg-[#00BDFF] hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs"

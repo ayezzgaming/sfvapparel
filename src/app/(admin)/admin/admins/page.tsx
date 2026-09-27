@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { AdminUser, AdminRole } from '@/types/database';
 import {
@@ -22,15 +23,20 @@ import {
   Eye,
   EyeOff,
   UserCheck,
-  UserX,
-  X,
-  Sparkles
+  X
 } from 'lucide-react';
 
-export default function AdminManagementPage() {
+function AdminManagementContent() {
+  const searchParams = useSearchParams();
   const { admin: currentAdmin, updateProfile, role: currentRole } = useAdminAuth();
 
-  const [activeTab, setActiveTab] = useState<'team' | 'profile'>('team');
+  const initialTab = searchParams.get('tab') === 'password'
+    ? 'password'
+    : searchParams.get('tab') === 'profile'
+    ? 'profile'
+    : 'team';
+
+  const [activeTab, setActiveTab] = useState<'team' | 'password' | 'profile'>(initialTab);
   const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,19 +59,22 @@ export default function AdminManagementPage() {
   const [newPhone, setNewPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form states for Reset Password Modal
+  // Form states for Reset Password Modal (when Super Admin resets other admins)
   const [targetNewPassword, setTargetNewPassword] = useState('');
   const [showTargetPassword, setShowTargetPassword] = useState(false);
+
+  // Form states for Change Password Tab (Personal password change)
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPersonalPassword, setNewPersonalPassword] = useState('');
+  const [confirmPersonalPassword, setConfirmPersonalPassword] = useState('');
+  const [showPersonalPassword, setShowPersonalPassword] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Form states for My Profile Tab
   const [profileEmail, setProfileEmail] = useState(currentAdmin?.email || '');
   const [profileName, setProfileName] = useState(currentAdmin?.full_name || '');
   const [profilePhone, setProfilePhone] = useState(currentAdmin?.phone || '');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPersonalPassword, setNewPersonalPassword] = useState('');
-  const [confirmPersonalPassword, setConfirmPersonalPassword] = useState('');
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
-  const [showPersonalPassword, setShowPersonalPassword] = useState(false);
 
   useEffect(() => {
     if (currentAdmin) {
@@ -100,7 +109,7 @@ export default function AdminManagementPage() {
     setFeedback({ type, message });
     setTimeout(() => {
       setFeedback(null);
-    }, 4000);
+    }, 4500);
   };
 
   // Handle Create Admin
@@ -255,7 +264,49 @@ export default function AdminManagementPage() {
     }
   };
 
-  // Handle My Profile Update
+  // Handle Personal Password Change (Tab 2)
+  const handleChangeMyPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isChangingPassword) return;
+
+    if (!currentPassword) {
+      showToast('error', 'Sila masukkan kata laluan semasa anda.');
+      return;
+    }
+
+    if (!newPersonalPassword || newPersonalPassword.length < 6) {
+      showToast('error', 'Kata laluan baru mestilah sekurang-kurangnya 6 aksara.');
+      return;
+    }
+
+    if (newPersonalPassword !== confirmPersonalPassword) {
+      showToast('error', 'Pengesahan kata laluan baru tidak sepadan.');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const res = await updateProfile({
+        current_password: currentPassword,
+        new_password: newPersonalPassword,
+      });
+
+      if (res.success) {
+        showToast('success', 'Kata laluan pentadbir berjaya ditukar!');
+        setCurrentPassword('');
+        setNewPersonalPassword('');
+        setConfirmPersonalPassword('');
+      } else {
+        showToast('error', res.message || 'Gagal menukar kata laluan.');
+      }
+    } catch {
+      showToast('error', 'Ralat sambungan pelayan.');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  // Handle My Profile Info & Email Update (Tab 3)
   const handleSaveMyProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isUpdatingProfile) return;
@@ -270,46 +321,16 @@ export default function AdminManagementPage() {
       return;
     }
 
-    if (newPersonalPassword) {
-      if (newPersonalPassword.length < 6) {
-        showToast('error', 'Kata laluan baru mestilah sekurang-kurangnya 6 aksara.');
-        return;
-      }
-      if (newPersonalPassword !== confirmPersonalPassword) {
-        showToast('error', 'Pengesahan kata laluan baru tidak sepadan.');
-        return;
-      }
-      if (!currentPassword) {
-        showToast('error', 'Sila masukkan kata laluan semasa untuk menukar kata laluan baru.');
-        return;
-      }
-    }
-
     setIsUpdatingProfile(true);
     try {
-      const payload: {
-        email?: string;
-        full_name?: string;
-        phone?: string;
-        current_password?: string;
-        new_password?: string;
-      } = {
+      const res = await updateProfile({
         email: profileEmail.trim(),
         full_name: profileName.trim(),
         phone: profilePhone.trim() || undefined,
-      };
+      });
 
-      if (newPersonalPassword) {
-        payload.current_password = currentPassword;
-        payload.new_password = newPersonalPassword;
-      }
-
-      const res = await updateProfile(payload);
       if (res.success) {
-        showToast('success', 'Profil dan tetapan keselamatan berjaya disimpan.');
-        setCurrentPassword('');
-        setNewPersonalPassword('');
-        setConfirmPersonalPassword('');
+        showToast('success', 'Maklumat profil dan emel berjaya disimpan.');
       } else {
         showToast('error', res.message || 'Gagal mengemaskini profil.');
       }
@@ -335,7 +356,7 @@ export default function AdminManagementPage() {
   const operatorCount = admins.filter((a) => a.role === 'operator').length;
 
   return (
-    <div className="space-y-6 pb-12 select-none">
+    <div className="space-y-6 pb-12 select-none font-sans">
       {/* Toast Notification Banner */}
       {feedback && (
         <div
@@ -363,11 +384,11 @@ export default function AdminManagementPage() {
             </h1>
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0052FF] text-[11px] font-bold border border-blue-100">
               <ShieldCheck className="w-3.5 h-3.5 text-[#0052FF]" />
-              <span>Kawalan Akses</span>
+              <span>Kawalan Keselamatan</span>
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Urus akaun pentadbir kilang, hak akses peranan, dan tetapan keselamatan profil anda.
+            Urus akaun pentadbir kilang, tukar kata laluan, dan kemaskini emel log masuk anda.
           </p>
         </div>
 
@@ -380,6 +401,15 @@ export default function AdminManagementPage() {
             title="Muat Semula Senarai"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-[#0052FF]' : ''}`} />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('password')}
+            className="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2 shadow-2xs transition-all cursor-pointer"
+          >
+            <KeyRound className="w-4 h-4 text-[#0052FF]" />
+            <span>Tukar Kata Laluan</span>
           </button>
 
           {(currentRole === 'super_admin' || currentRole === 'admin') && (
@@ -443,25 +473,40 @@ export default function AdminManagementPage() {
         <button
           type="button"
           onClick={() => setActiveTab('team')}
-          className={`pb-3 text-xs font-bold transition-all relative cursor-pointer ${
+          className={`pb-3 text-xs font-bold transition-all relative cursor-pointer flex items-center gap-1.5 ${
             activeTab === 'team'
               ? 'text-[#0052FF] border-b-2 border-[#0052FF]'
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
+          <Users className="w-4 h-4" />
           <span>Pasukan Pentadbir ({admins.length})</span>
         </button>
 
         <button
           type="button"
+          onClick={() => setActiveTab('password')}
+          className={`pb-3 text-xs font-bold transition-all relative cursor-pointer flex items-center gap-1.5 ${
+            activeTab === 'password'
+              ? 'text-[#0052FF] border-b-2 border-[#0052FF]'
+              : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <KeyRound className="w-4 h-4" />
+          <span>Tukar Kata Laluan</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('profile')}
-          className={`pb-3 text-xs font-bold transition-all relative cursor-pointer ${
+          className={`pb-3 text-xs font-bold transition-all relative cursor-pointer flex items-center gap-1.5 ${
             activeTab === 'profile'
               ? 'text-[#0052FF] border-b-2 border-[#0052FF]'
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <span>Profil & Keselamatan Saya</span>
+          <User className="w-4 h-4" />
+          <span>Maklumat Emel & Profil</span>
         </button>
       </div>
 
@@ -507,7 +552,7 @@ export default function AdminManagementPage() {
                 <Users className="w-10 h-10 text-slate-300 mx-auto" />
                 <p className="text-sm font-semibold text-slate-700">Tiada pentadbir ditemui</p>
                 <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                  Tiada rekod pentadbir yang sepadan dengan carian anda atau pangkalan data masih belum diisi.
+                  Tiada rekod pentadbir yang sepadan dengan carian anda.
                 </p>
               </div>
             ) : (
@@ -654,11 +699,109 @@ export default function AdminManagementPage() {
         </div>
       )}
 
-      {/* TAB 2: MY PROFILE & SECURITY */}
+      {/* TAB 2: CHANGE PASSWORD (FOCUSED DEDICATED TAB) */}
+      {activeTab === 'password' && (
+        <div className="max-w-xl space-y-6">
+          <form onSubmit={handleChangeMyPassword} className="space-y-6">
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0052FF] flex items-center justify-center font-bold">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900">Tukar Kata Laluan Pentadbir</h2>
+                  <p className="text-xs text-slate-400">Akaun: {currentAdmin?.email}</p>
+                </div>
+              </div>
+
+              <div className="space-y-3.5">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Kata Laluan Semasa <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="flex items-center rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 focus-within:bg-white focus-within:border-[#00BDFF] transition-all">
+                    <Lock className="w-4 h-4 text-slate-400 mr-2.5" />
+                    <input
+                      type={showPersonalPassword ? 'text' : 'password'}
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="Masukkan kata laluan semasa anda"
+                      required
+                      className="w-full text-xs font-semibold text-slate-900 bg-transparent focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPersonalPassword(!showPersonalPassword)}
+                      className="text-slate-400 hover:text-slate-700 ml-2 focus:outline-none cursor-pointer"
+                    >
+                      {showPersonalPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Kata Laluan Baru <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="flex items-center rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 focus-within:bg-white focus-within:border-[#00BDFF] transition-all">
+                    <KeyRound className="w-4 h-4 text-slate-400 mr-2.5" />
+                    <input
+                      type={showPersonalPassword ? 'text' : 'password'}
+                      value={newPersonalPassword}
+                      onChange={(e) => setNewPersonalPassword(e.target.value)}
+                      placeholder="Min 6 aksara"
+                      required
+                      className="w-full text-xs font-semibold text-slate-900 bg-transparent focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Sahkan Kata Laluan Baru <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="flex items-center rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 focus-within:bg-white focus-within:border-[#00BDFF] transition-all">
+                    <KeyRound className="w-4 h-4 text-slate-400 mr-2.5" />
+                    <input
+                      type={showPersonalPassword ? 'text' : 'password'}
+                      value={confirmPersonalPassword}
+                      onChange={(e) => setConfirmPersonalPassword(e.target.value)}
+                      placeholder="Ulang kata laluan baru anda"
+                      required
+                      className="w-full text-xs font-semibold text-slate-900 bg-transparent focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isChangingPassword || !currentPassword || !newPersonalPassword || !confirmPersonalPassword}
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs shadow-md shadow-blue-500/20 active:scale-95 disabled:opacity-40 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isChangingPassword ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      <span>Menyimpan Kata Laluan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Simpan Kata Laluan Baru</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* TAB 3: MY PROFILE & EMAIL SETTINGS */}
       {activeTab === 'profile' && (
-        <div className="max-w-2xl space-y-6">
+        <div className="max-w-xl space-y-6">
           <form onSubmit={handleSaveMyProfile} className="space-y-6">
-            {/* Profile Information Box */}
             <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-4">
               <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0052FF] to-[#00BDFF] text-white flex items-center justify-center font-bold text-base shadow-sm">
@@ -670,7 +813,7 @@ export default function AdminManagementPage() {
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3.5">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
                     Emel Pentadbir
@@ -723,93 +866,26 @@ export default function AdminManagementPage() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Change Password Box */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                <Lock className="w-4 h-4 text-[#0052FF]" />
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Tukar Kata Laluan Peribadi
-                </h3>
-              </div>
-
-              <p className="text-xs text-slate-500">
-                Biarkan ruangan di bawah kosong jika anda tidak mahu menukar kata laluan semasa anda.
-              </p>
-
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Kata Laluan Semasa
-                  </label>
-                  <input
-                    type={showPersonalPassword ? 'text' : 'password'}
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="Masukkan kata laluan semasa"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:bg-white focus:border-[#00BDFF] transition-all"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      Kata Laluan Baru
-                    </label>
-                    <input
-                      type={showPersonalPassword ? 'text' : 'password'}
-                      value={newPersonalPassword}
-                      onChange={(e) => setNewPersonalPassword(e.target.value)}
-                      placeholder="Min 6 aksara"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:bg-white focus:border-[#00BDFF] transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      Sahkan Kata Laluan Baru
-                    </label>
-                    <input
-                      type={showPersonalPassword ? 'text' : 'password'}
-                      value={confirmPersonalPassword}
-                      onChange={(e) => setConfirmPersonalPassword(e.target.value)}
-                      placeholder="Ulang kata laluan baru"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:bg-white focus:border-[#00BDFF] transition-all"
-                    />
-                  </div>
-                </div>
-
+              <div className="pt-2">
                 <button
-                  type="button"
-                  onClick={() => setShowPersonalPassword(!showPersonalPassword)}
-                  className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1.5 cursor-pointer pt-1"
+                  type="submit"
+                  disabled={isUpdatingProfile || !profileEmail.trim() || !profileName.trim()}
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs shadow-md shadow-blue-500/20 active:scale-95 disabled:opacity-40 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  {showPersonalPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  <span>{showPersonalPassword ? 'Sembunyikan Kata Laluan' : 'Tunjukkan Kata Laluan'}</span>
+                  {isUpdatingProfile ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      <span>Menyimpan Maklumat...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Simpan Maklumat Profil & Emel</span>
+                    </>
+                  )}
                 </button>
               </div>
-            </div>
-
-            {/* Submit Profile Button */}
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={isUpdatingProfile || !profileName.trim()}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs shadow-md shadow-blue-500/20 active:scale-95 disabled:opacity-40 transition-all flex items-center gap-2 cursor-pointer"
-              >
-                {isUpdatingProfile ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    <span>Menyimpan...</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Simpan Perubahan Profil</span>
-                  </>
-                )}
-              </button>
             </div>
           </form>
         </div>
@@ -834,7 +910,7 @@ export default function AdminManagementPage() {
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -919,14 +995,14 @@ export default function AdminManagementPage() {
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || !newEmail.trim() || !newPassword || !newFullName.trim()}
-                  className="px-5 py-2.5 rounded-xl bg-[#0052FF] hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 active:scale-95 disabled:opacity-40 transition-all flex items-center gap-1.5"
+                  className="px-5 py-2.5 rounded-xl bg-[#0052FF] hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 active:scale-95 disabled:opacity-40 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -960,7 +1036,7 @@ export default function AdminManagementPage() {
               <button
                 type="button"
                 onClick={() => setEditAdmin(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1057,14 +1133,14 @@ export default function AdminManagementPage() {
                 <button
                   type="button"
                   onClick={() => setEditAdmin(null)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting || !editAdmin.full_name.trim()}
-                  className="px-5 py-2.5 rounded-xl bg-[#0052FF] hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 active:scale-95 disabled:opacity-40 transition-all flex items-center gap-1.5"
+                  disabled={isSubmitting || !editAdmin.full_name.trim() || !editAdmin.email.trim()}
+                  className="px-5 py-2.5 rounded-xl bg-[#0052FF] hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 active:scale-95 disabled:opacity-40 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -1080,7 +1156,7 @@ export default function AdminManagementPage() {
       )}
 
       {/* =========================================================================
-          MODAL: RESET PASSWORD
+          MODAL: RESET PASSWORD (SUPER ADMIN RESETS ANOTHER USER)
          ========================================================================= */}
       {resetPasswordAdmin && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
@@ -1098,7 +1174,7 @@ export default function AdminManagementPage() {
               <button
                 type="button"
                 onClick={() => setResetPasswordAdmin(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1125,7 +1201,7 @@ export default function AdminManagementPage() {
                   <button
                     type="button"
                     onClick={() => setShowTargetPassword(!showTargetPassword)}
-                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700"
+                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700 cursor-pointer"
                   >
                     {showTargetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -1136,14 +1212,14 @@ export default function AdminManagementPage() {
                 <button
                   type="button"
                   onClick={() => setResetPasswordAdmin(null)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || !targetNewPassword || targetNewPassword.length < 6}
-                  className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md shadow-amber-500/20 active:scale-95 disabled:opacity-40 transition-all flex items-center gap-1.5"
+                  className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md shadow-amber-500/20 active:scale-95 disabled:opacity-40 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -1179,7 +1255,7 @@ export default function AdminManagementPage() {
               <button
                 type="button"
                 onClick={() => setDeleteAdmin(null)}
-                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors w-1/2"
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors w-1/2 cursor-pointer"
               >
                 Batal
               </button>
@@ -1187,7 +1263,7 @@ export default function AdminManagementPage() {
                 type="button"
                 onClick={handleDeleteAdmin}
                 disabled={isSubmitting}
-                className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-500/20 active:scale-95 disabled:opacity-40 transition-all w-1/2 flex items-center justify-center gap-1.5"
+                className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-500/20 active:scale-95 disabled:opacity-40 transition-all w-1/2 flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 <span>Ya, Padam</span>
@@ -1197,5 +1273,20 @@ export default function AdminManagementPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminManagementPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="py-20 text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[#00BDFF] mx-auto mb-2" />
+          <p className="text-xs text-slate-500">Memuatkan halaman pentadbir...</p>
+        </div>
+      }
+    >
+      <AdminManagementContent />
+    </Suspense>
   );
 }
