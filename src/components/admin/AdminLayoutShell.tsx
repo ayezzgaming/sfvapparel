@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { AdminAuthProvider, useAdminAuth } from '@/hooks/useAdminAuth';
 import {
   Menu,
   Home,
@@ -47,11 +47,7 @@ const ADMIN_NAV = [
   { href: '/admin/admins', label: 'Pengurusan Admin', icon: ShieldCheck },
 ];
 
-export default function AdminLayoutShell({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { admin, isAuthenticated, isLoading: authLoading, logout, updateProfile } = useAdminAuth();
@@ -177,7 +173,7 @@ export default function AdminLayoutShell({
   // Show auth loading state
   if (authLoading || !isAuthenticated) {
     return (
-      <div className="h-screen w-full bg-slate-50 flex flex-col items-center justify-center space-y-3">
+      <div className="min-h-screen h-screen w-full bg-slate-50 flex flex-col items-center justify-center space-y-3 font-sans">
         <Loader2 className="w-8 h-8 animate-spin text-[#00BDFF]" />
         <p className="text-xs text-slate-500 font-medium">Mengesahkan sesi pentadbir...</p>
       </div>
@@ -190,7 +186,7 @@ export default function AdminLayoutShell({
   );
 
   return (
-    <div className="h-full w-full bg-white text-slate-800 flex flex-col antialiased overflow-hidden font-sans select-none">
+    <div className="min-h-screen h-screen w-full bg-white text-slate-800 flex flex-col antialiased overflow-hidden font-sans select-none">
       {/* ----------------- GOOGLE WORKSPACE TOP BAR ----------------- */}
       <header className="h-16 border-b border-slate-200 bg-white px-4 flex items-center justify-between shrink-0 z-30 select-none">
         {/* Left: Hamburger Menu & Brand / Breadcrumb */}
@@ -211,7 +207,10 @@ export default function AdminLayoutShell({
             <img
               src="/logo.svg"
               alt="SFV APPAREL"
-              className="h-7 sm:h-7.5 w-auto object-contain shrink-0"
+              width={120}
+              height={28}
+              style={{ maxHeight: '28px', maxWidth: '120px', width: 'auto', height: '28px', display: 'inline-block' }}
+              className="h-7 w-auto max-h-7 max-w-[120px] object-contain shrink-0"
             />
             <span className="text-[15px] tracking-tight text-slate-900 leading-none flex items-center">
               <span className="font-extrabold tracking-normal">SFV</span>
@@ -633,5 +632,17 @@ export default function AdminLayoutShell({
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminLayoutShell({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <AdminAuthProvider>
+      <AdminLayoutInner>{children}</AdminLayoutInner>
+    </AdminAuthProvider>
   );
 }
