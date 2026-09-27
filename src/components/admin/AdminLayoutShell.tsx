@@ -24,7 +24,8 @@ import {
   User,
   Settings,
   Loader2,
-  ChevronDown
+  ChevronDown,
+  AlertCircle
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 
