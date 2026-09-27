@@ -568,10 +568,18 @@ function LoginForm() {
       </div>
 
       {/* Footer System Info */}
-      <div className="w-full max-w-md mx-auto pt-4 pb-1 text-center shrink-0">
+      <div className="w-full max-w-md mx-auto pt-4 pb-1 text-center shrink-0 space-y-1">
         <p className="text-[10.5px] text-slate-400 font-medium">
           SFV APPAREL • Sistem Pengesahan Selamat
         </p>
+        <div>
+          <Link
+            href="/admin/login"
+            className="text-[10.5px] text-slate-400 hover:text-slate-600 underline decoration-slate-300 transition-colors"
+          >
+            Log Masuk Pentadbir (Admin)
+          </Link>
+        </div>
       </div>
 
     </div>

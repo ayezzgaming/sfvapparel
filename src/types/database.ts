@@ -322,3 +322,29 @@ export interface CmsTrustBadge {
   sort_order: number;
   is_active: boolean;
 }
+
+export type AdminRole = 'super_admin' | 'admin' | 'operator';
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  full_name: string;
+  role: AdminRole;
+  phone?: string | null;
+  avatar_url?: string | null;
+  is_active: boolean;
+  last_login_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface AdminSession {
+  id: string;
+  admin_id: string;
+  session_token: string;
+  ip_address?: string | null;
+  user_agent?: string | null;
+  expires_at: string;
+  created_at: string;
+}
+
