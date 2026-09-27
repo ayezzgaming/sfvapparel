@@ -184,7 +184,8 @@ export default function AdminLayoutShell({
               title="WhatsApp Terputus! Klik untuk Scan QR"
             >
               <span className="w-2 h-2 rounded-full bg-rose-600 animate-ping" />
-              <span>⚠️ WhatsApp Terputus - Scan QR</span>
+              <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+              <span>WhatsApp Terputus - Scan QR</span>
             </Link>
           ) : null}
 

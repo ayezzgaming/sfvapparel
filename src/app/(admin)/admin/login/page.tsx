@@ -5,18 +5,17 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import {
-  ShieldCheck,
+  ChevronLeft,
+  Loader2,
+  AlertCircle,
   Mail,
   Lock,
   Eye,
   EyeOff,
   ArrowRight,
-  Loader2,
-  AlertCircle,
-  KeyRound,
-  ArrowLeft,
-  Sparkles,
-  Info
+  ShieldCheck,
+  Info,
+  CheckCircle2
 } from 'lucide-react';
 
 function AdminLoginForm() {
@@ -69,69 +68,71 @@ function AdminLoginForm() {
         setIsLoading(false);
       }
     } catch {
-      setError('Ralat sambungan pelayan. Sila cuba sebentar lagi.');
+      setError('Ralat sambungan pelayan. Sila cuba lagi.');
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950 flex flex-col justify-between px-4 py-8 relative overflow-hidden font-sans select-none antialiased">
-      {/* Background Ambient Glows */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-sky-500/15 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Top Header */}
-      <div className="w-full max-w-md mx-auto flex items-center justify-between z-10">
+    <div className="h-[100dvh] min-h-[100dvh] w-full bg-[#F2F2F7] flex flex-col justify-between px-4 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+1.25rem)] overflow-y-auto font-sans antialiased selection:bg-slate-200">
+      
+      {/* Top Bar / Back button */}
+      <div className="w-full max-w-md mx-auto flex items-center justify-between shrink-0">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors py-2 px-3 rounded-xl hover:bg-white/5"
+          aria-label="Kembali ke laman awam"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 active:bg-slate-200/80 active:scale-95 transition-all py-2 px-2.5 -ml-2 rounded-xl cursor-pointer select-none"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
           <span>Laman Awam</span>
         </Link>
-
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sky-400 text-[11px] font-semibold backdrop-blur-md">
-          <ShieldCheck className="w-3.5 h-3.5 text-[#00BDFF]" />
-          <span>Portal Pentadbir</span>
-        </div>
+        <Link
+          href="/"
+          className="text-xs tracking-tight text-slate-700 leading-none flex items-center hover:opacity-80 transition-opacity p-1.5"
+        >
+          <span className="font-extrabold text-slate-900">SFV</span>
+          <span className="font-light ml-1 text-slate-500">APPAREL</span>
+        </Link>
       </div>
 
-      {/* Card Form */}
-      <div className="w-full max-w-md mx-auto my-auto py-4 z-10">
-        <div className="bg-white/[0.04] border border-white/10 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/50 space-y-6">
-          
-          {/* Logo & Heading */}
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0052FF] to-[#00BDFF] text-white shadow-lg shadow-blue-500/30 mb-2 ring-4 ring-white/10">
-              <KeyRound className="w-6 h-6 stroke-[2.2]" />
-            </div>
-
-            <h1 className="text-2xl font-extrabold text-white tracking-tight">
-              Log Masuk Pentadbir
-            </h1>
-            <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-              Sistem Pengurusan Kilang & Tempahan Sublimasi / DTF SFV APPAREL
-            </p>
+      {/* Center Container */}
+      <div className="w-full max-w-sm mx-auto my-auto py-6 shrink-0">
+        
+        {/* Brand Header */}
+        <div className="text-center mb-6 space-y-1.5">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-[#0052FF] text-[11px] font-bold mb-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#0052FF]" />
+            <span>Portal Rasmi Pentadbir</span>
           </div>
 
-          {/* Error Notification */}
-          {error && (
-            <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2.5 backdrop-blur-sm animate-shake">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
-              <span className="leading-snug">{error}</span>
-            </div>
-          )}
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Log Masuk Pentadbir
+          </h1>
+          <p className="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">
+            Sistem pengurusan tempahan kilang, katalog, dan pentadbiran SFV APPAREL.
+          </p>
+        </div>
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Error Notification */}
+        {error && (
+          <div className="mb-4 p-3 rounded-2xl bg-white border border-rose-200/80 shadow-xs flex items-start gap-2.5 text-xs text-rose-600">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-500" />
+            <span className="leading-snug">{error}</span>
+          </div>
+        )}
+
+        {/* Form Container */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 space-y-3.5">
             
             {/* Email Field */}
             <div className="space-y-1.5">
-              <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+              <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
                 Emel Pentadbir
               </label>
-              <div className="flex items-center rounded-2xl bg-white/5 border border-white/10 px-3.5 py-3 focus-within:border-[#00BDFF] focus-within:ring-2 focus-within:ring-sky-500/20 focus-within:bg-white/10 transition-all">
-                <Mail className="w-4 h-4 text-slate-400 shrink-0 mr-3" />
+              <div className="flex items-center rounded-xl bg-slate-50/80 border border-slate-200/80 px-3 py-2.5 focus-within:bg-white focus-within:border-[#00BDFF] focus-within:ring-2 focus-within:ring-sky-100 transition-all">
+                <Mail className="w-4 h-4 text-slate-400 shrink-0 mr-2.5" />
                 <input
                   type="email"
                   value={email}
@@ -139,105 +140,103 @@ function AdminLoginForm() {
                   placeholder="admin@sfvapparel.com"
                   required
                   autoFocus
-                  className="w-full text-sm font-medium text-white placeholder-slate-500 bg-transparent focus:outline-none"
+                  className="w-full text-xs font-semibold text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Password Field */}
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
-                  Kata Laluan
-                </label>
-              </div>
-              <div className="flex items-center rounded-2xl bg-white/5 border border-white/10 px-3.5 py-3 focus-within:border-[#00BDFF] focus-within:ring-2 focus-within:ring-sky-500/20 focus-within:bg-white/10 transition-all">
-                <Lock className="w-4 h-4 text-slate-400 shrink-0 mr-3" />
+              <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                Kata Laluan
+              </label>
+              <div className="flex items-center rounded-xl bg-slate-50/80 border border-slate-200/80 px-3 py-2.5 focus-within:bg-white focus-within:border-[#00BDFF] focus-within:ring-2 focus-within:ring-sky-100 transition-all">
+                <Lock className="w-4 h-4 text-slate-400 shrink-0 mr-2.5" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
                   required
-                  className="w-full text-sm font-medium text-white placeholder-slate-500 bg-transparent focus:outline-none"
+                  className="w-full text-xs font-semibold text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="text-slate-400 hover:text-white transition-colors ml-2 focus:outline-none cursor-pointer"
+                  className="text-slate-400 hover:text-slate-700 transition-colors ml-2 focus:outline-none cursor-pointer"
                   tabIndex={-1}
+                  aria-label={showPassword ? 'Sembunyikan kata laluan' : 'Tunjukkan kata laluan'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            {/* Remember Me Checkbox */}
-            <div className="flex items-center justify-between pt-1">
+            {/* Remember Me */}
+            <div className="pt-0.5">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-700 bg-white/10 text-[#0052FF] focus:ring-sky-400 focus:ring-offset-0 focus:ring-1"
+                  className="w-3.5 h-3.5 rounded border-slate-300 text-[#0052FF] focus:ring-sky-400"
                 />
-                <span className="text-xs text-slate-300">Ingat sesi pada peranti ini</span>
+                <span className="text-[11.5px] font-medium text-slate-600">Ingat sesi pada peranti ini</span>
               </label>
             </div>
 
-            {/* Submit Button */}
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={isLoading || !email.trim() || !password}
-                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-sm tracking-wide shadow-lg shadow-blue-500/25 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    <span>Mengesahkan Maklumat...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Log Masuk Dashboard</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </div>
-
-          </form>
-
-          {/* Quick Default Setup Pill */}
-          <div className="pt-3 border-t border-white/10">
-            <div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-slate-300 text-xs flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Info className="w-4 h-4 text-[#00BDFF] shrink-0" />
-                <div className="text-[11px] leading-tight">
-                  <span className="text-slate-400">Akaun Utama: </span>
-                  <span className="font-mono text-sky-300 font-semibold">admin@sfvapparel.com</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleQuickFillDefault}
-                className="text-[11px] font-bold text-[#00BDFF] hover:underline shrink-0 flex items-center gap-1 cursor-pointer"
-              >
-                <Sparkles className="w-3 h-3" />
-                <span>Isi Pantas</span>
-              </button>
-            </div>
           </div>
 
-        </div>
+          {/* Action Button - SFV Brand Gradient */}
+          <div>
+            <button
+              type="submit"
+              disabled={isLoading || !email.trim() || !password}
+              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs tracking-wide shadow-md shadow-blue-500/20 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                  <span>Mengesahkan Maklumat...</span>
+                </>
+              ) : (
+                <>
+                  <span>Log Masuk Dashboard</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Quick Default Setup Hint */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-3 shadow-2xs flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <Info className="w-4 h-4 text-[#0052FF] shrink-0" />
+              <div className="text-[11px] text-slate-600 truncate">
+                <span>Akaun: </span>
+                <span className="font-mono font-semibold text-slate-900">admin@sfvapparel.com</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleQuickFillDefault}
+              className="text-[11px] font-bold text-[#0052FF] hover:underline shrink-0 cursor-pointer"
+            >
+              Isi Pantas
+            </button>
+          </div>
+
+        </form>
+
       </div>
 
-      {/* Footer */}
-      <div className="w-full max-w-md mx-auto text-center z-10">
-        <p className="text-[11px] text-slate-500">
-          SFV APPAREL • Kawalan Keselamatan Pentadbir Berperingkat
+      {/* Footer System Info */}
+      <div className="w-full max-w-md mx-auto pt-4 pb-1 text-center shrink-0">
+        <p className="text-[10.5px] text-slate-400 font-medium">
+          SFV APPAREL • Sistem Pentadbir Selamat
         </p>
       </div>
+
     </div>
   );
 }
@@ -246,8 +245,8 @@ export default function AdminLoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen w-full bg-slate-950 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-sky-400" />
+        <div className="h-[100dvh] min-h-[100dvh] w-full bg-[#F2F2F7] flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
         </div>
       }
     >
