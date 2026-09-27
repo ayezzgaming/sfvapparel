@@ -18,16 +18,26 @@ import {
   ShieldCheck,
   RefreshCw,
   FileText,
-  Printer
+  Printer,
+  Eye,
+  RotateCcw,
+  Sparkles,
+  MessageSquareQuote,
+  X
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
 import { formatCurrency } from '@/lib/pricing-calculator';
 import { buildWhatsAppInquiryUrl } from '@/lib/whatsapp/dynamic-link';
-import { getOrderByNumberOrIdDb, clientApproveProofAction } from '@/app/actions/orderActions';
+import {
+  getOrderByNumberOrIdDb,
+  clientApproveProofAction,
+  customerRequestRevisionAction
+} from '@/app/actions/orderActions';
 import { confirmPaymentReturnAction } from '@/app/actions/paymentActions';
-import { Order, OrderStatus } from '@/types/database';
+import { Order, OrderStatus, ProofRevision } from '@/types/database';
 import OrderInvoiceModal from '@/components/invoice/OrderInvoiceModal';
+import ArtworkRevisionModal from '@/components/ui/ArtworkRevisionModal';
 
 const STATUS_CONFIG: Record<
   OrderStatus,
@@ -129,6 +139,16 @@ export default function OrderDetailPage() {
   const [isApprovingProof, setIsApprovingProof] = useState(false);
   const [proofSuccessMsg, setProofSuccessMsg] = useState<string | null>(null);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
+  
+  // Revision modal states
+  const [isRevisionModalOpen, setIsRevisionModalOpen] = useState(false);
+  const [revisionFeedback, setRevisionFeedback] = useState('');
+  const [isSubmittingRevision, setIsSubmittingRevision] = useState(false);
+  const [revisionSuccessMsg, setRevisionSuccessMsg] = useState<string | null>(null);
+  const [revisionErrorMsg, setRevisionErrorMsg] = useState<string | null>(null);
+
+  // Artwork viewer modal for historical revisions
+  const [selectedRevisionForModal, setSelectedRevisionForModal] = useState<ProofRevision | null>(null);
 
   // Load Order Authoritatively from Database
   const fetchOrder = async () => {
@@ -164,19 +184,69 @@ export default function OrderDetailPage() {
 
   const handleApproveProof = async () => {
     if (!order) return;
+    const isConfirmed = window.confirm(
+      'ADAKAH ANDA PASTI mahu meluluskan reka bentuk mockup ini?\n\nSetelah diluluskan, pesanan akan terus dimasukkan ke barisan mesin cetak kilang dan sebarang pembetulan selepas ini mungkin dikenakan caj tambahan.'
+    );
+    if (!isConfirmed) return;
+
     setIsApprovingProof(true);
     setProofSuccessMsg(null);
     try {
       const res = await clientApproveProofAction(order.order_number);
       if (res.success) {
         setProofSuccessMsg(res.message || 'Mockup berjaya diluluskan!');
-        setOrder((prev) => (prev ? { ...prev, status: 'proof_approved' } : prev));
+        setOrder((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: 'proof_approved',
+                proof_status: 'approved',
+                proof_approved_at: new Date().toISOString(),
+              }
+            : prev
+        );
         refreshAllDb?.();
+        fetchOrder();
       }
     } catch (e) {
       console.error('Error approving proof:', e);
     } finally {
       setIsApprovingProof(false);
+    }
+  };
+
+  const handleSubmitRevision = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!order) return;
+    if (!revisionFeedback.trim()) {
+      setRevisionErrorMsg('Sila tuliskan butiran pembetulan yang anda perlukan.');
+      return;
+    }
+
+    setIsSubmittingRevision(true);
+    setRevisionErrorMsg(null);
+    setRevisionSuccessMsg(null);
+
+    try {
+      const res = await customerRequestRevisionAction({
+        orderNumber: order.order_number,
+        feedback: revisionFeedback.trim(),
+      });
+
+      if (res.success) {
+        setRevisionSuccessMsg(res.message || 'Permintaan pembetulan berjaya dihantar!');
+        setRevisionFeedback('');
+        setIsRevisionModalOpen(false);
+        fetchOrder();
+        refreshAllDb?.();
+      } else {
+        setRevisionErrorMsg(res.message || 'Gagal menghantar permintaan pembetulan.');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ralat semasa menghantar pembetulan.';
+      setRevisionErrorMsg(msg);
+    } finally {
+      setIsSubmittingRevision(false);
     }
   };
 
@@ -367,43 +437,343 @@ export default function OrderDetailPage() {
             {statusConfig.desc}
           </p>
 
-          {/* Client Proof Approval Callout if pending proof */}
-          {order.status === 'pending_proof' && (
-            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 space-y-2.5">
-              <div className="flex items-start gap-2.5 text-amber-900">
-                <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <div className="text-xs leading-relaxed">
-                  <p className="font-bold">Pengesahan Mockup Diperlukan</p>
-                  <p className="text-[11px] text-amber-800">
-                    Sila semak visual mockup di bawah. Jika susun atur logo dan ejaan nama telah tepat, tekan butang di bawah untuk meluluskan.
-                  </p>
+          {/* Visual Proofing Card (Smart Multi-State) */}
+          {order.proof_artwork_url || (order.proof_revisions && order.proof_revisions.length > 0) ? (
+            <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    Visual Mockup Rasmi {order.current_revision_number ? `(Revisi ${order.current_revision_number})` : ''}
+                  </h3>
                 </div>
+                <span
+                  className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full border ${
+                    order.status === 'proof_approved' || order.proof_status === 'approved'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : order.proof_status === 'revision_requested'
+                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                      : 'bg-blue-50 text-blue-700 border-blue-200'
+                  }`}
+                >
+                  {order.status === 'proof_approved' || order.proof_status === 'approved'
+                    ? 'Telah Diluluskan'
+                    : order.proof_status === 'revision_requested'
+                    ? 'Permintaan Pembetulan'
+                    : 'Menunggu Pengesahan Anda'}
+                </span>
               </div>
 
-              {proofSuccessMsg ? (
-                <div className="p-2 rounded-xl bg-emerald-100 text-emerald-900 text-xs font-bold text-center">
-                  {proofSuccessMsg}
+              {/* Artwork Images Preview */}
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                {order.proof_artwork_url && (
+                  <div
+                    onClick={() =>
+                      setSelectedRevisionForModal({
+                        id: 'current-front',
+                        revision_number: order.current_revision_number || 1,
+                        artwork_front_url: order.proof_artwork_url || '',
+                        artwork_back_url: order.proof_artwork_back_url,
+                        designer_notes: order.proof_notes,
+                        created_at: order.updated_at || order.created_at,
+                        status:
+                          order.status === 'proof_approved' || order.proof_status === 'approved'
+                            ? 'approved'
+                            : order.proof_status === 'revision_requested'
+                            ? 'revision_requested'
+                            : 'pending',
+                        customer_feedback: order.customer_feedback,
+                        reviewed_by: 'Designer SFV Apparel',
+                      })
+                    }
+                    className="group relative rounded-xl overflow-hidden bg-slate-100 border border-slate-200 aspect-[4/3] flex items-center justify-center cursor-pointer hover:border-blue-400 transition-colors"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={order.proof_artwork_url}
+                      alt="Mockup Hadapan"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold gap-1">
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Lihat HD</span>
+                    </div>
+                    <span className="absolute bottom-1.5 left-1.5 bg-black/60 backdrop-blur-xs text-white text-[9px] font-medium px-1.5 py-0.5 rounded">
+                      Hadapan
+                    </span>
+                  </div>
+                )}
+
+                {order.proof_artwork_back_url ? (
+                  <div
+                    onClick={() =>
+                      setSelectedRevisionForModal({
+                        id: 'current-back',
+                        revision_number: order.current_revision_number || 1,
+                        artwork_front_url: order.proof_artwork_url || '',
+                        artwork_back_url: order.proof_artwork_back_url,
+                        designer_notes: order.proof_notes,
+                        created_at: order.updated_at || order.created_at,
+                        status:
+                          order.status === 'proof_approved' || order.proof_status === 'approved'
+                            ? 'approved'
+                            : order.proof_status === 'revision_requested'
+                            ? 'revision_requested'
+                            : 'pending',
+                        customer_feedback: order.customer_feedback,
+                        reviewed_by: 'Designer SFV Apparel',
+                      })
+                    }
+                    className="group relative rounded-xl overflow-hidden bg-slate-100 border border-slate-200 aspect-[4/3] flex items-center justify-center cursor-pointer hover:border-blue-400 transition-colors"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={order.proof_artwork_back_url}
+                      alt="Mockup Belakang"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold gap-1">
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Lihat HD</span>
+                    </div>
+                    <span className="absolute bottom-1.5 left-1.5 bg-black/60 backdrop-blur-xs text-white text-[9px] font-medium px-1.5 py-0.5 rounded">
+                      Belakang
+                    </span>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() =>
+                      setSelectedRevisionForModal({
+                        id: 'current-front',
+                        revision_number: order.current_revision_number || 1,
+                        artwork_front_url: order.proof_artwork_url || '',
+                        artwork_back_url: order.proof_artwork_back_url,
+                        designer_notes: order.proof_notes,
+                        created_at: order.updated_at || order.created_at,
+                        status:
+                          order.status === 'proof_approved' || order.proof_status === 'approved'
+                            ? 'approved'
+                            : order.proof_status === 'revision_requested'
+                            ? 'revision_requested'
+                            : 'pending',
+                        customer_feedback: order.customer_feedback,
+                        reviewed_by: 'Designer SFV Apparel',
+                      })
+                    }
+                    className="rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-100 transition-colors"
+                  >
+                    <Eye className="w-4 h-4 text-slate-400 mb-1" />
+                    <span className="text-[10px] text-slate-600 font-semibold">Ketik untuk Buka</span>
+                    <span className="text-[9px] text-slate-400">Paparan Skrin Penuh</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Designer Notes */}
+              {order.proof_notes && (
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 text-[11px] text-slate-600 leading-relaxed">
+                  <span className="font-bold text-slate-800 block mb-0.5">Nota Designer:</span>
+                  {order.proof_notes}
+                </div>
+              )}
+
+              {/* Status Message / Actions */}
+              {order.status === 'proof_approved' || order.proof_status === 'approved' ? (
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div>
+                    <span className="font-bold block">Mockup Reka Bentuk Telah Diluluskan</span>
+                    <span className="text-[10.5px] text-emerald-700">
+                      {order.proof_approved_at
+                        ? `Disahkan pada ${new Date(order.proof_approved_at).toLocaleDateString('ms-MY', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })} ${new Date(order.proof_approved_at).toLocaleTimeString('ms-MY', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}`
+                        : 'Sedia untuk memasuki giliran cetakan kilang.'}
+                    </span>
+                  </div>
+                </div>
+              ) : order.proof_status === 'revision_requested' ? (
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 space-y-1.5 text-xs text-amber-900">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Permintaan Pembetulan Dihantar</span>
+                  </div>
+                  <p className="text-[11px] text-amber-800 leading-relaxed">
+                    Designer kilang kami sedang membuat pembetulan mengikut maklum balas anda. Draf baru akan dimuat naik tidak lama lagi.
+                  </p>
+                  {order.customer_feedback && (
+                    <div className="p-2 rounded-lg bg-white/80 border border-amber-200/80 text-[10.5px] text-slate-700">
+                      <span className="font-semibold block text-amber-900">Catatan anda:</span>
+                      {order.customer_feedback}
+                    </div>
+                  )}
                 </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={handleApproveProof}
-                  disabled={isApprovingProof}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:opacity-95 active:scale-[0.98] text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5"
-                >
-                  {isApprovingProof ? (
-                    <span>Mengesahkan Mockup...</span>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Luluskan Mockup Reka Bentuk Ini</span>
-                    </>
+                /* Customer Action Buttons when pending approval */
+                <div className="space-y-2 pt-1">
+                  {proofSuccessMsg && (
+                    <div className="p-2 rounded-xl bg-emerald-100 text-emerald-900 text-xs font-bold text-center">
+                      {proofSuccessMsg}
+                    </div>
                   )}
-                </button>
+                  {revisionSuccessMsg && (
+                    <div className="p-2 rounded-xl bg-blue-100 text-blue-900 text-xs font-bold text-center">
+                      {revisionSuccessMsg}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRevisionFeedback('');
+                        setRevisionErrorMsg(null);
+                        setIsRevisionModalOpen(true);
+                      }}
+                      className="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-[0.98] text-slate-700 font-bold text-xs border border-slate-200 transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Minta Pembetulan</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleApproveProof}
+                      disabled={isApprovingProof}
+                      className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:opacity-95 active:scale-[0.98] text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    >
+                      {isApprovingProof ? (
+                        <span>Mengesahkan...</span>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Luluskan Reka Bentuk</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
               )}
+            </div>
+          ) : (
+            /* No visual proof uploaded yet state */
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1.5">
+              <div className="flex items-center gap-2 text-slate-800">
+                <Clock className="w-4 h-4 text-sky-600 shrink-0" />
+                <span className="text-xs font-bold">Menunggu Mockup Daripada Designer Kilang</span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed pl-6">
+                Pasukan reka bentuk SFV Apparel sedang menyediakan susun atur visual rasmi jersi anda. Anda boleh menyemak dan mengesahkan mockup sebaik sahaja ia dimuat naik di sini.
+              </p>
             </div>
           )}
         </div>
+
+        {/* 3. HISTORI SEMAKAN & REVISI REKA BENTUK (DIGITAL AUDIT TRAIL) */}
+        {order.proof_revisions && order.proof_revisions.length > 0 && (
+          <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div>
+                <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Histori Semakan & Revisi
+                </h2>
+                <p className="text-[10.5px] text-slate-400">
+                  Rekod draf bertarikh bagi memastikan persetujuan reka bentuk yang jelas
+                </p>
+              </div>
+              <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                {order.proof_revisions.length} Versi
+              </span>
+            </div>
+
+            <div className="space-y-2.5 pt-1">
+              {order.proof_revisions.map((rev, idx) => {
+                const isLatest = idx === (order.proof_revisions?.length || 1) - 1;
+                return (
+                  <div
+                    key={rev.id || idx}
+                    className={`p-3 rounded-2xl border transition-all ${
+                      isLatest
+                        ? 'bg-blue-50/40 border-blue-200/80 shadow-2xs'
+                        : 'bg-slate-50/70 border-slate-200/70'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-extrabold text-slate-900 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs">
+                          REVISI {rev.revision_number}
+                        </span>
+                        <span
+                          className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full border ${
+                            rev.status === 'approved'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : rev.status === 'revision_requested'
+                              ? 'bg-amber-50 text-amber-700 border-amber-200'
+                              : 'bg-blue-50 text-blue-700 border-blue-200'
+                          }`}
+                        >
+                          {rev.status === 'approved'
+                            ? 'Diluluskan'
+                            : rev.status === 'revision_requested'
+                            ? 'Minta Pembetulan'
+                            : 'Menunggu Semakan'}
+                        </span>
+                      </div>
+
+                      {/* View Icon Modal Trigger */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRevisionForModal(rev)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white hover:bg-slate-100 text-blue-600 text-[11px] font-bold border border-slate-200 shadow-2xs active:scale-95 transition-all"
+                        title="Lihat Artwork Draf Ini"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Lihat Visual</span>
+                      </button>
+                    </div>
+
+                    <div className="text-[10.5px] text-slate-400 font-mono mt-1.5 flex items-center gap-2">
+                      <Clock className="w-3 h-3 text-slate-400" />
+                      <span>
+                        {new Date(rev.created_at).toLocaleDateString('ms-MY', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}{' '}
+                        •{' '}
+                        {new Date(rev.created_at).toLocaleTimeString('ms-MY', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+
+                    {/* Designer Notes */}
+                    {rev.designer_notes && (
+                      <p className="text-[11px] text-slate-600 bg-white/80 p-2 rounded-xl border border-slate-200/60 mt-2 leading-relaxed">
+                        <span className="font-semibold text-slate-800">Nota: </span>
+                        {rev.designer_notes}
+                      </p>
+                    )}
+
+                    {/* Customer Feedback if requested */}
+                    {rev.customer_feedback && (
+                      <p className="text-[11px] text-amber-900 bg-amber-50/80 p-2 rounded-xl border border-amber-200/70 mt-1.5 leading-relaxed">
+                        <span className="font-semibold text-amber-950">Permintaan Pelanggan: </span>
+                        {rev.customer_feedback}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* 3. PRODUCTION TIMELINE (4 STAGES) */}
         <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs space-y-3.5">
@@ -754,6 +1124,98 @@ export default function OrderDetailPage() {
           order={order}
           isOpen={isInvoiceOpen}
           onClose={() => setIsInvoiceOpen(false)}
+        />
+
+        {/* 9. REQUEST REVISION MODAL (CUSTOMER FEEDBACK) */}
+        {isRevisionModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in">
+            <div
+              className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden animate-in zoom-in-95"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">
+                    <RotateCcw className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-900">Minta Pembetulan Mockup</h3>
+                    <p className="text-[10px] text-slate-400">Pesanan #{order.order_number}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsRevisionModalOpen(false)}
+                  className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmitRevision} className="p-5 space-y-4 text-xs">
+                {revisionErrorMsg && (
+                  <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
+                    {revisionErrorMsg}
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-800 block">
+                    Nyatakan Butiran Perubahan yang Diperlukan:
+                  </label>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Sila terangkan dengan jelas bahagian yang perlu dibaiki (cth: ubah susun atur logo dada, tukar warna jalur lengan kepada merah, baiki ejaan nama pemain dsb).
+                  </p>
+                  <textarea
+                    rows={4}
+                    value={revisionFeedback}
+                    onChange={(e) => setRevisionFeedback(e.target.value)}
+                    placeholder="Contoh: Tolong besarkan logo penaja di bahagian depan sebanyak 10% dan tukar warna font nombor belakang kepada putih..."
+                    className="w-full p-3 rounded-2xl border border-slate-200 bg-slate-50 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 leading-relaxed resize-none font-medium"
+                    required
+                  />
+                </div>
+
+                <div className="p-3 bg-amber-50/70 border border-amber-200/60 rounded-xl text-[10.5px] text-amber-900 leading-relaxed">
+                  <span className="font-bold block mb-0.5">Nota Kilang:</span>
+                  Catatan ini akan direkodkan dalam histori semakan sebagai rujukan rasmi sebelum draf seterusnya dimuat naik oleh designer.
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsRevisionModalOpen(false)}
+                    className="px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingRevision || !revisionFeedback.trim()}
+                    className="px-5 py-2 rounded-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    {isSubmittingRevision ? (
+                      <span>Menghantar...</span>
+                    ) : (
+                      <>
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Hantar ke Designer</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* 10. ARTWORK REVISION PREVIEW MODAL */}
+        <ArtworkRevisionModal
+          isOpen={Boolean(selectedRevisionForModal)}
+          onClose={() => setSelectedRevisionForModal(null)}
+          revision={selectedRevisionForModal}
+          orderNumber={order.order_number}
+          designTitle={order.design_title}
         />
       </main>
     </div>

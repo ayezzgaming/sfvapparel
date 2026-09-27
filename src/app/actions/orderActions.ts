@@ -1,7 +1,7 @@
 'use server';
 
 import { getServiceSupabase } from '@/lib/supabase/serverClient';
-import { Order, OrderStatus } from '@/types/database';
+import { Order, OrderStatus, ProofRevision } from '@/types/database';
 import { sendOrderInvoiceWhatsApp, sendOrderStatusMilestoneWhatsApp } from '@/lib/whatsapp/order-notifier';
 import { triggerStaffProductionAlert } from '@/lib/n8n/n8n-client';
 
@@ -382,7 +382,161 @@ export async function getOrderByNumberOrIdDb(identifier: string): Promise<{ succ
 }
 
 /**
- * Server Action: Client approves production mockup proof
+ * Server Action: Admin/Designer uploads or updates visual proof artwork
+ */
+export async function uploadProofArtworkAction(params: {
+  orderIdOrNumber: string;
+  artworkFrontUrl: string;
+  artworkBackUrl?: string;
+  designerNotes?: string;
+  adminName?: string;
+}): Promise<{ success: boolean; message?: string; revision?: ProofRevision }> {
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) return { success: false, message: 'Database connection failed.' };
+
+    const { orderIdOrNumber, artworkFrontUrl, artworkBackUrl, designerNotes, adminName } = params;
+    const cleanId = orderIdOrNumber.trim().replace(/-(DP|BAL)$/i, '');
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
+
+    // Fetch existing order
+    let query = supabase.from('orders').select('*');
+    if (isUuid) {
+      query = query.or(`id.eq.${cleanId},order_number.eq.${cleanId}`);
+    } else {
+      query = query.eq('order_number', cleanId);
+    }
+
+    const { data: order, error: fetchErr } = await query.single();
+    if (fetchErr || !order) {
+      return { success: false, message: 'Pesanan tidak dijumpai.' };
+    }
+
+    const existingRevisions: ProofRevision[] = Array.isArray(order.proof_revisions)
+      ? (order.proof_revisions as ProofRevision[])
+      : [];
+
+    const nextRevisionNum = existingRevisions.length + 1;
+    const nowIso = new Date().toISOString();
+
+    const newRevision: ProofRevision = {
+      id: `rev-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+      revision_number: nextRevisionNum,
+      artwork_front_url: artworkFrontUrl.trim(),
+      artwork_back_url: artworkBackUrl ? artworkBackUrl.trim() : undefined,
+      designer_notes: designerNotes ? designerNotes.trim() : undefined,
+      created_at: nowIso,
+      status: 'pending',
+      reviewed_by: adminName || 'Designer Kilang',
+    };
+
+    const updatedRevisions = [...existingRevisions, newRevision];
+
+    const { error: updateErr } = await supabase
+      .from('orders')
+      .update({
+        proof_status: 'pending_customer_approval',
+        proof_artwork_url: artworkFrontUrl.trim(),
+        proof_artwork_back_url: artworkBackUrl ? artworkBackUrl.trim() : null,
+        proof_notes: designerNotes ? designerNotes.trim() : null,
+        proof_revisions: updatedRevisions,
+        current_revision_number: nextRevisionNum,
+        customer_feedback: null, // Reset feedback for the new version
+        status: 'pending_proof',
+        updated_at: nowIso,
+      })
+      .eq('id', order.id);
+
+    if (updateErr) {
+      console.error('[orderActions] uploadProofArtwork error:', updateErr);
+      return { success: false, message: updateErr.message };
+    }
+
+    return {
+      success: true,
+      message: `Visual Mockup (Revisi ${nextRevisionNum}) berjaya dimuat naik & dihantar kepada pelanggan!`,
+      revision: newRevision,
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Ralat memuat naik visual proof';
+    return { success: false, message };
+  }
+}
+
+/**
+ * Server Action: Customer requests revision / changes on visual mockup
+ */
+export async function customerRequestRevisionAction(params: {
+  orderNumber: string;
+  feedback: string;
+}): Promise<{ success: boolean; message?: string }> {
+  try {
+    const supabase = getServiceSupabase();
+    if (!supabase) return { success: false, message: 'Database connection failed.' };
+
+    const { orderNumber, feedback } = params;
+    if (!feedback || !feedback.trim()) {
+      return { success: false, message: 'Sila nyatakan butiran pembetulan yang anda perlukan.' };
+    }
+
+    const cleanOrderNumber = orderNumber.trim().replace(/-(DP|BAL)$/i, '');
+
+    // Fetch existing order
+    const { data: order, error: fetchErr } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('order_number', cleanOrderNumber)
+      .single();
+
+    if (fetchErr || !order) {
+      return { success: false, message: 'Pesanan tidak dijumpai.' };
+    }
+
+    const nowIso = new Date().toISOString();
+    const existingRevisions: ProofRevision[] = Array.isArray(order.proof_revisions)
+      ? (order.proof_revisions as ProofRevision[])
+      : [];
+
+    // Update current active revision with customer feedback
+    const updatedRevisions = existingRevisions.map((rev, idx) => {
+      if (idx === existingRevisions.length - 1) {
+        return {
+          ...rev,
+          status: 'revision_requested' as const,
+          customer_feedback: feedback.trim(),
+          feedback_at: nowIso,
+        };
+      }
+      return rev;
+    });
+
+    const { error: updateErr } = await supabase
+      .from('orders')
+      .update({
+        proof_status: 'revision_requested',
+        customer_feedback: feedback.trim(),
+        proof_revisions: updatedRevisions,
+        status: 'pending_proof',
+        updated_at: nowIso,
+      })
+      .eq('id', order.id);
+
+    if (updateErr) {
+      return { success: false, message: updateErr.message };
+    }
+
+    return {
+      success: true,
+      message: 'Permintaan pembetulan rekaan anda telah berjaya dihantar kepada designer kilang.',
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Ralat menghantar permintaan pembetulan';
+    return { success: false, message };
+  }
+}
+
+/**
+ * Server Action: Client approves production mockup proof (Final approval)
  */
 export async function clientApproveProofAction(orderNumber: string): Promise<{ success: boolean; message?: string }> {
   try {
@@ -390,20 +544,51 @@ export async function clientApproveProofAction(orderNumber: string): Promise<{ s
     if (!supabase) return { success: false, message: 'Database connection failed.' };
 
     const cleanOrderNumber = orderNumber.trim().replace(/-(DP|BAL)$/i, '');
+    const nowIso = new Date().toISOString();
 
-    const { error } = await supabase
+    // Fetch existing order
+    const { data: order, error: fetchErr } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('order_number', cleanOrderNumber)
+      .single();
+
+    if (fetchErr || !order) {
+      return { success: false, message: 'Pesanan tidak dijumpai.' };
+    }
+
+    const existingRevisions: ProofRevision[] = Array.isArray(order.proof_revisions)
+      ? (order.proof_revisions as ProofRevision[])
+      : [];
+
+    // Mark the latest revision as approved
+    const updatedRevisions = existingRevisions.map((rev, idx) => {
+      if (idx === existingRevisions.length - 1) {
+        return {
+          ...rev,
+          status: 'approved' as const,
+          feedback_at: nowIso,
+        };
+      }
+      return rev;
+    });
+
+    const { error: updateErr } = await supabase
       .from('orders')
       .update({
         status: 'proof_approved',
-        updated_at: new Date().toISOString(),
+        proof_status: 'approved',
+        proof_approved_at: nowIso,
+        proof_revisions: updatedRevisions,
+        updated_at: nowIso,
       })
-      .eq('order_number', cleanOrderNumber);
+      .eq('id', order.id);
 
-    if (error) {
-      return { success: false, message: error.message };
+    if (updateErr) {
+      return { success: false, message: updateErr.message };
     }
 
-    return { success: true, message: 'Mockup reka bentuk berjaya disahkan dan diluluskan!' };
+    return { success: true, message: 'Mockup reka bentuk rasmi berjaya diluluskan! Pesanan sedia untuk dicetak.' };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Ralat meluluskan mockup';
     return { success: false, message };

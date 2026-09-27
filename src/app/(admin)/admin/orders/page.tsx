@@ -31,11 +31,20 @@ import {
   ArrowRight,
   Layers,
   Download,
-  ExternalLink
+  ExternalLink,
+  RotateCcw
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
-import { getOrdersDb, deleteOrderDb, markOrderBalancePaidAction, updateOrderStatusDb } from '@/app/actions/orderActions';
+import {
+  getOrdersDb,
+  deleteOrderDb,
+  markOrderBalancePaidAction,
+  updateOrderStatusDb,
+  uploadProofArtworkAction
+} from '@/app/actions/orderActions';
+import { ProofRevision } from '@/types/database';
 import OrderInvoiceModal from '@/components/invoice/OrderInvoiceModal';
+import ArtworkRevisionModal from '@/components/ui/ArtworkRevisionModal';
 
 const STATUS_LIST: { status: OrderStatus; label: string; color: string; badgeBg: string }[] = [
   { status: 'pending_proof', label: 'Menunggu Proof', color: 'bg-amber-50 text-amber-800 border-amber-200', badgeBg: 'bg-amber-500' },
@@ -71,6 +80,13 @@ export default function AdminOrdersPage() {
   const [waToast, setWaToast] = useState<{ success: boolean; message: string } | null>(null);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
+
+  // Proofing & Revision Upload State
+  const [proofFrontUrl, setProofFrontUrl] = useState('');
+  const [proofBackUrl, setProofBackUrl] = useState('');
+  const [proofDesignerNotes, setProofDesignerNotes] = useState('');
+  const [isUploadingProof, setIsUploadingProof] = useState(false);
+  const [selectedRevisionForModal, setSelectedRevisionForModal] = useState<ProofRevision | null>(null);
 
   // Authoritative Database Fetch directly from Supabase
   const fetchLiveOrders = async () => {
@@ -235,7 +251,44 @@ export default function AdminOrdersPage() {
     setNewStatus(ord.status);
     setNewTracking(ord.tracking_number || '');
     setNewNotes(ord.production_notes || '');
+    setProofFrontUrl(ord.proof_artwork_url || '');
+    setProofBackUrl(ord.proof_artwork_back_url || '');
+    setProofDesignerNotes(ord.proof_notes || '');
     setUpdateSaved(false);
+  };
+
+  const handleUploadProof = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeOrder) return;
+    if (!proofFrontUrl.trim()) {
+      setWaToast({ success: false, message: 'Sila masukkan URL / pautan Artwork Hadapan.' });
+      setTimeout(() => setWaToast(null), 3000);
+      return;
+    }
+
+    setIsUploadingProof(true);
+    try {
+      const res = await uploadProofArtworkAction({
+        orderIdOrNumber: activeOrder.id,
+        artworkFrontUrl: proofFrontUrl.trim(),
+        artworkBackUrl: proofBackUrl.trim() || undefined,
+        designerNotes: proofDesignerNotes.trim() || undefined,
+        adminName: 'Admin SFV Studio',
+      });
+
+      if (res.success) {
+        setWaToast({ success: true, message: res.message || 'Visual Proof berjaya dimuat naik!' });
+        fetchLiveOrders();
+      } else {
+        setWaToast({ success: false, message: res.message || 'Gagal memuat naik visual proof.' });
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ralat memuat naik visual proof';
+      setWaToast({ success: false, message: msg });
+    } finally {
+      setIsUploadingProof(false);
+      setTimeout(() => setWaToast(null), 4000);
+    }
   };
 
   const handleSaveStatus = async (e: React.FormEvent) => {
@@ -703,7 +756,236 @@ export default function AdminOrdersPage() {
                   )}
                 </div>
 
-                {/* 3. Sizing Breakdown */}
+                {/* 3. VISUAL PROOF & REVISION MANAGEMENT (FACTORY DESIGNER PORTAL) */}
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-2.5">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
+                        <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100 uppercase tracking-wider">
+                          Pengurusan Visual Mockup & Histori Revisi
+                        </h3>
+                      </div>
+                      <p className="text-[10.5px] text-slate-500 mt-0.5">
+                        Muat naik draf artwork untuk semakan pelanggan dan rekod audit setiap kali pembetulan berlaku
+                      </p>
+                    </div>
+
+                    <span
+                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                        activeOrder.status === 'proof_approved' || activeOrder.proof_status === 'approved'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : activeOrder.proof_status === 'revision_requested'
+                          ? 'bg-amber-50 text-amber-700 border-amber-200 animate-bounce'
+                          : activeOrder.proof_artwork_url
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : 'bg-slate-100 text-slate-600 border-slate-200'
+                      }`}
+                    >
+                      {activeOrder.status === 'proof_approved' || activeOrder.proof_status === 'approved'
+                        ? 'Mockup Telah Diluluskan'
+                        : activeOrder.proof_status === 'revision_requested'
+                        ? 'Pelanggan Minta Revisi'
+                        : activeOrder.proof_artwork_url
+                        ? 'Menunggu Pengesahan Pelanggan'
+                        : 'Belum Ada Mockup Dihantar'}
+                    </span>
+                  </div>
+
+                  {/* Customer Revision Request Banner Alert */}
+                  {activeOrder.proof_status === 'revision_requested' && (
+                    <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 space-y-1.5 text-xs text-amber-900 dark:text-amber-200">
+                      <div className="flex items-center gap-2 font-bold">
+                        <RotateCcw className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>PERMINTAAN PEMBETULAN DARIPADA PELANGGAN:</span>
+                      </div>
+                      <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed bg-white/80 dark:bg-zinc-900/80 p-2.5 rounded-lg border border-amber-200/80 font-medium">
+                        &quot;{activeOrder.customer_feedback || 'Pelanggan meminta semakan susun atur rekaan.'}&quot;
+                      </p>
+                      <p className="text-[10px] text-amber-700 italic">
+                        * Sila betulkan rekaan dan muat naik pautan draf baharu di bawah untuk dihantar sebagai Revisi seterusnya.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Approved Banner */}
+                  {(activeOrder.status === 'proof_approved' || activeOrder.proof_status === 'approved') && (
+                    <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 text-emerald-900 dark:text-emerald-200 text-xs flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <div>
+                        <span className="font-bold block">Mockup Reka Bentuk Telah Diluluskan Secara Rasmi</span>
+                        <span className="text-[10.5px] text-emerald-700">
+                          {activeOrder.proof_approved_at
+                            ? `Disahkan pelanggan pada ${new Date(activeOrder.proof_approved_at).toLocaleDateString('ms-MY', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                              })} ${new Date(activeOrder.proof_approved_at).toLocaleTimeString('ms-MY', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}`
+                            : 'Pesanan sedia memasuki proses cetakan.'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload / Submit New Revision Form */}
+                  <form onSubmit={handleUploadProof} className="p-3.5 bg-slate-50 dark:bg-zinc-800/40 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 space-y-3">
+                    <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 block">
+                      {activeOrder.proof_revisions && activeOrder.proof_revisions.length > 0
+                        ? `Muat Naik Draf Baharu (REVISI ${(activeOrder.proof_revisions.length || 0) + 1})`
+                        : 'Muat Naik Draf Mockup Pertama (REVISI 1)'}
+                    </span>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="space-y-1">
+                        <label className="font-semibold text-slate-700 dark:text-zinc-300">
+                          URL Artwork Depan <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="url"
+                          value={proofFrontUrl}
+                          onChange={(e) => setProofFrontUrl(e.target.value)}
+                          placeholder="https://.../mockup-front.png"
+                          className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#00BDFF] font-mono"
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-semibold text-slate-700 dark:text-zinc-300">
+                          URL Artwork Belakang <span className="text-slate-400 font-normal">(Pilihan)</span>
+                        </label>
+                        <input
+                          type="url"
+                          value={proofBackUrl}
+                          onChange={(e) => setProofBackUrl(e.target.value)}
+                          placeholder="https://.../mockup-back.png"
+                          className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#00BDFF] font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1 text-xs">
+                      <label className="font-semibold text-slate-700 dark:text-zinc-300">
+                        Nota Designer untuk Pelanggan <span className="text-slate-400 font-normal">(Penerangan perubahan)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={proofDesignerNotes}
+                        onChange={(e) => setProofDesignerNotes(e.target.value)}
+                        placeholder="cth: Warna kolar ditukar kepada hitam, saiz logo dada dibesarkan 10% mengikut permintaan..."
+                        className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#00BDFF]"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      <button
+                        type="submit"
+                        disabled={isUploadingProof || !proofFrontUrl.trim()}
+                        className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white font-bold text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                      >
+                        {isUploadingProof ? (
+                          <span>Menghantar Mockup...</span>
+                        ) : (
+                          <>
+                            <Send className="w-3.5 h-3.5" />
+                            <span>
+                              Hantar Mockup{' '}
+                              {activeOrder.proof_revisions && activeOrder.proof_revisions.length > 0
+                                ? `(Revisi ${(activeOrder.proof_revisions.length || 0) + 1})`
+                                : '(Revisi 1)'}{' '}
+                              ke Pelanggan
+                            </span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+
+                  {/* Audit Trail: Historical Revisions Table */}
+                  {activeOrder.proof_revisions && activeOrder.proof_revisions.length > 0 && (
+                    <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 uppercase tracking-wider">
+                          Histori Rekod Semakan & Revisi ({activeOrder.proof_revisions.length} Versi)
+                        </span>
+                        <span className="text-[10.5px] text-slate-400 font-mono">Audit Trail Tidak Boleh Diubah</span>
+                      </div>
+
+                      <div className="space-y-2">
+                        {activeOrder.proof_revisions.map((rev, idx) => (
+                          <div
+                            key={rev.id || idx}
+                            className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                          >
+                            <div className="space-y-1 min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono font-extrabold text-slate-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 px-2 py-0.5 rounded border border-slate-200 dark:border-zinc-700">
+                                  REVISI {rev.revision_number}
+                                </span>
+                                <span
+                                  className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full border ${
+                                    rev.status === 'approved'
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                      : rev.status === 'revision_requested'
+                                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                      : 'bg-blue-50 text-blue-700 border-blue-200'
+                                  }`}
+                                >
+                                  {rev.status === 'approved'
+                                    ? 'Diluluskan Pelanggan'
+                                    : rev.status === 'revision_requested'
+                                    ? 'Minta Pembetulan'
+                                    : 'Menunggu Semakan'}
+                                </span>
+                                <span className="text-[10.5px] text-slate-400 font-mono">
+                                  {new Date(rev.created_at).toLocaleDateString('ms-MY', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric',
+                                  })}{' '}
+                                  •{' '}
+                                  {new Date(rev.created_at).toLocaleTimeString('ms-MY', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </span>
+                              </div>
+
+                              {rev.designer_notes && (
+                                <p className="text-[11px] text-slate-600 dark:text-zinc-300 bg-white dark:bg-zinc-900 p-1.5 rounded-lg border border-slate-200/60 dark:border-zinc-700/60">
+                                  <span className="font-semibold text-slate-800 dark:text-zinc-200">Nota Designer:</span>{' '}
+                                  {rev.designer_notes}
+                                </p>
+                              )}
+
+                              {rev.customer_feedback && (
+                                <p className="text-[11px] text-amber-900 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 p-1.5 rounded-lg border border-amber-200/80 dark:border-amber-800/60">
+                                  <span className="font-semibold">Maklum Balas Pelanggan:</span>{' '}
+                                  {rev.customer_feedback}
+                                </p>
+                              )}
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => setSelectedRevisionForModal(rev)}
+                              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-blue-600 dark:text-blue-400 text-xs font-bold border border-slate-200 dark:border-zinc-700 shadow-2xs shrink-0 active:scale-95 transition-all cursor-pointer"
+                              title="Buka Imej Draf & Maklumat Lengkap"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>Lihat Visual</span>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 4. Sizing Breakdown */}
                 <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-xs space-y-2.5">
                   <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 uppercase tracking-wider block">
                     Pecahan Saiz Tempahan ({activeOrder.total_quantity} helai)
@@ -1066,6 +1348,15 @@ export default function AdminOrdersPage() {
           onClose={() => setIsInvoiceOpen(false)}
         />
       )}
+
+      {/* Artwork Revision Preview Modal */}
+      <ArtworkRevisionModal
+        isOpen={Boolean(selectedRevisionForModal)}
+        onClose={() => setSelectedRevisionForModal(null)}
+        revision={selectedRevisionForModal}
+        orderNumber={activeOrder?.order_number}
+        designTitle={activeOrder?.design_title}
+      />
     </div>
   );
 }

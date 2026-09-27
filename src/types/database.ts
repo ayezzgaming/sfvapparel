@@ -171,9 +171,32 @@ export interface Order {
   shipping_address?: string;
   shipping_courier?: string;
   tracking_number?: string;
+
+  // Visual Proofing & Revision System
+  proof_status?: 'waiting_for_artwork' | 'pending_customer_approval' | 'revision_requested' | 'approved';
+  proof_revisions?: ProofRevision[];
+  proof_artwork_url?: string;
+  proof_artwork_back_url?: string;
+  proof_notes?: string;
+  customer_feedback?: string;
+  proof_approved_at?: string;
+  current_revision_number?: number;
   
   created_at: string;
   updated_at: string;
+}
+
+export interface ProofRevision {
+  id: string;
+  revision_number: number; // 1 for "REVISI 1", 2 for "REVISI 2", etc.
+  artwork_front_url: string;
+  artwork_back_url?: string;
+  designer_notes?: string;
+  created_at: string; // ISO string with date & time
+  status: 'pending' | 'approved' | 'revision_requested';
+  customer_feedback?: string;
+  feedback_at?: string;
+  reviewed_by?: string;
 }
 
 export interface OrderStatusStep {
