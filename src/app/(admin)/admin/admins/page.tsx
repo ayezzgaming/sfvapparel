@@ -58,6 +58,7 @@ export default function AdminManagementPage() {
   const [showTargetPassword, setShowTargetPassword] = useState(false);
 
   // Form states for My Profile Tab
+  const [profileEmail, setProfileEmail] = useState(currentAdmin?.email || '');
   const [profileName, setProfileName] = useState(currentAdmin?.full_name || '');
   const [profilePhone, setProfilePhone] = useState(currentAdmin?.phone || '');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -68,6 +69,7 @@ export default function AdminManagementPage() {
 
   useEffect(() => {
     if (currentAdmin) {
+      setProfileEmail(currentAdmin.email || '');
       setProfileName(currentAdmin.full_name || '');
       setProfilePhone(currentAdmin.phone || '');
     }
@@ -151,10 +153,15 @@ export default function AdminManagementPage() {
     }
   };
 
-  // Handle Edit Admin (Role/Status/Phone/Name)
+  // Handle Edit Admin (Role/Status/Phone/Name/Email)
   const handleUpdateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editAdmin || isSubmitting) return;
+
+    if (!editAdmin.email?.trim() || !editAdmin.full_name?.trim()) {
+      showToast('error', 'Sila lengkapkan nama dan emel pentadbir.');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -163,7 +170,8 @@ export default function AdminManagementPage() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          full_name: editAdmin.full_name,
+          email: editAdmin.email.trim(),
+          full_name: editAdmin.full_name.trim(),
           role: editAdmin.role,
           phone: editAdmin.phone,
           is_active: editAdmin.is_active,
@@ -252,6 +260,16 @@ export default function AdminManagementPage() {
     e.preventDefault();
     if (isUpdatingProfile) return;
 
+    if (!profileEmail.trim()) {
+      showToast('error', 'Sila masukkan emel pentadbir.');
+      return;
+    }
+
+    if (!profileName.trim()) {
+      showToast('error', 'Sila masukkan nama penuh pentadbir.');
+      return;
+    }
+
     if (newPersonalPassword) {
       if (newPersonalPassword.length < 6) {
         showToast('error', 'Kata laluan baru mestilah sekurang-kurangnya 6 aksara.');
@@ -270,11 +288,13 @@ export default function AdminManagementPage() {
     setIsUpdatingProfile(true);
     try {
       const payload: {
+        email?: string;
         full_name?: string;
         phone?: string;
         current_password?: string;
         new_password?: string;
       } = {
+        email: profileEmail.trim(),
         full_name: profileName.trim(),
         phone: profilePhone.trim() || undefined,
       };
@@ -653,6 +673,26 @@ export default function AdminManagementPage() {
               <div className="space-y-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Emel Pentadbir
+                  </label>
+                  <div className="flex items-center rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 focus-within:bg-white focus-within:border-[#00BDFF] transition-all">
+                    <Mail className="w-4 h-4 text-slate-400 mr-2.5" />
+                    <input
+                      type="email"
+                      value={profileEmail}
+                      onChange={(e) => setProfileEmail(e.target.value)}
+                      required
+                      placeholder="admin@sfvapparel.com"
+                      className="w-full text-xs font-semibold text-slate-900 bg-transparent focus:outline-none"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Emel ini digunakan sebagai ID utama untuk log masuk ke portal pentadbir.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
                     Nama Penuh
                   </label>
                   <div className="flex items-center rounded-xl bg-slate-50 border border-slate-200 px-3 py-2.5 focus-within:bg-white focus-within:border-[#00BDFF] transition-all">
@@ -929,12 +969,25 @@ export default function AdminManagementPage() {
             <form onSubmit={handleUpdateAdmin} className="space-y-3.5">
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                  Nama Penuh
+                  Nama Penuh <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={editAdmin.full_name}
                   onChange={(e) => setEditAdmin({ ...editAdmin, full_name: e.target.value })}
+                  required
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:bg-white focus:border-[#00BDFF]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Emel Pentadbir <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={editAdmin.email}
+                  onChange={(e) => setEditAdmin({ ...editAdmin, email: e.target.value })}
                   required
                   className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:outline-none focus:bg-white focus:border-[#00BDFF]"
                 />

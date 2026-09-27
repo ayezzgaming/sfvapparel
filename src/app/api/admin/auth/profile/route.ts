@@ -22,7 +22,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { full_name, phone, current_password, new_password } = body;
+    const { email, full_name, phone, current_password, new_password } = body;
 
     const supabase = getServiceSupabase();
     if (!supabase) {
@@ -35,6 +35,37 @@ export async function PUT(req: NextRequest) {
     const updatePayload: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
+
+    // Update Email
+    if (email && typeof email === 'string') {
+      const cleanEmail = email.trim().toLowerCase();
+      if (cleanEmail !== currentAdmin.email.toLowerCase()) {
+        // Basic email format check
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+          return NextResponse.json(
+            { success: false, message: 'Format emel tidak sah.' },
+            { status: 400 }
+          );
+        }
+
+        // Check uniqueness
+        const { data: existingAdmin } = await supabase
+          .from('admins')
+          .select('id')
+          .ilike('email', cleanEmail)
+          .neq('id', currentAdmin.id)
+          .single();
+
+        if (existingAdmin) {
+          return NextResponse.json(
+            { success: false, message: 'Emel ini telah digunakan oleh akaun pentadbir lain.' },
+            { status: 400 }
+          );
+        }
+
+        updatePayload.email = cleanEmail;
+      }
+    }
 
     if (full_name && typeof full_name === 'string' && full_name.trim().length > 0) {
       updatePayload.full_name = full_name.trim();
@@ -95,7 +126,7 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Profil berjaya dikemaskini.',
+      message: 'Profil dan tetapan keselamatan berjaya dikemaskini.',
       admin: updatedAdmin,
     });
   } catch (err) {

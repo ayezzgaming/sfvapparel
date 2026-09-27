@@ -77,6 +77,33 @@ export async function PATCH(
       updated_at: new Date().toISOString(),
     };
 
+    if (body.email !== undefined && typeof body.email === 'string') {
+      const cleanEmail = body.email.trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+        return NextResponse.json(
+          { success: false, message: 'Format emel tidak sah.' },
+          { status: 400 }
+        );
+      }
+
+      // Check if email already taken by another admin
+      const { data: existingEmail } = await supabase
+        .from('admins')
+        .select('id')
+        .ilike('email', cleanEmail)
+        .neq('id', id)
+        .single();
+
+      if (existingEmail) {
+        return NextResponse.json(
+          { success: false, message: 'Emel ini telah digunakan oleh akaun pentadbir lain.' },
+          { status: 400 }
+        );
+      }
+
+      updatePayload.email = cleanEmail;
+    }
+
     if (full_name !== undefined && typeof full_name === 'string') {
       updatePayload.full_name = full_name.trim();
     }

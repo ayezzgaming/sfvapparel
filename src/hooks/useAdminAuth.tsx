@@ -15,7 +15,7 @@ interface AdminAuthContextValue extends AdminAuthState {
   login: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; message?: string }>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
-  updateProfile: (data: { full_name?: string; phone?: string; current_password?: string; new_password?: string }) => Promise<{ success: boolean; message?: string }>;
+  updateProfile: (data: { email?: string; full_name?: string; phone?: string; current_password?: string; new_password?: string }) => Promise<{ success: boolean; message?: string }>;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextValue | null>(null);
@@ -104,6 +104,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   const updateProfile = useCallback(async (profileData: {
+    email?: string;
     full_name?: string;
     phone?: string;
     current_password?: string;
