@@ -45,7 +45,7 @@ import {
   createOrUpdateFactoryJob,
   updateFactoryJobStatus,
 } from '@/app/actions/factoryActions';
-import { calculateFactoryUnitCost } from '@/lib/factory-pricing-calculator';
+import { calculateFactoryUnitCost, DEFAULT_COLLAR_LIST } from '@/lib/factory-pricing-calculator';
 import { useAppStore } from '@/lib/store/app-store';
 import FactoryJobSheetModal from '@/components/factory/FactoryJobSheetModal';
 
@@ -94,7 +94,7 @@ const STATUS_CONFIG: Record<
 };
 
 function FactoryJobsContent() {
-  const { orders } = useAppStore();
+  const { orders, fabrics, cuts } = useAppStore();
   const searchParams = useSearchParams();
 
   // Navigation sub-tab: 'jobs' vs 'factories'
@@ -124,7 +124,7 @@ function FactoryJobsContent() {
     cost_per_unit: 22.0,
     customer_price_total: 0,
     fabric_spec: 'Microfiber Eyelet 160gsm',
-    collar_spec: 'V-Neck Rib Hitam',
+    collar_spec: 'Round Neck Rib',
     cutting_spec: 'Regular Fit',
     factory_notes: '',
     artwork_hd_url: '',
@@ -231,9 +231,9 @@ function FactoryJobsContent() {
     const ord = preselectedOrder || (orders.length > 0 ? orders[0] : null);
     const qty = ord ? (Number(ord.total_quantity) || 0) : 10;
     const custPrice = ord ? (Number(ord.total_amount) || 0) : 0;
-    const fabric = ord?.fabric_name || 'Microfiber Eyelet 160gsm';
-    const cut = ord?.cut_name || 'Regular Fit';
-    const collar = 'V-Neck Rib Hitam';
+    const fabric = ord?.fabric_name || fabrics[0]?.name || 'Microfiber Eyelet 160gsm';
+    const cut = ord?.cut_name || cuts[0]?.name || 'Regular Fit';
+    const collar = DEFAULT_COLLAR_LIST[0] || 'Round Neck Rib';
 
     // Auto-calculate unit cost from default factory rate card
     const costCalc = calculateFactoryUnitCost(defaultFactory, qty, fabric, cut, collar);
@@ -262,15 +262,27 @@ function FactoryJobsContent() {
     setIsJobModalOpen(true);
   };
 
+  // Live breakdown of factory rate calculations
+  const liveCostBreakdown = useMemo(() => {
+    const fac = factories.find((f) => f.id === jobFormData.factory_id) || factories[0];
+    return calculateFactoryUnitCost(
+      fac,
+      Number(jobFormData.total_quantity) || 1,
+      jobFormData.fabric_spec,
+      jobFormData.cutting_spec,
+      jobFormData.collar_spec
+    );
+  }, [factories, jobFormData.factory_id, jobFormData.total_quantity, jobFormData.fabric_spec, jobFormData.cutting_spec, jobFormData.collar_spec]);
+
   // On Order selected in Create Job Sheet Form - FULL AUTOMATIC DATA POPULATION & RATE CARD CALCULATION
   const handleOrderChange = (orderId: string) => {
     const ord = orders.find((o) => o.id === orderId);
     if (ord) {
       const selectedFac = factories.find((f) => f.id === jobFormData.factory_id) || factories[0];
       const qty = Number(ord.total_quantity) || 0;
-      const fabric = ord.fabric_name || jobFormData.fabric_spec;
-      const cut = ord.cut_name || jobFormData.cutting_spec;
-      const collar = jobFormData.collar_spec;
+      const fabric = ord.fabric_name || jobFormData.fabric_spec || fabrics[0]?.name || 'Microfiber Eyelet 160gsm';
+      const cut = ord.cut_name || jobFormData.cutting_spec || cuts[0]?.name || 'Regular Fit';
+      const collar = jobFormData.collar_spec || DEFAULT_COLLAR_LIST[0];
 
       // Auto-compute factory unit rate from rate card
       const costCalc = calculateFactoryUnitCost(selectedFac, qty, fabric, cut, collar);
@@ -304,6 +316,28 @@ function FactoryJobsContent() {
     setJobFormData((prev) => ({
       ...prev,
       factory_id: factoryId,
+      cost_per_unit: costCalc.finalUnitCost,
+    }));
+  };
+
+  // On Spec (Fabric, Cut, Collar) changed - Recalculate Unit Cost from Selected Factory's Matrix
+  const handleSpecFieldChange = (field: 'fabric_spec' | 'cutting_spec' | 'collar_spec', value: string) => {
+    const selectedFac = factories.find((f) => f.id === jobFormData.factory_id) || factories[0];
+    const newFabric = field === 'fabric_spec' ? value : jobFormData.fabric_spec;
+    const newCut = field === 'cutting_spec' ? value : jobFormData.cutting_spec;
+    const newCollar = field === 'collar_spec' ? value : jobFormData.collar_spec;
+
+    const costCalc = calculateFactoryUnitCost(
+      selectedFac,
+      jobFormData.total_quantity,
+      newFabric,
+      newCut,
+      newCollar
+    );
+
+    setJobFormData((prev) => ({
+      ...prev,
+      [field]: value,
       cost_per_unit: costCalc.finalUnitCost,
     }));
   };
@@ -994,27 +1028,99 @@ function FactoryJobsContent() {
                 </div>
               </div>
 
-              {/* 5. Spesifikasi Produksi */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Jenis Kain / Material</label>
-                  <input
-                    type="text"
-                    value={jobFormData.fabric_spec}
-                    onChange={(e) => setJobFormData({ ...jobFormData, fabric_spec: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none"
-                    placeholder="Cth: Microfiber Eyelet 160gsm"
-                  />
+              {/* 5. Spesifikasi Produksi (Berhubung Terus ke Formula Harga Sistem & Kilang) */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    5. Spesifikasi Produksi (Kain, Potongan & Kolar)
+                  </label>
+                  <span className="text-[11px] font-semibold text-[#00BDFF] bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">
+                    Formula Dinamik
+                  </span>
                 </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Spesifikasi Kolar</label>
-                  <input
-                    type="text"
-                    value={jobFormData.collar_spec}
-                    onChange={(e) => setJobFormData({ ...jobFormData, collar_spec: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none"
-                    placeholder="Cth: V-Neck Rib Hitam / Round Neck"
-                  />
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Jenis Kain</label>
+                    <select
+                      value={jobFormData.fabric_spec}
+                      onChange={(e) => handleSpecFieldChange('fabric_spec', e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none text-xs font-medium"
+                    >
+                      {fabrics.map((f) => (
+                        <option key={f.id} value={f.name}>
+                          {f.name}
+                        </option>
+                      ))}
+                      {!fabrics.some((f) => f.name === jobFormData.fabric_spec) && (
+                        <option value={jobFormData.fabric_spec}>{jobFormData.fabric_spec}</option>
+                      )}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Jenis Potongan</label>
+                    <select
+                      value={jobFormData.cutting_spec}
+                      onChange={(e) => handleSpecFieldChange('cutting_spec', e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none text-xs font-medium"
+                    >
+                      {cuts.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name}
+                        </option>
+                      ))}
+                      {!cuts.some((c) => c.name === jobFormData.cutting_spec) && (
+                        <option value={jobFormData.cutting_spec}>{jobFormData.cutting_spec}</option>
+                      )}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Jenis Kolar</label>
+                    <select
+                      value={jobFormData.collar_spec}
+                      onChange={(e) => handleSpecFieldChange('collar_spec', e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none text-xs font-medium"
+                    >
+                      {DEFAULT_COLLAR_LIST.map((col) => (
+                        <option key={col} value={col}>
+                          {col}
+                        </option>
+                      ))}
+                      {!DEFAULT_COLLAR_LIST.includes(jobFormData.collar_spec) && (
+                        <option value={jobFormData.collar_spec}>{jobFormData.collar_spec}</option>
+                      )}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Formula Breakdown Live Tag */}
+                <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-2.5 text-xs text-slate-600 flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <span className="font-semibold text-slate-700">Kiraan Matriks Kilang:</span>
+                    <span className="px-1.5 py-0.5 bg-white border border-slate-200 rounded-md font-mono">
+                      Asas: RM {liveCostBreakdown.baseCost.toFixed(2)}
+                    </span>
+                    {liveCostBreakdown.fabricSurcharge > 0 && (
+                      <span className="px-1.5 py-0.5 bg-sky-50 border border-sky-100 text-[#00BDFF] rounded-md font-mono">
+                        +Kain: RM {liveCostBreakdown.fabricSurcharge.toFixed(2)}
+                      </span>
+                    )}
+                    {liveCostBreakdown.cutSurcharge > 0 && (
+                      <span className="px-1.5 py-0.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-md font-mono">
+                        +Potongan: RM {liveCostBreakdown.cutSurcharge.toFixed(2)}
+                      </span>
+                    )}
+                    {liveCostBreakdown.collarSurcharge > 0 && (
+                      <span className="px-1.5 py-0.5 bg-purple-50 border border-purple-200 text-purple-700 rounded-md font-mono">
+                        +Kolar: RM {liveCostBreakdown.collarSurcharge.toFixed(2)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[11px] font-bold text-slate-800">
+                    Kadar Seunit: RM {liveCostBreakdown.finalUnitCost.toFixed(2)}/helai
+                  </div>
                 </div>
               </div>
 

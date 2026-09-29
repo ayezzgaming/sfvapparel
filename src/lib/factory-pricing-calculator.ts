@@ -1,5 +1,13 @@
 import { PartnerFactory, FactoryPricingMatrix } from '@/types/database';
 
+export const DEFAULT_COLLAR_LIST = [
+  'Round Neck Rib',
+  'V-Neck Rib',
+  'Collar Polo Berbutang',
+  'Kolar Mandarin / Zip',
+  'Kolar Round Neck Double Layer',
+];
+
 export interface CalculatedFactoryCost {
   baseCost: number;
   tierApplied: string | null;

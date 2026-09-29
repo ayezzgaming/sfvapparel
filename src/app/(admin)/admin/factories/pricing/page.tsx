@@ -16,8 +16,10 @@ import {
   Calculator,
   ChevronRight,
   Trash2,
-  Tag
+  Tag,
+  Info
 } from 'lucide-react';
+import { useAppStore } from '@/lib/store/app-store';
 import { PartnerFactory, FactoryPricingMatrix, FactoryTierDiscount } from '@/types/database';
 import { getPartnerFactories, savePartnerFactory } from '@/app/actions/factoryActions';
 import { calculateFactoryUnitCost } from '@/lib/factory-pricing-calculator';
@@ -30,28 +32,16 @@ function formatCurrency(amount: number) {
   }).format(amount || 0);
 }
 
-const DEFAULT_FABRICS = [
-  'Microfiber Eyelet 160gsm',
-  'Microfiber Interlock 180gsm',
-  'Microfiber Honeycomb',
-  'Microfiber Jacquard',
-];
-
-const DEFAULT_CUTS = [
-  'Regular Fit (Lengan Pendek)',
-  'Lengan Panjang (Long Sleeve)',
-  'Potongan Muslimah',
-  'Tanpa Lengan (Sleeveless)',
-];
-
-const DEFAULT_COLLARS = [
+const DEFAULT_COLLAR_LIST = [
   'Round Neck Rib',
   'V-Neck Rib',
   'Collar Polo Berbutang',
   'Kolar Mandarin / Zip',
+  'Kolar Round Neck Double Layer',
 ];
 
 export default function FactoryPricingMatrixPage() {
+  const { fabrics, cuts } = useAppStore();
   const [factories, setFactories] = useState<PartnerFactory[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFactoryId, setSelectedFactoryId] = useState<string>('');
@@ -68,16 +58,30 @@ export default function FactoryPricingMatrixPage() {
       { min_qty: 50, max_qty: 99, unit_cost: 20.0 },
       { min_qty: 100, max_qty: null, unit_cost: 18.0 },
     ],
-    fabric_surcharges: { Interlock: 2.0, Honeycomb: 2.0, Jacquard: 3.0 },
-    cut_surcharges: { 'Lengan Panjang': 3.0, Muslimah: 5.0, 'Tanpa Lengan': -1.0 },
-    collar_surcharges: { Polo: 3.0, Mandarin: 3.0, Zip: 4.0 },
+    fabric_surcharges: {},
+    cut_surcharges: {},
+    collar_surcharges: {
+      'Round Neck Rib': 0.0,
+      'V-Neck Rib': 0.0,
+      'Collar Polo Berbutang': 3.0,
+      'Kolar Mandarin / Zip': 3.5,
+    },
   });
 
   // Simulator
   const [simQty, setSimQty] = useState(30);
-  const [simFabric, setSimFabric] = useState('Microfiber Eyelet 160gsm');
-  const [simCut, setSimCut] = useState('Regular Fit (Lengan Pendek)');
-  const [simCollar, setSimCollar] = useState('Round Neck Rib');
+  const [simFabric, setSimFabric] = useState(fabrics[0]?.name || 'Microfiber Eyelet 160gsm');
+  const [simCut, setSimCut] = useState(cuts[0]?.name || 'Regular Fit (Lengan Pendek)');
+  const [simCollar, setSimCollar] = useState(DEFAULT_COLLAR_LIST[0]);
+
+  useEffect(() => {
+    if (fabrics.length > 0 && !simFabric) {
+      setSimFabric(fabrics[0].name);
+    }
+    if (cuts.length > 0 && !simCut) {
+      setSimCut(cuts[0].name);
+    }
+  }, [fabrics, cuts, simFabric, simCut]);
 
   const loadData = async () => {
     try {
@@ -114,6 +118,12 @@ export default function FactoryPricingMatrixPage() {
       setCurrentMatrix(target.pricing_matrix);
     }
   };
+
+  // Combined collars list
+  const collarKeys = useMemo(() => {
+    const fromMatrix = Object.keys(currentMatrix.collar_surcharges || {});
+    return Array.from(new Set([...DEFAULT_COLLAR_LIST, ...fromMatrix]));
+  }, [currentMatrix.collar_surcharges]);
 
   // Tier operations
   const handleAddTier = () => {
@@ -178,14 +188,13 @@ export default function FactoryPricingMatrixPage() {
     });
   };
 
-  const [newSurchargeCat, setNewSurchargeCat] = useState<'fabric_surcharges' | 'cut_surcharges' | 'collar_surcharges'>('fabric_surcharges');
   const [newSurchargeKey, setNewSurchargeKey] = useState('');
   const [newSurchargeVal, setNewSurchargeVal] = useState(2.0);
 
-  const handleAddSurcharge = (e: React.FormEvent) => {
+  const handleAddCustomCollar = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSurchargeKey.trim()) return;
-    handleUpdateSurcharge(newSurchargeCat, newSurchargeKey.trim(), newSurchargeVal);
+    handleUpdateSurcharge('collar_surcharges', newSurchargeKey.trim(), newSurchargeVal);
     setNewSurchargeKey('');
     setNewSurchargeVal(2.0);
   };
@@ -244,7 +253,7 @@ export default function FactoryPricingMatrixPage() {
             <span>Formula & Matriks Harga Kilang Sublimasi</span>
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Sama seperti formula harga jualan, urus tangga diskaun kuantiti dan surcaj bahan bagi setiap kilang rakan kongsi secara berpusat.
+            Semua item kain dan potongan diselaraskan secara automatik dengan <em>Pengaturan &gt; Formula Harga</em>. Apabila item baharu ditambah di formula sistem, ia akan terus muncul di sini untuk penetapan harga kilang.
           </p>
         </div>
 
@@ -289,7 +298,7 @@ export default function FactoryPricingMatrixPage() {
           </div>
           <div>
             <span className="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">
-              Pilih Kilang Sasaran
+              Pilih Kilang Sasaran Untuk Disunting
             </span>
             <span className="font-bold text-slate-900 text-sm">
               {selectedFactory?.factory_name || 'Pilih Kilang'}
@@ -314,7 +323,7 @@ export default function FactoryPricingMatrixPage() {
               href={`/admin/factories/${selectedFactory.id}`}
               className="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200 transition-colors"
             >
-              Ubah Profil Kilang
+              Ubah Profil
             </Link>
           )}
         </div>
@@ -322,7 +331,7 @@ export default function FactoryPricingMatrixPage() {
 
       {/* Main Grid: Rate Card Configuration & Live Simulator */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Rate Matrix */}
+        {/* Left 2 Cols: Dynamic Rate Matrix */}
         <div className="lg:col-span-2 space-y-6">
           {/* Base Unit Rate & Quantity Tiers */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5">
@@ -426,142 +435,244 @@ export default function FactoryPricingMatrixPage() {
             </div>
           </div>
 
-          {/* Surcharges Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Fabric */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+          {/* DYNAMIC SECTION 1: JENIS KAIN (Syncs with Master Fabrics) */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <Layers className="w-4 h-4 text-[#00BDFF]" />
-                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Surcaj Kain (RM)</h3>
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
+                  1. Surcaj / Kos Tambahan Jenis Kain ({fabrics.length} Item Formula Sistem)
+                </h3>
               </div>
-              <div className="space-y-2 text-xs">
-                {Object.entries(currentMatrix.fabric_surcharges || {}).map(([name, cost]) => (
-                  <div key={name} className="flex items-center justify-between gap-2 p-2 bg-slate-50 rounded-xl border border-slate-200">
-                    <span className="font-semibold text-slate-800 truncate">{name}</span>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <input
-                        type="number"
-                        step="0.50"
-                        value={cost}
-                        onChange={(e) => handleUpdateSurcharge('fabric_surcharges', name, parseFloat(e.target.value) || 0)}
-                        className="w-14 px-1.5 py-1 bg-white border border-slate-200 rounded-lg text-right font-bold text-xs"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveSurcharge('fabric_surcharges', name)}
-                        className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <span className="text-[11px] text-slate-500">
+                Diselaraskan automatik dengan <em>Pengaturan &gt; Formula Harga</em>
+              </span>
             </div>
 
-            {/* Cut */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-              <div className="flex items-center gap-2">
-                <Shirt className="w-4 h-4 text-[#00BDFF]" />
-                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Surcaj Potongan (RM)</h3>
-              </div>
-              <div className="space-y-2 text-xs">
-                {Object.entries(currentMatrix.cut_surcharges || {}).map(([name, cost]) => (
-                  <div key={name} className="flex items-center justify-between gap-2 p-2 bg-slate-50 rounded-xl border border-slate-200">
-                    <span className="font-semibold text-slate-800 truncate">{name}</span>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <input
-                        type="number"
-                        step="0.50"
-                        value={cost}
-                        onChange={(e) => handleUpdateSurcharge('cut_surcharges', name, parseFloat(e.target.value) || 0)}
-                        className="w-14 px-1.5 py-1 bg-white border border-slate-200 rounded-lg text-right font-bold text-xs"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveSurcharge('cut_surcharges', name)}
-                        className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px]">
+                    <th className="py-2.5 px-4">Nama Material Kain</th>
+                    <th className="py-2.5 px-4">GSM & Ketahanan</th>
+                    <th className="py-2.5 px-4 text-right">Harga Jualan Sistem</th>
+                    <th className="py-2.5 px-4 text-right">Kos Tambahan Kilang (+RM)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {fabrics.map((fabric) => {
+                    const currentSurcharge =
+                      currentMatrix.fabric_surcharges[fabric.name] ??
+                      currentMatrix.fabric_surcharges[fabric.code] ??
+                      0;
 
-            {/* Collar */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-              <div className="flex items-center gap-2">
-                <SlidersHorizontal className="w-4 h-4 text-[#00BDFF]" />
-                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Surcaj Kolar (RM)</h3>
-              </div>
-              <div className="space-y-2 text-xs">
-                {Object.entries(currentMatrix.collar_surcharges || {}).map(([name, cost]) => (
-                  <div key={name} className="flex items-center justify-between gap-2 p-2 bg-slate-50 rounded-xl border border-slate-200">
-                    <span className="font-semibold text-slate-800 truncate">{name}</span>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <input
-                        type="number"
-                        step="0.50"
-                        value={cost}
-                        onChange={(e) => handleUpdateSurcharge('collar_surcharges', name, parseFloat(e.target.value) || 0)}
-                        className="w-14 px-1.5 py-1 bg-white border border-slate-200 rounded-lg text-right font-bold text-xs"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveSurcharge('collar_surcharges', name)}
-                        className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    return (
+                      <tr key={fabric.id} className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-4 font-semibold text-slate-900">
+                          {fabric.name}
+                          {fabric.is_popular && (
+                            <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-sky-50 text-[#00BDFF] font-bold">
+                              Popular
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-4 text-slate-500">
+                          {fabric.weight_gsm ? `${fabric.weight_gsm} gsm` : '-'} • {fabric.breathability || 'Standard'}
+                        </td>
+                        <td className="py-2.5 px-4 text-right text-slate-600 font-medium">
+                          {formatCurrency(fabric.sublimation_base_price)}
+                        </td>
+                        <td className="py-2.5 px-4 text-right">
+                          <div className="inline-flex items-center gap-1">
+                            <span className="text-slate-400 font-medium">+RM</span>
+                            <input
+                              type="number"
+                              step="0.50"
+                              value={currentSurcharge}
+                              onChange={(e) =>
+                                handleUpdateSurcharge(
+                                  'fabric_surcharges',
+                                  fabric.name,
+                                  parseFloat(e.target.value) || 0
+                                )
+                              }
+                              className="w-24 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-right font-bold text-xs focus:ring-2 focus:ring-[#00BDFF] focus:outline-none"
+                              placeholder="0.00"
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
 
-          {/* Quick Add Custom Surcharge */}
-          <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 space-y-2 text-xs">
-            <span className="font-bold text-slate-900 block">Tambah Item Surcaj Kilang</span>
-            <form onSubmit={handleAddSurcharge} className="flex flex-wrap items-center gap-2">
-              <select
-                value={newSurchargeCat}
-                onChange={(e) => setNewSurchargeCat(e.target.value as any)}
-                className="px-3 py-2 bg-white border border-slate-200 rounded-xl font-semibold"
-              >
-                <option value="fabric_surcharges">Jenis Kain</option>
-                <option value="cut_surcharges">Potongan / Lengan</option>
-                <option value="collar_surcharges">Jenis Kolar</option>
-              </select>
-
-              <input
-                type="text"
-                placeholder="Cth: Kolar Mandarin Zip / Silk Dryfit"
-                value={newSurchargeKey}
-                onChange={(e) => setNewSurchargeKey(e.target.value)}
-                className="flex-1 min-w-[180px] px-3 py-2 bg-white border border-slate-200 rounded-xl"
-              />
-
-              <div className="flex items-center gap-1.5">
-                <span className="text-slate-500 font-medium">+RM</span>
-                <input
-                  type="number"
-                  step="0.50"
-                  value={newSurchargeVal}
-                  onChange={(e) => setNewSurchargeVal(parseFloat(e.target.value) || 0)}
-                  className="w-20 px-3 py-2 bg-white border border-slate-200 rounded-xl font-bold text-right"
-                />
+          {/* DYNAMIC SECTION 2: JENIS POTONGAN (Syncs with Master Apparel Cuts) */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Shirt className="w-4 h-4 text-[#00BDFF]" />
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
+                  2. Surcaj / Kos Tambahan Potongan & Lengan ({cuts.length} Item Formula Sistem)
+                </h3>
               </div>
+              <span className="text-[11px] text-slate-500">
+                Diselaraskan automatik dengan <em>Pengaturan &gt; Formula Harga</em>
+              </span>
+            </div>
 
-              <button
-                type="submit"
-                className="px-4 py-2 bg-[#00BDFF] hover:bg-[#00a6e0] text-white rounded-xl font-semibold shadow-xs cursor-pointer"
-              >
-                Tambah
-              </button>
-            </form>
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px]">
+                    <th className="py-2.5 px-4">Jenis Potongan / Pola</th>
+                    <th className="py-2.5 px-4">Kod & Penerangan</th>
+                    <th className="py-2.5 px-4 text-right">Tambahan Jualan Sistem</th>
+                    <th className="py-2.5 px-4 text-right">Kos Tambahan Kilang (+RM)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {cuts.map((cut) => {
+                    const currentSurcharge =
+                      currentMatrix.cut_surcharges[cut.name] ??
+                      currentMatrix.cut_surcharges[cut.code] ??
+                      0;
+
+                    return (
+                      <tr key={cut.id} className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-4 font-semibold text-slate-900">{cut.name}</td>
+                        <td className="py-2.5 px-4 text-slate-500 font-mono text-[11px]">
+                          {cut.code || '-'}
+                        </td>
+                        <td className="py-2.5 px-4 text-right text-slate-600 font-medium">
+                          +{formatCurrency(cut.cut_add_on_price)}
+                        </td>
+                        <td className="py-2.5 px-4 text-right">
+                          <div className="inline-flex items-center gap-1">
+                            <span className="text-slate-400 font-medium">+RM</span>
+                            <input
+                              type="number"
+                              step="0.50"
+                              value={currentSurcharge}
+                              onChange={(e) =>
+                                handleUpdateSurcharge(
+                                  'cut_surcharges',
+                                  cut.name,
+                                  parseFloat(e.target.value) || 0
+                                )
+                              }
+                              className="w-24 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-right font-bold text-xs focus:ring-2 focus:ring-[#00BDFF] focus:outline-none"
+                              placeholder="0.00"
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* DYNAMIC SECTION 3: JENIS KOLAR & LEHER */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4 text-[#00BDFF]" />
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
+                  3. Surcaj / Kos Tambahan Jenis Kolar & Leher ({collarKeys.length} Pilihan)
+                </h3>
+              </div>
+              <span className="text-[11px] text-slate-500">
+                Tetapan kos jahitan rib, zip, atau kolar polo bagi kilang ini
+              </span>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px]">
+                    <th className="py-2.5 px-4">Jenis Kolar / Leher</th>
+                    <th className="py-2.5 px-4 text-right">Kos Tambahan Kilang (+RM)</th>
+                    <th className="py-2.5 px-4 text-center w-16">Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {collarKeys.map((collarName) => {
+                    const currentSurcharge = currentMatrix.collar_surcharges[collarName] ?? 0;
+
+                    return (
+                      <tr key={collarName} className="hover:bg-slate-50/50">
+                        <td className="py-2.5 px-4 font-semibold text-slate-900">{collarName}</td>
+                        <td className="py-2.5 px-4 text-right">
+                          <div className="inline-flex items-center gap-1">
+                            <span className="text-slate-400 font-medium">+RM</span>
+                            <input
+                              type="number"
+                              step="0.50"
+                              value={currentSurcharge}
+                              onChange={(e) =>
+                                handleUpdateSurcharge(
+                                  'collar_surcharges',
+                                  collarName,
+                                  parseFloat(e.target.value) || 0
+                                )
+                              }
+                              className="w-24 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-right font-bold text-xs focus:ring-2 focus:ring-[#00BDFF] focus:outline-none"
+                              placeholder="0.00"
+                            />
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-4 text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSurcharge('collar_surcharges', collarName)}
+                            className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
+                            title="Padam Kolar Ini"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Quick Add Custom Collar */}
+            <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 space-y-2">
+              <span className="font-bold text-slate-900 text-xs block">Tambah Pilihan Kolar / Surcaj Tersuai</span>
+              <form onSubmit={handleAddCustomCollar} className="flex flex-wrap items-center gap-2 text-xs">
+                <input
+                  type="text"
+                  placeholder="Cth: Kolar Mandarin Berbutang / Kolar Zip Besi"
+                  value={newSurchargeKey}
+                  onChange={(e) => setNewSurchargeKey(e.target.value)}
+                  className="flex-1 min-w-[200px] px-3 py-2 bg-white border border-slate-200 rounded-xl"
+                />
+
+                <div className="flex items-center gap-1.5">
+                  <span className="text-slate-500 font-medium">+RM</span>
+                  <input
+                    type="number"
+                    step="0.50"
+                    value={newSurchargeVal}
+                    onChange={(e) => setNewSurchargeVal(parseFloat(e.target.value) || 0)}
+                    className="w-20 px-3 py-2 bg-white border border-slate-200 rounded-xl font-bold text-right"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#00BDFF] hover:bg-[#00a6e0] text-white rounded-xl font-semibold shadow-xs cursor-pointer"
+                >
+                  Tambah
+                </button>
+              </form>
+            </div>
           </div>
         </div>
 
@@ -574,7 +685,7 @@ export default function FactoryPricingMatrixPage() {
                 <span>Simulator Langsung (Live Test)</span>
               </h3>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                Semak pengiraan automatik semasa Job Sheet dijana.
+                Semak kos yang terhasil mengikut formula kilang ini.
               </p>
             </div>
 
@@ -595,27 +706,31 @@ export default function FactoryPricingMatrixPage() {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Jenis Kain</label>
+                <label className="block font-semibold text-slate-700 mb-1">Jenis Kain (Formula Sistem)</label>
                 <select
                   value={simFabric}
                   onChange={(e) => setSimFabric(e.target.value)}
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl font-medium text-xs"
                 >
-                  {DEFAULT_FABRICS.map((f) => (
-                    <option key={f} value={f}>{f}</option>
+                  {fabrics.map((f) => (
+                    <option key={f.id} value={f.name}>
+                      {f.name} ({formatCurrency(f.sublimation_base_price)})
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Jenis Potongan</label>
+                <label className="block font-semibold text-slate-700 mb-1">Jenis Potongan (Formula Sistem)</label>
                 <select
                   value={simCut}
                   onChange={(e) => setSimCut(e.target.value)}
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl font-medium text-xs"
                 >
-                  {DEFAULT_CUTS.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                  {cuts.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {c.name} (+{formatCurrency(c.cut_add_on_price)})
+                    </option>
                   ))}
                 </select>
               </div>
@@ -627,8 +742,10 @@ export default function FactoryPricingMatrixPage() {
                   onChange={(e) => setSimCollar(e.target.value)}
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl font-medium text-xs"
                 >
-                  {DEFAULT_COLLARS.map((col) => (
-                    <option key={col} value={col}>{col}</option>
+                  {collarKeys.map((col) => (
+                    <option key={col} value={col}>
+                      {col}
+                    </option>
                   ))}
                 </select>
               </div>
