@@ -8,7 +8,6 @@ import {
   TrendingDown,
   Percent,
   Layers,
-  Sparkles,
   RefreshCw,
   Calendar,
   ArrowUpRight,
@@ -226,25 +225,22 @@ export default function AdminFinanceOverviewPage() {
         </div>
 
         {/* Net Profit */}
-        <div className="bg-gradient-to-br from-gray-900 to-slate-800 rounded-2xl p-5 text-white shadow-md relative overflow-hidden">
-          <div className="absolute top-0 right-0 transform translate-x-3 -translate-y-3 opacity-10">
-            <TrendingUp className="w-32 h-32 text-white" />
-          </div>
-          <div className="flex items-center justify-between relative z-10">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">Untung Bersih Sebenar</span>
-            <div className="w-9 h-9 rounded-xl bg-white/10 backdrop-blur text-emerald-400 flex items-center justify-center">
-              <Sparkles className="w-5 h-5" />
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs relative overflow-hidden group hover:border-[#00BDFF]/40 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Untung Bersih Sebenar</span>
+            <div className="w-9 h-9 rounded-xl bg-sky-50 text-[#00BDFF] flex items-center justify-center">
+              <TrendingUp className="w-5 h-5" />
             </div>
           </div>
-          <div className="mt-3 relative z-10">
-            <h3 className="text-2xl font-bold text-white tracking-tight">
+          <div className="mt-3">
+            <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
               {loading ? '...' : formatCurrency(pnl.net_profit)}
             </h3>
             <div className="flex items-center gap-2 mt-1">
-              <span className="inline-flex items-center text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span className="inline-flex items-center text-xs font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                 {pnl.net_margin_percent}% Net Margin
               </span>
-              <span className="text-xs text-slate-300">
+              <span className="text-xs text-slate-500">
                 {formatCurrency(pnl.avg_profit_per_unit)} / helai
               </span>
             </div>
@@ -372,17 +368,17 @@ export default function AdminFinanceOverviewPage() {
             </div>
 
             {/* Final Net Profit Line */}
-            <div className="flex items-center justify-between p-3.5 bg-slate-900 text-white rounded-xl border border-slate-800 shadow-sm">
+            <div className="flex items-center justify-between p-3.5 bg-sky-50 text-slate-900 rounded-xl border border-sky-200 shadow-xs">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs border border-emerald-500/30">
+                <div className="w-8 h-8 rounded-lg bg-sky-100 text-[#00BDFF] flex items-center justify-center font-bold text-xs">
                   =
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white">Untung Bersih Sebenar (Net Profit)</h4>
-                  <p className="text-xs text-slate-300">Untung bersih agensi selepas semua kos & overhed</p>
+                  <h4 className="text-sm font-bold text-slate-900">Untung Bersih Sebenar (Net Profit)</h4>
+                  <p className="text-xs text-slate-500">Untung bersih agensi selepas semua kos & overhed</p>
                 </div>
               </div>
-              <span className="text-base font-extrabold text-emerald-400">{formatCurrency(pnl.net_profit)}</span>
+              <span className="text-base font-extrabold text-emerald-600">{formatCurrency(pnl.net_profit)}</span>
             </div>
           </div>
         </div>

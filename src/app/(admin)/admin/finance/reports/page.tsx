@@ -9,7 +9,6 @@ import {
   RefreshCw,
   Calendar,
   Layers,
-  Sparkles,
   TrendingUp,
   Percent,
   DollarSign,
@@ -299,11 +298,11 @@ export default function AdminFinanceReportsPage() {
                 </tr>
 
                 {/* 6. Untung Bersih Final Total */}
-                <tr className="font-black bg-slate-900 text-white text-sm border-t-2 border-slate-900">
-                  <td className="py-4 px-3 uppercase tracking-wide text-white">UNTUNG BERSIH SEBENAR (NET PROFIT)</td>
-                  <td className="py-4 px-3 text-slate-300 font-normal text-xs">Margin Bersih Sebenar: {pnl.net_margin_percent}%</td>
-                  <td className="py-4 px-3 text-right text-slate-400">-</td>
-                  <td className="py-4 px-3 text-right text-emerald-400 font-black text-base">{formatCurrency(pnl.net_profit)}</td>
+                <tr className="font-bold bg-sky-50 text-slate-900 text-sm border-t-2 border-b-2 border-sky-300">
+                  <td className="py-3.5 px-3 uppercase tracking-wide text-slate-900 font-bold">UNTUNG BERSIH SEBENAR (NET PROFIT)</td>
+                  <td className="py-3.5 px-3 text-slate-600 font-normal text-xs">Margin Bersih Sebenar: {pnl.net_margin_percent}%</td>
+                  <td className="py-3.5 px-3 text-right text-slate-400">-</td>
+                  <td className="py-3.5 px-3 text-right text-emerald-600 font-extrabold text-base">{formatCurrency(pnl.net_profit)}</td>
                 </tr>
               </tbody>
             </table>
