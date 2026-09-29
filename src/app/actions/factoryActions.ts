@@ -17,7 +17,17 @@ function parseFactoryRow(row: any): PartnerFactory {
   let notes = row.notes || '';
   let pricing_matrix = row.pricing_matrix;
 
-  if (!pricing_matrix && typeof row.notes === 'string') {
+  // Handle case where pricing_matrix might be stored as string
+  if (typeof pricing_matrix === 'string') {
+    try {
+      pricing_matrix = JSON.parse(pricing_matrix);
+    } catch {
+      pricing_matrix = null;
+    }
+  }
+
+  // Backwards compatibility: If legacy record stored pricing_matrix inside notes column
+  if (!pricing_matrix && typeof row.notes === 'string' && row.notes.startsWith('{')) {
     try {
       const parsed = JSON.parse(row.notes);
       if (parsed && typeof parsed === 'object' && parsed.pricing_matrix) {
@@ -82,7 +92,6 @@ export async function getPartnerFactoryById(id: string): Promise<{ success: bool
 
 export async function savePartnerFactory(factory: Partial<PartnerFactory>): Promise<{ success: boolean; data?: PartnerFactory; message?: string }> {
   try {
-    const rawNotes = factory.notes || '';
     const matrix = factory.pricing_matrix || {
       base_unit_cost: Number(factory.default_unit_cost) || 22.0,
       tier_discounts: [],
@@ -90,11 +99,6 @@ export async function savePartnerFactory(factory: Partial<PartnerFactory>): Prom
       cut_surcharges: {},
       collar_surcharges: {},
     };
-
-    const encodedNotes = JSON.stringify({
-      notes: rawNotes,
-      pricing_matrix: matrix,
-    });
 
     const payload: Record<string, any> = {
       factory_name: factory.factory_name,
@@ -105,7 +109,8 @@ export async function savePartnerFactory(factory: Partial<PartnerFactory>): Prom
       specialty: factory.specialty || 'Full Sublimation All-in-One',
       default_unit_cost: Number(factory.default_unit_cost) || 22.0,
       lead_time_days: Number(factory.lead_time_days) || 7,
-      notes: encodedNotes,
+      pricing_matrix: matrix,
+      notes: factory.notes ? String(factory.notes).trim() : null,
       is_active: factory.is_active ?? true,
       updated_at: new Date().toISOString(),
     };
@@ -133,6 +138,7 @@ export async function savePartnerFactory(factory: Partial<PartnerFactory>): Prom
     return { success: false, message: msg };
   }
 }
+
 
 export async function deletePartnerFactory(id: string): Promise<{ success: boolean; message?: string }> {
   try {

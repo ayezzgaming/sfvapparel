@@ -338,12 +338,11 @@ export async function getCmsDataDb(): Promise<{
       is_active: Boolean(t.is_active ?? true),
     }));
 
-    // 9. Fetch Trust Badges
+    // 9. Fetch Trust Badges from Company Settings (or fallback cleanly)
     let formattedTrustBadges: CmsTrustBadge[] = INITIAL_CMS_TRUST_BADGES;
     try {
-      const { data: trustRow } = await supabase.from('cms_policies').select('*').eq('id', 'trust_badges').maybeSingle();
-      if (trustRow && trustRow.sections && Array.isArray(trustRow.sections) && trustRow.sections.length > 0) {
-        formattedTrustBadges = trustRow.sections.map((b: any, idx: number) => ({
+      if (companyList && companyList.length > 0 && Array.isArray((companyList[0] as any).trust_badges) && (companyList[0] as any).trust_badges.length > 0) {
+        formattedTrustBadges = (companyList[0] as any).trust_badges.map((b: any, idx: number) => ({
           id: String(b.id || `badge-${idx + 1}`),
           title: String(b.title || ''),
           desc: String(b.desc || ''),
@@ -354,13 +353,20 @@ export async function getCmsDataDb(): Promise<{
           is_active: Boolean(b.is_active ?? true),
         }));
       } else {
-        await supabase.from('cms_policies').upsert({
-          id: 'trust_badges',
-          badge: 'Kelebihan Kilang',
-          title: 'Kelebihan & Jaminan Terus Dari Kilang',
-          description: 'Trust badges slider on homepage',
-          sections: INITIAL_CMS_TRUST_BADGES,
-        });
+        // Backwards compatibility check for legacy policies row
+        const { data: trustRow } = await supabase.from('cms_policies').select('*').eq('id', 'trust_badges').maybeSingle();
+        if (trustRow && trustRow.sections && Array.isArray(trustRow.sections) && trustRow.sections.length > 0) {
+          formattedTrustBadges = trustRow.sections.map((b: any, idx: number) => ({
+            id: String(b.id || `badge-${idx + 1}`),
+            title: String(b.title || ''),
+            desc: String(b.desc || ''),
+            pill: String(b.pill || ''),
+            icon_name: String(b.icon_name || 'Building2'),
+            color_theme: String(b.color_theme || 'sky'),
+            sort_order: Number(b.sort_order ?? idx + 1),
+            is_active: Boolean(b.is_active ?? true),
+          }));
+        }
       }
     } catch (e) {
       console.warn('Failed to load trust badges from db, using initial seed:', e);
@@ -1057,14 +1063,16 @@ export async function seedAllCmsToDb(): Promise<{ success: boolean; message?: st
     }));
     await supabase.from('cms_policies').upsert(seedPol);
 
-    // Trust Badges
-    await supabase.from('cms_policies').upsert({
-      id: 'trust_badges',
-      badge: 'Kelebihan Kilang',
-      title: 'Kelebihan & Jaminan Terus Dari Kilang',
-      description: 'Trust badges slider on homepage',
-      sections: INITIAL_CMS_TRUST_BADGES,
+    // Trust Badges into company settings
+    const companyId = '00000000-0000-0000-0007-000000000001';
+    await supabase.from('cms_company_settings').upsert({
+      id: companyId,
+      trust_badges: INITIAL_CMS_TRUST_BADGES,
+      updated_at: new Date().toISOString(),
     });
+
+    // Clean up legacy trust_badges row from cms_policies
+    await supabase.from('cms_policies').delete().eq('id', 'trust_badges');
 
     return { success: true };
   } catch (err: unknown) {
@@ -1085,18 +1093,22 @@ export async function saveTrustBadgesDb(badges: CmsTrustBadge[]): Promise<{
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    const { error } = await supabase.from('cms_policies').upsert({
-      id: 'trust_badges',
-      badge: 'Kelebihan Kilang',
-      title: 'Kelebihan & Jaminan Terus Dari Kilang',
-      description: 'Trust badges slider on homepage',
-      sections: badges,
+    const { data: compRow } = await supabase.from('cms_company_settings').select('id').order('updated_at', { ascending: false }).limit(1).maybeSingle();
+    const companyId = compRow?.id || '00000000-0000-0000-0007-000000000001';
+
+    const { error } = await supabase.from('cms_company_settings').upsert({
+      id: companyId,
+      trust_badges: badges,
+      updated_at: new Date().toISOString(),
     });
 
     if (error) {
       console.error('saveTrustBadgesDb error:', error.message);
       return { success: false, message: error.message };
     }
+
+    // Clean up legacy trust_badges from cms_policies if present
+    await supabase.from('cms_policies').delete().eq('id', 'trust_badges');
 
     return { success: true, data: badges };
   } catch (err: unknown) {
@@ -1117,12 +1129,12 @@ export async function saveTrustBadgeDb(badge: Partial<CmsTrustBadge> & { id?: st
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    // Fetch existing
-    const { data: trustRow } = await supabase.from('cms_policies').select('*').eq('id', 'trust_badges').maybeSingle();
-    let currentBadges: CmsTrustBadge[] = INITIAL_CMS_TRUST_BADGES;
-    if (trustRow && trustRow.sections && Array.isArray(trustRow.sections) && trustRow.sections.length > 0) {
-      currentBadges = trustRow.sections;
-    }
+    const { data: compRow } = await supabase.from('cms_company_settings').select('*').order('updated_at', { ascending: false }).limit(1).maybeSingle();
+    const companyId = compRow?.id || '00000000-0000-0000-0007-000000000001';
+
+    let currentBadges: CmsTrustBadge[] = Array.isArray(compRow?.trust_badges) && compRow.trust_badges.length > 0
+      ? compRow.trust_badges
+      : INITIAL_CMS_TRUST_BADGES;
 
     const badgeId = badge.id || `badge-${Date.now()}`;
     const existingIndex = currentBadges.findIndex((b) => b.id === badgeId);
@@ -1151,12 +1163,10 @@ export async function saveTrustBadgeDb(badge: Partial<CmsTrustBadge> & { id?: st
       nextBadges = [...currentBadges, updatedBadge];
     }
 
-    const { error } = await supabase.from('cms_policies').upsert({
-      id: 'trust_badges',
-      badge: 'Kelebihan Kilang',
-      title: 'Kelebihan & Jaminan Terus Dari Kilang',
-      description: 'Trust badges slider on homepage',
-      sections: nextBadges,
+    const { error } = await supabase.from('cms_company_settings').upsert({
+      id: companyId,
+      trust_badges: nextBadges,
+      updated_at: new Date().toISOString(),
     });
 
     if (error) {
@@ -1178,20 +1188,19 @@ export async function deleteTrustBadgeDb(id: string): Promise<{ success: boolean
     const supabase = getServiceSupabase();
     if (!supabase) return { success: false, message: 'Supabase client tidak dikonfigurasi.' };
 
-    const { data: trustRow } = await supabase.from('cms_policies').select('*').eq('id', 'trust_badges').maybeSingle();
-    let currentBadges: CmsTrustBadge[] = INITIAL_CMS_TRUST_BADGES;
-    if (trustRow && trustRow.sections && Array.isArray(trustRow.sections)) {
-      currentBadges = trustRow.sections;
-    }
+    const { data: compRow } = await supabase.from('cms_company_settings').select('*').order('updated_at', { ascending: false }).limit(1).maybeSingle();
+    const companyId = compRow?.id || '00000000-0000-0000-0007-000000000001';
+
+    let currentBadges: CmsTrustBadge[] = Array.isArray(compRow?.trust_badges) && compRow.trust_badges.length > 0
+      ? compRow.trust_badges
+      : INITIAL_CMS_TRUST_BADGES;
 
     const nextBadges = currentBadges.filter((b) => b.id !== id);
 
-    const { error } = await supabase.from('cms_policies').upsert({
-      id: 'trust_badges',
-      badge: 'Kelebihan Kilang',
-      title: 'Kelebihan & Jaminan Terus Dari Kilang',
-      description: 'Trust badges slider on homepage',
-      sections: nextBadges,
+    const { error } = await supabase.from('cms_company_settings').upsert({
+      id: companyId,
+      trust_badges: nextBadges,
+      updated_at: new Date().toISOString(),
     });
 
     if (error) {
@@ -1204,3 +1213,4 @@ export async function deleteTrustBadgeDb(id: string): Promise<{ success: boolean
     return { success: false, message: msg };
   }
 }
+
