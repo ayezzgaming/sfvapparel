@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { processAiCustomerReply } from '@/lib/whatsapp/ai-brain';
+import { getWhatsAppBotSettings } from '@/lib/whatsapp/bot-config';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -102,6 +103,17 @@ export async function POST(req: Request) {
 
     if (!effectiveBody && !hasMedia) {
       return NextResponse.json({ success: true, message: 'No text or media content found' });
+    }
+
+    // ── Gate 7: Check if WhatsApp Bot Auto-Reply is Enabled ───────────────────
+    const botSettings = await getWhatsAppBotSettings();
+    if (!botSettings.auto_reply_enabled) {
+      console.log(`[Webhook] Chatbot auto-reply is DISABLED by admin. Ignored automatic reply for ${from}.`);
+      return NextResponse.json({
+        success: true,
+        autoReplyDisabled: true,
+        message: 'Chatbot auto-reply is paused by admin. Message saved for manual Live Chat reply only.',
+      });
     }
 
     console.log(`[Webhook] Forwarding from: ${from} | "${effectiveBody.slice(0, 50)}" to n8n...`);
