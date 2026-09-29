@@ -30,6 +30,22 @@ export async function getPartnerFactories(): Promise<{ success: boolean; data: P
   }
 }
 
+export async function getPartnerFactoryById(id: string): Promise<{ success: boolean; data?: PartnerFactory; message?: string }> {
+  try {
+    const { data, error } = await getDb()
+      .from('partner_factories')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return { success: true, data: data || undefined };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Gagal memuat maklumat kilang.';
+    return { success: false, message: msg };
+  }
+}
+
 export async function savePartnerFactory(factory: Partial<PartnerFactory>): Promise<{ success: boolean; data?: PartnerFactory; message?: string }> {
   try {
     const payload = {

@@ -77,8 +77,6 @@ const PRIMARY_NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/admin', label: 'Beranda', icon: Home, exact: true },
       { href: '/admin/orders', label: 'Saluran Pesanan', icon: ClipboardList },
-      { href: '/admin/factory-jobs', label: 'Job Sheet Kilang', icon: Factory },
-      { href: '/admin/factories', label: 'Pengurusan Kilang', icon: Building2 },
       { href: '/admin/catalog', label: 'Katalog Rekaan', icon: Shirt },
       { href: '/admin/customers', label: 'Pelanggan', icon: Users },
     ],
@@ -91,6 +89,13 @@ const PRIMARY_NAV_GROUPS: NavGroup[] = [
       { href: '/admin/ads-generator', label: 'Ads Generator', icon: Megaphone },
     ],
   },
+];
+
+const FACTORY_NAV_ITEMS: NavItem[] = [
+  { href: '/admin/factory-jobs', label: 'Job Sheet Pesanan', icon: Factory, exact: true },
+  { href: '/admin/factories', label: 'Direktori Kilang', icon: Building2, exact: true },
+  { href: '/admin/factories/new', label: 'Daftar Kilang Baru', icon: Plus },
+  { href: '/admin/factories/pricing', label: 'Formula & Matriks Harga', icon: SlidersHorizontal },
 ];
 
 const FINANCE_NAV_ITEMS: NavItem[] = [
@@ -110,6 +115,7 @@ const SETTINGS_NAV_ITEMS: NavItem[] = [
 
 const ALL_ADMIN_NAV_ITEMS: NavItem[] = [
   ...PRIMARY_NAV_GROUPS.flatMap((g) => g.items),
+  ...FACTORY_NAV_ITEMS,
   ...FINANCE_NAV_ITEMS,
   ...SETTINGS_NAV_ITEMS,
 ];
@@ -123,6 +129,18 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const [whatsappStatus, setWhatsappStatus] = useState<'WORKING' | 'SCAN_QR_CODE' | 'DISCONNECTED' | 'LOADING'>('LOADING');
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  // Factory Production Sub-menu Expand State
+  const isInsideFactory = FACTORY_NAV_ITEMS.some((item) =>
+    item.exact ? pathname === item.href : pathname.startsWith(item.href)
+  );
+  const [isFactoryOpen, setIsFactoryOpen] = useState(isInsideFactory);
+
+  useEffect(() => {
+    if (isInsideFactory) {
+      setIsFactoryOpen(true);
+    }
+  }, [isInsideFactory]);
 
   // Finance Sub-menu Expand State (Default collapsed unless currently viewing finance pages)
   const isInsideFinance = FINANCE_NAV_ITEMS.some((item) =>
@@ -519,6 +537,78 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
             ))}
+
+            {/* PRODUKSI KILANG SUB-MENU GROUP */}
+            <div className="space-y-1 pt-2 border-t border-slate-100">
+              {isSidebarOpen ? (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setIsFactoryOpen(!isFactoryOpen)}
+                    className={`w-full flex items-center justify-between px-3.5 py-2 rounded-full text-[13px] transition-colors cursor-pointer ${
+                      isInsideFactory && !isFactoryOpen
+                        ? 'bg-[#C2E7FF] text-[#001D35] font-semibold'
+                        : 'text-slate-700 hover:bg-slate-100 font-semibold'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Factory className={`w-[18px] h-[18px] shrink-0 ${isInsideFactory ? 'text-[#001D35]' : 'text-slate-600'}`} />
+                      <span>Produksi Kilang</span>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+                        isFactoryOpen ? 'rotate-180 text-slate-600' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {/* Collapsible Sub-menu Items */}
+                  {isFactoryOpen && (
+                    <div className="mt-1 space-y-0.5 pl-3 border-l-2 border-slate-100 ml-5">
+                      {FACTORY_NAV_ITEMS.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`flex items-center space-x-2.5 px-3 py-1.5 rounded-full text-xs transition-colors ${
+                              isActive
+                                ? 'bg-sky-50 text-[#00BDFF] font-bold border border-sky-200/60'
+                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                            }`}
+                          >
+                            <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-[#00BDFF]' : 'text-slate-500'}`} />
+                            <span className="truncate">{item.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {FACTORY_NAV_ITEMS.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        title={`Kilang: ${item.label}`}
+                        className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center transition-colors ${
+                          isActive
+                            ? 'bg-[#C2E7FF] text-[#001D35]'
+                            : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Icon className="w-[18px] h-[18px] shrink-0" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* KEWANGAN & AKAUN SUB-MENU GROUP */}
             <div className="space-y-1 pt-2 border-t border-slate-100">
