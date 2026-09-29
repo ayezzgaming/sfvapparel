@@ -1,10 +1,23 @@
 import { NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase/serverClient';
+import { cookies } from 'next/headers';
+import { ADMIN_COOKIE_NAME, getAdminFromSessionToken } from '@/lib/auth/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+    const admin = await getAdminFromSessionToken(sessionToken);
+
+    if (!admin) {
+      return NextResponse.json(
+        { success: false, error: 'Akses tidak dibenarkan' },
+        { status: 401 }
+      );
+    }
+
     const supabase = getServiceSupabase();
     if (!supabase) {
       return NextResponse.json({ success: false, error: 'Database connection failed' }, { status: 500 });
@@ -31,3 +44,4 @@ export async function GET() {
     return NextResponse.json({ success: false, error }, { status: 500 });
   }
 }
+

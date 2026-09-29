@@ -1,11 +1,24 @@
 import { NextResponse } from 'next/server';
 import { startWahaSession, logoutWahaSession, restartWahaSession, getWahaStatus, getWahaQrCode } from '@/lib/whatsapp/waha-client';
 import { syncLinkedPhoneToCompanySettings } from '@/app/actions/cmsActions';
+import { cookies } from 'next/headers';
+import { ADMIN_COOKIE_NAME, getAdminFromSessionToken } from '@/lib/auth/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
+async function verifyAdminAuth() {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+  return await getAdminFromSessionToken(sessionToken);
+}
+
 export async function GET() {
   try {
+    const admin = await verifyAdminAuth();
+    if (!admin) {
+      return NextResponse.json({ success: false, error: 'Akses tidak dibenarkan' }, { status: 401 });
+    }
+
     let status = await getWahaStatus();
 
     // Auto-sync paired phone number if WORKING
@@ -71,6 +84,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const admin = await verifyAdminAuth();
+    if (!admin) {
+      return NextResponse.json({ success: false, error: 'Akses tidak dibenarkan' }, { status: 401 });
+    }
+
     const { action } = await req.json().catch(() => ({ action: 'start' }));
 
     if (action === 'logout') {
@@ -93,3 +111,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
+

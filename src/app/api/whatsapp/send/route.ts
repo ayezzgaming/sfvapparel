@@ -1,10 +1,20 @@
 import { NextResponse } from 'next/server';
 import { sendWahaMessage, sendWahaImage } from '@/lib/whatsapp/waha-client';
+import { cookies } from 'next/headers';
+import { ADMIN_COOKIE_NAME, getAdminFromSessionToken } from '@/lib/auth/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+    const admin = await getAdminFromSessionToken(sessionToken);
+
+    if (!admin) {
+      return NextResponse.json({ success: false, error: 'Akses tidak dibenarkan' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { to, message, imageUrl, caption } = body;
 

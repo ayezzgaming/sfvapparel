@@ -3,11 +3,24 @@ import { getServiceSupabase } from '@/lib/supabase/serverClient';
 import { sendOrderStatusMilestoneWhatsApp } from '@/lib/whatsapp/order-notifier';
 import { triggerStaffProductionAlert } from '@/lib/n8n/n8n-client';
 import { Order, OrderStatus } from '@/types/database';
+import { cookies } from 'next/headers';
+import { ADMIN_COOKIE_NAME, getAdminFromSessionToken } from '@/lib/auth/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+    const admin = await getAdminFromSessionToken(sessionToken);
+
+    if (!admin) {
+      return NextResponse.json(
+        { success: false, message: 'Akses tidak dibenarkan. Sila log masuk pentadbir.' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const {
       orderId,

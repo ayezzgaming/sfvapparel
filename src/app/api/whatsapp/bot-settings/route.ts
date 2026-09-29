@@ -1,10 +1,23 @@
 import { NextResponse } from 'next/server';
 import { getWhatsAppBotSettings, updateWhatsAppBotSettings } from '@/lib/whatsapp/bot-config';
+import { cookies } from 'next/headers';
+import { ADMIN_COOKIE_NAME, getAdminFromSessionToken } from '@/lib/auth/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
+async function verifyAdminAuth() {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+  return await getAdminFromSessionToken(sessionToken);
+}
+
 export async function GET() {
   try {
+    const admin = await verifyAdminAuth();
+    if (!admin) {
+      return NextResponse.json({ success: false, error: 'Akses tidak dibenarkan' }, { status: 401 });
+    }
+
     const settings = await getWhatsAppBotSettings(true);
     return NextResponse.json({ success: true, settings });
   } catch (err: unknown) {
@@ -15,6 +28,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const admin = await verifyAdminAuth();
+    if (!admin) {
+      return NextResponse.json({ success: false, error: 'Akses tidak dibenarkan' }, { status: 401 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const { auto_reply_enabled, paused_reason, updated_by } = body;
 
@@ -28,7 +46,7 @@ export async function POST(req: Request) {
     const updated = await updateWhatsAppBotSettings({
       auto_reply_enabled,
       paused_reason,
-      updated_by,
+      updated_by: updated_by || admin.full_name || admin.email,
     });
 
     return NextResponse.json({
@@ -43,3 +61,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error }, { status: 500 });
   }
 }
+
