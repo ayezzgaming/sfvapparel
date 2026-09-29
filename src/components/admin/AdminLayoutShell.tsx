@@ -93,9 +93,7 @@ const PRIMARY_NAV_GROUPS: NavGroup[] = [
 
 const FACTORY_NAV_ITEMS: NavItem[] = [
   { href: '/admin/factory-jobs', label: 'Job Sheet Pesanan', icon: Factory, exact: true },
-  { href: '/admin/factories', label: 'Direktori Kilang', icon: Building2, exact: true },
-  { href: '/admin/factories/new', label: 'Daftar Kilang Baru', icon: Plus },
-  { href: '/admin/factories/pricing', label: 'Formula & Matriks Harga', icon: SlidersHorizontal },
+  { href: '/admin/factories', label: 'Pengurusan Kilang', icon: Building2 },
 ];
 
 const FINANCE_NAV_ITEMS: NavItem[] = [
