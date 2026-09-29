@@ -10,6 +10,39 @@ function getDb() {
 }
 
 /**
+ * Safely parse a partner factory row from database, extracting pricing_matrix and notes
+ */
+function parseFactoryRow(row: any): PartnerFactory {
+  if (!row) return row;
+  let notes = row.notes || '';
+  let pricing_matrix = row.pricing_matrix;
+
+  if (!pricing_matrix && typeof row.notes === 'string') {
+    try {
+      const parsed = JSON.parse(row.notes);
+      if (parsed && typeof parsed === 'object' && parsed.pricing_matrix) {
+        notes = parsed.notes || '';
+        pricing_matrix = parsed.pricing_matrix;
+      }
+    } catch {
+      // not JSON, keep regular notes
+    }
+  }
+
+  return {
+    ...row,
+    notes,
+    pricing_matrix: pricing_matrix || {
+      base_unit_cost: Number(row.default_unit_cost) || 22.0,
+      tier_discounts: [],
+      fabric_surcharges: {},
+      cut_surcharges: {},
+      collar_surcharges: {},
+    },
+  };
+}
+
+/**
  * ============================================================================
  * PARTNER FACTORY DIRECTORY SERVER ACTIONS
  * ============================================================================
@@ -23,7 +56,8 @@ export async function getPartnerFactories(): Promise<{ success: boolean; data: P
       .order('factory_name', { ascending: true });
 
     if (error) throw error;
-    return { success: true, data: data || [] };
+    const parsed = (data || []).map(parseFactoryRow);
+    return { success: true, data: parsed };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Gagal memuat senarai kilang rakan kongsi.';
     return { success: false, data: [], message: msg };
@@ -39,7 +73,7 @@ export async function getPartnerFactoryById(id: string): Promise<{ success: bool
       .single();
 
     if (error) throw error;
-    return { success: true, data: data || undefined };
+    return { success: true, data: data ? parseFactoryRow(data) : undefined };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Gagal memuat maklumat kilang.';
     return { success: false, message: msg };
@@ -48,23 +82,30 @@ export async function getPartnerFactoryById(id: string): Promise<{ success: bool
 
 export async function savePartnerFactory(factory: Partial<PartnerFactory>): Promise<{ success: boolean; data?: PartnerFactory; message?: string }> {
   try {
-    const payload = {
+    const rawNotes = factory.notes || '';
+    const matrix = factory.pricing_matrix || {
+      base_unit_cost: Number(factory.default_unit_cost) || 22.0,
+      tier_discounts: [],
+      fabric_surcharges: {},
+      cut_surcharges: {},
+      collar_surcharges: {},
+    };
+
+    const encodedNotes = JSON.stringify({
+      notes: rawNotes,
+      pricing_matrix: matrix,
+    });
+
+    const payload: Record<string, any> = {
       factory_name: factory.factory_name,
       pic_name: factory.pic_name || null,
       phone: factory.phone ? factory.phone.replace(/[^0-9]/g, '') : '',
       email: factory.email || null,
       address: factory.address || null,
       specialty: factory.specialty || 'Full Sublimation All-in-One',
-      default_unit_cost: Number(factory.default_unit_cost) || 0,
+      default_unit_cost: Number(factory.default_unit_cost) || 22.0,
       lead_time_days: Number(factory.lead_time_days) || 7,
-      pricing_matrix: factory.pricing_matrix || {
-        base_unit_cost: Number(factory.default_unit_cost) || 22,
-        tier_discounts: [],
-        fabric_surcharges: {},
-        cut_surcharges: {},
-        collar_surcharges: {},
-      },
-      notes: factory.notes || null,
+      notes: encodedNotes,
       is_active: factory.is_active ?? true,
       updated_at: new Date().toISOString(),
     };
@@ -77,7 +118,7 @@ export async function savePartnerFactory(factory: Partial<PartnerFactory>): Prom
         .select('*')
         .single();
       if (error) throw error;
-      return { success: true, data };
+      return { success: true, data: parseFactoryRow(data) };
     } else {
       const { data, error } = await getDb()
         .from('partner_factories')
@@ -85,7 +126,7 @@ export async function savePartnerFactory(factory: Partial<PartnerFactory>): Prom
         .select('*')
         .single();
       if (error) throw error;
-      return { success: true, data };
+      return { success: true, data: parseFactoryRow(data) };
     }
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Gagal menyimpan maklumat kilang.';
@@ -126,7 +167,11 @@ export async function getFactoryJobs(): Promise<{ success: boolean; data: Factor
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return { success: true, data: data || [] };
+    const parsed = (data || []).map((job: any) => ({
+      ...job,
+      factory: job.factory ? parseFactoryRow(job.factory) : undefined,
+    }));
+    return { success: true, data: parsed };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Gagal memuat senarai Job Sheet kilang.';
     return { success: false, data: [], message: msg };
@@ -146,6 +191,9 @@ export async function getFactoryJobById(id: string): Promise<{ success: boolean;
       .single();
 
     if (error) throw error;
+    if (data && data.factory) {
+      data.factory = parseFactoryRow(data.factory);
+    }
     return { success: true, data };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Job Sheet tidak dijumpai.';
@@ -209,6 +257,7 @@ export async function createOrUpdateFactoryJob(payload: {
         .select(`*, factory:partner_factories(*), order:orders(*)`)
         .single();
       if (error) throw error;
+      if (data && data.factory) data.factory = parseFactoryRow(data.factory);
       return { success: true, data };
     } else {
       // Generate Job Number: JOB-YYYY-XXXX
@@ -226,12 +275,15 @@ export async function createOrUpdateFactoryJob(payload: {
         .select(`*, factory:partner_factories(*), order:orders(*)`)
         .single();
       if (error) throw error;
+      if (data && data.factory) data.factory = parseFactoryRow(data.factory);
 
-      // Update the order status to 'in_production'
-      await getDb()
-        .from('orders')
-        .update({ status: 'in_production', updated_at: new Date().toISOString() })
-        .eq('id', payload.order_id);
+      // Update the order status to 'in_production' if order exists
+      if (payload.order_id) {
+        await getDb()
+          .from('orders')
+          .update({ status: 'in_production', updated_at: new Date().toISOString() })
+          .eq('id', payload.order_id);
+      }
 
       return { success: true, data };
     }

@@ -668,275 +668,306 @@ function FactoryJobsContent() {
       </div>
 
       {/* =========================================================================
-          MODAL: JANA / KEMASKINI JOB SHEET
+          MODAL: JANA / KEMASKINI JOB SHEET (SPACIOUS & PROFESSIONAL 2-COLUMN)
           ========================================================================= */}
       {isJobModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl border border-slate-100">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50/60 sticky top-0 z-10">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-sky-50 text-[#00BDFF] flex items-center justify-center font-bold">
-                  <Factory className="w-4 h-4" />
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#00BDFF] flex items-center justify-center font-bold">
+                  <Factory className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    {jobFormData.id ? 'Kemaskini Job Sheet' : 'Jana Job Sheet Baru'}
+                  <h3 className="text-base font-bold text-slate-900">
+                    {jobFormData.id ? 'Kemaskini Job Sheet Produksi' : 'Jana Job Sheet Pengeluaran Kilang'}
                   </h3>
-                  <p className="text-[11px] text-slate-500">Tugasan pengeluaran & kos kilang</p>
+                  <p className="text-xs text-slate-500">Tugasan pengeluaran jersi, tech pack dan pengiraan kos kilang</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsJobModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSaveJob} className="p-5 space-y-4 text-xs">
+            <form onSubmit={handleSaveJob} className="p-6 overflow-y-auto flex-1 space-y-5 text-xs">
               {jobError && (
-                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-center gap-2">
+                <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-center gap-2.5">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{jobError}</span>
                 </div>
               )}
 
-              {/* 1. Pilih Pesanan Pelanggan */}
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Pilih Pesanan Pelanggan <span className="text-rose-500">*</span>
-                </label>
-                <select
-                  value={jobFormData.order_id}
-                  onChange={(e) => handleOrderChange(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none font-medium"
-                  required
-                >
-                  <option value="">-- Pilih Pesanan --</option>
-                  {orders.map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.order_number} — {o.customer_name || 'Pelanggan'} ({o.total_quantity} pcs - {formatCurrency(Number(o.total_amount))})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 2. Pilih Kilang Sublimasi */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="font-semibold text-slate-700">
-                    Kilang Sublimasi Rakan Kongsi <span className="text-rose-500">*</span>
-                  </label>
-                  <Link
-                    href="/admin/factories"
-                    className="text-[#00BDFF] hover:underline font-semibold flex items-center gap-1"
-                  >
-                    <span>Urus Kilang</span>
-                  </Link>
-                </div>
-                <select
-                  value={jobFormData.factory_id}
-                  onChange={(e) => handleFactoryChange(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none font-medium"
-                  required
-                >
-                  <option value="">-- Pilih Kilang --</option>
-                  {factories.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.factory_name} (Std: RM {Number(f.default_unit_cost).toFixed(2)}/helai)
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 3. Kos Seunit & Tarikh Sasaran */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Kadar Kos Seunit Kilang (RM) <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    step="0.10"
-                    min="1"
-                    value={jobFormData.cost_per_unit || ''}
-                    onChange={(e) =>
-                      setJobFormData({ ...jobFormData, cost_per_unit: parseFloat(e.target.value) || 0 })
-                    }
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none font-bold text-slate-900"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Tarikh Siap Sasaran Kilang <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    value={jobFormData.target_ready_date}
-                    onChange={(e) => setJobFormData({ ...jobFormData, target_ready_date: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none font-medium"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* 4. Live Margin Breakdown Card */}
-              <div className="bg-sky-50/60 border border-sky-100 rounded-xl p-3 grid grid-cols-3 gap-2 text-center">
-                <div>
-                  <span className="text-[10px] text-slate-500 block uppercase">Jualan Pelanggan</span>
-                  <span className="font-bold text-slate-900 text-xs">{formatCurrency(jobFormData.customer_price_total)}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-amber-700 block uppercase">Jumlah Kos Kilang</span>
-                  <span className="font-bold text-amber-700 text-xs">{formatCurrency(computedFactoryCost)}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-emerald-700 block uppercase">Untung Kasar SVF</span>
-                  <span className="font-bold text-emerald-600 text-xs">
-                    {formatCurrency(computedGrossProfit)} ({computedGrossMargin.toFixed(1)}%)
-                  </span>
-                </div>
-              </div>
-
-              {/* 5. Spesifikasi Produksi */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="font-semibold text-slate-700">
-                    Spesifikasi Produksi
-                  </label>
-                  <span className="text-[11px] font-semibold text-[#00BDFF] bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">
-                    Formula Dinamik
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Left Side: Order, Factory & Specs (7 cols) */}
+                <div className="lg:col-span-7 space-y-4">
+                  {/* 1. Pilih Pesanan */}
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">Jenis Kain</label>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Pilih Pesanan Pelanggan <span className="text-rose-500">*</span>
+                    </label>
                     <select
-                      value={jobFormData.fabric_spec}
-                      onChange={(e) => handleSpecFieldChange('fabric_spec', e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none text-xs font-medium"
+                      value={jobFormData.order_id}
+                      onChange={(e) => handleOrderChange(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none text-xs font-medium"
+                      required
                     >
-                      {fabrics.map((f) => (
-                        <option key={f.id} value={f.name}>
-                          {f.name}
+                      <option value="">-- Pilih Pesanan dari Senarai --</option>
+                      {orders.map((o) => (
+                        <option key={o.id} value={o.id}>
+                          {o.order_number} — {o.customer_name || 'Pelanggan'} ({o.total_quantity} pcs • {formatCurrency(Number(o.total_amount))})
                         </option>
                       ))}
-                      {!fabrics.some((f) => f.name === jobFormData.fabric_spec) && (
-                        <option value={jobFormData.fabric_spec}>{jobFormData.fabric_spec}</option>
-                      )}
                     </select>
                   </div>
 
+                  {/* 2. Pilih Kilang */}
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">Jenis Potongan</label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-semibold text-slate-700">
+                        Kilang Sublimasi Rakan Kongsi <span className="text-rose-500">*</span>
+                      </label>
+                      <Link
+                        href="/admin/factories"
+                        className="text-[#00BDFF] hover:underline font-semibold text-xs"
+                      >
+                        Urus Kilang
+                      </Link>
+                    </div>
                     <select
-                      value={jobFormData.cutting_spec}
-                      onChange={(e) => handleSpecFieldChange('cutting_spec', e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none text-xs font-medium"
+                      value={jobFormData.factory_id}
+                      onChange={(e) => handleFactoryChange(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none text-xs font-medium"
+                      required
                     >
-                      {cuts.map((c) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name}
+                      <option value="">-- Pilih Kilang Sublimasi --</option>
+                      {factories.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.factory_name} (Kadar Std: RM {Number(f.default_unit_cost).toFixed(2)}/helai)
                         </option>
                       ))}
-                      {!cuts.some((c) => c.name === jobFormData.cutting_spec) && (
-                        <option value={jobFormData.cutting_spec}>{jobFormData.cutting_spec}</option>
-                      )}
                     </select>
                   </div>
 
+                  {/* 3. Spesifikasi Produksi (Kain, Potongan, Kolar) */}
+                  <div className="space-y-2.5 pt-2 border-t border-slate-100">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-800">
+                        Spesifikasi Produksi & Material
+                      </label>
+                      <span className="text-[11px] font-semibold text-[#00BDFF] bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">
+                        Formula Dinamik
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">Jenis Kain</label>
+                        <select
+                          value={jobFormData.fabric_spec}
+                          onChange={(e) => handleSpecFieldChange('fabric_spec', e.target.value)}
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none text-xs font-medium"
+                        >
+                          {fabrics.map((f) => (
+                            <option key={f.id} value={f.name}>
+                              {f.name}
+                            </option>
+                          ))}
+                          {!fabrics.some((f) => f.name === jobFormData.fabric_spec) && (
+                            <option value={jobFormData.fabric_spec}>{jobFormData.fabric_spec}</option>
+                          )}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">Jenis Potongan</label>
+                        <select
+                          value={jobFormData.cutting_spec}
+                          onChange={(e) => handleSpecFieldChange('cutting_spec', e.target.value)}
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none text-xs font-medium"
+                        >
+                          {cuts.map((c) => (
+                            <option key={c.id} value={c.name}>
+                              {c.name}
+                            </option>
+                          ))}
+                          {!cuts.some((c) => c.name === jobFormData.cutting_spec) && (
+                            <option value={jobFormData.cutting_spec}>{jobFormData.cutting_spec}</option>
+                          )}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">Jenis Kolar</label>
+                        <select
+                          value={jobFormData.collar_spec}
+                          onChange={(e) => handleSpecFieldChange('collar_spec', e.target.value)}
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none text-xs font-medium"
+                        >
+                          {DEFAULT_COLLAR_LIST.map((col) => (
+                            <option key={col} value={col}>
+                              {col}
+                            </option>
+                          ))}
+                          {!DEFAULT_COLLAR_LIST.includes(jobFormData.collar_spec) && (
+                            <option value={jobFormData.collar_spec}>{jobFormData.collar_spec}</option>
+                          )}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4. Pautan Fail Artwork HD */}
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">Jenis Kolar</label>
-                    <select
-                      value={jobFormData.collar_spec}
-                      onChange={(e) => handleSpecFieldChange('collar_spec', e.target.value)}
-                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none text-xs font-medium"
-                    >
-                      {DEFAULT_COLLAR_LIST.map((col) => (
-                        <option key={col} value={col}>
-                          {col}
-                        </option>
-                      ))}
-                      {!DEFAULT_COLLAR_LIST.includes(jobFormData.collar_spec) && (
-                        <option value={jobFormData.collar_spec}>{jobFormData.collar_spec}</option>
-                      )}
-                    </select>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Pautan Fail Artwork HD / AI / PDF</label>
+                    <input
+                      type="url"
+                      value={jobFormData.artwork_hd_url}
+                      onChange={(e) => setJobFormData({ ...jobFormData, artwork_hd_url: e.target.value })}
+                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none font-mono text-xs"
+                      placeholder="https://drive.google.com/..."
+                    />
+                  </div>
+
+                  {/* 5. Nota Arahan Kilang */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Nota Arahan untuk Kilang</label>
+                    <textarea
+                      rows={2}
+                      value={jobFormData.factory_notes}
+                      onChange={(e) => setJobFormData({ ...jobFormData, factory_notes: e.target.value })}
+                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none text-xs"
+                      placeholder="Catatan jahitan, susunan khas nombor..."
+                    />
                   </div>
                 </div>
 
-                {/* Formula Breakdown Live Pill */}
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-600 flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-                    <span className="font-semibold text-slate-700">Kiraan:</span>
-                    <span className="px-1.5 py-0.5 bg-white border border-slate-200 rounded-md font-mono">
-                      Asas: RM {liveCostBreakdown.baseCost.toFixed(2)}
-                    </span>
-                    {liveCostBreakdown.fabricSurcharge > 0 && (
-                      <span className="px-1.5 py-0.5 bg-sky-50 border border-sky-100 text-[#00BDFF] rounded-md font-mono">
-                        +Kain: RM {liveCostBreakdown.fabricSurcharge.toFixed(2)}
-                      </span>
-                    )}
-                    {liveCostBreakdown.cutSurcharge > 0 && (
-                      <span className="px-1.5 py-0.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-md font-mono">
-                        +Potongan: RM {liveCostBreakdown.cutSurcharge.toFixed(2)}
-                      </span>
-                    )}
-                    {liveCostBreakdown.collarSurcharge > 0 && (
-                      <span className="px-1.5 py-0.5 bg-purple-50 border border-purple-200 text-purple-700 rounded-md font-mono">
-                        +Kolar: RM {liveCostBreakdown.collarSurcharge.toFixed(2)}
-                      </span>
-                    )}
+                {/* Right Side: Financial Calculations, Dates & Margin (5 cols) */}
+                <div className="lg:col-span-5 space-y-4">
+                  {/* Tarikh & Kos Seunit Inputs */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                    <h4 className="font-bold text-slate-800 text-xs">Penetapan Kos & Jadual</h4>
+                    
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                        Kadar Kos Kilang Seunit (RM) <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        step="0.10"
+                        min="1"
+                        value={jobFormData.cost_per_unit || ''}
+                        onChange={(e) =>
+                          setJobFormData({ ...jobFormData, cost_per_unit: parseFloat(e.target.value) || 0 })
+                        }
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none font-bold text-slate-900 text-xs"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                        Tarikh Siap Sasaran Kilang <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="date"
+                        value={jobFormData.target_ready_date}
+                        onChange={(e) => setJobFormData({ ...jobFormData, target_ready_date: e.target.value })}
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none text-xs"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">Status Tugasan</label>
+                      <select
+                        value={jobFormData.status}
+                        onChange={(e) => setJobFormData({ ...jobFormData, status: e.target.value as FactoryJobStatus })}
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none text-xs"
+                      >
+                        {(Object.keys(STATUS_CONFIG) as FactoryJobStatus[]).map((st) => (
+                          <option key={st} value={st}>
+                            {STATUS_CONFIG[st].label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                  <div className="text-[11px] font-bold text-slate-800">
-                    Kadar Seunit: RM {liveCostBreakdown.finalUnitCost.toFixed(2)}/helai
+
+                  {/* Live Margin Calculation Card */}
+                  <div className="bg-sky-50/70 border border-sky-100 rounded-2xl p-4 space-y-3">
+                    <h4 className="font-bold text-slate-800 text-xs">Unjuran Kewangan & Margin</h4>
+
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between text-slate-600">
+                        <span>Kuantiti Pesanan:</span>
+                        <span className="font-bold text-slate-900">{jobFormData.total_quantity} helai</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600">
+                        <span>Jumlah Jualan Pelanggan:</span>
+                        <span className="font-bold text-slate-900">{formatCurrency(jobFormData.customer_price_total)}</span>
+                      </div>
+                      <div className="flex justify-between text-amber-800">
+                        <span>Jumlah Kos Kilang (COGS):</span>
+                        <span className="font-bold text-amber-700">{formatCurrency(computedFactoryCost)}</span>
+                      </div>
+                      <div className="pt-2 border-t border-sky-200/80 flex justify-between items-center text-xs">
+                        <span className="font-bold text-slate-800">Untung Kasar SVF:</span>
+                        <span className="font-bold text-emerald-600">
+                          {formatCurrency(computedGrossProfit)} ({computedGrossMargin.toFixed(1)}%)
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Matriks Formula Pill */}
+                    <div className="pt-2 border-t border-sky-200/60 text-[11px] text-slate-500 space-y-1">
+                      <div className="font-semibold text-slate-700">Pecahan Matriks Kilang:</div>
+                      <div className="flex flex-wrap gap-1">
+                        <span className="px-1.5 py-0.5 bg-white border border-slate-200 rounded font-mono">
+                          Asas: RM {liveCostBreakdown.baseCost.toFixed(2)}
+                        </span>
+                        {liveCostBreakdown.fabricSurcharge > 0 && (
+                          <span className="px-1.5 py-0.5 bg-sky-100/70 text-[#00BDFF] rounded font-mono">
+                            +Kain: RM {liveCostBreakdown.fabricSurcharge.toFixed(2)}
+                          </span>
+                        )}
+                        {liveCostBreakdown.cutSurcharge > 0 && (
+                          <span className="px-1.5 py-0.5 bg-amber-100/70 text-amber-700 rounded font-mono">
+                            +Potongan: RM {liveCostBreakdown.cutSurcharge.toFixed(2)}
+                          </span>
+                        )}
+                        {liveCostBreakdown.collarSurcharge > 0 && (
+                          <span className="px-1.5 py-0.5 bg-purple-100/70 text-purple-700 rounded font-mono">
+                            +Kolar: RM {liveCostBreakdown.collarSurcharge.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* 6. Pautan Fail Artwork HD */}
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Pautan Fail Artwork HD / AI / PDF</label>
-                <input
-                  type="url"
-                  value={jobFormData.artwork_hd_url}
-                  onChange={(e) => setJobFormData({ ...jobFormData, artwork_hd_url: e.target.value })}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none font-mono text-xs"
-                  placeholder="https://drive.google.com/..."
-                />
-              </div>
-
-              {/* 7. Nota Khas untuk Kilang */}
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Nota Arahan untuk Kilang</label>
-                <textarea
-                  rows={2}
-                  value={jobFormData.factory_notes}
-                  onChange={(e) => setJobFormData({ ...jobFormData, factory_notes: e.target.value })}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#00BDFF] focus:outline-none"
-                  placeholder="Catatan jahitan atau susunan khas..."
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              {/* Action Buttons Footer */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsJobModalOpen(false)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold cursor-pointer"
+                  className="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={jobSubmitting}
-                  className="px-5 py-2 bg-[#00BDFF] hover:bg-[#00a6e0] text-white font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="px-6 py-2.5 bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  {jobSubmitting && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  {jobSubmitting && <RefreshCw className="w-4 h-4 animate-spin" />}
                   <span>{jobFormData.id ? 'Simpan Kemaskini' : 'Jana Job Sheet'}</span>
                 </button>
               </div>
