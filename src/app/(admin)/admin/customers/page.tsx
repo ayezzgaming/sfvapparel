@@ -287,7 +287,7 @@ export default function AdminCustomersPage() {
             <span className="text-xs font-bold text-slate-800 dark:text-zinc-100 tracking-tight">
               Direktori Pelanggan
             </span>
-            <span className="text-[10px] font-semibold text-[#0052FF] bg-blue-50 dark:bg-blue-950/50 px-2.5 py-0.5 rounded-full border border-blue-200/60 dark:border-blue-900">
+            <span className="text-[10px] font-semibold text-[#00BDFF] bg-sky-50 dark:bg-sky-950/50 px-2.5 py-0.5 rounded-full border border-sky-200/60 dark:border-sky-900">
               {filteredCustomers.length} Pelanggan
             </span>
           </div>
@@ -304,8 +304,8 @@ export default function AdminCustomersPage() {
                 onClick={() => setFilterType(tab.id as any)}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
                   filterType === tab.id
-                    ? 'bg-[#0052FF] text-white font-semibold shadow-xs'
-                    : 'text-slate-600 dark:text-zinc-400 hover:text-[#0052FF]'
+                    ? 'bg-[#00BDFF] text-white font-bold shadow-xs'
+                    : 'text-slate-600 dark:text-zinc-400 hover:text-[#00BDFF]'
                 }`}
               >
                 {tab.label}
@@ -323,7 +323,7 @@ export default function AdminCustomersPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari nama, telefon, kelab..."
-              className="w-full pl-8 pr-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30 focus:border-[#0052FF] transition-all shadow-2xs"
+              className="w-full pl-8 pr-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/30 focus:border-[#00BDFF] transition-all shadow-2xs"
             />
             {searchQuery && (
               <button
@@ -342,8 +342,8 @@ export default function AdminCustomersPage() {
               onClick={() => setViewMode('list')}
               className={`p-1.5 rounded-full transition-all cursor-pointer ${
                 viewMode === 'list'
-                  ? 'bg-white dark:bg-zinc-900 text-[#0052FF] shadow-xs'
-                  : 'text-slate-500 hover:text-[#0052FF]'
+                  ? 'bg-white dark:bg-zinc-900 text-[#00BDFF] shadow-xs'
+                  : 'text-slate-500 hover:text-[#00BDFF]'
               }`}
               title="Paparan Senarai Jadual (Default)"
             >
@@ -354,8 +354,8 @@ export default function AdminCustomersPage() {
               onClick={() => setViewMode('grid')}
               className={`p-1.5 rounded-full transition-all cursor-pointer ${
                 viewMode === 'grid'
-                  ? 'bg-white dark:bg-zinc-900 text-[#0052FF] shadow-xs'
-                  : 'text-slate-500 hover:text-[#0052FF]'
+                  ? 'bg-white dark:bg-zinc-900 text-[#00BDFF] shadow-xs'
+                  : 'text-slate-500 hover:text-[#00BDFF]'
               }`}
               title="Paparan Kad Grid"
             >
@@ -370,13 +370,13 @@ export default function AdminCustomersPage() {
             className="p-1.5 rounded-full bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-300 border border-slate-200/80 dark:border-zinc-700 shadow-2xs transition-colors cursor-pointer"
             title="Segarkan Data"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-[#0052FF]' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-[#00BDFF]' : ''}`} />
           </button>
 
           <button
             type="button"
             onClick={handleOpenCreate}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#0052FF] hover:bg-blue-600 active:scale-95 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] active:scale-95 text-white text-xs font-bold shadow-xs transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Tambah Pelanggan</span>
@@ -395,7 +395,7 @@ export default function AdminCustomersPage() {
               {stats.totalCount}
             </span>
           </div>
-          <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-[#0052FF] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-[#00BDFF] flex items-center justify-center">
             <Users className="w-4 h-4" />
           </div>
         </div>
@@ -498,7 +498,7 @@ export default function AdminCustomersPage() {
                             {initial}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-bold text-slate-900 dark:text-zinc-100 text-[13px] group-hover:text-[#0052FF] transition-colors truncate">
+                            <p className="font-bold text-slate-900 dark:text-zinc-100 text-[13px] group-hover:text-[#00BDFF] transition-colors truncate">
                               {cust.full_name}
                             </p>
                             <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
@@ -607,7 +607,7 @@ export default function AdminCustomersPage() {
                   <div
                     key={cust.id}
                     onClick={() => handleOpenDetail(cust)}
-                    className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs hover:border-[#0052FF]/50 transition-all cursor-pointer space-y-3"
+                    className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs hover:border-[#00BDFF]/50 transition-all cursor-pointer space-y-3"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2.5 min-w-0">
@@ -643,7 +643,7 @@ export default function AdminCustomersPage() {
                       </div>
                       <div className="text-right">
                         <span className="text-[10px] text-slate-400 block uppercase">Nilai Belanja</span>
-                        <span className="font-bold text-[#0052FF]">{formatCurrency(cust.computedSpent)}</span>
+                        <span className="font-bold text-[#00BDFF]">{formatCurrency(cust.computedSpent)}</span>
                       </div>
                     </div>
                   </div>
@@ -663,7 +663,7 @@ export default function AdminCustomersPage() {
             {/* Drawer Header */}
             <div className="p-4 px-5 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between bg-slate-50/50 dark:bg-zinc-800/50">
               <div className="flex items-center space-x-2">
-                <Users className="w-4 h-4 text-[#0052FF]" />
+                <Users className="w-4 h-4 text-[#00BDFF]" />
                 <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                   Profil & Sejarah Pelanggan
                 </h3>
@@ -788,7 +788,7 @@ export default function AdminCustomersPage() {
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                     Jumlah Belanja (LTV)
                   </span>
-                  <span className="text-base font-extrabold text-[#0052FF] mt-0.5 block truncate">
+                  <span className="text-base font-extrabold text-[#00BDFF] mt-0.5 block truncate">
                     {formatCurrency(currentSelectedMetrics.computedSpent)}
                   </span>
                 </div>
@@ -802,7 +802,7 @@ export default function AdminCustomersPage() {
                   </h5>
                   <Link
                     href="/admin/orders"
-                    className="text-[11px] font-semibold text-[#0052FF] hover:underline"
+                    className="text-[11px] font-semibold text-[#00BDFF] hover:underline"
                   >
                     Buka Saluran Pesanan →
                   </Link>
@@ -818,11 +818,11 @@ export default function AdminCustomersPage() {
                       <Link
                         key={ord.id}
                         href={`/admin/orders`}
-                        className="p-3 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 hover:border-[#0052FF] transition-all flex items-center justify-between group shadow-2xs"
+                        className="p-3 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 hover:border-[#00BDFF] transition-all flex items-center justify-between group shadow-2xs"
                       >
                         <div className="space-y-0.5 min-w-0 flex-1 pr-3">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono font-bold text-xs text-slate-900 dark:text-zinc-100 group-hover:text-[#0052FF]">
+                            <span className="font-mono font-bold text-xs text-slate-900 dark:text-zinc-100 group-hover:text-[#00BDFF]">
                               {ord.order_number}
                             </span>
                             <span className="text-[10px] px-2 py-0.2 rounded-full uppercase font-bold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
@@ -862,7 +862,7 @@ export default function AdminCustomersPage() {
             {/* Modal Header */}
             <div className="p-4 px-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between bg-slate-50/50 dark:bg-zinc-800/50">
               <div className="flex items-center space-x-2">
-                <Users className="w-4 h-4 text-[#0052FF]" />
+                <Users className="w-4 h-4 text-[#00BDFF]" />
                 <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                   {formData.id ? 'Kemaskini Maklumat Pelanggan' : 'Daftar Pelanggan Baru'}
                 </h3>
@@ -894,7 +894,7 @@ export default function AdminCustomersPage() {
                   value={formData.full_name}
                   onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                   placeholder="Contoh: Muhammad Shah"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/30"
                 />
               </div>
 
@@ -909,7 +909,7 @@ export default function AdminCustomersPage() {
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="Contoh: 0123456789"
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/30"
                   />
                 </div>
 
@@ -922,7 +922,7 @@ export default function AdminCustomersPage() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="nama@email.com"
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/30"
                   />
                 </div>
               </div>
@@ -936,7 +936,7 @@ export default function AdminCustomersPage() {
                   value={formData.company_or_team}
                   onChange={(e) => setFormData({ ...formData, company_or_team: e.target.value })}
                   placeholder="Contoh: FC Harimau Shah Alam"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/30"
                 />
               </div>
 
@@ -950,7 +950,7 @@ export default function AdminCustomersPage() {
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                     placeholder="Shah Alam, Selangor"
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/30"
                   />
                 </div>
 
@@ -963,7 +963,7 @@ export default function AdminCustomersPage() {
                     value={formData.postal_code}
                     onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })}
                     placeholder="40000"
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/30"
                   />
                 </div>
               </div>
@@ -977,7 +977,7 @@ export default function AdminCustomersPage() {
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   placeholder="Nota saiz khas, corak kegemaran, dsb..."
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#0052FF]/30 resize-none"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/30 resize-none"
                 />
               </div>
 
@@ -993,7 +993,7 @@ export default function AdminCustomersPage() {
                 <button
                   type="submit"
                   disabled={formSubmitting}
-                  className="px-5 py-2 rounded-full bg-[#0052FF] hover:bg-blue-600 text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50"
+                  className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50"
                 >
                   {formSubmitting ? 'Menyimpan...' : formData.id ? 'Simpan Perubahan' : 'Daftar Pelanggan'}
                 </button>
