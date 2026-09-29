@@ -9,6 +9,7 @@ interface AdminAuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   role: AdminRole | null;
+  networkError: string | null;
 }
 
 interface AdminAuthContextValue extends AdminAuthState {
@@ -29,12 +30,36 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     isLoading: true,
     isAuthenticated: false,
     role: null,
+    networkError: null,
   });
 
   const refresh = useCallback(async () => {
     try {
-      setState((prev) => ({ ...prev, isLoading: true }));
+      setState((prev) => ({ ...prev, isLoading: true, networkError: null }));
       const res = await fetch('/api/admin/auth/me', { credentials: 'include' });
+
+      if (res.status === 401 || res.status === 403) {
+        // Explicitly unauthorized / session expired
+        setState({
+          admin: null,
+          isLoading: false,
+          isAuthenticated: false,
+          role: null,
+          networkError: null,
+        });
+        return;
+      }
+
+      if (!res.ok) {
+        // 5xx / Bad gateway / Server temporary glitch
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          networkError: `Pelayan ralat (${res.status}). Sila cuba sebentar lagi.`,
+        }));
+        return;
+      }
+
       const data = await res.json();
 
       if (data.success && data.admin) {
@@ -43,6 +68,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
           isLoading: false,
           isAuthenticated: true,
           role: data.admin.role,
+          networkError: null,
         });
       } else {
         setState({
@@ -50,15 +76,17 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
           isLoading: false,
           isAuthenticated: false,
           role: null,
+          networkError: null,
         });
       }
-    } catch {
-      setState({
-        admin: null,
+    } catch (err) {
+      // Network fetch failure (e.g. offline, DNS failure, connection timeout)
+      console.error('Admin auth validation network error:', err);
+      setState((prev) => ({
+        ...prev,
         isLoading: false,
-        isAuthenticated: false,
-        role: null,
-      });
+        networkError: 'Gagal menyambung ke pelayan. Sila semak sambungan internet anda.',
+      }));
     }
   }, []);
 
@@ -78,6 +106,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
           isLoading: false,
           isAuthenticated: true,
           role: data.admin.role,
+          networkError: null,
         });
         return { success: true, message: data.message };
       }
@@ -99,6 +128,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       isLoading: false,
       isAuthenticated: false,
       role: null,
+      networkError: null,
     });
     router.push('/admin/login');
   }, [router]);

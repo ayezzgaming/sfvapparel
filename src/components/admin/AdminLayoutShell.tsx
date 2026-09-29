@@ -121,7 +121,7 @@ const ALL_ADMIN_NAV_ITEMS: NavItem[] = [
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { admin, isAuthenticated, isLoading: authLoading, logout, updateProfile } = useAdminAuth();
+  const { admin, isAuthenticated, isLoading: authLoading, networkError, refresh, logout, updateProfile } = useAdminAuth();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [whatsappStatus, setWhatsappStatus] = useState<'WORKING' | 'SCAN_QR_CODE' | 'DISCONNECTED' | 'LOADING'>('LOADING');
@@ -275,8 +275,31 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Show auth loading state
+  // Show auth loading state or network retry state
   if (authLoading || !isAuthenticated) {
+    if (networkError && !isAuthenticated) {
+      return (
+        <div className="min-h-screen h-screen w-full bg-slate-50 flex flex-col items-center justify-center p-4 text-center font-sans">
+          <div className="max-w-sm w-full bg-white rounded-2xl border border-slate-200/90 p-6 shadow-sm space-y-4">
+            <div className="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto text-amber-600">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-slate-900">Masalah Sambungan Pelayan</h2>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">{networkError}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => refresh()}
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
+            >
+              Cuba Semula
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen h-screen w-full bg-slate-50 flex flex-col items-center justify-center space-y-3 font-sans">
         <Loader2 className="w-8 h-8 animate-spin text-[#00BDFF]" />

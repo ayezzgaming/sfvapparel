@@ -212,10 +212,17 @@ async function fetchAndSyncAllDb() {
       .then((res) => {
         if (res.success && Array.isArray(res.designs)) {
           storeState = { ...storeState, designs: res.designs };
+          notify();
+        } else if (!res.success) {
+          storeState = { ...storeState, syncError: res.message || 'Gagal memuat katalog rekaan' };
+          notify();
         }
       })
       .catch((e) => {
+        const msg = e instanceof Error ? e.message : 'Gagal memuat katalog rekaan';
         console.error('Error fetching designs from DB:', e);
+        storeState = { ...storeState, syncError: msg };
+        notify();
       });
 
     const cmsPromise = getCmsDataDb()
@@ -245,18 +252,26 @@ async function fetchAndSyncAllDb() {
             companySettings: companySettings || storeState.companySettings,
             policies: policies || storeState.policies,
           };
+          notify();
+        } else if (!res.success) {
+          storeState = { ...storeState, syncError: res.message || 'Gagal memuat kandungan CMS' };
+          notify();
         }
       })
       .catch((e) => {
+        const msg = e instanceof Error ? e.message : 'Gagal memuat kandungan CMS';
         console.error('Error fetching CMS data from DB:', e);
+        storeState = { ...storeState, syncError: msg };
+        notify();
       });
 
     // Await ONLY Stage 1 so UI unblocks in record time (<300ms)
     await Promise.all([designsPromise, cmsPromise]);
   } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : 'Gagal menyegerak data';
+    const errorMsg = err instanceof Error ? err.message : 'Gagal menyegerak data peringkat utama';
     console.error('Stage 1 sync error:', err);
     storeState = { ...storeState, syncError: errorMsg };
+    notify();
   } finally {
     storeState = { ...storeState, isLoadingDesigns: false, isLoadingCms: false };
     notify();
@@ -278,27 +293,52 @@ async function fetchAndSyncAllDb() {
           tiers: tiers.length > 0 ? tiers : storeState.tiers,
         };
         notify();
+      } else if (!res.success) {
+        const errorText = (res as { error?: string; message?: string }).error || res.message || 'Gagal memuat formula harga';
+        storeState = { ...storeState, syncError: errorText };
+        notify();
       }
     })
-    .catch((e) => console.error('Error fetching pricing data from DB:', e));
+    .catch((e) => {
+      const msg = e instanceof Error ? e.message : 'Gagal memuat formula harga';
+      console.error('Error fetching pricing data from DB:', e);
+      storeState = { ...storeState, syncError: msg };
+      notify();
+    });
 
   const customersPromise = getCustomersDb()
     .then((res) => {
       if (res.success && Array.isArray(res.customers)) {
         storeState = { ...storeState, customers: res.customers };
         notify();
+      } else if (!res.success) {
+        storeState = { ...storeState, syncError: res.message || 'Gagal memuat senarai pelanggan' };
+        notify();
       }
     })
-    .catch((e) => console.error('Error fetching customers from DB:', e));
+    .catch((e) => {
+      const msg = e instanceof Error ? e.message : 'Gagal memuat senarai pelanggan';
+      console.error('Error fetching customers from DB:', e);
+      storeState = { ...storeState, syncError: msg };
+      notify();
+    });
 
   const ordersPromise = getOrdersDb()
     .then((res) => {
       if (res.success && Array.isArray(res.orders)) {
         storeState = { ...storeState, orders: res.orders };
         notify();
+      } else if (!res.success) {
+        storeState = { ...storeState, syncError: res.message || 'Gagal memuat rekod pesanan' };
+        notify();
       }
     })
-    .catch((e) => console.error('Error fetching orders from DB:', e));
+    .catch((e) => {
+      const msg = e instanceof Error ? e.message : 'Gagal memuat rekod pesanan';
+      console.error('Error fetching orders from DB:', e);
+      storeState = { ...storeState, syncError: msg };
+      notify();
+    });
 
   // Run secondary sync concurrently
   Promise.all([pricingPromise, customersPromise, ordersPromise])
@@ -311,11 +351,12 @@ async function fetchAndSyncAllDb() {
       notify();
     })
     .catch((e) => {
+      const errorMsg = e instanceof Error ? e.message : 'Gagal menyegerak data sekunder';
       console.error('Stage 2 secondary data sync background error:', e);
       storeState = {
         ...storeState,
         isSyncing: false,
-        syncError: e instanceof Error ? e.message : 'Gagal menyegerak data sekunder',
+        syncError: errorMsg,
       };
       notify();
     });

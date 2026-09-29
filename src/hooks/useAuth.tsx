@@ -21,6 +21,7 @@ interface AuthState {
   customer: AuthCustomer | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  networkError: string | null;
 }
 
 interface AuthContextValue extends AuthState {
@@ -37,20 +38,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     customer: null,
     isLoading: true,
     isAuthenticated: false,
+    networkError: null,
   });
 
   const refresh = useCallback(async () => {
     try {
-      setState((prev) => ({ ...prev, isLoading: true }));
+      setState((prev) => ({ ...prev, isLoading: true, networkError: null }));
       const res = await fetch('/api/auth/me', { credentials: 'include' });
+
+      if (res.status === 401 || res.status === 403) {
+        // Explicitly unauthorized / session expired
+        setState({ customer: null, isLoading: false, isAuthenticated: false, networkError: null });
+        return;
+      }
+
+      if (!res.ok) {
+        // 5xx Server error / connection issue - do not force reset authentication
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          networkError: `Pelayan ralat (${res.status}). Sila cuba sebentar lagi.`,
+        }));
+        return;
+      }
+
       const data = await res.json();
       if (data.success && data.customer) {
-        setState({ customer: data.customer, isLoading: false, isAuthenticated: true });
+        setState({ customer: data.customer, isLoading: false, isAuthenticated: true, networkError: null });
       } else {
-        setState({ customer: null, isLoading: false, isAuthenticated: false });
+        setState({ customer: null, isLoading: false, isAuthenticated: false, networkError: null });
       }
-    } catch {
-      setState({ customer: null, isLoading: false, isAuthenticated: false });
+    } catch (err) {
+      console.error('Customer auth validation network error:', err);
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        networkError: 'Gagal menyambung ke pelayan. Sila semak sambungan internet anda.',
+      }));
     }
   }, []);
 
@@ -60,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // ignore
     }
-    setState({ customer: null, isLoading: false, isAuthenticated: false });
+    setState({ customer: null, isLoading: false, isAuthenticated: false, networkError: null });
   }, []);
 
   const updateProfile = useCallback(async (profileData: { full_name: string; email?: string; company_or_team?: string }) => {
