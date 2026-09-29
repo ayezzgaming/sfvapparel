@@ -1,5 +1,6 @@
 'use server';
 
+import crypto from 'crypto';
 import { getServiceSupabase } from '@/lib/supabase/serverClient';
 import { PartnerFactory, FactoryJob, FactoryJobStatus } from '@/types/database';
 
@@ -8,6 +9,7 @@ function getDb() {
   if (!db) throw new Error('Pangkalan data Supabase tidak dapat disambung.');
   return db;
 }
+
 
 /**
  * Safely parse a partner factory row from database, extracting pricing_matrix and notes
@@ -266,10 +268,11 @@ export async function createOrUpdateFactoryJob(payload: {
       if (data && data.factory) data.factory = parseFactoryRow(data.factory);
       return { success: true, data };
     } else {
-      // Generate Job Number: JOB-YYYY-XXXX
+      // Generate Collision-free Job Number: JOB-YYYY-[TIMEBASE36][HEX]
       const year = new Date().getFullYear();
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-      const job_number = `JOB-${year}-${randomSuffix}`;
+      const timeCode = Date.now().toString(36).slice(-4).toUpperCase();
+      const entropy = crypto.randomBytes(2).toString('hex').toUpperCase();
+      const job_number = `JOB-${year}-${timeCode}${entropy}`;
 
       const { data, error } = await getDb()
         .from('factory_jobs')
@@ -282,6 +285,7 @@ export async function createOrUpdateFactoryJob(payload: {
         .single();
       if (error) throw error;
       if (data && data.factory) data.factory = parseFactoryRow(data.factory);
+
 
       // Update the order status to 'in_production' if order exists
       if (payload.order_id) {

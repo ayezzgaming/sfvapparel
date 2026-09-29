@@ -1,5 +1,6 @@
 'use server';
 
+import crypto from 'crypto';
 import { getServiceSupabase } from '@/lib/supabase/serverClient';
 import { Order, OrderStatus, ProofRevision } from '@/types/database';
 import { sendOrderInvoiceWhatsApp, sendOrderStatusMilestoneWhatsApp } from '@/lib/whatsapp/order-notifier';
@@ -88,8 +89,11 @@ export async function saveOrderDb(orderData: Partial<Order>): Promise<{ success:
     const now = new Date();
     const yy = String(now.getFullYear()).slice(-2);
     const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const orderNumber = orderData.order_number || `SFV-${yy}${mm}-${randomSuffix}`;
+    // Collision-free unique order ID: timestamp ms base36 + 2-byte crypto hex
+    const timeCode = Date.now().toString(36).slice(-4).toUpperCase();
+    const entropy = crypto.randomBytes(2).toString('hex').toUpperCase();
+    const orderNumber = orderData.order_number || `SFV-${yy}${mm}-${timeCode}${entropy}`;
+
 
     const recordToInsert: Record<string, unknown> = {
       order_number: orderNumber,
