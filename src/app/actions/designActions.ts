@@ -162,28 +162,17 @@ export async function saveDesignDb(
       created_at: design.created_at || new Date().toISOString()
     };
 
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from('designs')
       .upsert(payload, { onConflict: 'id' })
       .select()
       .single();
 
-    // If 'code' column does not exist in DB schema, gracefully retry without 'code' column
-    if (error && error.message && error.message.includes('code')) {
-      delete payload.code;
-      const retry = await supabase
-        .from('designs')
-        .upsert(payload, { onConflict: 'id' })
-        .select()
-        .single();
-      data = retry.data;
-      error = retry.error;
-    }
-
     if (error) {
       console.error('Error saving design to Supabase:', error);
       return { success: false, message: `Ralat simpan ke Supabase: ${error.message}` };
     }
+
 
     const savedDesign: Design = {
       id: String(data.id),
