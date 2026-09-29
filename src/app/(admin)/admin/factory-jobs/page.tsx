@@ -45,7 +45,9 @@ import {
   createOrUpdateFactoryJob,
   updateFactoryJobStatus,
 } from '@/app/actions/factoryActions';
+import { calculateFactoryUnitCost } from '@/lib/factory-pricing-calculator';
 import { useAppStore } from '@/lib/store/app-store';
+import FactoryJobSheetModal from '@/components/factory/FactoryJobSheetModal';
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('ms-MY', {
@@ -226,11 +228,15 @@ function FactoryJobsContent() {
   // Handle open create Job Sheet
   const handleOpenCreateJob = (preselectedOrder?: Order) => {
     const defaultFactory = factories[0];
-    const unitCost = defaultFactory?.default_unit_cost || 22.0;
-
     const ord = preselectedOrder || (orders.length > 0 ? orders[0] : null);
     const qty = ord ? (Number(ord.total_quantity) || 0) : 10;
     const custPrice = ord ? (Number(ord.total_amount) || 0) : 0;
+    const fabric = ord?.fabric_name || 'Microfiber Eyelet 160gsm';
+    const cut = ord?.cut_name || 'Regular Fit';
+    const collar = 'V-Neck Rib Hitam';
+
+    // Auto-calculate unit cost from default factory rate card
+    const costCalc = calculateFactoryUnitCost(defaultFactory, qty, fabric, cut, collar);
 
     // Sizing breakdown from order or defaults
     const sizingObj = ord?.sizing_breakdown || { S: 2, M: 4, L: 4 };
@@ -242,11 +248,11 @@ function FactoryJobsContent() {
       status: 'sent_to_factory',
       target_ready_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       total_quantity: qty,
-      cost_per_unit: unitCost,
+      cost_per_unit: costCalc.finalUnitCost,
       customer_price_total: custPrice,
-      fabric_spec: ord?.fabric_name || 'Microfiber Eyelet 160gsm',
-      collar_spec: 'V-Neck Rib Hitam',
-      cutting_spec: ord?.cut_name || 'Regular Fit',
+      fabric_spec: fabric,
+      collar_spec: collar,
+      cutting_spec: cut,
       factory_notes: '',
       artwork_hd_url: ord?.custom_artwork_url || ord?.mockup_url || '',
       sizing_breakdown: sizingObj,
@@ -256,17 +262,27 @@ function FactoryJobsContent() {
     setIsJobModalOpen(true);
   };
 
-  // On Order selected in Create Job Sheet Form - FULL AUTOMATIC DATA POPULATION
+  // On Order selected in Create Job Sheet Form - FULL AUTOMATIC DATA POPULATION & RATE CARD CALCULATION
   const handleOrderChange = (orderId: string) => {
     const ord = orders.find((o) => o.id === orderId);
     if (ord) {
+      const selectedFac = factories.find((f) => f.id === jobFormData.factory_id) || factories[0];
+      const qty = Number(ord.total_quantity) || 0;
+      const fabric = ord.fabric_name || jobFormData.fabric_spec;
+      const cut = ord.cut_name || jobFormData.cutting_spec;
+      const collar = jobFormData.collar_spec;
+
+      // Auto-compute factory unit rate from rate card
+      const costCalc = calculateFactoryUnitCost(selectedFac, qty, fabric, cut, collar);
+
       setJobFormData((prev) => ({
         ...prev,
         order_id: orderId,
-        total_quantity: Number(ord.total_quantity) || 0,
+        total_quantity: qty,
         customer_price_total: Number(ord.total_amount) || 0,
-        fabric_spec: ord.fabric_name || prev.fabric_spec,
-        cutting_spec: ord.cut_name || prev.cutting_spec,
+        cost_per_unit: costCalc.finalUnitCost,
+        fabric_spec: fabric,
+        cutting_spec: cut,
         artwork_hd_url: ord.custom_artwork_url || ord.mockup_url || prev.artwork_hd_url,
         sizing_breakdown: ord.sizing_breakdown || prev.sizing_breakdown,
         player_roster: (ord as any).player_roster || prev.player_roster,
@@ -274,13 +290,21 @@ function FactoryJobsContent() {
     }
   };
 
-  // On Factory selected in Create Job Sheet Form - Sync Default Unit Cost
+  // On Factory selected in Create Job Sheet Form - Recalculate Unit Cost from Selected Factory's Matrix
   const handleFactoryChange = (factoryId: string) => {
     const fac = factories.find((f) => f.id === factoryId);
+    const costCalc = calculateFactoryUnitCost(
+      fac,
+      jobFormData.total_quantity,
+      jobFormData.fabric_spec,
+      jobFormData.cutting_spec,
+      jobFormData.collar_spec
+    );
+
     setJobFormData((prev) => ({
       ...prev,
       factory_id: factoryId,
-      cost_per_unit: fac ? Number(fac.default_unit_cost) || prev.cost_per_unit : prev.cost_per_unit,
+      cost_per_unit: costCalc.finalUnitCost,
     }));
   };
 
@@ -1188,167 +1212,15 @@ function FactoryJobsContent() {
       )}
 
       {/* =========================================================================
-          DRAWER: TECH PACK & DETAIL JOB SHEET
+          MODAL: OFFICIAL PRINTABLE JOB SHEET & TECH PACK MODAL
           ========================================================================= */}
-      {isTechPackOpen && selectedJob && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end">
-          <div className="bg-white w-full max-w-xl h-full shadow-2xl overflow-y-auto flex flex-col animate-in slide-in-from-right duration-200">
-            {/* Drawer Header */}
-            <div className="p-5 border-b border-slate-200 bg-slate-50/60 flex items-center justify-between sticky top-0 z-10">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-slate-900 text-sm">{selectedJob.job_number}</span>
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
-                      STATUS_CONFIG[selectedJob.status]?.badgeClass
-                    }`}
-                  >
-                    {STATUS_CONFIG[selectedJob.status]?.label}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Tech Pack Produksi Sublimasi • {selectedJob.total_quantity} Helai
-                </p>
-              </div>
-              <button
-                onClick={() => setIsTechPackOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Drawer Content */}
-            <div className="p-5 space-y-6 flex-1 text-xs">
-              {/* Progress Flow */}
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3">
-                <span className="font-bold text-slate-900 block">Kemas Kini Status Produksi Kilang</span>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {(['sent_to_factory', 'in_production', 'factory_completed', 'received_at_svf'] as FactoryJobStatus[]).map(
-                    (st) => {
-                      const isCurr = selectedJob.status === st;
-                      return (
-                        <button
-                          key={st}
-                          onClick={() => handleUpdateStatus(selectedJob.id, st)}
-                          className={`p-2 rounded-xl border text-xs font-semibold text-center transition-all cursor-pointer ${
-                            isCurr
-                              ? 'bg-[#00BDFF] text-white border-[#00BDFF] shadow-xs'
-                              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
-                          }`}
-                        >
-                          {STATUS_CONFIG[st].label}
-                        </button>
-                      );
-                    }
-                  )}
-                </div>
-              </div>
-
-              {/* Financial Snapshot */}
-              <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 grid grid-cols-3 gap-2 text-center">
-                <div>
-                  <span className="text-[10px] text-slate-500 block uppercase">Jualan Pelanggan</span>
-                  <span className="font-bold text-slate-900 text-xs">
-                    {formatCurrency(selectedJob.customer_price_total)}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-amber-700 block uppercase">Kos Kilang (COGS)</span>
-                  <span className="font-bold text-amber-700 text-xs">
-                    {formatCurrency(selectedJob.total_factory_cost)}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-emerald-700 block uppercase">Untung Kasar SVF</span>
-                  <span className="font-bold text-emerald-600 text-xs">
-                    {formatCurrency(selectedJob.gross_profit)} ({selectedJob.gross_margin_percent}%)
-                  </span>
-                </div>
-              </div>
-
-              {/* Sizing Breakdown */}
-              <div className="space-y-2">
-                <span className="font-bold text-slate-900 block">Pecahan Saiz ({selectedJob.total_quantity} Helai)</span>
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                  {Object.entries(selectedJob.sizing_breakdown || {}).map(([s, q]) => (
-                    <div key={s} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
-                      <span className="text-[10px] text-slate-400 font-bold block uppercase">{s}</span>
-                      <span className="text-sm font-bold font-mono text-slate-900">{q}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Specifications */}
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
-                <span className="font-bold text-slate-900 block">Spesifikasi Teknikal Jahitan & Cetak</span>
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <span className="text-slate-400 text-[10px] block">Material Kain</span>
-                    <span className="font-semibold text-slate-900">{selectedJob.fabric_spec || '-'}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 text-[10px] block">Spesifikasi Kolar</span>
-                    <span className="font-semibold text-slate-900">{selectedJob.collar_spec || '-'}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 text-[10px] block">Potongan Cutting</span>
-                    <span className="font-semibold text-slate-900">{selectedJob.cutting_spec || 'Regular Fit'}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 text-[10px] block">Tarikh Sasaran Kilang</span>
-                    <span className="font-semibold text-slate-900">
-                      {selectedJob.target_ready_date ? new Date(selectedJob.target_ready_date).toLocaleDateString('ms-MY') : '-'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Artwork HD Link */}
-              {selectedJob.artwork_hd_url && (
-                <div className="p-4 bg-sky-50/50 rounded-2xl border border-sky-100 flex items-center justify-between">
-                  <div>
-                    <span className="font-bold text-slate-900 block">Fail Artwork HD / AI Kilang</span>
-                    <span className="text-[11px] text-slate-500">Muat turun fail resolusi penuh untuk cetakan</span>
-                  </div>
-                  <a
-                    href={selectedJob.artwork_hd_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#00BDFF] hover:bg-[#00a6e0] text-white font-semibold rounded-xl text-xs transition-all"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Muat Turun</span>
-                  </a>
-                </div>
-              )}
-            </div>
-
-            {/* Drawer Footer Actions */}
-            <div className="p-5 border-t border-slate-200 bg-slate-50/60 flex items-center justify-between sticky bottom-0">
-              <a
-                href={`https://wa.me/${selectedJob.factory?.phone?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                  `Salam ${selectedJob.factory?.pic_name || 'Tuan'}, ini rujukan Job Sheet Pengeluaran SVF APPAREL [${selectedJob.job_number}] untuk ${selectedJob.total_quantity} helai jersi sublimasi. Sila semak spesifikasi kain: ${selectedJob.fabric_spec}.`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow-xs transition-all"
-              >
-                <FaWhatsapp className="w-4 h-4" />
-                <span>Kongsi ke WhatsApp Kilang</span>
-              </a>
-
-              <button
-                onClick={() => window.print()}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-[#00BDFF] text-slate-700 font-semibold rounded-xl text-xs shadow-xs transition-all cursor-pointer"
-              >
-                <Printer className="w-4 h-4 text-[#00BDFF]" />
-                <span>Cetak Job Sheet</span>
-              </button>
-            </div>
-          </div>
-        </div>
+      {selectedJob && (
+        <FactoryJobSheetModal
+          job={selectedJob}
+          isOpen={isTechPackOpen}
+          onClose={() => setIsTechPackOpen(false)}
+          onUpdateStatus={handleUpdateStatus}
+        />
       )}
     </div>
   );

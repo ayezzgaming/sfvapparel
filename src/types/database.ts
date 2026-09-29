@@ -375,6 +375,20 @@ export interface AdminSession {
 // FACTORY & FINANCIAL MANAGEMENT INTERFACES
 // ==========================================
 
+export interface FactoryTierDiscount {
+  min_qty: number;
+  max_qty: number | null;
+  unit_cost: number;
+}
+
+export interface FactoryPricingMatrix {
+  base_unit_cost: number;
+  tier_discounts: FactoryTierDiscount[];
+  fabric_surcharges: Record<string, number>;
+  cut_surcharges: Record<string, number>;
+  collar_surcharges: Record<string, number>;
+}
+
 export interface PartnerFactory {
   id: string;
   factory_name: string;
@@ -385,6 +399,7 @@ export interface PartnerFactory {
   specialty?: string;
   default_unit_cost: number;
   lead_time_days: number;
+  pricing_matrix?: FactoryPricingMatrix;
   notes?: string | null;
   is_active: boolean;
   created_at?: string;

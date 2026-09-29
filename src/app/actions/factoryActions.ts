@@ -41,6 +41,13 @@ export async function savePartnerFactory(factory: Partial<PartnerFactory>): Prom
       specialty: factory.specialty || 'Full Sublimation All-in-One',
       default_unit_cost: Number(factory.default_unit_cost) || 0,
       lead_time_days: Number(factory.lead_time_days) || 7,
+      pricing_matrix: factory.pricing_matrix || {
+        base_unit_cost: Number(factory.default_unit_cost) || 22,
+        tier_discounts: [],
+        fabric_surcharges: {},
+        cut_surcharges: {},
+        collar_surcharges: {},
+      },
       notes: factory.notes || null,
       is_active: factory.is_active ?? true,
       updated_at: new Date().toISOString(),

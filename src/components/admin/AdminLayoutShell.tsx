@@ -78,6 +78,7 @@ const PRIMARY_NAV_GROUPS: NavGroup[] = [
       { href: '/admin', label: 'Beranda', icon: Home, exact: true },
       { href: '/admin/orders', label: 'Saluran Pesanan', icon: ClipboardList },
       { href: '/admin/factory-jobs', label: 'Job Sheet Kilang', icon: Factory },
+      { href: '/admin/factories', label: 'Pengurusan Kilang', icon: Building2 },
       { href: '/admin/catalog', label: 'Katalog Rekaan', icon: Shirt },
       { href: '/admin/customers', label: 'Pelanggan', icon: Users },
     ],
