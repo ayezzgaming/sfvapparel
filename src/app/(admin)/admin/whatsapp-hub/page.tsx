@@ -321,7 +321,6 @@ export default function WhatsAppHubPage() {
   const [botAutoReplyEnabled, setBotAutoReplyEnabled] = useState<boolean>(true);
   const [loadingBotSettings, setLoadingBotSettings] = useState<boolean>(false);
   const [updatingBotToggle, setUpdatingBotToggle] = useState<boolean>(false);
-  const [botToastMessage, setBotToastMessage] = useState<string | null>(null);
 
   // Fetch Bot Settings
   const fetchBotSettings = useCallback(async () => {
@@ -339,7 +338,7 @@ export default function WhatsAppHubPage() {
     }
   }, []);
 
-  // Toggle Bot Auto-Reply
+  // Toggle Bot Auto-Reply with standard industry switch
   const handleToggleBotAutoReply = async (nextState?: boolean) => {
     const targetState = typeof nextState === 'boolean' ? nextState : !botAutoReplyEnabled;
     setUpdatingBotToggle(true);
@@ -353,21 +352,13 @@ export default function WhatsAppHubPage() {
       const data = await res.json();
       if (data.success && data.settings) {
         setBotAutoReplyEnabled(data.settings.auto_reply_enabled);
-        setBotToastMessage(
-          targetState
-            ? '🤖 Chatbot balasan automatik telah DIAKTIFKAN.'
-            : '⏸️ Chatbot balasan automatik DINYAHAKTIFKAN (OTP & Notifikasi pesanan tetap normal).'
-        );
       } else {
         setBotAutoReplyEnabled(!targetState);
-        alert(data.error || 'Gagal mengubah tetapan bot.');
       }
     } catch {
       setBotAutoReplyEnabled(!targetState);
-      alert('Ralat sambungan semasa mengubah tetapan bot.');
     } finally {
       setUpdatingBotToggle(false);
-      setTimeout(() => setBotToastMessage(null), 5000);
     }
   };
 
@@ -723,45 +714,33 @@ export default function WhatsAppHubPage() {
 
         {/* Right Toolbar Actions */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* WhatsApp Bot Auto-Reply Master Toggle */}
-          <div
-            title="Suis kawalan balasan chat automatik (Hanya mengawal balasan chat masuk, OTP & Notifikasi tetap berfungsi)"
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border shadow-2xs transition-all ${
-              botAutoReplyEnabled
-                ? 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-200/80 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300'
-                : 'bg-amber-50/90 dark:bg-zinc-800/80 border-amber-200/80 dark:border-zinc-700 text-amber-700 dark:text-amber-400'
-            }`}
-          >
-            <div className="flex items-center gap-1.5">
-              <Bot className={`w-3.5 h-3.5 ${botAutoReplyEnabled ? 'text-emerald-500' : 'text-amber-500'}`} />
-              <span className="text-[11px] font-bold hidden md:inline">
-                {botAutoReplyEnabled ? 'Bot Balasan: AKTIF' : 'Bot Balasan: OFF'}
-              </span>
-            </div>
-
-            {/* Interactive Switch Pill */}
+          {/* Clean Industry Standard Toggle Switch */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs">
+            <span className="text-xs font-medium text-slate-700 dark:text-zinc-300 select-none">
+              Balasan Bot
+            </span>
             <button
               type="button"
+              role="switch"
+              aria-checked={botAutoReplyEnabled}
               onClick={() => handleToggleBotAutoReply()}
               disabled={updatingBotToggle || loadingBotSettings}
-              className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer focus:outline-none shrink-0 ${
+              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 ${
                 botAutoReplyEnabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-zinc-700'
               }`}
-              aria-label="Toggle WhatsApp Bot Auto-Reply"
+              title={botAutoReplyEnabled ? 'Balasan automatik chat aktif' : 'Balasan automatik chat dinyahaktifkan'}
             >
               <span
-                className={`w-3.5 h-3.5 rounded-full bg-white shadow-xs absolute top-0.75 transition-transform duration-200 ease-in-out ${
-                  botAutoReplyEnabled ? 'left-4.5' : 'left-1'
+                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
+                  botAutoReplyEnabled ? 'translate-x-4' : 'translate-x-0'
                 }`}
               />
             </button>
           </div>
 
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-[11px] font-semibold">
-            <Radio className={`w-3 h-3 ${isConnected ? 'text-emerald-500 animate-pulse' : 'text-amber-500'}`} />
-            <span className={isConnected ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
-              {loading ? 'Menyemak...' : isConnected ? 'WhatsApp Terhubung' : 'Perlu Imbas QR'}
-            </span>
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-xs text-slate-600 dark:text-zinc-400">
+            <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+            <span>{loading ? 'Menyemak...' : isConnected ? 'Terhubung' : 'Perlu QR'}</span>
           </div>
 
           <button
@@ -769,30 +748,12 @@ export default function WhatsAppHubPage() {
             onClick={() => fetchStatus(true)}
             disabled={refreshing || loading}
             title="Segar semula status"
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 dark:bg-zinc-900 dark:hover:bg-zinc-800 dark:text-zinc-200 text-xs font-medium border border-slate-200 dark:border-zinc-700 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+            className="p-1.5 rounded-full bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-300 border border-slate-200/80 dark:border-zinc-800 transition-colors cursor-pointer disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${refreshing ? 'animate-spin text-[#00BDFF]' : ''}`} />
-            <span>{refreshing ? 'Menyemak...' : 'Segar Semula'}</span>
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-[#00BDFF]' : ''}`} />
           </button>
         </div>
       </div>
-
-      {/* Floating Toast Notification for Bot Settings */}
-      {botToastMessage && (
-        <div className="p-3 rounded-2xl bg-slate-900 dark:bg-zinc-800 text-white text-xs font-medium flex items-center justify-between shadow-lg border border-slate-700 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#00BDFF] shrink-0" />
-            <span>{botToastMessage}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setBotToastMessage(null)}
-            className="text-[11px] text-slate-400 hover:text-white underline cursor-pointer ml-4"
-          >
-            Tutup
-          </button>
-        </div>
-      )}
 
       {/* ----------------- 1 MAIN CARD (SPLIT LAYOUT) ----------------- */}
       <div className="flex-1 min-h-0 flex overflow-hidden bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-xs relative">
@@ -946,16 +907,16 @@ export default function WhatsAppHubPage() {
                                 )}
                               </p>
                               {isPrivate ? (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 shrink-0">
-                                  🔒 Peribadi
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200/80 dark:border-zinc-700 shrink-0">
+                                  Peribadi
                                 </span>
                               ) : isBotPaused ? (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium shrink-0">
-                                  Staf CS
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300 border border-slate-200/80 dark:border-zinc-700 font-medium shrink-0">
+                                  Manual
                                 </span>
                               ) : (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200 font-medium shrink-0">
-                                  Bot AI
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800 font-medium shrink-0">
+                                  Bot
                                 </span>
                               )}
                             </div>
@@ -1008,23 +969,24 @@ export default function WhatsAppHubPage() {
                               {selectedChat.name}
                             </h3>
                             {privateChatIds[selectedChat.id] ? (
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 flex items-center gap-1">
-                                🔒 Perbualan Peribadi
+                              <span className="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 flex items-center gap-1">
+                                <ShieldCheck className="w-3 h-3" />
+                                Peribadi
                               </span>
                             ) : pausedChatIds[selectedChat.id] ? (
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
+                              <span className="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 flex items-center gap-1">
                                 <PauseCircle className="w-3 h-3" />
-                                Bot Dijeda (Staf)
+                                Bot Dijeda
                               </span>
                             ) : !botAutoReplyEnabled ? (
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
+                              <span className="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 flex items-center gap-1">
                                 <PauseCircle className="w-3 h-3" />
-                                Bot Ditutup Global (Manual)
+                                Bot Dinyahaktifkan
                               </span>
                             ) : (
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200 flex items-center gap-1">
+                              <span className="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800 flex items-center gap-1">
                                 <Bot className="w-3 h-3" />
-                                Bot AI Aktif
+                                Bot Aktif
                               </span>
                             )}
                           </div>
@@ -1553,84 +1515,45 @@ export default function WhatsAppHubPage() {
         {/* TAB 4: AUTOMATION & N8N ENGINE */}
         {activeTab === 'automation' && (
           <div className="flex-1 overflow-y-auto p-6 space-y-6 sparkle-scroll">
-            <div className="max-w-4xl mx-auto space-y-6">
+            <div className="max-w-4xl mx-auto space-y-5">
               
-              {/* MASTER BOT CONTROL CARD */}
-              <div className={`p-5 rounded-3xl border shadow-xs transition-all ${
-                botAutoReplyEnabled
-                  ? 'bg-gradient-to-br from-emerald-500/5 via-white to-emerald-500/10 dark:from-emerald-950/20 dark:via-zinc-900 dark:to-emerald-900/10 border-emerald-200/80 dark:border-emerald-800/80'
-                  : 'bg-gradient-to-br from-amber-500/5 via-white to-slate-100 dark:from-amber-950/20 dark:via-zinc-900 dark:to-zinc-900 border-amber-200/80 dark:border-zinc-700'
-              }`}>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-start sm:items-center gap-3.5">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
-                      botAutoReplyEnabled
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-amber-100 dark:bg-zinc-800 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-zinc-700'
+              {/* Clean Master Toggle Card */}
+              <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
+                      Balasan Automatik Chatbot
+                    </h3>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                      botAutoReplyEnabled 
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
+                        : 'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400'
                     }`}>
-                      <Bot className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100">
-                          Kawalan Balasan Automatik Chatbot WhatsApp
-                        </h3>
-                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${
-                          botAutoReplyEnabled
-                            ? 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
-                            : 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
-                        }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${botAutoReplyEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-                          {botAutoReplyEnabled ? 'AKTIF (MEMBALAS CHAT)' : 'DINYAHAKTIFKAN / DIJEDA'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
-                        Suis ini hanya menyahaktifkan balasan automatik pada perbualan chat masuk. <strong>OTP WhatsApp, Notifikasi Status Pesanan, & Invois Rasmi tetap berjalan 100% tanpa gangguan.</strong>
-                      </p>
-                    </div>
+                      {botAutoReplyEnabled ? 'Aktif' : 'Dinyahaktifkan'}
+                    </span>
                   </div>
-
-                  <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleBotAutoReply(!botAutoReplyEnabled)}
-                      disabled={updatingBotToggle}
-                      className={`px-4 py-2 rounded-full text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer ${
-                        botAutoReplyEnabled
-                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                          : 'bg-slate-200 hover:bg-slate-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200'
-                      }`}
-                    >
-                      <span>{botAutoReplyEnabled ? 'Nyahaktifkan Bot' : 'Aktifkan Bot'}</span>
-                      <div className={`w-7 h-4 rounded-full relative transition-colors ${
-                        botAutoReplyEnabled ? 'bg-emerald-900/40' : 'bg-slate-400 dark:bg-zinc-600'
-                      }`}>
-                        <div className={`w-3 h-3 rounded-full bg-white absolute top-0.5 transition-transform duration-200 ${
-                          botAutoReplyEnabled ? 'left-3.5' : 'left-0.5'
-                        }`} />
-                      </div>
-                    </button>
-                  </div>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">
+                    Nyahaktifkan untuk membalas chat secara manual sahaja. Penghantaran OTP dan notifikasi pesanan kekal beroperasi seperti biasa.
+                  </p>
                 </div>
 
-                {/* Sub-status breakdown pills */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 pt-3.5 border-t border-slate-100 dark:border-zinc-800/80 text-[11px]">
-                  <div className="flex items-center gap-1.5 text-slate-600 dark:text-zinc-400">
-                    <span className={`w-2 h-2 rounded-full ${botAutoReplyEnabled ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-                    <span>Auto-Balas Chat: <strong>{botAutoReplyEnabled ? 'Aktif' : 'Mati'}</strong></span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-slate-600 dark:text-zinc-400">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span>OTP Log Masuk: <strong>Sentiasa Aktif</strong></span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-slate-600 dark:text-zinc-400">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span>Notifikasi Invois: <strong>Sentiasa Aktif</strong></span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-slate-600 dark:text-zinc-400">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span>Manual Live Chat: <strong>Sentiasa Aktif</strong></span>
-                  </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={botAutoReplyEnabled}
+                    onClick={() => handleToggleBotAutoReply(!botAutoReplyEnabled)}
+                    disabled={updatingBotToggle}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 ${
+                      botAutoReplyEnabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-zinc-700'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
+                        botAutoReplyEnabled ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
                 </div>
               </div>
 
