@@ -30,9 +30,9 @@ import {
   EyeOff,
   CheckCircle2,
   X,
-  Lock
+  Lock,
+  MessageSquare
 } from 'lucide-react';
-import { FaWhatsapp } from 'react-icons/fa6';
 
 interface NavItem {
   href: string;
@@ -62,7 +62,7 @@ const PRIMARY_NAV_GROUPS: NavGroup[] = [
     id: 'marketing',
     title: 'Komunikasi & Iklan',
     items: [
-      { href: '/admin/whatsapp-hub', label: 'WhatsApp Hub', icon: FaWhatsapp },
+      { href: '/admin/whatsapp-hub', label: 'WhatsApp Hub', icon: MessageSquare },
       { href: '/admin/ads-generator', label: 'Ads Generator', icon: Megaphone },
     ],
   },
