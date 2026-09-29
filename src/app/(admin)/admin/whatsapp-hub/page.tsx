@@ -317,6 +317,9 @@ export default function WhatsAppHubPage() {
   // Lightbox Preview Modal State
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+  // Quick Template Popover State
+  const [showTemplatesMenu, setShowTemplatesMenu] = useState(false);
+
   // WhatsApp Bot Auto-Reply Master Toggle State
   const [botAutoReplyEnabled, setBotAutoReplyEnabled] = useState<boolean>(true);
   const [loadingBotSettings, setLoadingBotSettings] = useState<boolean>(false);
@@ -679,7 +682,7 @@ export default function WhatsAppHubPage() {
             </span>
           </div>
 
-          {/* Module Switcher Tabs (Top Bar like Ads Generator & Catalog) */}
+          {/* Module Switcher Tabs (WhatsApp Standard Green Palette) */}
           <div className="flex items-center space-x-1 bg-slate-100/90 dark:bg-zinc-800/90 backdrop-blur-md p-1 rounded-full border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs">
             {[
               { id: 'inbox', label: `Live Chat (${chats.length})`, icon: MessageSquare },
@@ -697,8 +700,8 @@ export default function WhatsAppHubPage() {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                     isActive
-                      ? 'bg-[#00BDFF] text-white shadow-xs'
-                      : 'text-slate-600 dark:text-zinc-400 hover:text-[#00BDFF] dark:hover:text-zinc-200'
+                      ? 'bg-[#00a884] text-white shadow-xs'
+                      : 'text-slate-600 dark:text-zinc-400 hover:text-[#00a884] dark:hover:text-zinc-200'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -830,7 +833,7 @@ export default function WhatsAppHubPage() {
                       onClick={() => setChatCategoryFilter('customers')}
                       className={`flex-1 py-1 rounded-full transition-all text-center cursor-pointer ${
                         chatCategoryFilter === 'customers'
-                          ? 'bg-white dark:bg-zinc-900 text-[#00BDFF] shadow-2xs font-bold'
+                          ? 'bg-white dark:bg-zinc-900 text-[#00a884] shadow-2xs font-bold'
                           : 'text-slate-500 hover:text-slate-900'
                       }`}
                     >
@@ -845,7 +848,7 @@ export default function WhatsAppHubPage() {
                           : 'text-slate-500 hover:text-slate-900'
                       }`}
                     >
-                      🔒 Peribadi ({privateCount})
+                      Peribadi ({privateCount})
                     </button>
                   </div>
                 </div>
@@ -875,7 +878,7 @@ export default function WhatsAppHubPage() {
                           onClick={() => setSelectedChat(chat)}
                           className={`px-3.5 py-3 flex items-start gap-3 cursor-pointer transition-all ${
                             isSelected 
-                              ? 'bg-sky-50/90 dark:bg-sky-950/40 border-l-4 border-[#00BDFF]' 
+                              ? 'bg-[#f0f2f5] dark:bg-[#2a3942] border-l-4 border-[#00a884]' 
                               : 'hover:bg-slate-50/80 dark:hover:bg-zinc-800/40 bg-white dark:bg-zinc-900'
                           }`}
                         >
@@ -955,8 +958,8 @@ export default function WhatsAppHubPage() {
 
                 {selectedChat ? (
                   <div className="flex-1 flex flex-col h-full overflow-hidden">
-                    {/* Active Chat Top Bar */}
-                    <div className="p-3 px-5 bg-white dark:bg-zinc-900 border-b border-slate-200/80 dark:border-zinc-800 flex items-center justify-between shrink-0 shadow-2xs">
+                    {/* Active Chat Top Bar (Authentic WhatsApp Header Style) */}
+                    <div className="p-3 px-5 bg-[#f0f2f5] dark:bg-[#202c33] border-b border-[#e9edef] dark:border-[#222d34] flex items-center justify-between shrink-0 shadow-2xs">
                       <div className="flex items-center space-x-3">
                         <div className={`w-10 h-10 rounded-full text-white font-bold text-xs flex items-center justify-center shadow-xs bg-gradient-to-tr ${
                           privateChatIds[selectedChat.id] ? 'from-slate-600 to-slate-700' : getAvatarGradient(selectedChat.name)
@@ -1298,43 +1301,68 @@ export default function WhatsAppHubPage() {
                       </div>
                     </div>
 
-                    {/* Quick Templates Bar */}
-                    <div className="px-4 py-2 bg-white dark:bg-zinc-900 border-t border-slate-200/70 dark:border-zinc-800 overflow-x-auto flex items-center gap-2 scrollbar-none shrink-0">
-                      <div className="max-w-2xl lg:max-w-3xl mx-auto w-full flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-[#00BDFF]" />
-                          Templat:
-                        </span>
-                        {QUICK_TEMPLATES.map((tmpl, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => setReplyText(tmpl)}
-                            className="px-3 py-1 rounded-full bg-slate-50 hover:bg-sky-50 hover:text-[#00BDFF] hover:border-sky-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/70 dark:border-zinc-700 text-[11px] text-slate-600 dark:text-zinc-300 truncate max-w-xs shrink-0 transition-colors cursor-pointer"
-                          >
-                            {tmpl}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    {/* Authentic Clean WhatsApp Web Chat Input Bar */}
+                    <div className="p-2.5 px-4 bg-[#f0f2f5] dark:bg-[#202c33] border-t border-[#e9edef] dark:border-[#222d34] shrink-0 relative">
+                      {/* Optional Quick Template Dropdown Popover */}
+                      {showTemplatesMenu && (
+                        <div className="absolute bottom-full left-4 mb-2 p-2 bg-white dark:bg-[#233138] rounded-xl shadow-lg border border-slate-200 dark:border-zinc-700 w-80 space-y-1 z-30 animate-in fade-in slide-in-from-bottom-2">
+                          <div className="flex items-center justify-between px-2 py-1 border-b border-slate-100 dark:border-zinc-700/60 text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
+                            <span>Templat Balasan Pantas</span>
+                            <button
+                              type="button"
+                              onClick={() => setShowTemplatesMenu(false)}
+                              className="text-slate-400 hover:text-slate-600"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <div className="max-h-48 overflow-y-auto space-y-1 pt-1">
+                            {QUICK_TEMPLATES.map((tmpl, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => {
+                                  setReplyText(tmpl);
+                                  setShowTemplatesMenu(false);
+                                }}
+                                className="w-full text-left p-2 rounded-lg text-xs text-slate-700 dark:text-zinc-200 hover:bg-[#f0f2f5] dark:hover:bg-[#182229] transition-colors leading-relaxed"
+                              >
+                                {tmpl}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
-                    {/* Reply Form */}
-                    <div className="p-3 bg-white dark:bg-zinc-900 border-t border-slate-200/80 dark:border-zinc-800 shrink-0">
-                      <form onSubmit={handleSendReply} className="max-w-2xl lg:max-w-3xl mx-auto w-full flex items-center gap-2">
+                      <form onSubmit={handleSendReply} className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowTemplatesMenu(!showTemplatesMenu)}
+                          className={`p-2 rounded-full transition-colors cursor-pointer ${
+                            showTemplatesMenu 
+                              ? 'bg-[#00a884]/15 text-[#00a884]' 
+                              : 'text-[#54656f] dark:text-[#8696a0] hover:bg-slate-200/70 dark:hover:bg-[#374248]'
+                          }`}
+                          title="Templat balasan pantas"
+                        >
+                          <Sparkles className="w-5 h-5" />
+                        </button>
+
                         <input
                           type="text"
                           value={replyText}
                           onChange={(e) => setReplyText(e.target.value)}
-                          placeholder="Tulis mesej balasan (staf mengambil alih perbualan)..."
-                          className="flex-1 px-4 py-2 rounded-full bg-slate-100/90 dark:bg-zinc-800 border-none text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#00BDFF]/40"
+                          placeholder="Tulis mesej..."
+                          className="flex-1 px-4 py-2.5 rounded-lg bg-white dark:bg-[#2a3942] text-xs text-[#111b21] dark:text-[#d1d7db] placeholder:text-[#8696a0] border border-transparent focus:border-[#00a884] focus:outline-none shadow-2xs"
                         />
+
                         <button
                           type="submit"
                           disabled={sendingReply || !replyText.trim()}
-                          className="px-5 py-2 rounded-full bg-[#00BDFF] hover:bg-sky-500 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                          className="w-10 h-10 rounded-full bg-[#00a884] hover:bg-[#008f72] active:scale-95 text-white flex items-center justify-center shadow-2xs transition-all cursor-pointer disabled:opacity-40 shrink-0"
+                          title="Hantar mesej"
                         >
-                          <SendHorizontal className={`w-3.5 h-3.5 ${sendingReply ? 'animate-spin' : ''}`} />
-                          <span>Hantar</span>
+                          <SendHorizontal className={`w-4 h-4 ${sendingReply ? 'animate-spin' : ''}`} />
                         </button>
                       </form>
                     </div>
