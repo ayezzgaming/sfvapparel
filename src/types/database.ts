@@ -371,3 +371,146 @@ export interface AdminSession {
   created_at: string;
 }
 
+// ==========================================
+// FACTORY & FINANCIAL MANAGEMENT INTERFACES
+// ==========================================
+
+export interface PartnerFactory {
+  id: string;
+  factory_name: string;
+  pic_name?: string | null;
+  phone: string;
+  email?: string | null;
+  address?: string | null;
+  specialty?: string;
+  default_unit_cost: number;
+  lead_time_days: number;
+  notes?: string | null;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type FactoryJobStatus =
+  | 'draft'
+  | 'sent_to_factory'
+  | 'in_production'
+  | 'factory_completed'
+  | 'received_at_svf'
+  | 'closed';
+
+export interface PlayerRosterItem {
+  size: string;
+  name: string;
+  number: string;
+  sleeve_type?: string;
+}
+
+export interface FactoryJob {
+  id: string;
+  job_number: string;
+  order_id: string;
+  factory_id?: string | null;
+  status: FactoryJobStatus;
+  target_ready_date?: string | null;
+  sent_at?: string | null;
+  completed_at?: string | null;
+  
+  // Production Costing
+  total_quantity: number;
+  cost_per_unit: number;
+  total_factory_cost: number;
+  factory_payment_status: 'unpaid' | 'deposit_paid' | 'fully_paid';
+  
+  // Profit calculations
+  customer_price_total: number;
+  gross_profit: number;
+  gross_margin_percent: number;
+  
+  // Technical specs
+  fabric_spec?: string | null;
+  collar_spec?: string | null;
+  cutting_spec?: string | null;
+  sizing_breakdown: Record<string, number>;
+  player_roster: PlayerRosterItem[];
+  
+  // Artwork & notes
+  artwork_hd_url?: string | null;
+  mockup_preview_url?: string | null;
+  factory_notes?: string | null;
+  
+  created_at?: string;
+  updated_at?: string;
+  
+  // Relational joins
+  factory?: PartnerFactory | null;
+  order?: Order | null;
+}
+
+export type ExpenseCategory =
+  | 'ads_meta'
+  | 'ads_google'
+  | 'ads_tiktok'
+  | 'utilities_rent'
+  | 'staff_salary'
+  | 'software_saas'
+  | 'packaging_logistic'
+  | 'general_opex';
+
+export type PaymentMethod =
+  | 'bank_transfer'
+  | 'credit_card'
+  | 'cash'
+  | 'online_banking'
+  | 'fpx'
+  | 'other';
+
+export interface OperatingExpense {
+  id: string;
+  expense_number: string;
+  category: ExpenseCategory;
+  title: string;
+  amount: number;
+  expense_date: string;
+  payment_method: PaymentMethod;
+  vendor_merchant?: string | null;
+  receipt_attachment_url?: string | null;
+  notes?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface FinancialTransaction {
+  id: string;
+  transaction_number: string;
+  transaction_type: 'customer_payment' | 'factory_payout' | 'opex_expense' | 'income' | 'cogs_expense';
+  category: 'order_deposit' | 'order_balance' | 'customer_deposit' | 'customer_balance' | 'factory_payment' | 'cogs_sublimation' | 'ads_spend' | 'operating_expense';
+  order_id?: string | null;
+  factory_job_id?: string | null;
+  expense_id?: string | null;
+  customer_id?: string | null;
+  factory_id?: string | null;
+  amount: number;
+  payment_method: PaymentMethod | string;
+  payment_gateway_ref?: string | null;
+  status: 'completed' | 'pending' | 'cancelled';
+  description?: string | null;
+  receipt_url?: string | null;
+  transaction_date: string;
+  created_at?: string;
+}
+
+export interface PnlSummary {
+  gross_revenue: number;
+  total_cogs: number;
+  gross_profit: number;
+  gross_margin_percent: number;
+  total_ads_spend: number;
+  total_opex: number;
+  net_profit: number;
+  net_margin_percent: number;
+  total_orders_count: number;
+  total_units_sold: number;
+  avg_profit_per_unit: number;
+}
+

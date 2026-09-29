@@ -30,7 +30,14 @@ import {
   EyeOff,
   CheckCircle2,
   X,
-  Lock
+  Lock,
+  Factory,
+  TrendingUp,
+  Receipt,
+  Hourglass,
+  Building2,
+  FileSpreadsheet,
+  Wallet
 } from 'lucide-react';
 
 // Official WhatsApp Logo Icon with standard 24x24 viewBox for perfect optical alignment and size uniformity with Lucide icons
@@ -68,6 +75,7 @@ const PRIMARY_NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/admin', label: 'Beranda', icon: Home, exact: true },
       { href: '/admin/orders', label: 'Saluran Pesanan', icon: ClipboardList },
+      { href: '/admin/factory-jobs', label: 'Job Sheet Kilang', icon: Factory },
       { href: '/admin/catalog', label: 'Katalog Rekaan', icon: Shirt },
       { href: '/admin/customers', label: 'Pelanggan', icon: Users },
     ],
@@ -82,6 +90,14 @@ const PRIMARY_NAV_GROUPS: NavGroup[] = [
   },
 ];
 
+const FINANCE_NAV_ITEMS: NavItem[] = [
+  { href: '/admin/finance', label: 'Penyata P&L', icon: TrendingUp, exact: true },
+  { href: '/admin/finance/transactions', label: 'Lejar Transaksi', icon: Receipt },
+  { href: '/admin/finance/receivables', label: 'Kutipan Baki (A/R)', icon: Hourglass },
+  { href: '/admin/finance/payables', label: 'Bayaran Kilang (A/P)', icon: Building2 },
+  { href: '/admin/finance/reports', label: 'Laporan & Eksport', icon: FileSpreadsheet },
+];
+
 const SETTINGS_NAV_ITEMS: NavItem[] = [
   { href: '/admin/payment-settings', label: 'Gerbang Pembayaran', icon: CreditCard },
   { href: '/admin/pricing-rules', label: 'Formula Harga', icon: SlidersHorizontal },
@@ -91,6 +107,7 @@ const SETTINGS_NAV_ITEMS: NavItem[] = [
 
 const ALL_ADMIN_NAV_ITEMS: NavItem[] = [
   ...PRIMARY_NAV_GROUPS.flatMap((g) => g.items),
+  ...FINANCE_NAV_ITEMS,
   ...SETTINGS_NAV_ITEMS,
 ];
 
@@ -103,6 +120,18 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const [whatsappStatus, setWhatsappStatus] = useState<'WORKING' | 'SCAN_QR_CODE' | 'DISCONNECTED' | 'LOADING'>('LOADING');
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  // Finance Sub-menu Expand State
+  const isInsideFinance = FINANCE_NAV_ITEMS.some((item) =>
+    item.exact ? pathname === item.href : pathname.startsWith(item.href)
+  );
+  const [isFinanceOpen, setIsFinanceOpen] = useState(true);
+
+  useEffect(() => {
+    if (isInsideFinance) {
+      setIsFinanceOpen(true);
+    }
+  }, [isInsideFinance]);
 
   // Settings Sub-menu Expand State (Auto-expand if currently inside settings)
   const isInsideSettings = SETTINGS_NAV_ITEMS.some((item) => pathname.startsWith(item.href));
@@ -241,6 +270,9 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const activeNavItem = ALL_ADMIN_NAV_ITEMS.find((item) =>
     item.exact ? pathname === item.href : pathname.startsWith(item.href)
   );
+  const activeFinanceItem = FINANCE_NAV_ITEMS.find((item) =>
+    item.exact ? pathname === item.href : pathname.startsWith(item.href)
+  );
   const activeSettingsItem = SETTINGS_NAV_ITEMS.find((item) => pathname.startsWith(item.href));
 
   return (
@@ -277,7 +309,14 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
           </Link>
 
           {/* Breadcrumb if inside child page */}
-          {activeSettingsItem ? (
+          {activeFinanceItem ? (
+            <div className="hidden md:flex items-center space-x-2 text-slate-500 text-sm">
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <span className="text-slate-500 font-normal">Kewangan & Akaun</span>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-800 font-semibold">{activeFinanceItem.label}</span>
+            </div>
+          ) : activeSettingsItem ? (
             <div className="hidden md:flex items-center space-x-2 text-slate-500 text-sm">
               <ChevronRight className="w-4 h-4 text-slate-400" />
               <span className="text-slate-500 font-normal">Pengaturan</span>
@@ -478,6 +517,78 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
               </div>
             ))}
 
+            {/* KEWANGAN & AKAUN SUB-MENU GROUP */}
+            <div className="space-y-1 pt-2 border-t border-slate-100">
+              {isSidebarOpen ? (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setIsFinanceOpen(!isFinanceOpen)}
+                    className={`w-full flex items-center justify-between px-3.5 py-2 rounded-full text-[13px] transition-colors cursor-pointer ${
+                      isInsideFinance && !isFinanceOpen
+                        ? 'bg-[#C2E7FF] text-[#001D35] font-semibold'
+                        : 'text-slate-700 hover:bg-slate-100 font-semibold'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Wallet className={`w-4.5 h-4.5 shrink-0 ${isInsideFinance ? 'text-[#001D35]' : 'text-slate-600'}`} />
+                      <span>Kewangan & Akaun</span>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+                        isFinanceOpen ? 'rotate-180 text-slate-600' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {/* Collapsible Sub-menu Items */}
+                  {isFinanceOpen && (
+                    <div className="mt-1 space-y-0.5 pl-3 border-l-2 border-slate-100 ml-5">
+                      {FINANCE_NAV_ITEMS.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`flex items-center space-x-2.5 px-3 py-1.5 rounded-full text-xs transition-colors ${
+                              isActive
+                                ? 'bg-sky-50 text-[#00BDFF] font-bold border border-sky-200/60'
+                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                            }`}
+                          >
+                            <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-[#00BDFF]' : 'text-slate-500'}`} />
+                            <span className="truncate">{item.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {FINANCE_NAV_ITEMS.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        title={`Kewangan: ${item.label}`}
+                        className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center transition-colors ${
+                          isActive
+                            ? 'bg-[#C2E7FF] text-[#001D35]'
+                            : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Icon className="w-4.5 h-4.5" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             {/* PENGATURAN SUB-MENU GROUP */}
             <div className="space-y-1 pt-2 border-t border-slate-100">
               {isSidebarOpen ? (
@@ -514,11 +625,11 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
                             href={item.href}
                             className={`flex items-center space-x-2.5 px-3 py-1.5 rounded-full text-xs transition-colors ${
                               isActive
-                                ? 'bg-sky-50 text-[#0052FF] font-bold border border-sky-200/60'
+                                ? 'bg-sky-50 text-[#00BDFF] font-bold border border-sky-200/60'
                                 : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
                             }`}
                           >
-                            <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-[#0052FF]' : 'text-slate-500'}`} />
+                            <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-[#00BDFF]' : 'text-slate-500'}`} />
                             <span className="truncate">{item.label}</span>
                           </Link>
                         );

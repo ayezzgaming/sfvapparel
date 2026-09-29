@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { useAppStore } from '@/lib/store/app-store';
 import { formatCurrency } from '@/lib/pricing-calculator';
 import { Order, OrderStatus, ProofRevision } from '@/types/database';
@@ -36,7 +37,9 @@ import {
   UploadCloud,
   Loader2,
   Image as ImageIcon,
-  ArrowLeft
+  ArrowLeft,
+  Factory,
+  Building2
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import {
@@ -464,7 +467,15 @@ export default function AdminOrdersPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={`/admin/factory-jobs?order_id=${activeOrder.id}`}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#00BDFF] hover:bg-[#00a6e0] text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
+              >
+                <Factory className="w-3.5 h-3.5" />
+                <span>Tugaskan ke Kilang & Jana Job Sheet</span>
+              </Link>
+
               <button
                 type="button"
                 onClick={() => setIsInvoiceOpen(true)}
