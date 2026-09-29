@@ -34,17 +34,50 @@ import {
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
 
-const ADMIN_NAV = [
-  { href: '/admin', label: 'Beranda', icon: Home, exact: true },
-  { href: '/admin/orders', label: 'Saluran Pesanan', icon: ClipboardList },
-  { href: '/admin/catalog', label: 'Katalog Rekaan', icon: Shirt },
+interface NavItem {
+  href: string;
+  label: string;
+  icon: any;
+  exact?: boolean;
+}
+
+interface NavGroup {
+  id: string;
+  title: string;
+  items: NavItem[];
+}
+
+const PRIMARY_NAV_GROUPS: NavGroup[] = [
+  {
+    id: 'operations',
+    title: 'Operasi',
+    items: [
+      { href: '/admin', label: 'Beranda', icon: Home, exact: true },
+      { href: '/admin/orders', label: 'Saluran Pesanan', icon: ClipboardList },
+      { href: '/admin/catalog', label: 'Katalog Rekaan', icon: Shirt },
+      { href: '/admin/customers', label: 'Pelanggan', icon: Users },
+    ],
+  },
+  {
+    id: 'marketing',
+    title: 'Komunikasi & Iklan',
+    items: [
+      { href: '/admin/whatsapp-hub', label: 'WhatsApp Hub', icon: FaWhatsapp },
+      { href: '/admin/ads-generator', label: 'Ads Generator', icon: Megaphone },
+    ],
+  },
+];
+
+const SETTINGS_NAV_ITEMS: NavItem[] = [
   { href: '/admin/payment-settings', label: 'Gerbang Pembayaran', icon: CreditCard },
-  { href: '/admin/ads-generator', label: 'Ads Generator', icon: Megaphone },
-  { href: '/admin/whatsapp-hub', label: 'WhatsApp Hub', icon: FaWhatsapp },
-  { href: '/admin/cms', label: 'Pengurus Web', icon: Globe },
-  { href: '/admin/customers', label: 'Pelanggan', icon: Users },
   { href: '/admin/pricing-rules', label: 'Formula Harga', icon: SlidersHorizontal },
+  { href: '/admin/cms', label: 'Pengurus Web', icon: Globe },
   { href: '/admin/admins', label: 'Pengurusan Admin', icon: ShieldCheck },
+];
+
+const ALL_ADMIN_NAV_ITEMS: NavItem[] = [
+  ...PRIMARY_NAV_GROUPS.flatMap((g) => g.items),
+  ...SETTINGS_NAV_ITEMS,
 ];
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
@@ -56,6 +89,16 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const [whatsappStatus, setWhatsappStatus] = useState<'WORKING' | 'SCAN_QR_CODE' | 'DISCONNECTED' | 'LOADING'>('LOADING');
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  // Settings Sub-menu Expand State (Auto-expand if currently inside settings)
+  const isInsideSettings = SETTINGS_NAV_ITEMS.some((item) => pathname.startsWith(item.href));
+  const [isSettingsOpen, setIsSettingsOpen] = useState(true);
+
+  useEffect(() => {
+    if (isInsideSettings) {
+      setIsSettingsOpen(true);
+    }
+  }, [isInsideSettings]);
   
   // Quick Change Password Modal
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -181,9 +224,10 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   }
 
   // Find active nav item for breadcrumb
-  const activeNavItem = ADMIN_NAV.find((item) =>
+  const activeNavItem = ALL_ADMIN_NAV_ITEMS.find((item) =>
     item.exact ? pathname === item.href : pathname.startsWith(item.href)
   );
+  const activeSettingsItem = SETTINGS_NAV_ITEMS.find((item) => pathname.startsWith(item.href));
 
   return (
     <div className="min-h-screen h-screen w-full bg-white text-slate-800 flex flex-col antialiased overflow-hidden font-sans select-none">
@@ -219,12 +263,19 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
           </Link>
 
           {/* Breadcrumb if inside child page */}
-          {activeNavItem && activeNavItem.href !== '/admin' && (
+          {activeSettingsItem ? (
             <div className="hidden md:flex items-center space-x-2 text-slate-500 text-sm">
               <ChevronRight className="w-4 h-4 text-slate-400" />
-              <span className="text-slate-700 font-medium">{activeNavItem.label}</span>
+              <span className="text-slate-500 font-normal">Pengaturan</span>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-800 font-semibold">{activeSettingsItem.label}</span>
             </div>
-          )}
+          ) : activeNavItem && activeNavItem.href !== '/admin' ? (
+            <div className="hidden md:flex items-center space-x-2 text-slate-500 text-sm">
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <span className="text-slate-800 font-semibold">{activeNavItem.label}</span>
+            </div>
+          ) : null}
         </div>
 
         {/* Right: WhatsApp Live Status Alert Pill, Quick Action +, Apps Grid, Profile Avatar */}
@@ -362,45 +413,128 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
             isSidebarOpen ? 'w-60 px-3' : 'w-[72px] px-2.5'
           }`}
         >
-          <nav className="space-y-1">
-            {ADMIN_NAV.map((item) => {
-              const Icon = item.icon;
-              const isActive = item.exact
-                ? pathname === item.href
-                : pathname.startsWith(item.href);
+          <nav className="space-y-4 overflow-y-auto sparkle-scroll flex-1 pr-1">
+            {PRIMARY_NAV_GROUPS.map((group) => (
+              <div key={group.id} className="space-y-1">
+                {isSidebarOpen && (
+                  <p className="px-3.5 text-[10.5px] font-bold text-slate-400 uppercase tracking-wider select-none mb-1">
+                    {group.title}
+                  </p>
+                )}
+                <div className="space-y-0.5">
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = item.exact
+                      ? pathname === item.href
+                      : pathname.startsWith(item.href);
 
-              if (isSidebarOpen) {
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex items-center space-x-3.5 px-4 py-2.5 rounded-full text-[13.5px] transition-colors ${
-                      isActive
+                    if (isSidebarOpen) {
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={`flex items-center space-x-3 px-3.5 py-2 rounded-full text-[13px] transition-colors ${
+                            isActive
+                              ? 'bg-[#C2E7FF] text-[#001D35] font-semibold'
+                              : 'text-slate-700 hover:bg-slate-100 font-medium'
+                          }`}
+                        >
+                          <Icon className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-[#001D35]' : 'text-slate-600'}`} />
+                          <span className="truncate">{item.label}</span>
+                        </Link>
+                      );
+                    }
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        title={item.label}
+                        className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center transition-colors ${
+                          isActive
+                            ? 'bg-[#C2E7FF] text-[#001D35]'
+                            : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Icon className="w-4.5 h-4.5" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            {/* PENGATURAN SUB-MENU GROUP */}
+            <div className="space-y-1 pt-2 border-t border-slate-100">
+              {isSidebarOpen ? (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                    className={`w-full flex items-center justify-between px-3.5 py-2 rounded-full text-[13px] transition-colors cursor-pointer ${
+                      isInsideSettings && !isSettingsOpen
                         ? 'bg-[#C2E7FF] text-[#001D35] font-semibold'
-                        : 'text-slate-700 hover:bg-slate-100 font-normal'
+                        : 'text-slate-700 hover:bg-slate-100 font-semibold'
                     }`}
                   >
-                    <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-[#001D35]' : 'text-slate-600'}`} />
-                    <span className="truncate">{item.label}</span>
-                  </Link>
-                );
-              }
+                    <div className="flex items-center space-x-3">
+                      <Settings className={`w-4.5 h-4.5 shrink-0 ${isInsideSettings ? 'text-[#001D35]' : 'text-slate-600'}`} />
+                      <span>Pengaturan</span>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+                        isSettingsOpen ? 'rotate-180 text-slate-600' : ''
+                      }`}
+                    />
+                  </button>
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  title={item.label}
-                  className={`w-11 h-11 mx-auto rounded-full flex items-center justify-center transition-colors ${
-                    isActive
-                      ? 'bg-[#C2E7FF] text-[#001D35]'
-                      : 'text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                </Link>
-              );
-            })}
+                  {/* Collapsible Sub-menu Items */}
+                  {isSettingsOpen && (
+                    <div className="mt-1 space-y-0.5 pl-3 border-l-2 border-slate-100 ml-5">
+                      {SETTINGS_NAV_ITEMS.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = pathname.startsWith(item.href);
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`flex items-center space-x-2.5 px-3 py-1.5 rounded-full text-xs transition-colors ${
+                              isActive
+                                ? 'bg-sky-50 text-[#0052FF] font-bold border border-sky-200/60'
+                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                            }`}
+                          >
+                            <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-[#0052FF]' : 'text-slate-500'}`} />
+                            <span className="truncate">{item.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {SETTINGS_NAV_ITEMS.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = pathname.startsWith(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        title={`Pengaturan: ${item.label}`}
+                        className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center transition-colors ${
+                          isActive
+                            ? 'bg-[#C2E7FF] text-[#001D35]'
+                            : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Icon className="w-4.5 h-4.5" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* Sidebar Footer Link */}
