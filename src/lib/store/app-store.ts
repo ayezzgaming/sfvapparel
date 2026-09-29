@@ -56,52 +56,75 @@ import {
 } from '@/app/actions/pricingActions';
 import { getCustomersDb } from '@/app/actions/customerActions';
 import { getOrdersDb, saveOrderDb, updateOrderStatusDb, deleteOrderDb, markOrderBalancePaidAction } from '@/app/actions/orderActions';
-import {
-  INITIAL_APPAREL_CUTS,
-  INITIAL_CUSTOMERS,
-  INITIAL_DTF_DIMENSIONS,
-  INITIAL_FABRIC_MATERIALS,
-  INITIAL_ORDERS,
-  INITIAL_QUANTITY_TIERS,
-  INITIAL_CMS_HERO_BANNERS,
-  INITIAL_CMS_TRUST_BADGES,
-  INITIAL_CMS_SERVICES,
-  INITIAL_CMS_PRODUCTION_VIDEOS,
-  INITIAL_CMS_PRODUCTION_GALLERY,
-  INITIAL_CMS_TESTIMONIALS,
-  INITIAL_CMS_SLOGAN_QUOTE,
-  INITIAL_CMS_COMPANY_SETTINGS,
-  INITIAL_CMS_POLICIES,
-  INITIAL_CMS_THEME_SETTINGS,
-  THEME_PRESETS,
-} from './seed-data';
+export const THEME_PRESETS: Record<CmsThemePresetKey, CmsThemeSettings> = {
+  hybrid: {
+    preset: 'hybrid',
+    header_bg: '#00BDFF',
+    header_style: 'solid_blue',
+    header_logo_mode: 'inverted_white',
+    bottom_nav_bg: 'rgba(255, 255, 255, 0.95)',
+    bottom_nav_style: 'glass_light',
+    bottom_nav_active_color: '#00BDFF',
+    bottom_nav_inactive_color: '#94A3B8',
+    primary_accent_color: '#00BDFF',
+    whatsapp_fab_bg: '#25D366',
+  },
+  clean_white: {
+    preset: 'clean_white',
+    header_bg: '#FFFFFF',
+    header_style: 'frosted_white',
+    header_logo_mode: 'original_blue',
+    bottom_nav_bg: 'rgba(255, 255, 255, 0.95)',
+    bottom_nav_style: 'glass_light',
+    bottom_nav_active_color: '#00BDFF',
+    bottom_nav_inactive_color: '#94A3B8',
+    primary_accent_color: '#00BDFF',
+    whatsapp_fab_bg: '#25D366',
+  },
+  full_blue: {
+    preset: 'full_blue',
+    header_bg: '#00BDFF',
+    header_style: 'solid_blue',
+    header_logo_mode: 'inverted_white',
+    bottom_nav_bg: '#00BDFF',
+    bottom_nav_style: 'solid_blue',
+    bottom_nav_active_color: '#FFFFFF',
+    bottom_nav_inactive_color: '#93C5FD',
+    primary_accent_color: '#00BDFF',
+    whatsapp_fab_bg: '#25D366',
+  },
+};
 
-// Purge legacy CMS localStorage keys once so old client caches are erased
-function purgeLegacyLocalCmsKeys(): void {
-  if (typeof window === 'undefined') return;
-  const legacyKeys = [
-    'svf_cms_hero_v3',
-    'svf_cms_services_v3',
-    'svf_cms_videos_v3',
-    'svf_cms_gallery_v3',
-    'svf_cms_testi_v3',
-    'svf_cms_slogan_v3',
-    'svf_cms_company_v3',
-    'svf_cms_policies_v3',
-    'svf_cms_theme_v3',
-    'svf_fabrics_v3',
-    'svf_cuts_v3',
-    'svf_dtf_dims_v3',
-    'svf_tiers_v3',
-  ];
-  try {
-    for (const key of legacyKeys) {
-      localStorage.removeItem(key);
-    }
-  } catch {
-    // Ignore error
-  }
-}
+const DEFAULT_COMPANY_SETTINGS: CmsCompanySettings = {
+  company_name: '',
+  brand_name: 'SFV Apparel',
+  registration_number: '',
+  tagline: '',
+  phone: '',
+  whatsapp_number: '',
+  whatsapp_default_message: '',
+  email: '',
+  address: '',
+  working_hours: '',
+};
+
+const DEFAULT_SLOGAN_QUOTE: CmsSloganQuote = {
+  headline: '',
+  highlight_text: '',
+  question_text: '',
+  description_text: '',
+  button_text: '',
+  whatsapp_message: '',
+};
+
+const DEFAULT_POLICIES: Record<'privacy' | 'terms' | 'warranty' | 'shipping', CmsPolicy> = {
+  privacy: { id: 'privacy', badge: 'Privasi', title: 'Dasar Privasi', description: '', sections: [] },
+  terms: { id: 'terms', badge: 'Terma', title: 'Terma & Syarat', description: '', sections: [] },
+  warranty: { id: 'warranty', badge: 'Jaminan', title: 'Polisi Jaminan & Pulangan', description: '', sections: [] },
+  shipping: { id: 'shipping', badge: 'Penghantaran', title: 'Polisi Penghantaran', description: '', sections: [] },
+};
+
+const DEFAULT_THEME_SETTINGS: CmsThemeSettings = THEME_PRESETS.clean_white;
 
 interface AppStoreState {
   designs: Design[];
@@ -125,32 +148,37 @@ interface AppStoreState {
   isInitialized: boolean;
   isLoadingDesigns: boolean;
   isLoadingCms: boolean;
+  isSyncing: boolean;
+  syncError: string | null;
+  lastSyncedAt: number | null;
 }
 
-// NOTE: storeState MUST start identical to serverSnapshot to avoid React hydration mismatch.
-// Seed data is injected only in initStoreIfNeeded() which runs client-side only.
+// Clean Initial State starting empty until synchronized from database
 let storeState: AppStoreState = {
   designs: [],
-  fabrics: INITIAL_FABRIC_MATERIALS,
-  cuts: INITIAL_APPAREL_CUTS,
-  dtfDimensions: INITIAL_DTF_DIMENSIONS,
-  tiers: INITIAL_QUANTITY_TIERS,
+  fabrics: [],
+  cuts: [],
+  dtfDimensions: [],
+  tiers: [],
   customers: [],
   orders: [],
   favorites: [],
-  heroBanners: [], // Must match serverSnapshot to avoid hydration mismatch
-  trustBadges: INITIAL_CMS_TRUST_BADGES,
-  services: INITIAL_CMS_SERVICES,
+  heroBanners: [],
+  trustBadges: [],
+  services: [],
   productionVideos: [],
   productionGallery: [],
   testimonials: [],
-  sloganQuote: INITIAL_CMS_SLOGAN_QUOTE,
-  companySettings: INITIAL_CMS_COMPANY_SETTINGS,
-  policies: INITIAL_CMS_POLICIES,
-  themeSettings: INITIAL_CMS_THEME_SETTINGS,
+  sloganQuote: DEFAULT_SLOGAN_QUOTE,
+  companySettings: DEFAULT_COMPANY_SETTINGS,
+  policies: DEFAULT_POLICIES,
+  themeSettings: DEFAULT_THEME_SETTINGS,
   isInitialized: false,
   isLoadingDesigns: false,
   isLoadingCms: false,
+  isSyncing: false,
+  syncError: null,
+  lastSyncedAt: null,
 };
 
 const listeners = new Set<() => void>();
@@ -167,14 +195,14 @@ async function fetchAndSyncAllDb() {
   const isDesignsEmpty = storeState.designs.length === 0;
   const isCmsEmpty = storeState.heroBanners.length === 0 && storeState.productionVideos.length === 0;
 
-  if (isDesignsEmpty || isCmsEmpty) {
-    storeState = {
-      ...storeState,
-      isLoadingDesigns: isDesignsEmpty,
-      isLoadingCms: isCmsEmpty,
-    };
-    notify();
-  }
+  storeState = {
+    ...storeState,
+    isSyncing: true,
+    syncError: null,
+    isLoadingDesigns: isDesignsEmpty,
+    isLoadingCms: isCmsEmpty,
+  };
+  notify();
 
   try {
     // -------------------------------------------------------------
@@ -186,7 +214,9 @@ async function fetchAndSyncAllDb() {
           storeState = { ...storeState, designs: res.designs };
         }
       })
-      .catch((e) => console.error('Error fetching designs from DB:', e));
+      .catch((e) => {
+        console.error('Error fetching designs from DB:', e);
+      });
 
     const cmsPromise = getCmsDataDb()
       .then((res) => {
@@ -217,10 +247,16 @@ async function fetchAndSyncAllDb() {
           };
         }
       })
-      .catch((e) => console.error('Error fetching CMS data from DB:', e));
+      .catch((e) => {
+        console.error('Error fetching CMS data from DB:', e);
+      });
 
     // Await ONLY Stage 1 so UI unblocks in record time (<300ms)
     await Promise.all([designsPromise, cmsPromise]);
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : 'Gagal menyegerak data';
+    console.error('Stage 1 sync error:', err);
+    storeState = { ...storeState, syncError: errorMsg };
   } finally {
     storeState = { ...storeState, isLoadingDesigns: false, isLoadingCms: false };
     notify();
@@ -264,20 +300,32 @@ async function fetchAndSyncAllDb() {
     })
     .catch((e) => console.error('Error fetching orders from DB:', e));
 
-  // Run secondary sync concurrently without awaiting in main render path
-  Promise.all([pricingPromise, customersPromise, ordersPromise]).catch((e) => {
-    console.error('Stage 2 secondary data sync background error:', e);
-  });
+  // Run secondary sync concurrently
+  Promise.all([pricingPromise, customersPromise, ordersPromise])
+    .then(() => {
+      storeState = {
+        ...storeState,
+        isSyncing: false,
+        lastSyncedAt: Date.now(),
+      };
+      notify();
+    })
+    .catch((e) => {
+      console.error('Stage 2 secondary data sync background error:', e);
+      storeState = {
+        ...storeState,
+        isSyncing: false,
+        syncError: e instanceof Error ? e.message : 'Gagal menyegerak data sekunder',
+      };
+      notify();
+    });
 }
 
 function initStoreIfNeeded() {
   if (typeof window === 'undefined' || storeState.isInitialized) return;
-  purgeLegacyLocalCmsKeys();
 
-  // Inject seed data as client-side fallbacks (safe here — only runs in browser)
   storeState = {
     ...storeState,
-    heroBanners: INITIAL_CMS_HERO_BANNERS,
     isInitialized: true,
   };
 
@@ -298,26 +346,29 @@ function getSnapshot() {
 
 const serverSnapshot: AppStoreState = {
   designs: [],
-  fabrics: INITIAL_FABRIC_MATERIALS,
-  cuts: INITIAL_APPAREL_CUTS,
-  dtfDimensions: INITIAL_DTF_DIMENSIONS,
-  tiers: INITIAL_QUANTITY_TIERS,
+  fabrics: [],
+  cuts: [],
+  dtfDimensions: [],
+  tiers: [],
   customers: [],
   orders: [],
   favorites: [],
   heroBanners: [],
-  trustBadges: INITIAL_CMS_TRUST_BADGES,
-  services: INITIAL_CMS_SERVICES,
+  trustBadges: [],
+  services: [],
   productionVideos: [],
   productionGallery: [],
   testimonials: [],
-  sloganQuote: INITIAL_CMS_SLOGAN_QUOTE,
-  companySettings: INITIAL_CMS_COMPANY_SETTINGS,
-  policies: INITIAL_CMS_POLICIES,
-  themeSettings: INITIAL_CMS_THEME_SETTINGS,
+  sloganQuote: DEFAULT_SLOGAN_QUOTE,
+  companySettings: DEFAULT_COMPANY_SETTINGS,
+  policies: DEFAULT_POLICIES,
+  themeSettings: DEFAULT_THEME_SETTINGS,
   isInitialized: false,
   isLoadingDesigns: false,
   isLoadingCms: false,
+  isSyncing: false,
+  syncError: null,
+  lastSyncedAt: null,
 };
 
 export function useAppStore() {
@@ -1082,30 +1133,12 @@ export function useAppStore() {
     notify();
   }, []);
 
-  // Reset to seed data and sync to Cloud DB
+  // Reset to seed data in DB and sync back to local store
   const resetToSeedData = useCallback(async () => {
     storeState = {
-      designs: [],
-      fabrics: INITIAL_FABRIC_MATERIALS,
-      cuts: INITIAL_APPAREL_CUTS,
-      dtfDimensions: INITIAL_DTF_DIMENSIONS,
-      tiers: INITIAL_QUANTITY_TIERS,
-      customers: INITIAL_CUSTOMERS,
-      orders: INITIAL_ORDERS,
-      favorites: [],
-      heroBanners: INITIAL_CMS_HERO_BANNERS,
-      trustBadges: INITIAL_CMS_TRUST_BADGES,
-      services: INITIAL_CMS_SERVICES,
-      productionVideos: INITIAL_CMS_PRODUCTION_VIDEOS,
-      productionGallery: INITIAL_CMS_PRODUCTION_GALLERY,
-      testimonials: INITIAL_CMS_TESTIMONIALS,
-      sloganQuote: INITIAL_CMS_SLOGAN_QUOTE,
-      companySettings: INITIAL_CMS_COMPANY_SETTINGS,
-      policies: INITIAL_CMS_POLICIES,
-      themeSettings: INITIAL_CMS_THEME_SETTINGS,
-      isInitialized: true,
-      isLoadingDesigns: false,
-      isLoadingCms: false,
+      ...storeState,
+      isSyncing: true,
+      syncError: null,
     };
     notify();
 
@@ -1113,7 +1146,14 @@ export function useAppStore() {
       await seedAllCmsToDb();
       await fetchAndSyncAllDb();
     } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : 'Gagal set semula ke data asal';
       console.error('Error resetting seed to DB:', e);
+      storeState = {
+        ...storeState,
+        isSyncing: false,
+        syncError: errorMsg,
+      };
+      notify();
     }
   }, []);
 
@@ -1121,6 +1161,9 @@ export function useAppStore() {
     isInitialized: state.isInitialized,
     isLoadingDesigns: state.isLoadingDesigns,
     isLoadingCms: state.isLoadingCms,
+    isSyncing: state.isSyncing,
+    syncError: state.syncError,
+    lastSyncedAt: state.lastSyncedAt,
     designs: state.designs,
     fabrics: state.fabrics,
     cuts: state.cuts,
