@@ -41,12 +41,14 @@ import {
 } from 'lucide-react';
 
 // Official WhatsApp Logo Icon with standard 24x24 viewBox for perfect optical alignment and size uniformity with Lucide icons
-function OfficialWhatsAppIcon({ className = "w-4.5 h-4.5", ...props }: React.SVGProps<SVGSVGElement>) {
+function OfficialWhatsAppIcon({ className = "w-[18px] h-[18px]", ...props }: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="currentColor"
-      className={className}
+      className={`w-[18px] h-[18px] shrink-0 ${className || ''}`}
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
@@ -121,11 +123,11 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-  // Finance Sub-menu Expand State
+  // Finance Sub-menu Expand State (Default collapsed unless currently viewing finance pages)
   const isInsideFinance = FINANCE_NAV_ITEMS.some((item) =>
     item.exact ? pathname === item.href : pathname.startsWith(item.href)
   );
-  const [isFinanceOpen, setIsFinanceOpen] = useState(true);
+  const [isFinanceOpen, setIsFinanceOpen] = useState(isInsideFinance);
 
   useEffect(() => {
     if (isInsideFinance) {
@@ -133,9 +135,9 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
     }
   }, [isInsideFinance]);
 
-  // Settings Sub-menu Expand State (Auto-expand if currently inside settings)
+  // Settings Sub-menu Expand State (Default collapsed unless currently viewing settings pages)
   const isInsideSettings = SETTINGS_NAV_ITEMS.some((item) => pathname.startsWith(item.href));
-  const [isSettingsOpen, setIsSettingsOpen] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(isInsideSettings);
 
   useEffect(() => {
     if (isInsideSettings) {
@@ -492,7 +494,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
                               : 'text-slate-700 hover:bg-slate-100 font-medium'
                           }`}
                         >
-                          <Icon className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-[#001D35]' : 'text-slate-600'}`} />
+                          <Icon className={`w-[18px] h-[18px] shrink-0 ${isActive ? 'text-[#001D35]' : 'text-slate-600'}`} />
                           <span className="truncate">{item.label}</span>
                         </Link>
                       );
@@ -509,7 +511,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
                             : 'text-slate-600 hover:bg-slate-100'
                         }`}
                       >
-                        <Icon className="w-4.5 h-4.5" />
+                        <Icon className="w-[18px] h-[18px] shrink-0" />
                       </Link>
                     );
                   })}
@@ -531,7 +533,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      <Wallet className={`w-4.5 h-4.5 shrink-0 ${isInsideFinance ? 'text-[#001D35]' : 'text-slate-600'}`} />
+                      <Wallet className={`w-[18px] h-[18px] shrink-0 ${isInsideFinance ? 'text-[#001D35]' : 'text-slate-600'}`} />
                       <span>Kewangan & Akaun</span>
                     </div>
                     <ChevronDown
@@ -581,7 +583,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
                             : 'text-slate-600 hover:bg-slate-100'
                         }`}
                       >
-                        <Icon className="w-4.5 h-4.5" />
+                        <Icon className="w-[18px] h-[18px] shrink-0" />
                       </Link>
                     );
                   })}
@@ -603,7 +605,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      <Settings className={`w-4.5 h-4.5 shrink-0 ${isInsideSettings ? 'text-[#001D35]' : 'text-slate-600'}`} />
+                      <Settings className={`w-[18px] h-[18px] shrink-0 ${isInsideSettings ? 'text-[#001D35]' : 'text-slate-600'}`} />
                       <span>Pengaturan</span>
                     </div>
                     <ChevronDown
@@ -653,7 +655,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
                             : 'text-slate-600 hover:bg-slate-100'
                         }`}
                       >
-                        <Icon className="w-4.5 h-4.5" />
+                        <Icon className="w-[18px] h-[18px] shrink-0" />
                       </Link>
                     );
                   })}
