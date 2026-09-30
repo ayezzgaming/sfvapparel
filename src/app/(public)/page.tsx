@@ -750,76 +750,74 @@ export default function HomePage() {
               [1, 2].map((i) => (
                 <div
                   key={i}
-                  className="shrink-0 w-[80%] max-w-[270px] bg-white rounded-[24px] overflow-hidden border border-slate-200/80 shadow-xs flex flex-col animate-pulse"
+                  className="shrink-0 w-[72%] sm:w-[240px] max-w-[250px] aspect-[9/15] rounded-[26px] bg-slate-200 animate-pulse flex flex-col justify-end p-4 space-y-2"
                 >
-                  <div className="w-full aspect-[4/3] bg-slate-200" />
-                  <div className="p-4 space-y-2">
-                    <div className="h-3 bg-slate-200 rounded w-1/3" />
-                    <div className="h-4 bg-slate-200 rounded w-3/4" />
-                    <div className="h-3 bg-slate-100 rounded w-1/2 pt-2" />
-                  </div>
+                  <div className="h-3 bg-slate-300 rounded w-1/3" />
+                  <div className="h-4 bg-slate-300 rounded w-3/4" />
                 </div>
               ))
             ) : (
               activeVideos.map((video) => (
                 <div 
                   key={video.id}
-                  onClick={() => setActiveVideo(video.id)}
-                  className="shrink-0 w-[80%] max-w-[270px] bg-white rounded-[24px] overflow-hidden snap-center border border-slate-200/80 shadow-xs hover:border-[#0052FF]/30 hover:shadow-md flex flex-col justify-between group cursor-pointer transition-all duration-200 active:scale-[0.98]"
+                  className="relative shrink-0 w-[72%] sm:w-[240px] max-w-[250px] aspect-[9/15] rounded-[26px] overflow-hidden bg-slate-900 snap-center shadow-md shadow-slate-900/10 border border-slate-200/80 transition-transform duration-300 active:scale-[0.98] select-none group"
                 >
-                  {/* Video Screen / Thumbnail Container */}
-                  <div className="relative w-full aspect-[4/3] bg-slate-900 overflow-hidden">
-                    {activeVideo === video.id ? (
-                      <iframe 
-                        className="w-full h-full"
-                        src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1&controls=1&modestbranding=1&rel=0&playsinline=1`} 
-                        title={video.title}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
+                  {activeVideo === video.id ? (
+                    <iframe 
+                      className="absolute inset-0 w-full h-full"
+                      src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1&controls=1&modestbranding=1&rel=0&playsinline=1`} 
+                      title={video.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div 
+                      className="relative w-full h-full cursor-pointer group overflow-hidden"
+                      onClick={() => setActiveVideo(video.id)}
+                    >
+                      {/* Full-bleed Portrait Thumbnail */}
+                      <Image 
+                        src={video.thumbnail_url} 
+                        alt={video.title} 
+                        fill
+                        sizes="(max-width: 640px) 250px, 280px"
+                        className="object-cover object-center group-hover:scale-105 transition-transform duration-700" 
                       />
-                    ) : (
-                      <>
-                        <Image 
-                          src={video.thumbnail_url} 
-                          alt={video.title} 
-                          fill
-                          sizes="(max-width: 640px) 270px, 300px"
-                          className="object-cover object-center group-hover:scale-105 transition-transform duration-500" 
-                        />
 
-                        {/* Top-left status badge */}
-                        <div className="absolute top-2.5 left-2.5 z-10 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold shadow-xs">
+                      {/* Smooth Seamless Bottom Scrim (No Clunky Boxes) */}
+                      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none z-10" />
+
+                      {/* Top-left Subtle Badge */}
+                      <div className="absolute top-3 left-3 z-20">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md text-white text-[10px] font-semibold border border-white/15 shadow-xs">
                           <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />
                           <span>Video Kilang</span>
+                        </span>
+                      </div>
+
+                      {/* Minimal Center Play Button with Brand Cyan #00BDFF Hover */}
+                      <div className="absolute inset-0 flex items-center justify-center z-15 pointer-events-none">
+                        <div className="w-12 h-12 rounded-full bg-black/35 group-hover:bg-[#00BDFF] backdrop-blur-md border border-white/40 shadow-lg flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110">
+                          <Play className="w-5 h-5 ml-0.5 fill-white text-white" />
                         </div>
+                      </div>
 
-                        {/* Center Minimal Play Button */}
-                        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/95 group-hover:bg-[#0052FF] backdrop-blur-md shadow-lg flex items-center justify-center text-[#0052FF] group-hover:text-white transition-all duration-300 group-hover:scale-110">
-                            <Play className="w-4.5 h-4.5 ml-0.5 fill-current transition-colors" />
-                          </div>
+                      {/* Minimalist Clean Typography on Scrim */}
+                      <div className="absolute inset-x-0 bottom-0 p-4 space-y-1 z-20 pointer-events-none">
+                        <span className="text-[10px] font-bold text-[#00BDFF] uppercase tracking-wider block">
+                          {video.category}
+                        </span>
+                        <h3 className="text-[13px] sm:text-[13.5px] font-bold text-white leading-snug line-clamp-2 drop-shadow-sm">
+                          {video.title}
+                        </h3>
+                        <div className="flex items-center gap-1 text-[11px] font-semibold text-white/80 group-hover:text-[#00BDFF] transition-colors pt-0.5">
+                          <span>Tonton rakaman</span>
+                          <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform text-[#00BDFF]" />
                         </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Clean White Details Section Below Video */}
-                  <div className="p-4 space-y-2 bg-white flex-1 flex flex-col justify-between">
-                    <div>
-                      <span className="text-[10.5px] font-extrabold text-[#0052FF] uppercase tracking-wider block mb-1">
-                        {video.category}
-                      </span>
-                      <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 leading-snug line-clamp-2 group-hover:text-[#0052FF] transition-colors">
-                        {video.title}
-                      </h3>
+                      </div>
                     </div>
-
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#0052FF]">
-                      <span>{activeVideo === video.id ? 'Sedang Dimainkan' : 'Tonton Video'}</span>
-                      <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                    </div>
-                  </div>
+                  )}
                 </div>
               ))
             )}
