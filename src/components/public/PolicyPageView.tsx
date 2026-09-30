@@ -64,7 +64,7 @@ export default function PolicyPageView({ policyKey }: PolicyPageViewProps) {
         {/* Footer info */}
         <div className="text-center pt-2">
           <p className="text-[10.5px] text-slate-400">
-            SFV APPAREL &bull; SF Ventures Marketing (No. Pendaftaran: 202303194821)
+            SFV APPAREL &bull; SFV Ventures Marketing (No. Pendaftaran: 202303194821 / 003492811-M)
           </p>
         </div>
       </div>

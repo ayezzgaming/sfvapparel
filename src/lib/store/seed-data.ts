@@ -573,7 +573,7 @@ export const INITIAL_CMS_COMPANY_SETTINGS = {
   whatsapp_number: '6281260066616',
   whatsapp_default_message: 'Hai SFV Apparel, saya ingin bertanya tentang tempahan kustom baju.',
   email: 'sales@sfvapparel.my',
-  address: 'No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor, Malaysia',
+  address: 'Jalan pju 1a/1, Petaling Jaya Selangor',
   working_hours: 'Isnin - Jumaat: 9.00 AM - 6.00 PM | Sabtu: 9.00 AM - 1.00 PM',
   website_url: 'https://sfvapparel.my',
   telegram_catalog_url: 'https://t.me/sfvapparelcatalog',

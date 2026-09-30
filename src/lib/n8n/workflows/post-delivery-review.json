@@ -52,7 +52,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"thinkingmachines/inkling-small:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Khidmat Pelanggan SFV APPAREL Kajang. Tuliskan mesej penghargaan ringkas kerana sudi menempah jersi (#SFV-ORD-{{ $json.order_number }}). Berikan kod baucar diskaun 10% *SFVVIP10* untuk tempahan kelab seterusnya. Minta ulasan maklum balas jersi. Sifar emoji.\"\n    }\n  ],\n  \"temperature\": 0.7\n}",
+        "jsonBody": "={\n  \"model\": \"thinkingmachines/inkling-small:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Khidmat Pelanggan SFV APPAREL. Tuliskan mesej penghargaan ringkas kerana sudi menempah jersi (#SFV-ORD-{{ $json.order_number }}). Berikan kod baucar diskaun 10% *SFVVIP10* untuk tempahan kelab seterusnya. Minta ulasan maklum balas jersi. Sifar emoji.\"\n    }\n  ],\n  \"temperature\": 0.7\n}",
         "options": {}
       },
       "name": "Divisi 7: Inkling Small (Draf Baucar VIP)",

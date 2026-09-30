@@ -64,7 +64,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"qwen/qwen3.8-27b:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Manajer Operasi SFV APPAREL Kajang. Tulis pesanan follow-up WhatsApp yang mesra dan sopan (TANPA EMOJI, TANPA MARKDOWN) untuk mengingatkan pelanggan tentang proof design jersi mereka yang sedang menunggu bayaran deposit 50%. Ringkas, 2-3 ayat sahaja.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"No Pesanan: #{{ $json.order_number }}. Pelanggan: {{ $json.customer_name }}. Jumlah: RM{{ ($json.total_amount * 0.5).toFixed(2) }}. Pautan invois: https://sfvapparel.my/history/{{ $json.order_number }}\"\n    }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 200\n}",
+        "jsonBody": "={\n  \"model\": \"qwen/qwen3.8-27b:free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Anda adalah Manajer Operasi SFV APPAREL. Tulis pesanan follow-up WhatsApp yang mesra dan sopan (TANPA EMOJI, TANPA MARKDOWN) untuk mengingatkan pelanggan tentang proof design jersi mereka yang sedang menunggu bayaran deposit 50%. Ringkas, 2-3 ayat sahaja.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"No Pesanan: #{{ $json.order_number }}. Pelanggan: {{ $json.customer_name }}. Jumlah: RM{{ ($json.total_amount * 0.5).toFixed(2) }}. Pautan invois: https://sfvapparel.my/history/{{ $json.order_number }}\"\n    }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 200\n}",
         "options": {
           "timeout": 15000
         }

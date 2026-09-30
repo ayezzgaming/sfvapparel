@@ -306,7 +306,7 @@ MAKLUMAT PERNIAGAAN & PENGKALAN DATA KILANG:
 - Jenama Rasmi: ${company.brand_name || 'SFV APPAREL'}
 - No Pendaftaran: ${company.registration_number || '202303194821 (003492811-M)'}
 - Industri: Pembuatan Jersi Sublimasi Penuh, Cetakan DTF & Sulaman Pakaian Kustom Berkualiti Tinggi Malaysia.
-- Lokasi & Alamat Operasi: ${company.address || 'Kajang, Selangor, Malaysia'}
+- Lokasi & Alamat Operasi: ${company.address || 'Jalan pju 1a/1, Petaling Jaya, Selangor, Malaysia'}
 - Nombor Khidmat Pelanggan / WhatsApp Rasmi: ${company.phone || company.whatsapp_number || '+60 14-859 9138'}
 - Tagline & Misi Jenama: ${company.tagline || 'Pakar pembuatan jersi sublimasi penuh, cetakan DTF & sulaman pakaian kustom berkualiti tinggi di Malaysia.'}
 

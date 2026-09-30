@@ -1777,7 +1777,7 @@ export default function HomePage() {
             {isLocationSheetOpen && (
               <iframe
                 title="Peta Lokasi Kilang SFV Apparel"
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(companySettings.address || 'No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor')}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(companySettings.address || 'Jalan pju 1a/1, Petaling Jaya Selangor')}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}

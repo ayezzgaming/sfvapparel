@@ -175,10 +175,10 @@ export default function RootLayout({
                   priceRange: 'RM5 - RM50',
                   address: {
                     '@type': 'PostalAddress',
-                    streetAddress: 'No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana',
-                    addressLocality: 'Kajang',
+                    streetAddress: 'Jalan pju 1a/1',
+                    addressLocality: 'Petaling Jaya',
                     addressRegion: 'Selangor',
-                    postalCode: '43000',
+                    postalCode: '47301',
                     addressCountry: 'MY',
                   },
                   geo: {

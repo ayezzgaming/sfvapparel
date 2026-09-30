@@ -117,7 +117,7 @@ export async function getLiveSystemManifest(): Promise<LiveSystemManifest> {
       name: company.brand_name || 'SFV APPAREL',
       companyRegistration: company.registration_number || '202303194821 (003492811-M)',
       companyOfficialName: company.company_name || 'SFV Ventures Marketing',
-      address: company.address || 'No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor, Malaysia',
+      address: company.address || 'Jalan pju 1a/1, Petaling Jaya Selangor',
       workingHours: company.working_hours || 'Isnin - Jumaat: 9.00 AM - 6.00 PM | Sabtu: 9.00 AM - 1.00 PM | Ahad & Cuti Umum: Tutup',
       contactPhone: company.phone || '+60 14-859 9138',
       websiteUrl: 'https://sfvapparel.my',
@@ -244,7 +244,7 @@ DASAR OPERASI & JAWAPAN UTAMA KILANG:
    - Pelanggan BOLEH bayar DEPOSIT 50% untuk mula cetak dan 50% sebelum pos, ATAU boleh juga bayar PENUH 100% terus secara sekaligus melalui FPX / Online Banking di portal https://sfvapparel.my.
 
 5. BUKAN SCAMMER / JAMINAN KUALITI:
-   - SFV APPAREL adalah kilang sah beroperasi di Kajang, Selangor. Status tempahan dan invois boleh dijejak secara telus di https://sfvapparel.my/history.
+   - SFV APPAREL adalah kilang sah beroperasi mengikut alamat berdaftar rasmi. Status tempahan dan invois boleh dijejak secara telus di https://sfvapparel.my/history.
    - Jaminan 1-to-1 QC Replacement jika berlaku kecacatan cetakan atau jahitan dari pihak kilang.
 
 PANDUAN LENGKAP ANTARMUKA LAMAN WEB (UI/UX) & SISTEM APLIKASI SFV APPAREL:

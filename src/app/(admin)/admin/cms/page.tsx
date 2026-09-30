@@ -1647,7 +1647,7 @@ export default function AdminCmsPage() {
                         rows={2}
                         value={companySettings.address}
                         onChange={(e) => updateCompanySettings({ address: e.target.value })}
-                        placeholder="No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor..."
+                        placeholder="Jalan pju 1a/1, Petaling Jaya Selangor..."
                         className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-zinc-100 focus:ring-2 focus:ring-[#00BDFF] focus:border-[#00BDFF] outline-none"
                       />
                       <p className="text-[10.5px] text-slate-400">
@@ -1704,7 +1704,7 @@ export default function AdminCmsPage() {
                       <div className="w-full aspect-[16/9] max-h-[260px] rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-700 shadow-inner bg-slate-100">
                         <iframe
                           title="Pratonton Peta CMS"
-                          src={`https://maps.google.com/maps?q=${encodeURIComponent(companySettings.address || 'No 28-1, Jalan Prima Saujana 2/D, Taman Prima Saujana, 43000 Kajang, Selangor')}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                          src={`https://maps.google.com/maps?q=${encodeURIComponent(companySettings.address || 'Jalan pju 1a/1, Petaling Jaya Selangor')}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                           width="100%"
                           height="100%"
                           style={{ border: 0 }}
