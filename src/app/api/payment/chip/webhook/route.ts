@@ -9,16 +9,30 @@ export async function POST(req: NextRequest) {
 
     const config = await getFullChipConfig();
 
-    // Verify RSA Signature if Public Key is configured
-    if (config.public_key && config.public_key.trim().length > 0) {
-      const isValid = verifyChipSignature(rawBody, signature, config.public_key);
-      if (!isValid) {
-        console.warn('[CHIP Webhook] Invalid X-Signature signature header received');
-        return NextResponse.json(
-          { success: false, message: 'Invalid signature verification' },
-          { status: 401 }
-        );
-      }
+    // Strict Mandatory RSA Public Key and Signature Enforcement
+    if (!config.public_key || config.public_key.trim().length === 0) {
+      console.error('[CHIP Webhook] Public key is not configured in payment settings');
+      return NextResponse.json(
+        { success: false, message: 'Payment gateway public key is not configured' },
+        { status: 500 }
+      );
+    }
+
+    if (!signature || signature.trim().length === 0) {
+      console.warn('[CHIP Webhook] Missing X-Signature header');
+      return NextResponse.json(
+        { success: false, message: 'Missing X-Signature verification header' },
+        { status: 401 }
+      );
+    }
+
+    const isValid = verifyChipSignature(rawBody, signature, config.public_key);
+    if (!isValid) {
+      console.warn('[CHIP Webhook] Invalid X-Signature signature header received');
+      return NextResponse.json(
+        { success: false, message: 'Invalid signature verification' },
+        { status: 401 }
+      );
     }
 
     let payload: Record<string, unknown>;

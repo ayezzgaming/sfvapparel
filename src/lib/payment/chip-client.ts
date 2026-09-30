@@ -323,8 +323,7 @@ export function verifyChipSignature(
   publicKeyPem?: string
 ): boolean {
   if (!signatureHeader || !publicKeyPem || publicKeyPem.trim().length === 0) {
-    // If no public key configured, signature verification is skipped
-    return true;
+    return false;
   }
 
   try {
