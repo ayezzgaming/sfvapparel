@@ -424,7 +424,7 @@ export default function HomePage() {
                     fill
                     priority={isFirst}
                     sizes="(max-width: 640px) 100vw, 448px"
-                    className="object-cover object-[center_20%] transform-gpu will-change-transform"
+                    className="object-cover object-[center_20%] transform-gpu"
                   />
 
                   {/* Top Status Pill - Clean Light Frosted Glass */}
@@ -549,7 +549,7 @@ export default function HomePage() {
           </div>
 
           {/* Card Produk Dinamik - Expanded width & generous internal padding */}
-          <div className="flex items-stretch gap-4 overflow-x-auto snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar -mx-4 px-4 pt-1 pb-4">
+          <div className="flex items-stretch gap-4 overflow-x-auto snap-x snap-mandatory scroll-pl-4 scroll-pr-4 no-scrollbar -mx-4 px-4 pt-1 pb-4">
             {isLoadingCms && activeServices.length === 0 ? (
               [1, 2, 3].map((i) => (
                 <div
@@ -756,10 +756,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div 
-            className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar" 
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
+          <div className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 no-scrollbar">
             {isLoadingCms && activeVideos.length === 0 ? (
               [1, 2].map((i) => (
                 <div
@@ -855,8 +852,7 @@ export default function HomePage() {
           onMouseLeave={() => setIsGalleryPaused(false)}
           onTouchStart={() => setIsGalleryPaused(true)}
           onTouchEnd={() => setIsGalleryPaused(false)}
-          className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar" 
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 no-scrollbar" 
         >
           {isLoadingCms && activeGallery.length === 0 ? (
             [1, 2, 3].map((i) => (
@@ -964,8 +960,7 @@ export default function HomePage() {
           onMouseLeave={() => setIsTestiPaused(false)}
           onTouchStart={() => setIsTestiPaused(true)}
           onTouchEnd={() => setIsTestiPaused(false)}
-          className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar" 
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 no-scrollbar" 
         >
           {activeTestimonials.map((t, idx) => {
             const isActive = idx === activeTestiIndex;
@@ -1203,14 +1198,13 @@ export default function HomePage() {
             {/* Left Brand Details - Perfectly aligned left flush with logo */}
             <div className="space-y-2.5 max-w-[245px] sm:max-w-[270px]">
               <div className="flex items-center gap-2">
-                {/* Explicitly sized SVG Logo Icon */}
+                {/* Clean Vector SVG Logo Icon */}
                 <Image 
                   src="/logo.svg" 
                   alt="SFV APPAREL" 
                   width={24} 
                   height={24} 
-                  className="w-6 h-6 max-w-[24px] max-h-[24px] object-contain shrink-0" 
-                  style={{ width: '24px', height: '24px', minWidth: '24px', minHeight: '24px' }}
+                  className="w-6 h-6 object-contain shrink-0" 
                 />
                 <span className="text-[15px] tracking-tight text-slate-900 leading-none flex items-center">
                   <span className="font-black tracking-tight">SFV</span>
