@@ -25,6 +25,7 @@ import { formatCurrency } from '@/lib/pricing-calculator';
 import { buildWhatsAppInquiryUrl } from '@/lib/whatsapp/dynamic-link';
 import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import IosInstallPromptModal from '@/components/pwa/IosInstallPromptModal';
+import CookieConsentBanner from '@/components/public/CookieConsentBanner';
 
 interface PublicAppShellProps {
   children: React.ReactNode;
@@ -491,6 +492,9 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
 
           {/* iOS Safari "Add to Home Screen" Guidance Modal */}
           <IosInstallPromptModal />
+
+          {/* Privacy & Cookie Consent Banner */}
+          <CookieConsentBanner />
 
         </div>
       </div>

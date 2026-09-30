@@ -47,6 +47,47 @@ const TIMELINE_STEPS = [
   { step: 4, title: 'Penghantaran Kurier', desc: 'Bungkusan sedia dihantar kepada anda' },
 ];
 
+
+function OrderCardSkeleton() {
+  return (
+    <div className="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-2xs space-y-3.5 animate-pulse select-none">
+      {/* Header Skeleton */}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-24 bg-slate-200 rounded-md" />
+          <div className="h-3 w-16 bg-slate-100 rounded-md" />
+        </div>
+        <div className="h-5 w-20 bg-slate-200 rounded-full" />
+      </div>
+
+      {/* Main Info */}
+      <div className="flex space-x-3 items-center">
+        <div className="w-14 h-14 bg-slate-200 rounded-2xl shrink-0" />
+        <div className="space-y-2 flex-1 min-w-0">
+          <div className="h-4 bg-slate-200 rounded w-3/4" />
+          <div className="h-3 bg-slate-100 rounded w-1/2" />
+        </div>
+      </div>
+
+      {/* Timeline Steps Skeleton */}
+      <div className="grid grid-cols-4 gap-1.5 pt-2 border-t border-slate-100">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="flex flex-col items-center space-y-1">
+            <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
+            <div className="h-2 w-10 bg-slate-100 rounded" />
+          </div>
+        ))}
+      </div>
+
+      {/* Footer / Total Amount Skeleton */}
+      <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+        <div className="h-3 w-20 bg-slate-100 rounded" />
+        <div className="h-4 w-24 bg-slate-200 rounded-md" />
+      </div>
+    </div>
+  );
+}
+
 function HistoryContent() {
   const router = useRouter();
   const { orders, deleteOrder, companySettings, refreshAllDb } = useAppStore();
@@ -237,11 +278,12 @@ function HistoryContent() {
           </div>
         )}
 
-        {/* Loading State */}
+        {/* Loading Skeleton State */}
         {(isLoading || isFetchingLive) && customerOrders.length === 0 ? (
-          <div className="bg-white rounded-3xl p-10 text-center shadow-xs space-y-3 border border-slate-200/60 my-4">
-            <div className="w-8 h-8 rounded-full border-2 border-sky-500 border-t-transparent animate-spin mx-auto" />
-            <p className="text-xs text-slate-500">Memuatkan rekod pesanan dari pangkalan data...</p>
+          <div className="space-y-3.5 my-2">
+            <OrderCardSkeleton />
+            <OrderCardSkeleton />
+            <OrderCardSkeleton />
           </div>
         ) : !isAuthenticated && customerOrders.length === 0 ? (
           /* State 1: Guest / Not Logged In & No Direct Query */
