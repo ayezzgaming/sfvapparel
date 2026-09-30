@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   Play,
   Plus,
@@ -422,16 +423,13 @@ export default function HomePage() {
                 }`}
               >
                 {/* Full-bleed Natural Photo (No dark overlay) */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={banner.image_url}
                   alt={banner.title}
-                  width={480}
-                  height={270}
-                  loading={isFirst ? 'eager' : 'lazy'}
-                  decoding="async"
-                  {...(isFirst ? { fetchPriority: 'high' } : {})}
-                  className="w-full h-full object-cover object-[center_20%] transform-gpu will-change-transform"
+                  fill
+                  priority={isFirst}
+                  sizes="(max-width: 640px) 100vw, 448px"
+                  className="object-cover object-[center_20%] transform-gpu will-change-transform"
                 />
 
                 {/* Top Status Pill - Clean Light Frosted Glass */}
@@ -576,15 +574,12 @@ export default function HomePage() {
                 >
                   {/* Bagian Gambar dengan Badge Khas */}
                   <div className="relative w-full h-44 sm:h-48 bg-slate-100 overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={item.image_url}
                       alt={item.title}
-                      width={400}
-                      height={300}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 640px) 275px, 300px"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
 
                     {/* Floating Pill on Top-Left */}
@@ -805,15 +800,12 @@ export default function HomePage() {
                       onClick={() => setActiveVideo(video.id)}
                     >
                       {/* Full-bleed 100% cover thumbnail without solid cuts */}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img 
+                      <Image 
                         src={video.thumbnail_url} 
                         alt={video.title} 
-                        width={270}
-                        height={450}
-                        loading="lazy"
-                        decoding="async"
-                        className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
+                        fill
+                        sizes="(max-width: 640px) 270px, 300px"
+                        className="object-cover object-center group-hover:scale-105 transition-transform duration-700" 
                       />
                       
                       {/* Natural subtle bottom shadow behind floating panel */}
@@ -901,15 +893,12 @@ export default function HomePage() {
                 >
                   {/* Clean Photography Image (No Overlapping Badges) */}
                   <div className="relative w-full aspect-[4/5] bg-slate-100 overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
+                    <Image 
                       src={item.image_url} 
                       alt={item.title} 
-                      width={200}
-                      height={250}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      fill
+                      sizes="(max-width: 640px) 200px, 250px"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500" 
                     />
                     {item.tag && (
                       <div className="absolute bottom-2 left-2">
@@ -1221,8 +1210,7 @@ export default function HomePage() {
             <div className="space-y-2.5 max-w-[245px] sm:max-w-[270px]">
               <div className="flex items-center gap-2">
                 {/* Explicitly sized SVG Logo Icon */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
+                <Image 
                   src="/logo.svg" 
                   alt="SFV APPAREL" 
                   width={24} 
@@ -1425,8 +1413,7 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-0.5">
             {/* FPX */}
             <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/payments/logobaru/FPX Logo Vector.svg"
                 alt="FPX Online Banking"
                 width={48}
@@ -1437,8 +1424,7 @@ export default function HomePage() {
 
             {/* DuitNow */}
             <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/payments/logobaru/duitnow.svg"
                 alt="DuitNow QR"
                 width={36}
@@ -1449,8 +1435,7 @@ export default function HomePage() {
 
             {/* Touch 'n Go */}
             <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/payments/logobaru/Touch_'n_Go_eWallet_logo.svg"
                 alt="Touch 'n Go eWallet"
                 width={36}
@@ -1461,8 +1446,7 @@ export default function HomePage() {
 
             {/* Maybank */}
             <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/payments/logobaru/maybank-vector-logo.svg"
                 alt="Maybank"
                 width={46}
@@ -1473,8 +1457,7 @@ export default function HomePage() {
 
             {/* Visa */}
             <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/payments/logobaru/Visa_Inc._logo_(2021–present).svg"
                 alt="Visa"
                 width={38}
@@ -1485,8 +1468,7 @@ export default function HomePage() {
 
             {/* Mastercard */}
             <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/payments/logobaru/Mastercard-logo.svg"
                 alt="Mastercard"
                 width={34}
@@ -1534,11 +1516,12 @@ export default function HomePage() {
         >
           <div className="space-y-5 select-none font-ios pb-2">
             <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 shadow-sm border border-slate-200/70">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={selectedProduct.image_url}
                 alt={selectedProduct.title}
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 640px) 90vw, 400px"
+                className="object-cover"
               />
               <div className="absolute top-3 left-3 bg-[#00BDFF] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-sm">
                 {selectedProduct.category}
@@ -1700,11 +1683,12 @@ export default function HomePage() {
               onClick={() => setIsLightboxOpen(true)}
               className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-slate-900 shadow-md border border-slate-200/80 cursor-zoom-in group"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={selectedGalleryItem.image_url}
                 alt={selectedGalleryItem.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                fill
+                sizes="(max-width: 640px) 90vw, 400px"
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md text-[#00BDFF] text-[11px] font-bold px-3 py-1 rounded-full shadow-sm border border-sky-100">
                 {selectedGalleryItem.tag}
@@ -1916,12 +1900,13 @@ export default function HomePage() {
           </div>
 
           {/* Full Screen Image */}
-          <div className="flex-1 flex items-center justify-center p-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+          <div className="relative flex-1 w-full max-h-[82vh] flex items-center justify-center p-2">
+            <Image
               src={selectedGalleryItem.image_url}
               alt={selectedGalleryItem.title}
-              className="max-w-full max-h-[82vh] object-contain rounded-2xl shadow-2xl"
+              fill
+              sizes="(max-width: 640px) 100vw, 800px"
+              className="object-contain rounded-2xl shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             />
           </div>
