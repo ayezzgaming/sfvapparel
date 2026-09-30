@@ -448,10 +448,10 @@ export default function HomePage() {
                       </p>
                     </div>
 
-                    {/* Action Capsule Button */}
+                    {/* Action Capsule Button - Signature Cyan #00BDFF */}
                     <Link
                       href={banner.button_link || '/catalog'}
-                      className="px-3.5 py-1.5 sm:px-4 sm:py-2 min-h-[36px] rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 active:scale-95 text-white text-xs font-bold tracking-normal shadow-sm transition-all flex items-center space-x-1 shrink-0"
+                      className="px-3.5 py-1.5 sm:px-4 sm:py-2 min-h-[36px] rounded-full bg-[#00BDFF] hover:bg-sky-500 active:scale-95 text-white text-xs font-bold tracking-normal shadow-md shadow-sky-400/20 transition-all flex items-center space-x-1 shrink-0"
                     >
                       <span>{banner.button_text}</span>
                       <ChevronRight className="w-3.5 h-3.5 text-white/90" />
@@ -627,7 +627,7 @@ export default function HomePage() {
                           handleOpenProduct(item);
                         }}
                         aria-label={`Pilih ${item.title}`}
-                        className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white text-xs font-bold tracking-normal shadow-xs active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                        className="w-full py-2.5 px-4 rounded-xl bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold tracking-normal shadow-md shadow-sky-400/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                       >
                         <span>Pilih Servis</span>
                         <ChevronRight className="w-3.5 h-3.5 text-white/90" />
@@ -1558,7 +1558,7 @@ export default function HomePage() {
               <Link
                 href={selectedProduct.href}
                 onClick={() => setIsProductSheetOpen(false)}
-                className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md shadow-blue-500/20 active:scale-[0.98] transition-all"
+                className="w-full py-3.5 px-6 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md shadow-sky-400/20 active:scale-[0.98] transition-all"
               >
                 <span>Lihat Templat</span>
                 <ChevronRight className="w-4 h-4 text-white/90" />
@@ -1610,12 +1610,12 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* Action Button - Capsule SFV Brand Blue Gradient */}
+          {/* Action Button - Capsule SFV Brand Cyan #00BDFF */}
           <div className="pt-2">
             <button
               type="button"
               onClick={() => setIsStepSheetOpen(false)}
-              className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs tracking-wide text-center active:scale-[0.98] transition-all shadow-md shadow-blue-500/20"
+              className="w-full py-3.5 px-6 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold text-xs tracking-wide text-center active:scale-[0.98] transition-all shadow-md shadow-sky-400/20"
             >
               Faham & Tutup
             </button>
@@ -1651,7 +1651,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setIsPolicySheetOpen(false)}
-                className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs text-center active:scale-[0.98] transition-all shadow-md shadow-blue-500/20"
+                className="w-full py-3.5 px-6 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold text-xs text-center active:scale-[0.98] transition-all shadow-md shadow-sky-400/20"
               >
                 Tutup Maklumat
               </button>
@@ -1809,7 +1809,7 @@ export default function HomePage() {
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(companySettings.address)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="py-3 px-4 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all"
+              className="py-3 px-4 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-md shadow-sky-400/20 active:scale-95 transition-all"
             >
               <MapPin className="w-3.5 h-3.5" />
               <span>Google Maps</span>
