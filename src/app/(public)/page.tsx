@@ -677,22 +677,17 @@ export default function HomePage() {
                 className="group p-4 sm:p-5 flex items-center justify-between gap-4 hover:bg-slate-50/70 transition-all duration-150 cursor-pointer select-none active:bg-slate-100/60"
               >
                 <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                  {/* Step Index Badge with Icon */}
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/60 group-hover:border-[#00BDFF]/40 group-hover:bg-blue-50 text-slate-600 group-hover:text-[#00BDFF] flex items-center justify-center shrink-0 transition-all">
+                  {/* Clean Icon Container */}
+                  <div className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-200/60 group-hover:border-[#00BDFF]/40 group-hover:bg-blue-50 text-slate-600 group-hover:text-[#00BDFF] flex items-center justify-center shrink-0 transition-all">
                     <IconComponent className="w-4 h-4 transition-transform group-hover:scale-110" />
                   </div>
 
-                  {/* Step Text Details - Clear vertical margin-bottom between heading and body */}
+                  {/* Clean Step Text Details */}
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
-                      <span className="text-[10px] sm:text-[11px] font-extrabold text-[#00BDFF] uppercase tracking-wider">
-                        0{idx + 1}
-                      </span>
-                      <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 group-hover:text-[#00BDFF] transition-colors truncate">
-                        {item.title}
-                      </h3>
-                    </div>
-                    <p className="text-xs sm:text-[12.5px] text-slate-600 line-clamp-1 leading-relaxed font-normal">
+                    <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 group-hover:text-[#00BDFF] transition-colors truncate">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs sm:text-[12.5px] text-slate-500 line-clamp-1 leading-relaxed font-normal mt-0.5">
                       {item.desc}
                     </p>
                   </div>
