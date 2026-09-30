@@ -40,6 +40,7 @@ import {
   ThumbsUp,
   ArrowUp,
   ArrowDown,
+  X,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store/app-store';
 import { 
@@ -1953,9 +1954,10 @@ export default function AdminCmsPage() {
               <button
                 type="button"
                 onClick={() => setIsBannerModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
+                aria-label="Tutup"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
-                ✕
+                <X className="w-5 h-5 text-slate-500 hover:text-slate-800 transition-colors" aria-label="Tutup" />
               </button>
             </div>
             <form onSubmit={handleSaveBanner} className="p-6 space-y-4">
@@ -2070,9 +2072,10 @@ export default function AdminCmsPage() {
               <button
                 type="button"
                 onClick={() => setIsBadgeModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
+                aria-label="Tutup"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
-                ✕
+                <X className="w-5 h-5 text-slate-500 hover:text-slate-800 transition-colors" aria-label="Tutup" />
               </button>
             </div>
 
@@ -2275,9 +2278,10 @@ export default function AdminCmsPage() {
               <button
                 type="button"
                 onClick={() => setIsServiceModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
+                aria-label="Tutup"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
-                ✕
+                <X className="w-5 h-5 text-slate-500 hover:text-slate-800 transition-colors" aria-label="Tutup" />
               </button>
             </div>
             <form onSubmit={handleSaveService} className="p-6 space-y-4">
@@ -2399,9 +2403,10 @@ export default function AdminCmsPage() {
               <button
                 type="button"
                 onClick={() => setIsVideoModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
+                aria-label="Tutup"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
-                ✕
+                <X className="w-5 h-5 text-slate-500 hover:text-slate-800 transition-colors" aria-label="Tutup" />
               </button>
             </div>
             <form onSubmit={handleSaveVideo} className="p-6 space-y-4">
@@ -2491,9 +2496,10 @@ export default function AdminCmsPage() {
               <button
                 type="button"
                 onClick={() => setIsGalleryModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
+                aria-label="Tutup"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
-                ✕
+                <X className="w-5 h-5 text-slate-500 hover:text-slate-800 transition-colors" aria-label="Tutup" />
               </button>
             </div>
             <form onSubmit={handleSaveGallery} className="p-6 space-y-4">
@@ -2594,9 +2600,10 @@ export default function AdminCmsPage() {
               <button
                 type="button"
                 onClick={() => setIsTestiModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
+                aria-label="Tutup"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
-                ✕
+                <X className="w-5 h-5 text-slate-500 hover:text-slate-800 transition-colors" aria-label="Tutup" />
               </button>
             </div>
             <form onSubmit={handleSaveTesti} className="p-6 space-y-4">

@@ -788,7 +788,7 @@ function AdminManagementContent() {
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>Simpan Kata Laluan Baru</span>
+                      <span>Simpan Kata Laluan</span>
                     </>
                   )}
                 </button>
@@ -881,7 +881,7 @@ function AdminManagementContent() {
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>Simpan Maklumat Profil & Emel</span>
+                      <span>Simpan Profil</span>
                     </>
                   )}
                 </button>

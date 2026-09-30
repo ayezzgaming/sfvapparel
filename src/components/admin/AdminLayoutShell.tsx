@@ -956,7 +956,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>Simpan Kata Laluan Baru</span>
+                      <span>Simpan Kata Laluan</span>
                     </>
                   )}
                 </button>

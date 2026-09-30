@@ -899,7 +899,7 @@ function FactoriesContent() {
                   className="w-full py-2.5 bg-[#00BDFF] hover:bg-[#00a6e0] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {matrixSubmitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                  <span>Simpan Matriks Sekarang</span>
+                  <span>Simpan Matriks</span>
                 </button>
               </div>
             </div>

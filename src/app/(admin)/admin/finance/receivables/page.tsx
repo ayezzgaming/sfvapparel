@@ -108,11 +108,11 @@ export default function AdminFinanceReceivablesPage() {
 
     const msg = `Salam sejahtera ${order.customer_name},\n\n` +
       `Pesanan jersi anda (*#${order.order_number || order.id.slice(0, 8)}* - ${order.design_title || 'Tempahan Jersi'}) kini sedang diproses / siap untuk penghantaran.\n\n` +
-      `📌 *Ringkasan Baki Bayaran:*\n` +
+      `*Ringkasan Baki Bayaran:*\n` +
       `• Jumlah Keseluruhan: ${formatCurrency(Number(order.total_amount) || 0)}\n` +
       `• Baki Tertunggak: *${formatCurrency(balance)}*\n\n` +
       `Sila buat bayaran baki ke akaun syarikat SVF APPAREL dan hantarkan resit bayaran di sini untuk kami teruskan penghantaran.\n\n` +
-      `Terima kasih atas sokongan anda! ✨`;
+      `Terima kasih atas sokongan anda.`;
 
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
   };
