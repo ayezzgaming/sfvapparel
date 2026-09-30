@@ -189,6 +189,9 @@ export default function HomePage() {
 
   const activeBanners = heroBanners.filter((b) => b.is_active);
   const activeServices = services.filter((s) => s.is_active);
+  const servicesToRender = (activeServices && activeServices.length > 0)
+    ? activeServices
+    : INITIAL_CMS_SERVICES;
   const activeVideos = productionVideos.filter((v) => v.is_active);
   const activeGallery = productionGallery.filter((g) => g.is_active);
   const activeTestimonials = testimonials.filter((t) => t.is_active);
@@ -550,50 +553,30 @@ export default function HomePage() {
 
           {/* Card Produk Dinamik - Expanded width & generous internal padding */}
           <div className="flex items-stretch gap-4 overflow-x-auto snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar -mx-4 px-4 pt-1 pb-4">
-            {isLoadingCms && activeServices.length === 0 ? (
-              [1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="rounded-[24px] overflow-hidden bg-white w-[265px] flex-shrink-0 border border-slate-200/80 shadow-xs p-5 space-y-4 animate-pulse"
-                >
-                  <div className="w-full h-44 bg-slate-200 rounded-2xl" />
-                  <div className="h-4 bg-slate-200 rounded w-3/4" />
-                  <div className="h-3 bg-slate-100 rounded w-1/2" />
-                  <div className="pt-3 border-t border-slate-100 space-y-2">
-                    <div className="h-4 bg-slate-200 rounded w-1/3" />
-                    <div className="h-9 bg-slate-200 rounded-xl w-full" />
+            {servicesToRender.map((item, index) => (
+              <div
+                key={item.id}
+                onClick={() => handleOpenProduct(item)}
+                className="group rounded-[24px] overflow-hidden bg-white w-[260px] sm:w-[275px] flex-shrink-0 snap-start border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer select-none active:scale-[0.98] flex flex-col justify-between"
+              >
+                {/* Bagian Gambar dengan Badge Khas */}
+                <div className="relative w-full h-44 sm:h-48 bg-slate-100 overflow-hidden">
+                  <Image
+                    src={item.image_url}
+                    alt={item.title}
+                    fill
+                    priority={index < 2}
+                    sizes="(max-width: 640px) 275px, 300px"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+
+                  {/* Floating Pill on Top-Left */}
+                  <div className="absolute top-3 left-3 z-10">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-md text-[10px] font-bold text-slate-800 shadow-xs border border-white/80">
+                      <span>{item.highlight || 'Kualiti Kilang'}</span>
+                    </span>
                   </div>
                 </div>
-              ))
-            ) : (
-              activeServices.map((item, index) => (
-                <div
-                  key={item.id}
-                  onClick={() => handleOpenProduct(item)}
-                  className="group rounded-[24px] overflow-hidden bg-white w-[260px] sm:w-[275px] flex-shrink-0 snap-start border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer select-none active:scale-[0.98] flex flex-col justify-between"
-                >
-                  {/* Bagian Gambar dengan Badge Khas */}
-                  <div className="relative w-full h-44 sm:h-48 bg-slate-100 overflow-hidden">
-                    <Image
-                      src={item.image_url}
-                      alt={item.title}
-                      fill
-                      sizes="(max-width: 640px) 275px, 300px"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-
-                    {/* Floating Pill on Top-Left */}
-                    <div className="absolute top-3 left-3 z-10">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-md text-[10px] font-bold text-slate-800 shadow-xs border border-white/80">
-                        <span>{item.highlight || 'Kualiti Kilang'}</span>
-                      </span>
-                    </div>
-
-                    {/* Subtle Index Pill on Top-Right */}
-                    <div className="absolute top-3 right-3 z-10 w-6 h-6 rounded-full bg-black/40 backdrop-blur-md text-white text-[10px] font-bold flex items-center justify-center">
-                      0{index + 1}
-                    </div>
-                  </div>
 
                   {/* Bagian Konten dengan Padding Lega (20px) */}
                   <div className="p-5 flex flex-col justify-between flex-1 space-y-4">
@@ -639,8 +622,7 @@ export default function HomePage() {
                     </div>
                   </div>
                 </div>
-              ))
-            )}
+              ))}
           </div>
         </div>
       </div>
