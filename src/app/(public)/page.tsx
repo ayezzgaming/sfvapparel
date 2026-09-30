@@ -1362,12 +1362,13 @@ export default function HomePage() {
             </h3>
             <ul className="space-y-2 text-slate-600 text-[12px]">
               <li>
-                <Link
-                  href="/privacypolicy"
-                  className="hover:text-blue-600 transition-colors block text-left"
+                <button
+                  type="button"
+                  onClick={() => handleOpenPolicy('privacy')}
+                  className="hover:text-blue-600 transition-colors text-left"
                 >
                   Privacy Policy
-                </Link>
+                </button>
               </li>
               <li>
                 <button
@@ -1379,20 +1380,22 @@ export default function HomePage() {
                 </button>
               </li>
               <li>
-                <Link
-                  href="/refundpolicy"
-                  className="hover:text-blue-600 transition-colors block text-left"
+                <button
+                  type="button"
+                  onClick={() => handleOpenPolicy('warranty')}
+                  className="hover:text-blue-600 transition-colors text-left"
                 >
                   Refund Policy
-                </Link>
+                </button>
               </li>
               <li>
-                <Link
-                  href="/shippingpolicy"
-                  className="hover:text-blue-600 transition-colors block text-left"
+                <button
+                  type="button"
+                  onClick={() => handleOpenPolicy('shipping')}
+                  className="hover:text-blue-600 transition-colors text-left"
                 >
                   Shipping Policy
-                </Link>
+                </button>
               </li>
             </ul>
           </div>
@@ -1568,7 +1571,7 @@ export default function HomePage() {
                 onClick={() => setIsProductSheetOpen(false)}
                 className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-md shadow-blue-500/20 active:scale-[0.98] transition-all"
               >
-                <span>Lihat Templat {selectedProduct.title}</span>
+                <span>Lihat Templat</span>
                 <ChevronRight className="w-4 h-4 text-white/90" />
               </Link>
             </div>
@@ -1735,7 +1738,7 @@ export default function HomePage() {
                 className="w-full py-3.5 px-6 rounded-full bg-[#25D366] hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center space-x-2 shadow-md shadow-emerald-500/20 active:scale-[0.98] transition-all"
               >
                 <FaWhatsapp className="w-4 h-4 text-white" />
-                <span>Tempah Rekaan Seperti Ini di WhatsApp</span>
+                <span>Tanya di WhatsApp</span>
               </a>
 
               <button
