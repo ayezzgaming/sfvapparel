@@ -874,7 +874,7 @@ export default function HomePage() {
                 key={i}
                 className="shrink-0 w-[170px] sm:w-[200px] bg-white rounded-2xl overflow-hidden border border-slate-200/80 p-3 space-y-2.5 animate-pulse"
               >
-                <div className="w-full aspect-square bg-slate-200 rounded-xl" />
+                <div className="w-full aspect-[4/5] bg-slate-200 rounded-xl" />
                 <div className="h-3.5 bg-slate-200 rounded w-3/4" />
                 <div className="h-2.5 bg-slate-100 rounded w-1/2" />
               </div>
@@ -896,13 +896,13 @@ export default function HomePage() {
                   }`}
                 >
                   {/* Clean Photography Image (No Overlapping Badges) */}
-                  <div className="relative w-full aspect-square bg-slate-100 overflow-hidden">
+                  <div className="relative w-full aspect-[4/5] bg-slate-100 overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={item.image_url} 
                       alt={item.title} 
                       width={200}
-                      height={200}
+                      height={250}
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
@@ -1694,7 +1694,7 @@ export default function HomePage() {
             {/* High-Res Image Preview Box with Zoom Hint */}
             <div 
               onClick={() => setIsLightboxOpen(true)}
-              className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-slate-900 shadow-md border border-slate-200/80 cursor-zoom-in group"
+              className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-slate-900 shadow-md border border-slate-200/80 cursor-zoom-in group"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
