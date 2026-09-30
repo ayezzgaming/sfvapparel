@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { AdminAuthProvider, useAdminAuth } from '@/hooks/useAdminAuth';
+import { syncAdminData } from '@/lib/store/app-store';
 import {
   Menu,
   Home,
@@ -211,6 +212,13 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       router.replace(`/admin/login?redirect=${encodeURIComponent(pathname)}`);
     }
   }, [isLoginPage, authLoading, isAuthenticated, router, pathname]);
+
+  // Lazy fetch admin-only data (orders, customers) on admin authentication
+  useEffect(() => {
+    if (isAuthenticated && !isLoginPage) {
+      syncAdminData();
+    }
+  }, [isAuthenticated, isLoginPage]);
 
   // Click outside listener for profile menu dropdown
   useEffect(() => {

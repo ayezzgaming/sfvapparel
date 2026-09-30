@@ -174,7 +174,7 @@ let storeState: AppStoreState = {
   policies: DEFAULT_POLICIES,
   themeSettings: DEFAULT_THEME_SETTINGS,
   isInitialized: false,
-  isLoadingDesigns: false,
+  isLoadingDesigns: true,
   isLoadingCms: false,
   isSyncing: false,
   syncError: null,
@@ -188,8 +188,8 @@ function notify() {
 }
 
 /**
- * Fetch and sync all Cloud DB items directly from Supabase (Pure Database)
- * Using 2-Stage Chunking to prevent network congestion and unblock critical UI rendering immediately
+ * Fetch and sync Public Priority 1 Data (Designs, CMS, Pricing) directly from Supabase.
+ * Admin data (Customers, Orders) is intentionally excluded to prevent network congestion on public client load.
  */
 async function fetchAndSyncAllDb() {
   const isDesignsEmpty = storeState.designs.length === 0;
@@ -206,7 +206,7 @@ async function fetchAndSyncAllDb() {
 
   try {
     // -------------------------------------------------------------
-    // STAGE 1: CRITICAL UI DATA (Designs & CMS content for fast view)
+    // PRIORITY 1: CRITICAL PUBLIC DATA (Designs, CMS & Pricing Rules)
     // -------------------------------------------------------------
     const designsPromise = getDesignsDb()
       .then((res) => {
@@ -265,101 +265,100 @@ async function fetchAndSyncAllDb() {
         notify();
       });
 
-    // Await ONLY Stage 1 so UI unblocks in record time (<300ms)
-    await Promise.all([designsPromise, cmsPromise]);
+    const pricingPromise = getMasterPricingDb()
+      .then((res) => {
+        if (res.success && res.data) {
+          const { fabrics, cuts, dtfDimensions, tiers } = res.data;
+          storeState = {
+            ...storeState,
+            fabrics: fabrics.length > 0 ? fabrics : storeState.fabrics,
+            cuts: cuts.length > 0 ? cuts : storeState.cuts,
+            dtfDimensions: dtfDimensions.length > 0 ? dtfDimensions : storeState.dtfDimensions,
+            tiers: tiers.length > 0 ? tiers : storeState.tiers,
+          };
+          notify();
+        } else if (!res.success) {
+          const errorText = (res as { error?: string; message?: string }).error || res.message || 'Gagal memuat formula harga';
+          storeState = { ...storeState, syncError: errorText };
+          notify();
+        }
+      })
+      .catch((e) => {
+        const msg = e instanceof Error ? e.message : 'Gagal memuat formula harga';
+        console.error('Error fetching pricing data from DB:', e);
+        storeState = { ...storeState, syncError: msg };
+        notify();
+      });
+
+    // Await public essential data so UI is instantly responsive
+    await Promise.all([designsPromise, cmsPromise, pricingPromise]);
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : 'Gagal menyegerak data peringkat utama';
-    console.error('Stage 1 sync error:', err);
+    console.error('Public data sync error:', err);
     storeState = { ...storeState, syncError: errorMsg };
     notify();
   } finally {
-    storeState = { ...storeState, isLoadingDesigns: false, isLoadingCms: false };
+    storeState = {
+      ...storeState,
+      isLoadingDesigns: false,
+      isLoadingCms: false,
+      isSyncing: false,
+      lastSyncedAt: Date.now(),
+    };
     notify();
   }
+}
 
-  // -------------------------------------------------------------
-  // STAGE 2: SECONDARY DATA (Pricing, Customers, Orders)
-  // Executes asynchronously in background without blocking the UI
-  // -------------------------------------------------------------
-  const pricingPromise = getMasterPricingDb()
-    .then((res) => {
-      if (res.success && res.data) {
-        const { fabrics, cuts, dtfDimensions, tiers } = res.data;
-        storeState = {
-          ...storeState,
-          fabrics: fabrics.length > 0 ? fabrics : storeState.fabrics,
-          cuts: cuts.length > 0 ? cuts : storeState.cuts,
-          dtfDimensions: dtfDimensions.length > 0 ? dtfDimensions : storeState.dtfDimensions,
-          tiers: tiers.length > 0 ? tiers : storeState.tiers,
-        };
+/**
+ * Fetch and sync Admin-Only Data (Customers, Orders).
+ * Executed on demand when authenticated as admin or accessing admin portals.
+ */
+export async function syncAdminData() {
+  try {
+    const customersPromise = getCustomersDb()
+      .then((res) => {
+        if (res.success && Array.isArray(res.customers)) {
+          storeState = { ...storeState, customers: res.customers };
+          notify();
+        } else if (!res.success) {
+          storeState = { ...storeState, syncError: res.message || 'Gagal memuat senarai pelanggan' };
+          notify();
+        }
+      })
+      .catch((e) => {
+        const msg = e instanceof Error ? e.message : 'Gagal memuat senarai pelanggan';
+        console.error('Error fetching customers from DB:', e);
+        storeState = { ...storeState, syncError: msg };
         notify();
-      } else if (!res.success) {
-        const errorText = (res as { error?: string; message?: string }).error || res.message || 'Gagal memuat formula harga';
-        storeState = { ...storeState, syncError: errorText };
-        notify();
-      }
-    })
-    .catch((e) => {
-      const msg = e instanceof Error ? e.message : 'Gagal memuat formula harga';
-      console.error('Error fetching pricing data from DB:', e);
-      storeState = { ...storeState, syncError: msg };
-      notify();
-    });
+      });
 
-  const customersPromise = getCustomersDb()
-    .then((res) => {
-      if (res.success && Array.isArray(res.customers)) {
-        storeState = { ...storeState, customers: res.customers };
+    const ordersPromise = getOrdersDb()
+      .then((res) => {
+        if (res.success && Array.isArray(res.orders)) {
+          storeState = { ...storeState, orders: res.orders };
+          notify();
+        } else if (!res.success) {
+          storeState = { ...storeState, syncError: res.message || 'Gagal memuat rekod pesanan' };
+          notify();
+        }
+      })
+      .catch((e) => {
+        const msg = e instanceof Error ? e.message : 'Gagal memuat rekod pesanan';
+        console.error('Error fetching orders from DB:', e);
+        storeState = { ...storeState, syncError: msg };
         notify();
-      } else if (!res.success) {
-        storeState = { ...storeState, syncError: res.message || 'Gagal memuat senarai pelanggan' };
-        notify();
-      }
-    })
-    .catch((e) => {
-      const msg = e instanceof Error ? e.message : 'Gagal memuat senarai pelanggan';
-      console.error('Error fetching customers from DB:', e);
-      storeState = { ...storeState, syncError: msg };
-      notify();
-    });
+      });
 
-  const ordersPromise = getOrdersDb()
-    .then((res) => {
-      if (res.success && Array.isArray(res.orders)) {
-        storeState = { ...storeState, orders: res.orders };
-        notify();
-      } else if (!res.success) {
-        storeState = { ...storeState, syncError: res.message || 'Gagal memuat rekod pesanan' };
-        notify();
-      }
-    })
-    .catch((e) => {
-      const msg = e instanceof Error ? e.message : 'Gagal memuat rekod pesanan';
-      console.error('Error fetching orders from DB:', e);
-      storeState = { ...storeState, syncError: msg };
-      notify();
-    });
-
-  // Run secondary sync concurrently
-  Promise.all([pricingPromise, customersPromise, ordersPromise])
-    .then(() => {
-      storeState = {
-        ...storeState,
-        isSyncing: false,
-        lastSyncedAt: Date.now(),
-      };
-      notify();
-    })
-    .catch((e) => {
-      const errorMsg = e instanceof Error ? e.message : 'Gagal menyegerak data sekunder';
-      console.error('Stage 2 secondary data sync background error:', e);
-      storeState = {
-        ...storeState,
-        isSyncing: false,
-        syncError: errorMsg,
-      };
-      notify();
-    });
+    await Promise.all([customersPromise, ordersPromise]);
+  } catch (e) {
+    const errorMsg = e instanceof Error ? e.message : 'Gagal menyegerak data admin';
+    console.error('Admin data sync error:', e);
+    storeState = {
+      ...storeState,
+      syncError: errorMsg,
+    };
+    notify();
+  }
 }
 
 function initStoreIfNeeded() {
@@ -405,7 +404,7 @@ const serverSnapshot: AppStoreState = {
   policies: DEFAULT_POLICIES,
   themeSettings: DEFAULT_THEME_SETTINGS,
   isInitialized: false,
-  isLoadingDesigns: false,
+  isLoadingDesigns: true,
   isLoadingCms: false,
   isSyncing: false,
   syncError: null,
@@ -425,6 +424,10 @@ export function useAppStore() {
 
   const refreshDesigns = useCallback(async () => {
     await fetchAndSyncAllDb();
+  }, []);
+
+  const refreshAdminData = useCallback(async () => {
+    await syncAdminData();
   }, []);
 
   const setDesigns = useCallback((designs: Design[]) => {
@@ -1225,6 +1228,8 @@ export function useAppStore() {
     themeSettings: state.themeSettings,
     refreshAllDb,
     refreshDesigns,
+    refreshAdminData,
+    syncAdminData: refreshAdminData,
     setDesigns,
     toggleFavorite,
     isFavorite,
