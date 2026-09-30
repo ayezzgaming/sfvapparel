@@ -125,7 +125,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 >
                   <IoHeartOutline className="w-[21px] h-[21px]" />
                   {favoritesCount > 0 && (
-                    <span className="absolute top-0 right-0 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF3B30] text-white text-[8.5px] font-bold flex items-center justify-center shadow-xs ring-1.5 ring-white leading-none pointer-events-none animate-in zoom-in-75">
+                    <span className="absolute top-0 right-0 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF3B30] text-white text-[8.5px] font-bold flex items-center justify-center shadow-xs ring-2 ring-white leading-none pointer-events-none animate-in zoom-in-75">
                       {favoritesCount > 99 ? '99+' : favoritesCount}
                     </span>
                   )}
@@ -139,7 +139,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 >
                   <IoBagHandleOutline className="w-[20px] h-[20px]" />
                   {activeOrdersCount > 0 && (
-                    <span className="absolute top-0 right-0 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF3B30] text-white text-[8.5px] font-bold flex items-center justify-center shadow-xs ring-1.5 ring-white leading-none pointer-events-none animate-in zoom-in-75">
+                    <span className="absolute top-0 right-0 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF3B30] text-white text-[8.5px] font-bold flex items-center justify-center shadow-xs ring-2 ring-white leading-none pointer-events-none animate-in zoom-in-75">
                       {activeOrdersCount > 99 ? '99+' : activeOrdersCount}
                     </span>
                   )}

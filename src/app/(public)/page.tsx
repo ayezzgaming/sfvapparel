@@ -651,7 +651,7 @@ export default function HomePage() {
               <h2 className="text-xl font-bold text-slate-900 tracking-tight">Cara Tempahan</h2>
               <p className="text-xs text-slate-600 mt-1 leading-relaxed font-normal">4 langkah mudah untuk memulakan pesanan anda</p>
             </div>
-            <span className="text-[11px] font-semibold text-slate-600 bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-full shadow-2xs tracking-normal">
+            <span className="text-[11px] font-semibold text-slate-600 bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-full shadow-xs tracking-normal">
               Panduan Pesanan
             </span>
           </div>
@@ -675,7 +675,7 @@ export default function HomePage() {
                 >
                   <div className="flex items-center gap-3.5 min-w-0 flex-1">
                     {/* Clean Icon Container */}
-                    <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200/80 group-hover:border-[#00BDFF]/40 group-hover:bg-blue-50 text-slate-600 group-hover:text-[#00BDFF] flex items-center justify-center shrink-0 transition-all shadow-2xs">
+                    <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200/80 group-hover:border-[#00BDFF]/40 group-hover:bg-blue-50 text-slate-600 group-hover:text-[#00BDFF] flex items-center justify-center shrink-0 transition-all shadow-xs">
                       <IconComponent className="w-4 h-4 transition-transform group-hover:scale-110" />
                     </div>
 
@@ -772,14 +772,29 @@ export default function HomePage() {
                   className="relative shrink-0 w-[72%] sm:w-[240px] max-w-[250px] aspect-[9/15] rounded-3xl overflow-hidden bg-slate-900 snap-center shadow-md shadow-slate-900/10 border border-slate-200/80 transition-transform duration-300 active:scale-[0.98] select-none group"
                 >
                   {activeVideo === video.id ? (
-                    <iframe 
-                      className="absolute inset-0 w-full h-full"
-                      src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1&controls=1&modestbranding=1&rel=0&playsinline=1`} 
-                      title={video.title}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
+                    <div className="relative w-full h-full">
+                      <iframe 
+                        className="w-full h-full"
+                        src={`https://www.youtube.com/embed/${video.youtube_id}?autoplay=1&controls=1&modestbranding=1&rel=0&playsinline=1`} 
+                        title={video.title}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                      {/* Clean Floating Close Video Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveVideo(null);
+                        }}
+                        aria-label="Tutup Video"
+                        className="absolute top-3 right-3 z-30 px-2.5 py-1 rounded-full bg-black/75 hover:bg-black text-white text-[10.5px] font-bold flex items-center gap-1 backdrop-blur-md border border-white/20 shadow-md active:scale-90 transition-all cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5 text-[#00BDFF]" />
+                        <span>Tutup</span>
+                      </button>
+                    </div>
                   ) : (
                     <div 
                       className="relative w-full h-full cursor-pointer group overflow-hidden"
@@ -876,7 +891,7 @@ export default function HomePage() {
                   className={`shrink-0 w-[170px] sm:w-[200px] bg-white rounded-3xl overflow-hidden snap-start border cursor-pointer select-none flex flex-col justify-between group transition-all duration-200 active:scale-[0.97] ${
                     isActive 
                       ? 'border-slate-300 shadow-sm' 
-                      : 'border-slate-200/80 shadow-2xs hover:border-slate-300'
+                      : 'border-slate-200/80 shadow-xs hover:border-slate-300'
                   }`}
                 >
                   {/* Clean Photography Image (No Overlapping Badges) */}
@@ -1050,7 +1065,7 @@ export default function HomePage() {
           {/* Card 1: Sublimasi */}
           <div className="bg-slate-50/70 rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#00BDFF] flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-sky-50 text-[#00BDFF] flex items-center justify-center shrink-0">
                 <Layers className="w-4.5 h-4.5" />
               </div>
               <div>
@@ -1066,13 +1081,13 @@ export default function HomePage() {
           </div>
 
           {/* Card 2: DTF */}
-          <div className="bg-slate-50/70 rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-3">
+          <div className="bg-slate-50/70 rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#0052FF]/60 transition-colors space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#0052FF] flex items-center justify-center shrink-0">
                 <Zap className="w-4.5 h-4.5" />
               </div>
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-sky-600 block">Cetakan Foto</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0052FF] block">Cetakan Foto</span>
                 <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug tracking-normal">
                   Cetakan Baju DTF Premium
                 </h3>
@@ -1086,11 +1101,11 @@ export default function HomePage() {
           {/* Card 3: Sulaman */}
           <div className="bg-slate-50/70 rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-sky-50 text-[#00BDFF] flex items-center justify-center shrink-0">
                 <Award className="w-4.5 h-4.5" />
               </div>
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 block">Kemasan Korporat</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#00BDFF] block">Kemasan Korporat</span>
                 <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug tracking-normal">
                   Sulaman Logo Berkomputer
                 </h3>
@@ -1102,13 +1117,13 @@ export default function HomePage() {
           </div>
 
           {/* Card 4: Carta Saiz */}
-          <div className="bg-slate-50/70 rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-3">
+          <div className="bg-slate-50/70 rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#0052FF]/60 transition-colors space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#0052FF] flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-4.5 h-4.5" />
               </div>
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 block">Piawaian Malaysia</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0052FF] block">Piawaian Malaysia</span>
                 <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug tracking-normal">
                   Carta Saiz Asian Regular Fit
                 </h3>
@@ -1135,7 +1150,7 @@ export default function HomePage() {
         <div className="bg-white rounded-3xl overflow-hidden shadow-xs border border-slate-200/80 divide-y divide-slate-100">
           {/* FAQ 1 */}
           <details className="group">
-            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00BDFF]/40 [&::-webkit-details-marker]:hidden">
               <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors tracking-normal">
                 Berapakah minimum tempahan (MOQ) di SFV APPAREL?
               </span>
@@ -1148,7 +1163,7 @@ export default function HomePage() {
 
           {/* FAQ 2 */}
           <details className="group">
-            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00BDFF]/40 [&::-webkit-details-marker]:hidden">
               <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors tracking-normal">
                 Berapa hari tempoh siap produksi pesanan?
               </span>
@@ -1161,7 +1176,7 @@ export default function HomePage() {
 
           {/* FAQ 3 */}
           <details className="group">
-            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00BDFF]/40 [&::-webkit-details-marker]:hidden">
               <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors tracking-normal">
                 Apakah format fail artwork yang diterima?
               </span>
@@ -1174,7 +1189,7 @@ export default function HomePage() {
 
           {/* FAQ 4 */}
           <details className="group">
-            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00BDFF]/40 [&::-webkit-details-marker]:hidden">
               <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors tracking-normal">
                 Bagaimana pilihan penghantaran dan liputan kurier?
               </span>
@@ -1313,7 +1328,7 @@ export default function HomePage() {
         </div>
 
         {/* 2. Link Columns */}
-        <div className="grid grid-cols-2 gap-6 pt-5 border-t border-gray-200/70 text-xs">
+        <div className="grid grid-cols-2 gap-6 pt-5 border-t border-slate-200/80 text-xs">
           <div className="space-y-2.5">
             <h3 className="font-bold text-[11px] uppercase tracking-wider text-slate-900">
               Services
@@ -1388,7 +1403,7 @@ export default function HomePage() {
         </div>
 
         {/* 3. Kaedah Pembayaran Selamat (Safe Payment Gateway Badges) */}
-        <div className="pt-5 border-t border-gray-200/70 space-y-2.5">
+        <div className="pt-5 border-t border-slate-200/80 space-y-2.5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700">
               <svg className="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1399,70 +1414,70 @@ export default function HomePage() {
             <span className="text-[10px] text-slate-500">Enkripsi 256-Bit SSL • Transaksi Disahkan</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-0.5">
+          <div className="flex flex-wrap items-center gap-2 pt-0.5">
             {/* FPX */}
-            <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
+            <div className="h-8 px-3 bg-white border border-slate-200/90 rounded-lg shadow-xs flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
               <Image
                 src="/payments/logobaru/FPX Logo Vector.svg"
                 alt="FPX Online Banking"
                 width={48}
                 height={16}
-                className="h-3.5 sm:h-4 w-auto max-w-[48px] object-contain block"
+                className="h-3.5 w-auto object-contain block"
               />
             </div>
 
             {/* DuitNow */}
-            <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
+            <div className="h-8 px-3 bg-white border border-slate-200/90 rounded-lg shadow-xs flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
               <Image
                 src="/payments/logobaru/duitnow.svg"
                 alt="DuitNow QR"
                 width={36}
                 height={16}
-                className="h-3.5 sm:h-4 w-auto max-w-[36px] object-contain block"
+                className="h-3.5 w-auto object-contain block"
               />
             </div>
 
             {/* Touch 'n Go */}
-            <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
+            <div className="h-8 px-3 bg-white border border-slate-200/90 rounded-lg shadow-xs flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
               <Image
                 src="/payments/logobaru/Touch_'n_Go_eWallet_logo.svg"
                 alt="Touch 'n Go eWallet"
                 width={36}
                 height={16}
-                className="h-3.5 sm:h-4 w-auto max-w-[36px] object-contain block"
+                className="h-3.5 w-auto object-contain block"
               />
             </div>
 
             {/* Maybank */}
-            <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
+            <div className="h-8 px-3 bg-white border border-slate-200/90 rounded-lg shadow-xs flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
               <Image
                 src="/payments/logobaru/maybank-vector-logo.svg"
                 alt="Maybank"
                 width={46}
                 height={16}
-                className="h-3.5 sm:h-4 w-auto max-w-[46px] object-contain block"
+                className="h-3.5 w-auto object-contain block"
               />
             </div>
 
             {/* Visa */}
-            <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
+            <div className="h-8 px-3 bg-white border border-slate-200/90 rounded-lg shadow-xs flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
               <Image
                 src="/payments/logobaru/Visa_Inc._logo_(2021–present).svg"
                 alt="Visa"
                 width={38}
                 height={12}
-                className="h-2.5 sm:h-3 w-auto max-w-[38px] object-contain block"
+                className="h-3 w-auto object-contain block"
               />
             </div>
 
             {/* Mastercard */}
-            <div className="h-7 sm:h-7.5 px-2.5 bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
+            <div className="h-8 px-3 bg-white border border-slate-200/90 rounded-lg shadow-xs flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors">
               <Image
                 src="/payments/logobaru/Mastercard-logo.svg"
                 alt="Mastercard"
                 width={34}
                 height={16}
-                className="h-3.5 sm:h-4 w-auto max-w-[34px] object-contain block"
+                className="h-3.5 w-auto object-contain block"
               />
             </div>
           </div>
@@ -1481,7 +1496,7 @@ export default function HomePage() {
               href={companySettings.developer_url || 'https://ayezz.com'}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-bold text-slate-800 hover:text-[#00BDFF] bg-white px-3 py-1 rounded-full border border-slate-200/90 shadow-2xs hover:border-[#00BDFF]/40 active:scale-95 transition-all whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 font-bold text-slate-800 hover:text-[#00BDFF] bg-white px-3 py-1 rounded-full border border-slate-200/90 shadow-xs hover:border-[#00BDFF]/40 active:scale-95 transition-all whitespace-nowrap"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[#00BDFF] shrink-0" />
               <span className="tracking-tight text-slate-800 font-semibold">{(!companySettings.developer_name || companySettings.developer_name === 'AYEZZ Studio') ? 'AYEZZ Global' : companySettings.developer_name}</span>
@@ -1562,7 +1577,7 @@ export default function HomePage() {
         showCloseButton={false}
         badge={
           <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-[#00BDFF] text-[11px] font-bold border border-blue-100">
-            Langkah {selectedStep.step}
+            {selectedStep.step}
           </span>
         }
         title={selectedStep.title}
@@ -1583,7 +1598,7 @@ export default function HomePage() {
                 {selectedStep.points.map((pt, i) => (
                   <div
                     key={i}
-                    className="flex items-start gap-3 p-3.5 rounded-2xl bg-white border border-slate-100 shadow-2xs text-[12.5px] text-slate-700 leading-relaxed"
+                    className="flex items-start gap-3 p-3.5 rounded-2xl bg-white border border-slate-100 shadow-xs text-[12.5px] text-slate-700 leading-relaxed"
                   >
                     <div className="w-5 h-5 rounded-full bg-blue-50 text-[#00BDFF] border border-blue-100 flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">
                       ✓
@@ -1625,7 +1640,7 @@ export default function HomePage() {
 
             <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
               {policies[selectedPolicyKey].sections?.map((sec, idx) => (
-                <div key={idx} className="p-4 rounded-2xl bg-white border border-slate-100 shadow-2xs space-y-1.5">
+                <div key={idx} className="p-4 rounded-2xl bg-white border border-slate-100 shadow-xs space-y-1.5">
                   <h4 className="font-bold text-slate-900 text-xs">{sec.heading}</h4>
                   <p className="text-slate-600 leading-relaxed text-[12.5px]">{sec.text}</p>
                 </div>
@@ -1768,7 +1783,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => handleCopyAddress(companySettings.address)}
-                className="px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-[11px] font-semibold tracking-tight shadow-2xs active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
+                className="px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-[11px] font-semibold tracking-tight shadow-xs active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
               >
                 {copiedAddress ? (
                   <>
@@ -1803,7 +1818,7 @@ export default function HomePage() {
               href={`https://waze.com/ul?q=${encodeURIComponent(companySettings.address)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="py-3 px-4 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all"
+              className="py-3 px-4 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-xs active:scale-95 transition-all"
             >
               <Navigation className="w-3.5 h-3.5 text-blue-600" />
               <span>Navigasi Waze</span>
