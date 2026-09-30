@@ -35,8 +35,12 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { FaWhatsapp, FaTiktok, FaFacebookF, FaInstagram, FaTelegram } from 'react-icons/fa6';
+import dynamic from 'next/dynamic';
 import { formatWhatsAppLink } from '@/lib/whatsapp/dynamic-link';
-import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
+
+const SwipeableBottomSheet = dynamic(() => import('@/components/ui/SwipeableBottomSheet'), { 
+  ssr: false 
+});
 import { useAppStore } from '@/lib/store/app-store';
 import { 
   CmsHeroBanner, 
