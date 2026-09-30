@@ -778,7 +778,7 @@ export default function HomePage() {
               activeVideos.map((video) => (
                 <div 
                   key={video.id}
-                  className="relative shrink-0 w-[80%] max-w-[270px] aspect-[9/15] rounded-[28px] overflow-hidden bg-slate-900 snap-center shadow-lg shadow-slate-900/10 border border-slate-200/80 transition-transform active:scale-[0.98]"
+                  className="relative shrink-0 w-[80%] max-w-[270px] aspect-[9/15] rounded-[28px] overflow-hidden bg-slate-100 snap-center shadow-md shadow-slate-200/60 border border-slate-200/80 transition-transform active:scale-[0.98]"
                 >
                   {activeVideo === video.id ? (
                     <iframe 
@@ -794,7 +794,7 @@ export default function HomePage() {
                       className="relative w-full h-full cursor-pointer group overflow-hidden"
                       onClick={() => setActiveVideo(video.id)}
                     >
-                      {/* Full-bleed 100% cover thumbnail without solid cuts */}
+                      {/* Full-bleed 100% cover thumbnail */}
                       <Image 
                         src={video.thumbnail_url} 
                         alt={video.title} 
@@ -802,32 +802,34 @@ export default function HomePage() {
                         sizes="(max-width: 640px) 270px, 300px"
                         className="object-cover object-center group-hover:scale-105 transition-transform duration-700" 
                       />
-                      
-                      {/* Natural subtle bottom shadow behind floating panel */}
-                      <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/60 to-transparent pointer-events-none z-10" />
 
-                      {/* Play Button - Minimal Frosted Glass Circle */}
-                      <div className="absolute inset-0 flex items-center justify-center z-15 pointer-events-none">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-black/40 group-hover:bg-[#00BDFF] backdrop-blur-md border border-white/50 shadow-md flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110">
-                          <Play className="w-5 h-5 sm:w-6 sm:h-6 ml-0.5 fill-white text-white" />
-                        </div>
-                      </div>
-
-                      {/* Floating iOS Frosted Glass Panel - Ultra Clean & Modern */}
-                      <div className="absolute inset-x-3 bottom-3 p-3.5 rounded-2xl bg-black/55 backdrop-blur-xl border border-white/20 text-white space-y-1 z-20 shadow-lg shadow-black/20">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[10px] font-bold text-[#00BDFF] uppercase tracking-wider">
-                            {video.category}
-                          </span>
-                          <span className="text-[9.5px] font-semibold text-white/80 bg-white/15 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                      {/* Top Pill - Clean Frosted Glass */}
+                      <div className="absolute top-3 left-3 z-20 flex items-center gap-2">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-white/80 text-slate-900 shadow-xs">
+                          <span className="w-2 h-2 rounded-full bg-red-500 ring-2 ring-red-400/30 animate-pulse shrink-0" />
+                          <span className="text-[10px] font-bold tracking-tight text-slate-800">
                             Video Kilang
                           </span>
                         </div>
-                        <h3 className="text-[13px] sm:text-[13.5px] font-bold text-white leading-snug line-clamp-2">
+                      </div>
+
+                      {/* Play Button - Clean White Frosted Glass with Electric Blue */}
+                      <div className="absolute inset-0 flex items-center justify-center z-15 pointer-events-none">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/90 group-hover:bg-[#0052FF] backdrop-blur-md border border-white/90 shadow-lg shadow-black/10 flex items-center justify-center text-[#0052FF] group-hover:text-white transition-all duration-300 group-hover:scale-110">
+                          <Play className="w-5 h-5 sm:w-6 sm:h-6 ml-0.5 fill-current transition-colors" />
+                        </div>
+                      </div>
+
+                      {/* Floating iOS Frosted Glass Panel - Ultra Clean Light Theme */}
+                      <div className="absolute inset-x-2.5 bottom-2.5 p-3 sm:p-3.5 rounded-2xl bg-white/92 backdrop-blur-xl border border-white/90 shadow-md shadow-slate-900/5 text-slate-900 space-y-1 z-20">
+                        <span className="text-[10px] font-extrabold text-[#0052FF] uppercase tracking-wider block">
+                          {video.category}
+                        </span>
+                        <h3 className="text-[13px] sm:text-[13.5px] font-bold text-slate-900 leading-snug line-clamp-2">
                           {video.title}
                         </h3>
-                        <div className="flex items-center gap-1 text-[11px] font-semibold text-white/90 group-hover:text-[#00BDFF] transition-colors pt-0.5">
-                          <span>Tonton rakaman</span>
+                        <div className="flex items-center justify-between pt-1 text-[11px] font-bold text-[#0052FF]">
+                          <span>Tonton Video</span>
                           <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </div>
@@ -897,7 +899,7 @@ export default function HomePage() {
                     />
                     {item.tag && (
                       <div className="absolute bottom-2 left-2">
-                        <span className="bg-black/60 backdrop-blur-md text-white font-medium text-[9.5px] px-2 py-0.5 rounded-full shadow-2xs">
+                        <span className="bg-white/90 backdrop-blur-md text-slate-800 font-bold text-[9.5px] px-2.5 py-0.5 rounded-full border border-white/80 shadow-xs">
                           {item.tag}
                         </span>
                       </div>
