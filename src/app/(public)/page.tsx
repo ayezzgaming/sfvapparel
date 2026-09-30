@@ -778,7 +778,7 @@ export default function HomePage() {
               [1, 2].map((i) => (
                 <div
                   key={i}
-                  className="shrink-0 w-[72vw] max-w-[270px] aspect-[9/15] rounded-[28px] bg-slate-200 animate-pulse flex flex-col justify-end p-5 space-y-2"
+                  className="shrink-0 w-[80%] max-w-[270px] aspect-[9/15] rounded-[28px] bg-slate-200 animate-pulse flex flex-col justify-end p-5 space-y-2"
                 >
                   <div className="h-3 bg-slate-300 rounded w-1/3" />
                   <div className="h-5 bg-slate-300 rounded w-3/4" />
@@ -788,7 +788,7 @@ export default function HomePage() {
               activeVideos.map((video) => (
                 <div 
                   key={video.id}
-                  className="relative shrink-0 w-[72vw] max-w-[270px] aspect-[9/15] rounded-[28px] overflow-hidden bg-slate-900 snap-center shadow-lg shadow-slate-900/10 border border-slate-200/80 transition-transform active:scale-[0.98]"
+                  className="relative shrink-0 w-[80%] max-w-[270px] aspect-[9/15] rounded-[28px] overflow-hidden bg-slate-900 snap-center shadow-lg shadow-slate-900/10 border border-slate-200/80 transition-transform active:scale-[0.98]"
                 >
                   {activeVideo === video.id ? (
                     <iframe 
@@ -990,7 +990,7 @@ export default function HomePage() {
               <div 
                 key={t.id}
                 onClick={() => scrollToTestimonial(idx)}
-                className={`shrink-0 w-[80vw] max-w-[320px] bg-white rounded-[24px] p-5 sm:p-6 snap-center border flex flex-col justify-between cursor-pointer ${
+                className={`shrink-0 w-[85%] max-w-[320px] bg-white rounded-[24px] p-5 sm:p-6 snap-center border flex flex-col justify-between cursor-pointer ${
                   isActive 
                     ? 'border-blue-200 shadow-md shadow-blue-900/5 ring-1 ring-blue-500/20' 
                     : 'border-gray-100 shadow-sm opacity-90'
