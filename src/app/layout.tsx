@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Outfit } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { AuthProvider } from '@/hooks/useAuth';
+import { Toaster } from '@/components/ui/Toast';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -257,6 +258,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
         </AuthProvider>
+        <Toaster />
       </body>
     </html>
   );

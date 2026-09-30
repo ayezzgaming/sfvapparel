@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud, Link as LinkIcon, Image as ImageIcon, X, RefreshCw, Check } from 'lucide-react';
 import { compressImageFile } from '@/lib/utils/imageCompressor';
+import { toast } from '@/components/ui/Toast';
 
 interface ImageUploadFieldProps {
   label: string;
@@ -30,7 +31,7 @@ export default function ImageUploadField({
 
   const compressAndSetImage = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Sila pilih fail imej (PNG, JPG, WEBP, SVG).');
+      toast.error('Format Tidak Sah', 'Sila pilih fail imej yang sah (PNG, JPG, WEBP, SVG).');
       return;
     }
 
@@ -42,8 +43,9 @@ export default function ImageUploadField({
         quality: 0.85,
       });
       onChange(compressedDataUrl);
+      toast.success('Imej Berjaya Diproses');
     } catch {
-      alert('Gagal memproses fail imej.');
+      toast.error('Ralat Imej', 'Gagal memproses fail imej.');
     } finally {
       setIsProcessing(false);
     }

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { toast } from '@/components/ui/Toast';
 import {
   Factory,
   Plus,
@@ -380,9 +381,12 @@ function FactoryJobsContent() {
         if (selectedJob?.id === jobId) {
           setSelectedJob((prev) => (prev ? { ...prev, status } : null));
         }
+        toast.success('Status Dikemaskini', 'Status job sheet kilang berjaya dikemaskini.');
+      } else {
+        toast.error('Gagal Mengemaskini', res.message || 'Gagal mengemaskini status.');
       }
     } catch {
-      alert('Gagal mengemaskini status.');
+      toast.error('Ralat Sistem', 'Gagal mengemaskini status job sheet.');
     }
   };
 

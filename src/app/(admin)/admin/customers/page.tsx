@@ -5,6 +5,7 @@ import { useAppStore } from '@/lib/store/app-store';
 import { formatCurrency } from '@/lib/pricing-calculator';
 import { Customer, Order } from '@/types/database';
 import { saveCustomerDb, deleteCustomerDb, getCustomersDb } from '@/app/actions/customerActions';
+import { toast } from '@/components/ui/Toast';
 import {
   Search,
   Mail,
@@ -251,12 +252,13 @@ export default function AdminCustomersPage() {
           setIsDetailDrawerOpen(false);
           setSelectedCustomer(null);
         }
+        toast.success('Pelanggan Dipadam', 'Maklumat pelanggan berjaya dipadam.');
         window.location.reload();
       } else {
-        alert(res.message || 'Gagal memadam pelanggan.');
+        toast.error('Gagal Memadam', res.message || 'Gagal memadam pelanggan.');
       }
     } catch {
-      alert('Ralat sambungan semasa memadam pelanggan.');
+      toast.error('Ralat Sambungan', 'Ralat sambungan semasa memadam pelanggan.');
     } finally {
       setDeleteSubmitting(false);
     }

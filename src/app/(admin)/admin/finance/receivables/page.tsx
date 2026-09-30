@@ -19,6 +19,7 @@ import {
 import { FaWhatsapp } from 'react-icons/fa6';
 import { getCustomerReceivables, markOrderBalanceCollected } from '@/app/actions/financeActions';
 import { Order } from '@/types/database';
+import { toast } from '@/components/ui/Toast';
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('ms-MY', {
@@ -88,12 +89,13 @@ export default function AdminFinanceReceivablesPage() {
       const res = await markOrderBalanceCollected(orderId, balance);
       if (res.success) {
         loadData(true);
+        toast.success('Baki Direkod', 'Kutipan baki pesanan berjaya direkod.');
       } else {
-        alert(res.message || 'Gagal merekod kutipan baki.');
+        toast.error('Gagal Merekod', res.message || 'Gagal merekod kutipan baki.');
       }
     } catch (err) {
       console.error(err);
-      alert('Ralat semasa merekod kutipan.');
+      toast.error('Ralat Sistem', 'Ralat semasa merekod kutipan.');
     } finally {
       setActionLoadingId(null);
     }

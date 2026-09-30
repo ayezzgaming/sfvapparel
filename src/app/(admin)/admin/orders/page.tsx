@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAppStore } from '@/lib/store/app-store';
 import { formatCurrency } from '@/lib/pricing-calculator';
 import { Order, OrderStatus, ProofRevision } from '@/types/database';
+import { toast } from '@/components/ui/Toast';
 import {
   Search,
   Check,
@@ -146,16 +147,15 @@ export default function AdminOrdersPage() {
         if (activeOrder?.id === orderId) {
           setActiveOrder(null);
         }
-        setWaToast({ success: true, message: 'Pesanan berjaya dipadam secara kekal.' });
+        toast.success('Pesanan Dipadam', 'Pesanan berjaya dipadam secara kekal.');
       } else {
-        alert(res.message || 'Gagal memadam pesanan.');
+        toast.error('Gagal Memadam', res.message || 'Gagal memadam pesanan.');
       }
     } catch (err) {
       console.error('[AdminOrdersPage] Delete order error:', err);
-      alert('Ralat semasa memadam pesanan.');
+      toast.error('Ralat Sistem', 'Ralat semasa memadam pesanan.');
     } finally {
       setIsDeletingId(null);
-      setTimeout(() => setWaToast(null), 3000);
     }
   };
 

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { getFactoryPayables, markFactoryJobPaid } from '@/app/actions/financeActions';
 import { FactoryJob, PartnerFactory } from '@/types/database';
+import { toast } from '@/components/ui/Toast';
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('ms-MY', {
@@ -94,12 +95,13 @@ export default function AdminFinancePayablesPage() {
       const res = await markFactoryJobPaid(jobId, cost);
       if (res.success) {
         loadData(true);
+        toast.success('Bayaran Direkod', 'Pembayaran kilang berjaya direkod.');
       } else {
-        alert(res.message || 'Gagal merekod pembayaran.');
+        toast.error('Gagal Merekod', res.message || 'Gagal merekod pembayaran.');
       }
     } catch (err) {
       console.error(err);
-      alert('Ralat semasa merekod pembayaran kilang.');
+      toast.error('Ralat Sistem', 'Ralat semasa merekod pembayaran kilang.');
     } finally {
       setActionLoadingId(null);
     }

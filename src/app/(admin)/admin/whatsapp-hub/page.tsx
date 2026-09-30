@@ -43,6 +43,7 @@ import { FaWhatsapp } from 'react-icons/fa6';
 import { useAppStore } from '@/lib/store/app-store';
 import { WahaChatSummary, WahaChatMessage } from '@/lib/whatsapp/waha-client';
 import { SupportTicket } from '@/app/api/whatsapp/tickets/route';
+import { toast } from '@/components/ui/Toast';
 import whatsappAiRouterJson from '@/lib/n8n/workflows/whatsapp-ai-router.json';
 import orderFollowupCronJson from '@/lib/n8n/workflows/order-followup-cron.json';
 import staffProductionAlertJson from '@/lib/n8n/workflows/staff-production-alert.json';
@@ -554,9 +555,12 @@ export default function WhatsAppHubPage() {
       const data = await res.json();
       if (data.success) {
         fetchMessages(selectedChat.id);
+        toast.success('Mesej Dihantar');
+      } else {
+        toast.error('Gagal Menghantar Mesej', data.message || 'Sila cuba sebentar lagi.');
       }
     } catch {
-      alert('Gagal menghantar mesej balasan.');
+      toast.error('Ralat Penghantaran', 'Gagal menghantar mesej balasan.');
     } finally {
       setSendingReply(false);
     }
@@ -581,8 +585,9 @@ export default function WhatsAppHubPage() {
       });
       await new Promise((r) => setTimeout(r, 2000));
       await fetchStatus(true);
+      toast.success('Sesi WhatsApp Dimulakan Semula');
     } catch {
-      alert('Gagal memulakan sesi WhatsApp');
+      toast.error('Ralat Sesi', 'Gagal memulakan sesi WhatsApp.');
     } finally {
       setActionLoading(false);
     }
@@ -602,8 +607,9 @@ export default function WhatsAppHubPage() {
       setChats([]);
       setSelectedChat(null);
       await fetchStatus(true);
+      toast.success('WhatsApp Dinyahsambung');
     } catch {
-      alert('Gagal memutuskan sambungan');
+      toast.error('Ralat Sesi', 'Gagal memutuskan sambungan WhatsApp.');
     } finally {
       setActionLoading(false);
     }

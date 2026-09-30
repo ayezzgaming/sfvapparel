@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { toast } from '@/components/ui/Toast';
 import {
   CreditCard,
   Plus,
@@ -175,12 +176,13 @@ export default function AdminFinanceTransactionsPage() {
       const res = await deleteOperatingExpense(id);
       if (res.success) {
         loadData(true);
+        toast.success('Perbelanjaan Dipadam', 'Rekod perbelanjaan berjaya dipadam.');
       } else {
-        alert(res.message || 'Gagal memadam.');
+        toast.error('Gagal Memadam', res.message || 'Gagal memadam.');
       }
     } catch (err) {
       console.error(err);
-      alert('Ralat semasa memadam.');
+      toast.error('Ralat Sistem', 'Ralat semasa memadam rekod.');
     }
   };
 

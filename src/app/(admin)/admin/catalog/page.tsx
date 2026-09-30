@@ -5,6 +5,7 @@ import { useAppStore } from '@/lib/store/app-store';
 import { Design, PrintType } from '@/types/database';
 import { saveDesignDb, deleteDesignDb } from '@/app/actions/designActions';
 import { getNextDesignCode, extractDesignCode } from '@/lib/design-utils';
+import { toast } from '@/components/ui/Toast';
 import {
   Plus,
   Search,
@@ -133,7 +134,7 @@ export default function AdminCatalogPage() {
 
   const processImageFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Sila pilih fail imej yang sah.');
+      toast.error('Format Tidak Sah', 'Sila pilih fail imej yang sah (PNG, JPG, WEBP, SVG).');
       return;
     }
     const originalSizeKb = Math.round(file.size / 1024);

@@ -38,6 +38,7 @@ import { confirmPaymentReturnAction } from '@/app/actions/paymentActions';
 import { Order, OrderStatus, ProofRevision } from '@/types/database';
 import OrderInvoiceModal from '@/components/invoice/OrderInvoiceModal';
 import ArtworkRevisionModal from '@/components/ui/ArtworkRevisionModal';
+import { toast } from '@/components/ui/Toast';
 
 const STATUS_CONFIG: Record<
   OrderStatus,
@@ -1084,9 +1085,9 @@ export default function OrderDetailPage() {
                   type="button"
                   onClick={() => {
                     navigator.clipboard.writeText(order.tracking_number || '');
-                    alert('Nombor penjejakan disalin!');
+                    toast.success('Disalin', 'Nombor penjejakan berjaya disalin ke papan keratan.');
                   }}
-                  className="p-1.5 rounded-lg bg-sky-100 text-sky-700 hover:bg-sky-200 active:scale-90 transition-transform"
+                  className="p-1.5 rounded-lg bg-sky-100 text-sky-700 hover:bg-sky-200 active:scale-90 transition-transform cursor-pointer"
                 >
                   <Copy className="w-4 h-4" />
                 </button>
