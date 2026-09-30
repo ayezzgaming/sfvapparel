@@ -175,7 +175,7 @@ let storeState: AppStoreState = {
   themeSettings: DEFAULT_THEME_SETTINGS,
   isInitialized: false,
   isLoadingDesigns: true,
-  isLoadingCms: false,
+  isLoadingCms: true,
   isSyncing: false,
   syncError: null,
   lastSyncedAt: null,

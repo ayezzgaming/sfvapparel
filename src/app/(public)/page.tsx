@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { 
   Play,
   Plus,
@@ -36,12 +37,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { FaWhatsapp, FaTiktok, FaFacebookF, FaInstagram, FaTelegram } from 'react-icons/fa6';
-import dynamic from 'next/dynamic';
 import { formatWhatsAppLink } from '@/lib/whatsapp/dynamic-link';
-
-const SwipeableBottomSheet = dynamic(() => import('@/components/ui/SwipeableBottomSheet'), { 
-  ssr: false 
-});
 import { useAppStore } from '@/lib/store/app-store';
 import { 
   CmsHeroBanner, 
@@ -52,8 +48,11 @@ import {
   CmsPolicy,
   CmsTrustBadge
 } from '@/types/database';
-import { INITIAL_CMS_TRUST_BADGES, INITIAL_CMS_HERO_BANNERS, INITIAL_CMS_SERVICES } from '@/lib/store/seed-data';
 import { BADGE_THEMES, getTrustIconComponent } from '@/lib/cms/trust-badge-utils';
+
+const SwipeableBottomSheet = dynamic(() => import('@/components/ui/SwipeableBottomSheet'), { 
+  ssr: false 
+});
 
 interface StepDetail {
   step: string;
@@ -189,9 +188,6 @@ export default function HomePage() {
 
   const activeBanners = heroBanners.filter((b) => b.is_active);
   const activeServices = services.filter((s) => s.is_active);
-  const servicesToRender = (activeServices && activeServices.length > 0)
-    ? activeServices
-    : INITIAL_CMS_SERVICES;
   const activeVideos = productionVideos.filter((v) => v.is_active);
   const activeGallery = productionGallery.filter((g) => g.is_active);
   const activeTestimonials = testimonials.filter((t) => t.is_active);
@@ -230,19 +226,15 @@ export default function HomePage() {
   // -------------------------------------------------------------
   // HERO BANNER AUTO-SWAP SLIDER STATE & TIMER
   // -------------------------------------------------------------
-  const bannersToRender = (activeBanners && activeBanners.length > 0)
-    ? activeBanners
-    : INITIAL_CMS_HERO_BANNERS;
-
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
 
   useEffect(() => {
-    if (bannersToRender.length <= 1) return;
+    if (activeBanners.length <= 1) return;
     const interval = setInterval(() => {
-      setActiveBannerIndex((prev) => (prev + 1) % bannersToRender.length);
+      setActiveBannerIndex((prev) => (prev + 1) % activeBanners.length);
     }, 4500);
     return () => clearInterval(interval);
-  }, [bannersToRender.length]);
+  }, [activeBanners.length]);
 
   // -------------------------------------------------------------
   // PRODUCTION GALLERY AUTO-SWAP STATE & TIMER
@@ -386,22 +378,19 @@ export default function HomePage() {
   const [activeTrustIndex, setActiveTrustIndex] = useState(0);
   const [isTrustPaused, setIsTrustPaused] = useState(false);
 
-  const activeBadges = (trustBadges && trustBadges.length > 0)
-    ? trustBadges.filter((b) => b.is_active)
-    : INITIAL_CMS_TRUST_BADGES;
-  const safeTrustBadges = activeBadges.length > 0 ? activeBadges : INITIAL_CMS_TRUST_BADGES;
+  const activeBadges = trustBadges.filter((b) => b.is_active);
 
   useEffect(() => {
-    if (isTrustPaused || safeTrustBadges.length <= 1) return;
+    if (isTrustPaused || activeBadges.length <= 1) return;
     const interval = setInterval(() => {
-      setActiveTrustIndex((prev) => (prev + 1) % safeTrustBadges.length);
+      setActiveTrustIndex((prev) => (prev + 1) % activeBadges.length);
     }, 3200);
     return () => clearInterval(interval);
-  }, [isTrustPaused, safeTrustBadges.length]);
+  }, [isTrustPaused, activeBadges.length]);
 
-  const currentTrust = safeTrustBadges[activeTrustIndex] || safeTrustBadges[0] || INITIAL_CMS_TRUST_BADGES[0];
-  const TrustIcon = getTrustIconComponent(currentTrust.icon_name);
-  const currentTheme = BADGE_THEMES[currentTrust.color_theme] || BADGE_THEMES.sky;
+  const currentTrust = activeBadges[activeTrustIndex] || activeBadges[0];
+  const TrustIcon = currentTrust ? getTrustIconComponent(currentTrust.icon_name) : null;
+  const currentTheme = currentTrust ? (BADGE_THEMES[currentTrust.color_theme] || BADGE_THEMES.sky) : BADGE_THEMES.sky;
 
   return (
     <div className="w-full select-none font-ios">
@@ -413,121 +402,129 @@ export default function HomePage() {
          ========================================================================= */}
       <div className="w-full bg-[#F2F2F7] pt-3 pb-8 px-4 space-y-6">
         {/* 1. DYNAMIC HERO SECTION WITH MULTI-SLIDE BANNER (Liquid Frosted Glass Design) */}
-        <div className="relative w-full h-[255px] sm:h-[280px] rounded-[28px] sm:rounded-[32px] overflow-hidden shadow-md shadow-slate-200/60 border border-white/80 bg-slate-100 group">
-          {/* Stacked All Banner Layers for Silky Smooth Cross-Fade */}
-          {bannersToRender.map((banner, index) => {
-            const isActive = index === activeBannerIndex;
-            const isFirst = index === 0;
-            return (
-              <div
-                key={banner.id || index}
-                className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${
-                  isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
-                }`}
+        {isLoadingCms && activeBanners.length === 0 ? (
+          <div className="relative w-full h-[255px] sm:h-[280px] rounded-[28px] sm:rounded-[32px] overflow-hidden bg-slate-200 animate-pulse" />
+        ) : activeBanners.length > 0 ? (
+          <div className="relative w-full h-[255px] sm:h-[280px] rounded-[28px] sm:rounded-[32px] overflow-hidden shadow-md shadow-slate-200/60 border border-white/80 bg-slate-100 group">
+            {/* Stacked All Banner Layers for Silky Smooth Cross-Fade */}
+            {activeBanners.map((banner, index) => {
+              const isActive = index === activeBannerIndex;
+              const isFirst = index === 0;
+              return (
+                <div
+                  key={banner.id || index}
+                  className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${
+                    isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+                  }`}
+                >
+                  {/* Full-bleed Natural Photo (No dark overlay) */}
+                  <Image
+                    src={banner.image_url}
+                    alt={banner.title}
+                    fill
+                    priority={isFirst}
+                    sizes="(max-width: 640px) 100vw, 448px"
+                    className="object-cover object-[center_20%] transform-gpu will-change-transform"
+                  />
+
+                  {/* Top Status Pill - Clean Light Frosted Glass */}
+                  <div className="absolute top-3.5 left-3.5 z-20 flex items-center gap-2">
+                    <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-white/80 text-slate-900 shadow-xs">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-400/40 shrink-0" />
+                      <span className="text-[11px] font-bold tracking-tight text-slate-900">
+                        {banner.status_pill}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bottom Frosted Glass Panel - Light iOS Liquid Glass Theme */}
+                  <div className="absolute inset-x-0 bottom-0 z-20 bg-white/85 backdrop-blur-xl border-t border-white/80 px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between shadow-xs">
+                    <div className="space-y-0.5 pr-3 min-w-0">
+                      <h2 className="text-[15px] sm:text-[17px] font-bold text-slate-900 tracking-tight leading-tight truncate">
+                        {banner.title}
+                      </h2>
+                      <p className="text-[11px] sm:text-xs font-semibold text-slate-600 truncate">
+                        {banner.tag_text}
+                      </p>
+                    </div>
+
+                    {/* Action Capsule Button */}
+                    <Link
+                      href={banner.button_link || '/catalog'}
+                      className="px-3.5 py-1.5 sm:px-4 sm:py-2 min-h-[36px] rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 active:scale-95 text-white text-xs font-bold tracking-tight shadow-sm transition-all flex items-center space-x-1 shrink-0"
+                    >
+                      <span>{banner.button_text}</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-white/90" />
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Hero Banner Auto-Timer / Play Glassmorphic Button */}
+            {activeBanners.length > 1 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveBannerIndex((prev) => (prev + 1) % activeBanners.length);
+                }}
+                aria-label="Slaid seterusnya"
+                className="absolute top-3.5 right-3.5 z-30 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md border border-white/80 shadow-xs flex items-center justify-center text-slate-900 hover:bg-white active:scale-90 transition-transform cursor-pointer group"
+                title="Slaid seterusnya"
               >
-                {/* Full-bleed Natural Photo (No dark overlay) */}
-                <Image
-                  src={banner.image_url}
-                  alt={banner.title}
-                  fill
-                  priority={isFirst}
-                  sizes="(max-width: 640px) 100vw, 448px"
-                  className="object-cover object-[center_20%] transform-gpu will-change-transform"
-                />
-
-                {/* Top Status Pill - Clean Light Frosted Glass */}
-                <div className="absolute top-3.5 left-3.5 z-20 flex items-center gap-2">
-                  <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-white/80 text-slate-900 shadow-xs">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-400/40 shrink-0" />
-                    <span className="text-[11px] font-bold tracking-tight text-slate-900">
-                      {banner.status_pill}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Bottom Frosted Glass Panel - Light iOS Liquid Glass Theme */}
-                <div className="absolute inset-x-0 bottom-0 z-20 bg-white/85 backdrop-blur-xl border-t border-white/80 px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between shadow-xs">
-                  <div className="space-y-0.5 pr-3 min-w-0">
-                    <h2 className="text-[15px] sm:text-[17px] font-bold text-slate-900 tracking-tight leading-tight truncate">
-                      {banner.title}
-                    </h2>
-                    <p className="text-[11px] sm:text-xs font-semibold text-slate-600 truncate">
-                      {banner.tag_text}
-                    </p>
-                  </div>
-
-                  {/* Action Capsule Button */}
-                  <Link
-                    href={banner.button_link || '/catalog'}
-                    className="px-3.5 py-1.5 sm:px-4 sm:py-2 min-h-[36px] rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 active:scale-95 text-white text-xs font-bold tracking-tight shadow-sm transition-all flex items-center space-x-1 shrink-0"
-                  >
-                    <span>{banner.button_text}</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-white/90" />
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Hero Banner Auto-Timer / Play Glassmorphic Button */}
-          {bannersToRender.length > 1 && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveBannerIndex((prev) => (prev + 1) % bannersToRender.length);
-              }}
-              aria-label="Slaid seterusnya"
-              className="absolute top-3.5 right-3.5 z-30 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md border border-white/80 shadow-xs flex items-center justify-center text-slate-900 hover:bg-white active:scale-90 transition-transform cursor-pointer group"
-              title="Slaid seterusnya"
-            >
-              <ChevronRight className="w-4 h-4 text-[#0052FF] pointer-events-none group-hover:translate-x-0.5 transition-transform" />
-            </button>
-          )}
-        </div>
+                <ChevronRight className="w-4 h-4 text-[#00BDFF] pointer-events-none group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            )}
+          </div>
+        ) : null}
 
         {/* 1.5 VALUE PROPOSITION / TRUST CARD SWAP (Compact, Soft Color & Auto-Slide) */}
-        <div 
-          className={`relative overflow-hidden rounded-2xl border ${currentTheme.border} bg-gradient-to-r ${currentTheme.gradient} p-3.5 sm:p-4 shadow-xs transition-all duration-500 cursor-pointer select-none group`}
-          onMouseEnter={() => setIsTrustPaused(true)}
-          onMouseLeave={() => setIsTrustPaused(false)}
-          onClick={() => setActiveTrustIndex((prev) => (prev + 1) % safeTrustBadges.length)}
-          role="button"
-          tabIndex={0}
-          aria-label={`Jaminan: ${currentTrust.title}`}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              {/* Soft Animated Icon with smooth swap entrance */}
-              <div 
-                key={`icon-${currentTrust.id}-${activeTrustIndex}`}
-                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${currentTheme.iconBg} flex items-center justify-center shrink-0 shadow-xs transition-all duration-300 group-hover:scale-105 animate-trust-swap`}
-              >
-                <TrustIcon className="w-5 h-5 stroke-[2.2]" />
-              </div>
-
-              {/* Text content with smooth crossfade typography */}
-              <div key={`text-${currentTrust.id}-${activeTrustIndex}`} className="min-w-0 flex-1 animate-trust-swap">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[12px] sm:text-[13px] font-bold text-slate-900 tracking-tight leading-tight">
-                    {currentTrust.title}
-                  </span>
-                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${currentTheme.pillStyle} tracking-wide`}>
-                    {currentTrust.pill}
-                  </span>
+        {isLoadingCms && activeBadges.length === 0 ? (
+          <div className="h-16 w-full rounded-2xl bg-slate-200 animate-pulse" />
+        ) : currentTrust && TrustIcon ? (
+          <div 
+            className={`relative overflow-hidden rounded-2xl border ${currentTheme.border} bg-gradient-to-r ${currentTheme.gradient} p-3.5 sm:p-4 shadow-xs transition-all duration-500 cursor-pointer select-none group`}
+            onMouseEnter={() => setIsTrustPaused(true)}
+            onMouseLeave={() => setIsTrustPaused(false)}
+            onClick={() => setActiveTrustIndex((prev) => (prev + 1) % activeBadges.length)}
+            role="button"
+            tabIndex={0}
+            aria-label={`Jaminan: ${currentTrust.title}`}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                {/* Soft Animated Icon with smooth swap entrance */}
+                <div 
+                  key={`icon-${currentTrust.id}-${activeTrustIndex}`}
+                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${currentTheme.iconBg} flex items-center justify-center shrink-0 shadow-xs transition-all duration-300 group-hover:scale-105 animate-trust-swap`}
+                >
+                  <TrustIcon className="w-5 h-5 stroke-[2.2]" />
                 </div>
-                <p className="text-[10px] sm:text-[10.5px] text-slate-600 font-medium mt-0.5 truncate">
-                  {currentTrust.desc}
-                </p>
-              </div>
-            </div>
 
-            {/* Chevron Right subtle affordance */}
-            <div className="shrink-0 pl-1 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all duration-200">
-              <ChevronRight className="w-4 h-4" />
+                {/* Text content with smooth crossfade typography */}
+                <div key={`text-${currentTrust.id}-${activeTrustIndex}`} className="min-w-0 flex-1 animate-trust-swap">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[12px] sm:text-[13px] font-bold text-slate-900 tracking-tight leading-tight">
+                      {currentTrust.title}
+                    </span>
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${currentTheme.pillStyle} tracking-wide`}>
+                      {currentTrust.pill}
+                    </span>
+                  </div>
+                  <p className="text-[10px] sm:text-[10.5px] text-slate-600 font-medium mt-0.5 truncate">
+                    {currentTrust.desc}
+                  </p>
+                </div>
+              </div>
+
+              {/* Chevron Right subtle affordance */}
+              <div className="shrink-0 pl-1 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all duration-200">
+                <ChevronRight className="w-4 h-4" />
+              </div>
             </div>
           </div>
-        </div>
+        ) : null}
 
         {/* 2. PILIHAN SERVIS HEADER & CARDS (DYNAMIC FROM CMS STORE) */}
         <div className="space-y-3.5">
@@ -553,30 +550,46 @@ export default function HomePage() {
 
           {/* Card Produk Dinamik - Expanded width & generous internal padding */}
           <div className="flex items-stretch gap-4 overflow-x-auto snap-x snap-mandatory scroll-pl-4 scroll-pr-4 scrollbar-none no-scrollbar -mx-4 px-4 pt-1 pb-4">
-            {servicesToRender.map((item, index) => (
-              <div
-                key={item.id}
-                onClick={() => handleOpenProduct(item)}
-                className="group rounded-[24px] overflow-hidden bg-white w-[260px] sm:w-[275px] flex-shrink-0 snap-start border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer select-none active:scale-[0.98] flex flex-col justify-between"
-              >
-                {/* Bagian Gambar dengan Badge Khas */}
-                <div className="relative w-full h-44 sm:h-48 bg-slate-100 overflow-hidden">
-                  <Image
-                    src={item.image_url}
-                    alt={item.title}
-                    fill
-                    priority={index < 2}
-                    sizes="(max-width: 640px) 275px, 300px"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-
-                  {/* Floating Pill on Top-Left */}
-                  <div className="absolute top-3 left-3 z-10">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-md text-[10px] font-bold text-slate-800 shadow-xs border border-white/80">
-                      <span>{item.highlight || 'Kualiti Kilang'}</span>
-                    </span>
+            {isLoadingCms && activeServices.length === 0 ? (
+              [1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="rounded-[24px] overflow-hidden bg-white w-[260px] sm:w-[275px] flex-shrink-0 border border-slate-200/80 shadow-xs p-5 space-y-4 animate-pulse"
+                >
+                  <div className="w-full h-44 bg-slate-200 rounded-2xl" />
+                  <div className="h-4 bg-slate-200 rounded w-3/4" />
+                  <div className="h-3 bg-slate-100 rounded w-1/2" />
+                  <div className="pt-3 border-t border-slate-100 space-y-2">
+                    <div className="h-4 bg-slate-200 rounded w-1/3" />
+                    <div className="h-9 bg-slate-200 rounded-xl w-full" />
                   </div>
                 </div>
+              ))
+            ) : (
+              activeServices.map((item, index) => (
+                <div
+                  key={item.id}
+                  onClick={() => handleOpenProduct(item)}
+                  className="group rounded-[24px] overflow-hidden bg-white w-[260px] sm:w-[275px] flex-shrink-0 snap-start border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer select-none active:scale-[0.98] flex flex-col justify-between"
+                >
+                  {/* Bagian Gambar dengan Badge Khas */}
+                  <div className="relative w-full h-44 sm:h-48 bg-slate-100 overflow-hidden">
+                    <Image
+                      src={item.image_url}
+                      alt={item.title}
+                      fill
+                      priority={index < 2}
+                      sizes="(max-width: 640px) 275px, 300px"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+
+                    {/* Floating Pill on Top-Left */}
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-md text-[10px] font-bold text-slate-800 shadow-xs border border-white/80">
+                        <span>{item.highlight || 'Kualiti Kilang'}</span>
+                      </span>
+                    </div>
+                  </div>
 
                   {/* Bagian Konten dengan Padding Lega (20px) */}
                   <div className="p-5 flex flex-col justify-between flex-1 space-y-4">
@@ -622,7 +635,8 @@ export default function HomePage() {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -1520,30 +1534,21 @@ export default function HomePage() {
               </p>
             </div>
 
-            {(() => {
-              const defaultService = INITIAL_CMS_SERVICES.find(s => s.id === selectedProduct.id || s.category === selectedProduct.category || s.title === selectedProduct.title);
-              const detailsList = (selectedProduct.details && selectedProduct.details.length > 0)
-                ? selectedProduct.details
-                : (defaultService?.details || []);
-
-              if (!detailsList || detailsList.length === 0) return null;
-
-              return (
-                <div className="space-y-3 border-t border-slate-100 pt-4">
-                  {detailsList.map((detail, idx) => (
-                    <div key={idx} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1">
-                      <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
-                        <span>{detail.title}</span>
-                      </h4>
-                      <p className="text-xs text-slate-600 leading-relaxed pl-5">
-                        {detail.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
+            {selectedProduct.details && selectedProduct.details.length > 0 && (
+              <div className="space-y-3 border-t border-slate-100 pt-4">
+                {selectedProduct.details.map((detail, idx) => (
+                  <div key={idx} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1">
+                    <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#00BDFF] shrink-0" />
+                      <span>{detail.title}</span>
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed pl-5">
+                      {detail.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="pt-2 border-t border-slate-100">
               <Link
