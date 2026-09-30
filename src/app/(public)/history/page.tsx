@@ -88,6 +88,10 @@ function OrderCardSkeleton() {
   );
 }
 
+// Persistent client-side memory cache for zero-latency instant tab switching
+let globalCustomerOrdersCache: Order[] = [];
+let hasFetchedCustomerOrdersInitially = false;
+
 function HistoryContent() {
   const router = useRouter();
   const { orders, deleteOrder, companySettings, refreshAllDb } = useAppStore();
@@ -99,8 +103,8 @@ function HistoryContent() {
   const [isCopied, setIsCopied] = useState(false);
   const [isPayingBalance, setIsPayingBalance] = useState(false);
   const [balanceError, setBalanceError] = useState<string | null>(null);
-  const [liveOrders, setLiveOrders] = useState<Order[]>([]);
-  const [isFetchingLive, setIsFetchingLive] = useState(false);
+  const [liveOrders, setLiveOrders] = useState<Order[]>(() => globalCustomerOrdersCache);
+  const [isFetchingLive, setIsFetchingLive] = useState(() => !hasFetchedCustomerOrdersInitially && globalCustomerOrdersCache.length === 0);
 
   const paymentQuery = searchParams.get('payment');
   const orderNumberQuery = searchParams.get('order_number');
@@ -131,15 +135,19 @@ function HistoryContent() {
     };
   }, [paymentQuery, orderNumberQuery, refreshAllDb]);
 
-  // Fetch live orders directly from Supabase by Customer Phone or Order Number
+  // Fetch live orders directly from Supabase with background silent revalidation
   useEffect(() => {
     let isMounted = true;
     const identifier = customer?.phone || customer?.whatsapp || customer?.id || orderNumberQuery;
     if (identifier) {
-      setIsFetchingLive(true);
+      if (!hasFetchedCustomerOrdersInitially && globalCustomerOrdersCache.length === 0) {
+        setIsFetchingLive(true);
+      }
       getCustomerOrdersDb(identifier)
         .then((res) => {
           if (isMounted && res.success && Array.isArray(res.orders)) {
+            globalCustomerOrdersCache = res.orders;
+            hasFetchedCustomerOrdersInitially = true;
             setLiveOrders(res.orders);
           }
         })
@@ -147,11 +155,13 @@ function HistoryContent() {
         .finally(() => {
           if (isMounted) setIsFetchingLive(false);
         });
+    } else {
+      setIsFetchingLive(false);
     }
     return () => {
       isMounted = false;
     };
-  }, [customer, orderNumberQuery]);
+  }, [customer?.phone, customer?.whatsapp, customer?.id, orderNumberQuery]);
 
   // Combined & deduplicated customer orders list
   const customerOrders = useMemo(() => {
