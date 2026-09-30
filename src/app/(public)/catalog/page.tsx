@@ -12,11 +12,15 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
+import dynamic from 'next/dynamic';
 import { useAppStore } from '@/lib/store/app-store';
 import { useAuth } from '@/hooks/useAuth';
 import { buildWhatsAppInquiryUrl } from '@/lib/whatsapp/dynamic-link';
-import SwipeableBottomSheet from '@/components/ui/SwipeableBottomSheet';
 import { Design } from '@/types/database';
+
+const SwipeableBottomSheet = dynamic(() => import('@/components/ui/SwipeableBottomSheet'), {
+  ssr: false,
+});
 
 const CATEGORY_PILLS = [
   { id: 'all', label: 'Semua' },
@@ -32,7 +36,7 @@ function CatalogContent() {
   const initialType = searchParams.get('type') || 'all';
 
   const { isAuthenticated } = useAuth();
-  const { designs, favorites, toggleFavorite, companySettings, isLoadingDesigns } = useAppStore();
+  const { designs, favorites, toggleFavorite, companySettings, isLoadingDesigns, isSyncing } = useAppStore();
   const [selectedCategory, setSelectedCategory] = useState<string>(initialType);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDesign, setSelectedDesign] = useState<Design | null>(designs[0] || null);
@@ -109,7 +113,7 @@ function CatalogContent() {
 
       {/* 4. Product Gallery Grid (Clean Cards without Text Pollution) */}
       <div className="px-5 pt-1">
-        {isLoadingDesigns && designs.length === 0 ? (
+        {(isLoadingDesigns || isSyncing) && designs.length === 0 ? (
           <div className="grid grid-cols-2 gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
