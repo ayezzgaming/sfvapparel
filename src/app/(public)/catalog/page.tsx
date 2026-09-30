@@ -230,7 +230,7 @@ function CatalogContent() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Diskusi Produk di WhatsApp"
-                className="h-12 px-3.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-[#25D366] hover:bg-emerald-100 flex items-center justify-center gap-1.5 shrink-0 active:scale-95 transition-all shadow-xs"
+                className="h-12 px-4 rounded-full bg-emerald-50 border border-emerald-200/80 text-[#25D366] hover:bg-emerald-100 flex items-center justify-center gap-1.5 shrink-0 active:scale-95 transition-all shadow-xs"
                 title="Diskusi di WhatsApp"
               >
                 <FaWhatsapp className="w-5 h-5" />
@@ -241,7 +241,7 @@ function CatalogContent() {
               <Link
                 href={`/customize/${selectedDesign.id}`}
                 onClick={() => setIsSheetOpen(false)}
-                className="flex-1 h-12 bg-[#00BDFF] hover:bg-sky-600 text-white font-bold rounded-xl text-center active:bg-sky-700 transition-colors flex items-center justify-center space-x-1.5 shadow-md shadow-sky-400/25 text-xs"
+                className="flex-1 h-12 bg-[#00BDFF] hover:bg-sky-500 text-white font-bold rounded-full text-center active:scale-[0.98] transition-all flex items-center justify-center space-x-1.5 shadow-md shadow-sky-400/20 text-xs"
               >
                 <span>Isi Borang Tempahan</span>
                 <ChevronRight className="w-4 h-4" />

@@ -82,7 +82,7 @@ export default function SizeChartModal({ isOpen, onClose }: SizeChartModalProps)
               onClick={() => setActiveTab('adult')}
               className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                 activeTab === 'adult'
-                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                  ? 'bg-white text-slate-900 shadow-xs font-bold'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
@@ -93,7 +93,7 @@ export default function SizeChartModal({ isOpen, onClose }: SizeChartModalProps)
               onClick={() => setActiveTab('kid')}
               className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                 activeTab === 'kid'
-                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                  ? 'bg-white text-slate-900 shadow-xs font-bold'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
@@ -107,7 +107,7 @@ export default function SizeChartModal({ isOpen, onClose }: SizeChartModalProps)
               onClick={() => setUnit('inch')}
               className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                 unit === 'inch'
-                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                  ? 'bg-white text-slate-900 shadow-xs font-bold'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
@@ -118,7 +118,7 @@ export default function SizeChartModal({ isOpen, onClose }: SizeChartModalProps)
               onClick={() => setUnit('cm')}
               className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                 unit === 'cm'
-                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                  ? 'bg-white text-slate-900 shadow-xs font-bold'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
@@ -158,7 +158,7 @@ export default function SizeChartModal({ isOpen, onClose }: SizeChartModalProps)
         <button
           type="button"
           onClick={onClose}
-          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs tracking-wide shadow-md shadow-blue-500/20 active:scale-[0.98] transition-all cursor-pointer"
+          className="w-full py-3.5 px-6 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold text-xs tracking-wide shadow-md shadow-sky-400/20 active:scale-[0.98] transition-all cursor-pointer text-center"
         >
           Faham & Tutup
         </button>

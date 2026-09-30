@@ -294,7 +294,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 <Link
                   href="/history"
                   onClick={() => setIsBagOpen(false)}
-                  className="w-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white font-bold py-3.5 rounded-2xl text-center active:scale-[0.98] transition-all flex items-center justify-center text-xs tracking-wide shadow-md shadow-blue-500/20"
+                  className="w-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold py-3.5 px-6 rounded-full text-center active:scale-[0.98] transition-all flex items-center justify-center text-xs tracking-wide shadow-md shadow-sky-400/20"
                 >
                   <span>Buka Pengurusan Pesanan Penuh</span>
                 </Link>
@@ -302,7 +302,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 <Link
                   href={`/auth/login?redirect=${encodeURIComponent(pathname)}`}
                   onClick={() => setIsBagOpen(false)}
-                  className="w-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white font-bold py-3.5 rounded-2xl text-center active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs tracking-wide shadow-md shadow-blue-500/20"
+                  className="w-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold py-3.5 px-6 rounded-full text-center active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs tracking-wide shadow-md shadow-sky-400/20"
                 >
                   <LogIn className="w-3.5 h-3.5" />
                   <span>Log Masuk Untuk Semak Pesanan</span>
@@ -403,7 +403,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 <Link
                   href="/catalog"
                   onClick={() => setIsFavoritesOpen(false)}
-                  className="w-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white font-bold py-3.5 px-6 rounded-full text-center active:scale-[0.98] transition-all flex items-center justify-center text-xs tracking-wide shadow-md shadow-blue-500/20"
+                  className="w-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold py-3.5 px-6 rounded-full text-center active:scale-[0.98] transition-all flex items-center justify-center text-xs tracking-wide shadow-md shadow-sky-400/20"
                 >
                   <span>Terokai Katalog</span>
                 </Link>
@@ -411,7 +411,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                 <Link
                   href={`/auth/login?redirect=${encodeURIComponent(pathname)}`}
                   onClick={() => setIsFavoritesOpen(false)}
-                  className="w-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white font-bold py-3.5 px-6 rounded-full text-center active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs tracking-wide shadow-md shadow-blue-500/20"
+                  className="w-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold py-3.5 px-6 rounded-full text-center active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs tracking-wide shadow-md shadow-sky-400/20"
                 >
                   <LogIn className="w-3.5 h-3.5" />
                   <span>Log Masuk Untuk Akses Kegemaran</span>
@@ -470,7 +470,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                     <Link
                       href={`/customize/${design.id}`}
                       onClick={() => setIsFavoritesOpen(false)}
-                      className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-[#0052FF] hover:bg-blue-100 font-bold text-xs active:scale-95 transition-all border border-blue-100"
+                      className="px-4 py-1.5 rounded-full bg-sky-50 text-[#00BDFF] hover:bg-sky-100 font-bold text-xs active:scale-95 transition-all border border-sky-100 shadow-2xs"
                     >
                       Tempah
                     </Link>
@@ -479,7 +479,7 @@ export default function PublicAppShell({ children }: PublicAppShellProps) {
                       type="button"
                       onClick={() => toggleFavorite(design.id)}
                       aria-label="Buang dari kegemaran"
-                      className="p-2 rounded-xl bg-slate-50 border border-slate-200/60 text-slate-500 hover:text-rose-600 active:scale-90 transition-all"
+                      className="p-2 rounded-full bg-slate-50 border border-slate-200/60 text-slate-500 hover:text-rose-600 active:scale-90 transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

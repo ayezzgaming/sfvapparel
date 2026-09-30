@@ -474,7 +474,7 @@ export default function ProfilePage() {
           <button
             type="submit"
             disabled={isSavingProfile || !editName.trim()}
-            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs tracking-wide shadow-md shadow-blue-500/20 disabled:opacity-40 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3.5 px-6 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold text-xs tracking-wide shadow-md shadow-sky-400/20 disabled:opacity-40 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
           >
             {isSavingProfile ? (
               <>
@@ -561,7 +561,7 @@ export default function ProfilePage() {
           <button
             type="submit"
             disabled={isSavingAddress || !addrLine.trim()}
-            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs tracking-wide shadow-md shadow-blue-500/20 disabled:opacity-40 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3.5 px-6 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold text-xs tracking-wide shadow-md shadow-sky-400/20 disabled:opacity-40 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
           >
             {isSavingAddress ? (
               <>
