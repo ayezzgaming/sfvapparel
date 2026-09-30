@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { ADMIN_COOKIE_NAME, getAdminFromSessionToken } from '@/lib/auth/adminAuth';
 
 const WAHA_URL = process.env.WHATSAPP_API_URL || 'http://187.127.223.53:3000';
 const WAHA_KEY = process.env.WHATSAPP_API_KEY || 'sfv_waha_master_key_2026';
@@ -7,6 +9,17 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+    const admin = await getAdminFromSessionToken(sessionToken);
+
+    if (!admin) {
+      return NextResponse.json(
+        { error: 'Akses tidak dibenarkan' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const fileParam = searchParams.get('file');
     const urlParam = searchParams.get('url');

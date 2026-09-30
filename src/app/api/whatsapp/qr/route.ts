@@ -1,11 +1,24 @@
 import { NextResponse } from 'next/server';
 import { getWahaQrCode, startWahaSession, restartWahaSession, getWahaStatus } from '@/lib/whatsapp/waha-client';
 import { syncLinkedPhoneToCompanySettings } from '@/app/actions/cmsActions';
+import { cookies } from 'next/headers';
+import { ADMIN_COOKIE_NAME, getAdminFromSessionToken } from '@/lib/auth/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+    const admin = await getAdminFromSessionToken(sessionToken);
+
+    if (!admin) {
+      return NextResponse.json(
+        { success: false, error: 'Akses tidak dibenarkan' },
+        { status: 401 }
+      );
+    }
+
     let status = await getWahaStatus();
 
     if (status.status === 'WORKING') {
