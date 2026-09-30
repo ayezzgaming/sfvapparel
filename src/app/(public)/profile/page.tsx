@@ -210,7 +210,7 @@ export default function ProfilePage() {
           <div className="pt-1">
             <Link
               href="/auth/login?redirect=/profile"
-              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white text-xs font-bold active:scale-95 transition-all shadow-md shadow-blue-500/20"
+              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold active:scale-95 transition-all shadow-md shadow-sky-400/20"
             >
               <LogIn className="w-3.5 h-3.5" />
               <span>Log Masuk / Daftar</span>
@@ -392,7 +392,7 @@ export default function ProfilePage() {
             type="button"
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="w-full py-3.5 px-4 rounded-2xl bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 active:bg-rose-100 font-semibold text-xs tracking-tight shadow-xs transition-all flex items-center justify-center gap-2"
+            className="w-full py-3.5 px-4 rounded-full bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 active:bg-rose-100 font-semibold text-xs tracking-tight shadow-xs transition-all flex items-center justify-center gap-2"
           >
             {isLoggingOut ? (
               <>
@@ -586,7 +586,7 @@ export default function ProfilePage() {
           <button
             type="button"
             onClick={() => setIsSizeChartOpen(false)}
-            className="w-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold py-3.5 rounded-2xl text-center active:scale-[0.98] transition-all shadow-md shadow-blue-500/20 text-xs tracking-wide"
+            className="w-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold py-3.5 rounded-full text-center active:scale-[0.98] transition-all shadow-md shadow-sky-400/20 text-xs tracking-wide"
           >
             Tutup Panduan Saiz
           </button>

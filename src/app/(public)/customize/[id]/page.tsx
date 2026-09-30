@@ -1471,17 +1471,17 @@ export default function CustomizePage() {
                 })}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center"
+                className="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-200 text-[#25D366] hover:bg-emerald-100 flex items-center justify-center active:scale-90 transition-transform"
               >
                 <FaWhatsapp className="w-4 h-4" />
               </a>
               <button
                 type="submit"
                 disabled={totalQuantity === 0}
-                className={`h-9 px-4 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all ${
+                className={`h-9 px-5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md transition-all active:scale-95 ${
                   totalQuantity === 0
-                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                    : 'bg-sky-500 hover:bg-sky-600 text-white cursor-pointer'
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                    : 'bg-[#00BDFF] hover:bg-sky-500 text-white shadow-sky-400/20 cursor-pointer'
                 }`}
               >
                 <span>Semak & Tempah</span>
@@ -1701,7 +1701,7 @@ export default function CustomizePage() {
                 type="button"
                 onClick={handleConfirmAndSendOrder}
                 disabled={isSubmitting}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 text-white text-xs font-bold shadow-md shadow-blue-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-bold shadow-md shadow-sky-400/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
               >
                 {isSubmitting
                   ? 'Memproses Pesanan...'
@@ -1817,7 +1817,7 @@ export default function CustomizePage() {
                 setOrderSuccessModal(null);
                 router.push(`/history?order=${orderSuccessModal.orderNumber}`);
               }}
-              className="w-full py-2.5 rounded-xl bg-sky-500 text-white text-xs font-bold"
+              className="w-full py-3 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold shadow-md shadow-sky-400/20 active:scale-95 transition-all"
             >
               Lihat Status di Sejarah Pesanan
             </button>

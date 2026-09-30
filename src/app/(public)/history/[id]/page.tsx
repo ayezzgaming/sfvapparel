@@ -636,7 +636,7 @@ export default function OrderDetailPage() {
                         setRevisionErrorMsg(null);
                         setIsRevisionModalOpen(true);
                       }}
-                      className="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-[0.98] text-slate-700 font-bold text-xs border border-slate-200 transition-all flex items-center justify-center gap-1.5"
+                      className="py-2.5 px-4 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-[0.98] text-slate-700 font-bold text-xs border border-slate-200 transition-all flex items-center justify-center gap-1.5"
                     >
                       <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
                       <span>Minta Pembetulan</span>
@@ -646,7 +646,7 @@ export default function OrderDetailPage() {
                       type="button"
                       onClick={handleApproveProof}
                       disabled={isApprovingProof}
-                      className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:opacity-95 active:scale-[0.98] text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                      className="py-2.5 px-4 rounded-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-bold text-xs shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
                     >
                       {isApprovingProof ? (
                         <span>Mengesahkan...</span>
@@ -963,7 +963,7 @@ export default function OrderDetailPage() {
                       type="button"
                       onClick={handlePayBalance}
                       disabled={isPayingBalance}
-                      className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 active:scale-[0.98] text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
+                      className="w-full py-3.5 px-4 rounded-full bg-[#00BDFF] hover:bg-sky-500 active:scale-[0.98] text-white font-bold text-xs shadow-md shadow-sky-400/20 transition-all flex items-center justify-center gap-2"
                     >
                       <CreditCard className="w-4 h-4" />
                       <span>
@@ -980,7 +980,7 @@ export default function OrderDetailPage() {
                 <button
                   type="button"
                   onClick={() => setIsInvoiceOpen(true)}
-                  className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-[0.98] text-slate-800 font-bold text-xs border border-slate-200/80 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-[0.98] text-slate-800 font-bold text-xs border border-slate-200/80 transition-all flex items-center justify-center gap-2"
                 >
                   <FileText className="w-3.5 h-3.5 text-sky-600" />
                   <span>Muat Turun / Cetak Invois Rasmi (PDF)</span>
@@ -1106,7 +1106,7 @@ export default function OrderDetailPage() {
             })}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full bg-[#25D366] hover:bg-emerald-600 text-white font-bold py-3.5 px-6 rounded-2xl text-center active:scale-[0.98] transition-all flex items-center justify-center space-x-2 shadow-md shadow-emerald-500/20 text-xs"
+            className="w-full bg-[#25D366] hover:bg-emerald-600 text-white font-bold py-3.5 px-6 rounded-full text-center active:scale-[0.98] transition-all flex items-center justify-center space-x-2 shadow-md shadow-emerald-500/20 text-xs"
           >
             <FaWhatsapp className="w-4 h-4" />
             <span>Hubungi Pengurus Kilang (WhatsApp)</span>

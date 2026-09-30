@@ -258,7 +258,7 @@ function HistoryContent() {
             <div className="pt-2">
               <Link
                 href="/auth/login?redirect=/history"
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] text-white text-xs font-bold shadow-md shadow-blue-500/20 active:scale-95 transition-all"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold shadow-md shadow-sky-400/20 active:scale-95 transition-all"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 <span>Log Masuk / Daftar</span>
@@ -278,7 +278,7 @@ function HistoryContent() {
             <div className="pt-2">
               <Link
                 href="/catalog"
-                className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-[#007AFF] text-white text-xs font-bold shadow-md shadow-blue-500/20 active:scale-95 transition-all"
+                className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold shadow-md shadow-sky-400/20 active:scale-95 transition-all"
               >
                 <span>Lihat Katalog</span>
                 <ChevronRight className="w-4 h-4" />
@@ -490,7 +490,7 @@ function HistoryContent() {
                     type="button"
                     onClick={() => handlePayBalance(selectedOrder)}
                     disabled={isPayingBalance}
-                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full py-3.5 px-4 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold text-xs shadow-md shadow-sky-400/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     <CreditCard className="w-3.5 h-3.5" />
                     <span>{isPayingBalance ? 'Memproses Gerbang CHIP...' : `Bayar Baki ${formatCurrency(selectedOrder.balance_amount || (selectedOrder.total_amount * 0.5))} (FPX / Kad)`}</span>
@@ -517,7 +517,7 @@ function HistoryContent() {
                 <button
                   type="button"
                   onClick={() => handleCopyTracking(selectedOrder.tracking_number || '')}
-                  className="px-2.5 py-1 rounded-lg bg-white border border-emerald-200 text-[10px] font-medium text-emerald-800 flex items-center gap-1 active:scale-95 shadow-2xs"
+                  className="px-3 py-1 rounded-full bg-white border border-emerald-200 text-[10px] font-medium text-emerald-800 flex items-center gap-1 active:scale-95 shadow-2xs"
                 >
                   {isCopied ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
                   <span>{isCopied ? 'Disalin' : 'Salin'}</span>

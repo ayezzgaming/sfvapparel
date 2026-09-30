@@ -318,7 +318,7 @@ function LoginForm() {
           href="/"
           onClick={handleBack}
           aria-label="Kembali ke halaman utama"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 active:bg-slate-200/80 active:scale-95 transition-all py-2 px-2.5 -ml-2 rounded-xl cursor-pointer select-none"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 active:bg-slate-200/80 active:scale-95 transition-all py-1.5 px-3 rounded-full bg-white border border-slate-200/80 shadow-xs cursor-pointer select-none"
         >
           <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
           <span>Kembali</span>
@@ -415,7 +415,7 @@ function LoginForm() {
               <button
                 type="submit"
                 disabled={isLoading || !phone.trim() || phone.trim().length < 8}
-                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs tracking-wide shadow-md shadow-blue-500/20 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                className="w-full py-3.5 px-4 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold text-xs tracking-wide shadow-md shadow-sky-400/20 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <>
@@ -546,7 +546,7 @@ function LoginForm() {
               <button
                 type="submit"
                 disabled={isLoading || !name.trim()}
-                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white font-bold text-xs tracking-wide shadow-md shadow-blue-500/20 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                className="w-full py-3.5 px-4 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold text-xs tracking-wide shadow-md shadow-sky-400/20 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <>
