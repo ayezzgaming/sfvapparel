@@ -227,15 +227,19 @@ export default function HomePage() {
   // -------------------------------------------------------------
   // HERO BANNER AUTO-SWAP SLIDER STATE & TIMER
   // -------------------------------------------------------------
+  const bannersToRender = (activeBanners && activeBanners.length > 0)
+    ? activeBanners
+    : INITIAL_CMS_HERO_BANNERS;
+
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
 
   useEffect(() => {
-    if (activeBanners.length <= 1) return;
+    if (bannersToRender.length <= 1) return;
     const interval = setInterval(() => {
-      setActiveBannerIndex((prev) => (prev + 1) % activeBanners.length);
+      setActiveBannerIndex((prev) => (prev + 1) % bannersToRender.length);
     }, 4500);
     return () => clearInterval(interval);
-  }, [activeBanners.length]);
+  }, [bannersToRender.length]);
 
   // -------------------------------------------------------------
   // PRODUCTION GALLERY AUTO-SWAP STATE & TIMER
@@ -396,10 +400,6 @@ export default function HomePage() {
   const TrustIcon = getTrustIconComponent(currentTrust.icon_name);
   const currentTheme = BADGE_THEMES[currentTrust.color_theme] || BADGE_THEMES.sky;
 
-  const bannersToRender = (activeBanners && activeBanners.length > 0)
-    ? activeBanners
-    : INITIAL_CMS_HERO_BANNERS;
-
   return (
     <div className="w-full select-none font-ios">
       {/* Primary Semantic H1 for Search Engine Crawlers */}
@@ -417,8 +417,8 @@ export default function HomePage() {
             const isFirst = index === 0;
             return (
               <div
-                key={banner.id}
-                className={`absolute inset-0 w-full h-full ${index !== 0 ? 'transition-opacity duration-700 ease-in-out' : ''} ${
+                key={banner.id || index}
+                className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${
                   isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
