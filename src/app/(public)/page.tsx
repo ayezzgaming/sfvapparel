@@ -1060,78 +1060,86 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Distinct 2x2 Grid Cards with Generous Internal Padding (p-5 sm:p-6) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Card 1: Sublimasi */}
-          <div className="bg-slate-50/70 rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-sky-50 text-[#00BDFF] flex items-center justify-center shrink-0">
-                <Layers className="w-4.5 h-4.5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#00BDFF] block">Teknologi Fabrik</span>
-                <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug tracking-normal">
+        {/* Clean iOS Grouped List Container - Seamless on Mobile & Laptop Viewports */}
+        <div className="bg-slate-50/70 rounded-3xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
+          {/* Item 1: Sublimasi */}
+          <div className="p-4 sm:p-5 flex items-start gap-3.5 hover:bg-slate-100/60 transition-colors">
+            <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200/80 text-[#00BDFF] flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+              <Layers className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 tracking-normal leading-tight">
                   Cetak Jersi Sublimasi Penuh
                 </h3>
+                <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200/60 uppercase tracking-wider">
+                  Teknologi Fabrik
+                </span>
               </div>
+              <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                Pewarna meresap terus ke gentian Microfiber Eyelet &amp; Interlock. Corak tanpa had warna, kalis luntur 100% dan pengudaraan optimum untuk sukan.
+              </p>
             </div>
-            <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed font-normal">
-              Pewarna meresap terus ke gentian Microfiber Eyelet &amp; Interlock. Corak tanpa had warna, kalis luntur 100% dan pengudaraan optimum untuk sukan.
-            </p>
           </div>
 
-          {/* Card 2: DTF */}
-          <div className="bg-slate-50/70 rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#0052FF]/60 transition-colors space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#0052FF] flex items-center justify-center shrink-0">
-                <Zap className="w-4.5 h-4.5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0052FF] block">Cetakan Foto</span>
-                <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug tracking-normal">
+          {/* Item 2: DTF */}
+          <div className="p-4 sm:p-5 flex items-start gap-3.5 hover:bg-slate-100/60 transition-colors">
+            <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200/80 text-[#00BDFF] flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+              <Zap className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 tracking-normal leading-tight">
                   Cetakan Baju DTF Premium
                 </h3>
+                <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200/60 uppercase tracking-wider">
+                  Cetakan Foto
+                </span>
               </div>
+              <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                Cetakan kualiti foto berdefinisi tinggi pada 100% Combed Cotton. Hasil cetakan sangat elastik, kemas, dan tiada had minimum tempahan.
+              </p>
             </div>
-            <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed font-normal">
-              Cetakan kualiti foto berdefinisi tinggi pada 100% Combed Cotton. Hasil cetakan sangat elastik, kemas, dan tiada had minimum tempahan.
-            </p>
           </div>
 
-          {/* Card 3: Sulaman */}
-          <div className="bg-slate-50/70 rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-sky-50 text-[#00BDFF] flex items-center justify-center shrink-0">
-                <Award className="w-4.5 h-4.5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#00BDFF] block">Kemasan Korporat</span>
-                <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug tracking-normal">
+          {/* Item 3: Sulaman */}
+          <div className="p-4 sm:p-5 flex items-start gap-3.5 hover:bg-slate-100/60 transition-colors">
+            <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200/80 text-[#00BDFF] flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+              <Award className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 tracking-normal leading-tight">
                   Sulaman Logo Berkomputer
                 </h3>
+                <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200/60 uppercase tracking-wider">
+                  Kemasan Korporat
+                </span>
               </div>
+              <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                Jahitan berkepadatan tinggi untuk kemeja korporat &amp; polo shirt. Kemasan timbul yang kemas, eksklusif, dan tahan lasak basuhan.
+              </p>
             </div>
-            <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed font-normal">
-              Jahitan berkepadatan tinggi untuk kemeja korporat &amp; polo shirt. Kemasan timbul yang kemas, eksklusif, dan tahan lasak basuhan.
-            </p>
           </div>
 
-          {/* Card 4: Carta Saiz */}
-          <div className="bg-slate-50/70 rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#0052FF]/60 transition-colors space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#0052FF] flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-4.5 h-4.5" />
-              </div>
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0052FF] block">Piawaian Malaysia</span>
-                <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug tracking-normal">
+          {/* Item 4: Carta Saiz */}
+          <div className="p-4 sm:p-5 flex items-start gap-3.5 hover:bg-slate-100/60 transition-colors">
+            <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200/80 text-[#00BDFF] flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+              <ShieldCheck className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 tracking-normal leading-tight">
                   Carta Saiz Asian Regular Fit
                 </h3>
+                <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200/60 uppercase tracking-wider">
+                  Piawaian Malaysia
+                </span>
               </div>
+              <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                Ukuran standard Malaysia: Kanak-kanak (24–32), Dewasa Standard (XS–XL), Plus Size (2XL–7XL), dan Potongan Muslimah Labuh A-Cut.
+              </p>
             </div>
-            <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed font-normal">
-              Ukuran standard Malaysia: Kanak-kanak (24–32), Dewasa Standard (XS–XL), Plus Size (2XL–7XL), dan Potongan Muslimah Labuh A-Cut.
-            </p>
           </div>
         </div>
       </div>
