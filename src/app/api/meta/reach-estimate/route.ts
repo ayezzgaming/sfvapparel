@@ -31,76 +31,62 @@ export async function POST(req: NextRequest) {
       console.warn('Could not query platform connection:', err);
     }
 
-    // Mathematical baseline calibrated to Malaysian sportswear Meta Ads CPM & CPL averages
-    const budgetNum = Math.max(10, Number(dailyBudget) || 30);
-    const avgCPM = 8.5; // RM 8.50 per 1,000 impressions in MY Sports/Apparel
-    const estImpressions = Math.round((budgetNum / avgCPM) * 1000);
-    const estReachLower = Math.round(estImpressions * 0.72);
-    const estReachUpper = Math.round(estImpressions * 0.95);
-    const estLeadsLower = Math.max(1, Math.round(budgetNum / 8.5));
-    const estLeadsUpper = Math.max(2, Math.round(budgetNum / 4.8));
-
-    const fallbackEstimate = {
-      daily_reach_lower: estReachLower,
-      daily_reach_upper: estReachUpper,
-      daily_impressions_lower: estImpressions,
-      daily_impressions_upper: Math.round(estImpressions * 1.35),
-      daily_leads_lower: estLeadsLower,
-      daily_leads_upper: estLeadsUpper,
-      currency: 'MYR',
-      cpm_estimate: avgCPM
-    };
-
     if (!token || !adAccountId) {
-      return NextResponse.json({
-        success: true,
-        is_live: false,
-        estimate: fallbackEstimate
-      });
+      return NextResponse.json(
+        { success: false, error: 'Token Meta atau Ad Account ID tidak ditemui dalam konfigurasi sistem' },
+        { status: 401 }
+      );
     }
 
     const cleanActId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId.replace(/[^0-9]/g, '')}`;
 
-    // Query Meta Graph API delivery_estimate
-    try {
-      const url = new URL(`https://graph.facebook.com/v21.0/${cleanActId}/delivery_estimate`);
-      url.searchParams.append('access_token', token);
-      url.searchParams.append('optimization_goal', 'LEAD_GENERATION');
-      url.searchParams.append('targeting_spec', JSON.stringify(targetingSpec));
+    const url = new URL(`https://graph.facebook.com/v21.0/${cleanActId}/delivery_estimate`);
+    url.searchParams.append('access_token', token);
+    url.searchParams.append('optimization_goal', 'LEAD_GENERATION');
+    url.searchParams.append('targeting_spec', JSON.stringify(targetingSpec));
 
-      const res = await fetch(url.toString(), {
-        headers: { Accept: 'application/json' },
-        cache: 'no-store'
+    const res = await fetch(url.toString(), {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store'
+    });
+    const data = await res.json();
+
+    if (data.error || !res.ok) {
+      console.warn('Meta delivery estimate API error:', data.error);
+      return NextResponse.json(
+        { success: false, error: data.error?.message || 'Token Meta tidak valid atau API tidak dapat dihubungi' },
+        { status: res.status || 400 }
+      );
+    }
+
+    if (data?.data && Array.isArray(data.data) && data.data.length > 0) {
+      const est = data.data[0];
+      const budgetNum = Math.max(10, Number(dailyBudget) || 30);
+      return NextResponse.json({
+        success: true,
+        is_live: true,
+        estimate: {
+          daily_reach_lower: est.daily_reach_lower_bound || 0,
+          daily_reach_upper: est.daily_reach_upper_bound || 0,
+          daily_impressions_lower: est.daily_outcomes_curve ? Math.round((est.daily_reach_lower_bound || 1) * 1.3) : Math.round((budgetNum / 8.5) * 1000 * 0.72),
+          daily_impressions_upper: est.daily_outcomes_curve ? Math.round((est.daily_reach_upper_bound || 1) * 1.5) : Math.round((budgetNum / 8.5) * 1000 * 0.95),
+          daily_leads_lower: Math.max(1, Math.round(budgetNum / 8.5)),
+          daily_leads_upper: Math.max(2, Math.round(budgetNum / 4.8)),
+          currency: 'MYR',
+          cpm_estimate: 8.5
+        }
       });
-      const data = await res.json();
-
-      if (data?.data && Array.isArray(data.data) && data.data.length > 0) {
-        const est = data.data[0];
-        return NextResponse.json({
-          success: true,
-          is_live: true,
-          estimate: {
-            daily_reach_lower: est.daily_reach_lower_bound || estReachLower,
-            daily_reach_upper: est.daily_reach_upper_bound || estReachUpper,
-            daily_impressions_lower: est.daily_outcomes_curve ? Math.round(estReachLower * 1.3) : estImpressions,
-            daily_impressions_upper: est.daily_outcomes_curve ? Math.round(estReachUpper * 1.5) : Math.round(estImpressions * 1.35),
-            daily_leads_lower: estLeadsLower,
-            daily_leads_upper: estLeadsUpper,
-            currency: 'MYR',
-            cpm_estimate: avgCPM
-          }
-        });
-      }
-    } catch {
-      // Ignore Meta API delivery error and use fallback
     }
 
     return NextResponse.json({
-      success: true,
-      is_live: false,
-      estimate: fallbackEstimate
-    });
+      success: false,
+      error: 'Tiada data anggaran capaian dipulangkan oleh Meta untuk spesifikasi sasaran ini.'
+    }, { status: 404 });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('Reach estimate route error:', error);
+    return NextResponse.json(
+      { success: false, error: error.message || 'Token Meta tidak valid atau API tidak dapat dihubungi' },
+      { status: 500 }
+    );
   }
 }
