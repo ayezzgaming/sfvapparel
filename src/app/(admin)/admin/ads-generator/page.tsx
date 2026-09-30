@@ -2232,13 +2232,13 @@ MESEJ AUTOFILL WHATSAPP: ${currentCreative.whatsappMessage}`;
                 <table className="w-full text-sm text-left">
                   <thead className="bg-slate-50/80 dark:bg-zinc-800/80 text-slate-500 dark:text-zinc-400 text-xs font-medium border-b border-slate-100 dark:border-zinc-800">
                     <tr>
-                      <th className="py-3.5 px-4 font-medium">Nama Kempen & Platform</th>
-                      <th className="py-3.5 px-4 font-medium">Objektif</th>
-                      <th className="py-3.5 px-4 font-medium">Status</th>
-                      <th className="py-3.5 px-4 font-medium">Belanjawan</th>
-                      <th className="py-3.5 px-4 font-medium">Prestasi & Analitik</th>
-                      <th className="py-3.5 px-4 font-medium">Penilaian AI untuk Masa Depan</th>
-                      <th className="py-3.5 px-4 text-right font-medium">Tindakan</th>
+                      <th className="py-3.5 px-4 font-medium min-w-[200px]">Nama Kempen & Platform</th>
+                      <th className="py-3.5 px-4 font-medium min-w-[120px]">Objektif</th>
+                      <th className="py-3.5 px-4 font-medium min-w-[100px]">Status</th>
+                      <th className="py-3.5 px-4 font-medium min-w-[120px]">Belanjawan</th>
+                      <th className="py-3.5 px-4 font-medium min-w-[160px]">Prestasi & Analitik</th>
+                      <th className="py-3.5 px-4 font-medium min-w-[240px]">Penilaian AI untuk Masa Depan</th>
+                      <th className="py-3.5 px-4 text-right font-medium min-w-[100px]">Tindakan</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-zinc-800 text-sm">

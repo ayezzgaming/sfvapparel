@@ -934,7 +934,7 @@ function FactoriesContent() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSaveFactory} className="p-6 space-y-4 text-xs">
+            <form onSubmit={handleSaveFactory} className="p-6 space-y-4 text-xs max-h-[80vh] overflow-y-auto">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
@@ -1015,7 +1015,7 @@ function FactoriesContent() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <div className="sticky bottom-0 bg-white dark:bg-slate-950 border-t p-4 mt-4 z-10 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsFactoryModalOpen(false)}

@@ -2284,7 +2284,7 @@ export default function AdminCmsPage() {
                 <X className="w-5 h-5 text-slate-500 hover:text-slate-800 transition-colors" aria-label="Tutup" />
               </button>
             </div>
-            <form onSubmit={handleSaveService} className="p-6 space-y-4">
+            <form onSubmit={handleSaveService} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">Kategori</label>
@@ -2370,7 +2370,7 @@ export default function AdminCmsPage() {
                 </label>
               </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-4 border-t border-slate-100 dark:border-zinc-800">
+              <div className="sticky bottom-0 bg-white dark:bg-slate-950 border-t p-4 mt-4 z-10 flex items-center justify-end space-x-2">
                 <button
                   type="button"
                   onClick={() => setIsServiceModalOpen(false)}
