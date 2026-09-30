@@ -398,14 +398,14 @@ export default function HomePage() {
       <h1 className="sr-only">Kilang Cetak Jersi Sublimasi &amp; Baju DTF | SFV APPAREL Malaysia</h1>
 
       {/* =========================================================================
-          SECTION 1: HERO & PILIHAN SERVIS (iOS Canvas Tint - Kad Putih Timbul & Jelas)
+          SECTION 1: HERO & PILIHAN SERVIS (iOS Canvas Tint - #F2F2F7)
          ========================================================================= */}
-      <div className="w-full bg-[#F2F2F7] pt-3 pb-8 px-4 space-y-6">
+      <div className="w-full bg-[#F2F2F7] pt-3 pb-7 px-4 space-y-5">
         {/* 1. DYNAMIC HERO SECTION WITH MULTI-SLIDE BANNER (Liquid Frosted Glass Design) */}
         {isLoadingCms && activeBanners.length === 0 ? (
-          <div className="relative w-full h-[255px] sm:h-[280px] rounded-[28px] sm:rounded-[32px] overflow-hidden bg-slate-200 animate-pulse" />
+          <div className="relative w-full h-[255px] sm:h-[280px] rounded-3xl overflow-hidden bg-slate-200 animate-pulse" />
         ) : activeBanners.length > 0 ? (
-          <div className="relative w-full h-[255px] sm:h-[280px] rounded-[28px] sm:rounded-[32px] overflow-hidden shadow-md shadow-slate-200/60 border border-white/80 bg-slate-100 group">
+          <div className="relative w-full h-[255px] sm:h-[280px] rounded-3xl overflow-hidden shadow-md shadow-slate-200/60 border border-white/80 bg-slate-100 group">
             {/* Stacked All Banner Layers for Silky Smooth Cross-Fade */}
             {activeBanners.map((banner, index) => {
               const isActive = index === activeBannerIndex;
@@ -431,7 +431,7 @@ export default function HomePage() {
                   <div className="absolute top-3.5 left-3.5 z-20 flex items-center gap-2">
                     <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-white/80 text-slate-900 shadow-xs">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-400/40 shrink-0" />
-                      <span className="text-[11px] font-bold tracking-tight text-slate-900">
+                      <span className="text-[11px] font-bold tracking-normal text-slate-900">
                         {banner.status_pill}
                       </span>
                     </div>
@@ -451,7 +451,7 @@ export default function HomePage() {
                     {/* Action Capsule Button */}
                     <Link
                       href={banner.button_link || '/catalog'}
-                      className="px-3.5 py-1.5 sm:px-4 sm:py-2 min-h-[36px] rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 active:scale-95 text-white text-xs font-bold tracking-tight shadow-sm transition-all flex items-center space-x-1 shrink-0"
+                      className="px-3.5 py-1.5 sm:px-4 sm:py-2 min-h-[36px] rounded-full bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 active:scale-95 text-white text-xs font-bold tracking-normal shadow-sm transition-all flex items-center space-x-1 shrink-0"
                     >
                       <span>{banner.button_text}</span>
                       <ChevronRight className="w-3.5 h-3.5 text-white/90" />
@@ -505,14 +505,14 @@ export default function HomePage() {
                 {/* Text content with smooth crossfade typography */}
                 <div key={`text-${currentTrust.id}-${activeTrustIndex}`} className="min-w-0 flex-1 animate-trust-swap">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[12px] sm:text-[13px] font-bold text-slate-900 tracking-tight leading-tight">
+                    <span className="text-[12.5px] sm:text-[13px] font-bold text-slate-900 tracking-normal leading-tight">
                       {currentTrust.title}
                     </span>
-                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${currentTheme.pillStyle} tracking-wide`}>
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${currentTheme.pillStyle} tracking-wider`}>
                       {currentTrust.pill}
                     </span>
                   </div>
-                  <p className="text-[10px] sm:text-[10.5px] text-slate-600 font-medium mt-0.5 truncate">
+                  <p className="text-[10px] sm:text-[10.5px] text-slate-600 font-medium mt-0.5 truncate tracking-normal">
                     {currentTrust.desc}
                   </p>
                 </div>
@@ -527,13 +527,13 @@ export default function HomePage() {
         ) : null}
 
         {/* 2. PILIHAN SERVIS HEADER & CARDS (DYNAMIC FROM CMS STORE) */}
-        <div className="space-y-3.5">
+        <div className="space-y-3">
           <div className="flex justify-between items-end mb-1">
             <div>
               <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                 Pilihan Servis
               </h2>
-              <p className="text-xs text-slate-600 font-normal tracking-wide mt-0.5">
+              <p className="text-xs text-slate-600 font-normal tracking-normal mt-0.5">
                 Cetakan &amp; jahitan pakaian kustom terus dari kilang
               </p>
             </div>
@@ -554,7 +554,7 @@ export default function HomePage() {
               [1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="rounded-[24px] overflow-hidden bg-white w-[260px] sm:w-[275px] flex-shrink-0 border border-slate-200/80 shadow-xs p-5 space-y-4 animate-pulse"
+                  className="rounded-3xl overflow-hidden bg-white w-[260px] sm:w-[275px] flex-shrink-0 border border-slate-200/80 shadow-xs p-5 space-y-4 animate-pulse"
                 >
                   <div className="w-full h-44 bg-slate-200 rounded-2xl" />
                   <div className="h-4 bg-slate-200 rounded w-3/4" />
@@ -570,7 +570,7 @@ export default function HomePage() {
                 <div
                   key={item.id}
                   onClick={() => handleOpenProduct(item)}
-                  className="group rounded-[24px] overflow-hidden bg-white w-[260px] sm:w-[275px] flex-shrink-0 snap-start border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer select-none active:scale-[0.98] flex flex-col justify-between"
+                  className="group rounded-3xl overflow-hidden bg-white w-[260px] sm:w-[275px] flex-shrink-0 snap-start border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer select-none active:scale-[0.98] flex flex-col justify-between"
                 >
                   {/* Bagian Gambar dengan Badge Khas */}
                   <div className="relative w-full h-44 sm:h-48 bg-slate-100 overflow-hidden">
@@ -585,7 +585,7 @@ export default function HomePage() {
 
                     {/* Floating Pill on Top-Left */}
                     <div className="absolute top-3 left-3 z-10">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-md text-[10px] font-bold text-slate-800 shadow-xs border border-white/80">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-md text-[10px] font-bold text-slate-800 shadow-xs border border-white/80 tracking-wide">
                         <span>{item.highlight || 'Kualiti Kilang'}</span>
                       </span>
                     </div>
@@ -594,7 +594,7 @@ export default function HomePage() {
                   {/* Bagian Konten dengan Padding Lega (20px) */}
                   <div className="p-5 flex flex-col justify-between flex-1 space-y-4">
                     <div>
-                      <h3 className="font-bold text-[15px] sm:text-base text-slate-900 leading-snug group-hover:text-[#00BDFF] transition-colors line-clamp-1">
+                      <h3 className="font-bold text-[15px] sm:text-base text-slate-900 leading-snug group-hover:text-[#00BDFF] transition-colors line-clamp-1 tracking-normal">
                         {item.title}
                       </h3>
                       <p className="text-slate-600 text-xs mt-1.5 line-clamp-2 leading-relaxed font-normal">
@@ -605,7 +605,7 @@ export default function HomePage() {
                     {/* Susun Atur Harga & Butang Penuh (No Horizontal Jamming) */}
                     <div className="pt-3 border-t border-slate-100 space-y-2.5">
                       <div className="flex items-baseline justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#00BDFF]">
+                        <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#00BDFF]">
                           {item.price_prefix || 'Bermula'}
                         </span>
                         <div className="flex items-baseline gap-1">
@@ -627,7 +627,7 @@ export default function HomePage() {
                           handleOpenProduct(item);
                         }}
                         aria-label={`Pilih ${item.title}`}
-                        className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white text-xs font-bold shadow-xs active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                        className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#0052FF] to-[#00BDFF] hover:opacity-95 text-white text-xs font-bold tracking-normal shadow-xs active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                       >
                         <span>Pilih Servis</span>
                         <ChevronRight className="w-3.5 h-3.5 text-white/90" />
@@ -642,74 +642,72 @@ export default function HomePage() {
       </div>
 
       {/* =========================================================================
-          SECTION 2: CARA TEMPAHAN (Ultra Clean Minimalist Process List)
+          SECTION 2: CARA TEMPAHAN & SLOGAN KILANG (Clean White Canvas)
          ========================================================================= */}
-      <div className="w-full bg-[#F2F2F7] pt-8 pb-10 px-4 space-y-4 border-t border-slate-200/80">
-        <div className="flex justify-between items-end">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Cara Tempahan</h2>
-            <p className="text-xs text-slate-600 mt-1 leading-relaxed">4 langkah mudah untuk memulakan pesanan anda</p>
+      <div className="w-full bg-white py-7 px-4 space-y-6 border-t border-slate-200/70">
+        <div className="space-y-4">
+          <div className="flex justify-between items-end">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Cara Tempahan</h2>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed font-normal">4 langkah mudah untuk memulakan pesanan anda</p>
+            </div>
+            <span className="text-[11px] font-semibold text-slate-600 bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-full shadow-2xs tracking-normal">
+              Panduan Pesanan
+            </span>
           </div>
-          <span className="text-[11px] font-semibold text-slate-600 bg-white/90 border border-slate-200/80 px-2.5 py-1 rounded-full shadow-2xs">
-            Panduan Pesanan
-          </span>
-        </div>
 
-        {/* Clean Minimalist Stepped Flow Container (Apple/Stripe Style) */}
-        <div className="bg-white rounded-[24px] border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
-          {ORDER_STEPS.map((item, idx) => {
-            const stepIcons = {
-              palette: Palette,
-              users: Users,
-              card: CreditCard,
-              truck: Truck,
-            };
-            const IconComponent = stepIcons[item.iconName as keyof typeof stepIcons] || Palette;
+          {/* Clean Minimalist Stepped Flow Container (Apple/Stripe Style) */}
+          <div className="bg-slate-50/70 rounded-3xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
+            {ORDER_STEPS.map((item, idx) => {
+              const stepIcons = {
+                palette: Palette,
+                users: Users,
+                card: CreditCard,
+                truck: Truck,
+              };
+              const IconComponent = stepIcons[item.iconName as keyof typeof stepIcons] || Palette;
 
-            return (
-              <div
-                key={item.step}
-                onClick={() => handleOpenStep(item)}
-                className="group p-4 sm:p-5 flex items-center justify-between gap-4 hover:bg-slate-50/70 transition-all duration-150 cursor-pointer select-none active:bg-slate-100/60"
-              >
-                <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                  {/* Clean Icon Container */}
-                  <div className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-200/60 group-hover:border-[#00BDFF]/40 group-hover:bg-blue-50 text-slate-600 group-hover:text-[#00BDFF] flex items-center justify-center shrink-0 transition-all">
-                    <IconComponent className="w-4 h-4 transition-transform group-hover:scale-110" />
+              return (
+                <div
+                  key={item.step}
+                  onClick={() => handleOpenStep(item)}
+                  className="group p-4 sm:p-5 flex items-center justify-between gap-4 hover:bg-slate-100/70 transition-all duration-150 cursor-pointer select-none active:bg-slate-100"
+                >
+                  <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                    {/* Clean Icon Container */}
+                    <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200/80 group-hover:border-[#00BDFF]/40 group-hover:bg-blue-50 text-slate-600 group-hover:text-[#00BDFF] flex items-center justify-center shrink-0 transition-all shadow-2xs">
+                      <IconComponent className="w-4 h-4 transition-transform group-hover:scale-110" />
+                    </div>
+
+                    {/* Clean Step Text Details */}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 group-hover:text-[#00BDFF] transition-colors truncate tracking-normal">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs sm:text-[12.5px] text-slate-500 line-clamp-1 leading-relaxed font-normal mt-0.5">
+                        {item.desc}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Clean Step Text Details */}
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 group-hover:text-[#00BDFF] transition-colors truncate">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs sm:text-[12.5px] text-slate-500 line-clamp-1 leading-relaxed font-normal mt-0.5">
-                      {item.desc}
-                    </p>
+                  {/* Clean Subtle Chevron Indicator */}
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-slate-300 group-hover:text-[#00BDFF] group-hover:translate-x-0.5 transition-all">
+                    <ChevronRight className="w-4 h-4" />
                   </div>
                 </div>
-
-                {/* Clean Subtle Chevron Indicator */}
-                <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-slate-300 group-hover:text-[#00BDFF] group-hover:translate-x-0.5 transition-all">
-                  <ChevronRight className="w-4 h-4" />
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* =========================================================================
-          DYNAMIC SLOGAN / QUOTE CARD (Apple-Grade Clean Frosted Glass Hero)
-         ========================================================================= */}
-      <div className="w-full bg-white pt-6 pb-2 px-4">
-        <div className="relative overflow-hidden rounded-[26px] bg-gradient-to-br from-white via-sky-50/40 to-blue-50/60 p-5 sm:p-6 text-slate-900 shadow-[0_4px_24px_rgba(0,189,255,0.06)] border border-blue-100/90">
+        {/* DYNAMIC SLOGAN / QUOTE CARD (Apple-Grade Clean Frosted Glass Hero) */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-sky-50/40 to-blue-50/60 p-5 sm:p-6 text-slate-900 shadow-[0_4px_24px_rgba(0,189,255,0.06)] border border-blue-100/90">
           <div className="absolute -top-12 -right-12 w-36 h-36 bg-[#00BDFF]/10 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-indigo-400/10 rounded-full blur-2xl pointer-events-none" />
           <Quote className="absolute top-4 right-4 w-12 h-12 text-[#00BDFF]/10 rotate-180 pointer-events-none" />
 
           <div className="relative z-10 space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00BDFF]/10 text-[#00BDFF] text-[10.5px] font-bold tracking-wide">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00BDFF]/10 text-[#00BDFF] text-[10.5px] font-bold tracking-wider">
               <span>Kualiti &amp; Servis Kilang</span>
             </div>
 
@@ -721,7 +719,7 @@ export default function HomePage() {
             </h3>
 
             <div className="space-y-1.5 pt-1.5 border-t border-slate-200/60">
-              <p className="text-xs sm:text-[13px] font-bold text-slate-800 tracking-tight leading-relaxed">
+              <p className="text-xs sm:text-[13px] font-bold text-slate-800 tracking-normal leading-relaxed">
                 {sloganQuote.question_text}
               </p>
               <p className="text-[12px] text-slate-600 leading-relaxed font-normal">
@@ -734,7 +732,7 @@ export default function HomePage() {
                 href={formatWhatsAppLink(companySettings?.whatsapp_number, sloganQuote.whatsapp_message)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold text-xs shadow-md shadow-sky-400/20 active:scale-95 transition-all"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white font-bold text-xs shadow-md shadow-sky-400/20 active:scale-95 transition-all tracking-normal"
               >
                 <FaWhatsapp className="w-4 h-4 text-white" />
                 <span>{sloganQuote.button_text}</span>
@@ -745,14 +743,14 @@ export default function HomePage() {
       </div>
 
       {/* =========================================================================
-          SECTION 3: PROSES PRODUKSI (DYNAMIC VIDEO REEL - 100% COVER WITH GRADIENT OVERLAY)
+          SECTION 3: PROSES PRODUKSI (iOS Canvas Tint - #F2F2F7)
          ========================================================================= */}
       {(isLoadingCms || activeVideos.length > 0) && (
-        <div className="w-full bg-white pt-6 pb-12 px-4 border-t border-gray-100">
-          <div className="mb-5 flex justify-between items-end">
+        <div className="w-full bg-[#F2F2F7] py-7 px-4 border-t border-slate-200/70">
+          <div className="mb-4 flex justify-between items-end">
             <div>
               <h2 className="text-xl font-bold text-slate-900 tracking-tight">Proses Produksi</h2>
-              <p className="text-xs text-slate-600 mt-1 leading-relaxed">Lihat kualiti cetakan &amp; kemasan jersi anda dihasilkan</p>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed font-normal">Lihat kualiti cetakan &amp; kemasan jersi anda dihasilkan</p>
             </div>
           </div>
 
@@ -761,7 +759,7 @@ export default function HomePage() {
               [1, 2].map((i) => (
                 <div
                   key={i}
-                  className="shrink-0 w-[72%] sm:w-[240px] max-w-[250px] aspect-[9/15] rounded-[26px] bg-slate-200 animate-pulse flex flex-col justify-end p-4 space-y-2"
+                  className="shrink-0 w-[72%] sm:w-[240px] max-w-[250px] aspect-[9/15] rounded-3xl bg-slate-200 animate-pulse flex flex-col justify-end p-4 space-y-2"
                 >
                   <div className="h-3 bg-slate-300 rounded w-1/3" />
                   <div className="h-4 bg-slate-300 rounded w-3/4" />
@@ -771,7 +769,7 @@ export default function HomePage() {
               activeVideos.map((video) => (
                 <div 
                   key={video.id}
-                  className="relative shrink-0 w-[72%] sm:w-[240px] max-w-[250px] aspect-[9/15] rounded-[26px] overflow-hidden bg-slate-900 snap-center shadow-md shadow-slate-900/10 border border-slate-200/80 transition-transform duration-300 active:scale-[0.98] select-none group"
+                  className="relative shrink-0 w-[72%] sm:w-[240px] max-w-[250px] aspect-[9/15] rounded-3xl overflow-hidden bg-slate-900 snap-center shadow-md shadow-slate-900/10 border border-slate-200/80 transition-transform duration-300 active:scale-[0.98] select-none group"
                 >
                   {activeVideo === video.id ? (
                     <iframe 
@@ -837,12 +835,12 @@ export default function HomePage() {
       )}
 
       {/* =========================================================================
-          SECTION 3.5: HASIL PRODUKSI KILANG (DYNAMIC SHOWCASE CAROUSEL)
+          SECTION 3.5: HASIL PRODUKSI KILANG (Clean White Canvas)
          ========================================================================= */}
-      <div className="w-full bg-[#F8FAFC] pt-10 pb-12 px-4 border-t border-slate-200/70">
-        <div className="mb-5">
+      <div className="w-full bg-white py-7 px-4 border-t border-slate-200/70">
+        <div className="mb-4">
           <h2 className="text-xl font-bold text-slate-900 tracking-tight">Hasil Produksi Kilang</h2>
-          <p className="text-xs text-slate-600 mt-1 leading-relaxed">Koleksi gambar sebenar tempahan jersi &amp; pakaian siap</p>
+          <p className="text-xs text-slate-600 mt-1 leading-relaxed font-normal">Koleksi gambar sebenar tempahan jersi &amp; pakaian siap</p>
         </div>
 
         <div 
@@ -858,9 +856,9 @@ export default function HomePage() {
             [1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="shrink-0 w-[170px] sm:w-[200px] bg-white rounded-2xl overflow-hidden border border-slate-200/80 p-3 space-y-2.5 animate-pulse"
+                className="shrink-0 w-[170px] sm:w-[200px] bg-white rounded-3xl overflow-hidden border border-slate-200/80 p-3 space-y-2.5 animate-pulse"
               >
-                <div className="w-full aspect-[4/5] bg-slate-200 rounded-xl" />
+                <div className="w-full aspect-[4/5] bg-slate-200 rounded-2xl" />
                 <div className="h-3.5 bg-slate-200 rounded w-3/4" />
                 <div className="h-2.5 bg-slate-100 rounded w-1/2" />
               </div>
@@ -875,7 +873,7 @@ export default function HomePage() {
                     scrollToGallery(idx);
                     handleOpenGalleryItem(item);
                   }}
-                  className={`shrink-0 w-[170px] sm:w-[200px] bg-white rounded-[20px] overflow-hidden snap-start border cursor-pointer select-none flex flex-col justify-between group transition-all duration-200 active:scale-[0.97] ${
+                  className={`shrink-0 w-[170px] sm:w-[200px] bg-white rounded-3xl overflow-hidden snap-start border cursor-pointer select-none flex flex-col justify-between group transition-all duration-200 active:scale-[0.97] ${
                     isActive 
                       ? 'border-slate-300 shadow-sm' 
                       : 'border-slate-200/80 shadow-2xs hover:border-slate-300'
@@ -892,7 +890,7 @@ export default function HomePage() {
                     />
                     {item.tag && (
                       <div className="absolute bottom-2 left-2">
-                        <span className="bg-white/90 backdrop-blur-md text-slate-800 font-bold text-[9.5px] px-2.5 py-0.5 rounded-full border border-white/80 shadow-xs">
+                        <span className="bg-white/90 backdrop-blur-md text-slate-800 font-bold text-[9.5px] px-2.5 py-0.5 rounded-full border border-white/80 shadow-xs tracking-wide">
                           {item.tag}
                         </span>
                       </div>
@@ -901,7 +899,7 @@ export default function HomePage() {
 
                   {/* Clean Compact Details */}
                   <div className="p-3.5 space-y-0.5 bg-white">
-                    <h3 className="font-bold text-[13px] text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors truncate">
+                    <h3 className="font-bold text-[13px] text-slate-900 group-hover:text-[#00BDFF] leading-snug transition-colors truncate tracking-normal">
                       {item.title}
                     </h3>
                     <p className="text-[11.5px] text-slate-600 truncate font-normal leading-relaxed">
@@ -945,12 +943,12 @@ export default function HomePage() {
       </div>
 
       {/* =========================================================================
-          SECTION 4: TESTIMONI / REVIEWS (DYNAMIC FROM CMS STORE)
+          SECTION 4: TESTIMONI / REVIEWS (iOS Canvas Tint - #F2F2F7)
          ========================================================================= */}
-      <div className="w-full bg-[#F2F2F7] pt-10 pb-14 px-4 border-t border-gray-200/60">
-        <div className="mb-5">
+      <div className="w-full bg-[#F2F2F7] py-7 px-4 border-t border-slate-200/70">
+        <div className="mb-4">
           <h2 className="text-xl font-bold text-slate-900 tracking-tight">Apa Kata Mereka</h2>
-          <p className="text-xs text-slate-600 mt-1 leading-relaxed">Ribuan pelanggan telah mempercayai kualiti jersi kami</p>
+          <p className="text-xs text-slate-600 mt-1 leading-relaxed font-normal">Ribuan pelanggan telah mempercayai kualiti jersi kami</p>
         </div>
 
         <div 
@@ -968,10 +966,10 @@ export default function HomePage() {
               <div 
                 key={t.id}
                 onClick={() => scrollToTestimonial(idx)}
-                className={`shrink-0 w-[85%] max-w-[320px] bg-white rounded-[24px] p-5 sm:p-6 snap-center border flex flex-col justify-between cursor-pointer ${
+                className={`shrink-0 w-[85%] max-w-[320px] bg-white rounded-3xl p-5 sm:p-6 snap-center border flex flex-col justify-between cursor-pointer ${
                   isActive 
                     ? 'border-blue-200 shadow-md shadow-blue-900/5 ring-1 ring-blue-500/20' 
-                    : 'border-gray-100 shadow-sm opacity-90'
+                    : 'border-slate-200/80 shadow-sm opacity-95'
                 }`}
               >
                 <div className="flex justify-between items-start mb-3.5">
@@ -1037,27 +1035,27 @@ export default function HomePage() {
       </div>
 
       {/* =========================================================================
-          SECTION 4.2: PANDUAN TEKNOLOGI CETAKAN & SPESIFIKASI KILANG (Distinct 2x2 Feature Grid with 20px-24px internal padding)
+          SECTION 4.2: PANDUAN TEKNOLOGI CETAKAN & SPESIFIKASI KILANG (Clean White Canvas)
          ========================================================================= */}
-      <div className="w-full bg-[#F8FAFC] py-8 px-4 space-y-5 border-t border-slate-200/80">
+      <div className="w-full bg-white py-7 px-4 space-y-4 border-t border-slate-200/70">
         <div className="flex justify-between items-end">
           <div>
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Panduan Teknologi &amp; Spesifikasi</h2>
-            <p className="text-xs text-slate-600 mt-1 leading-relaxed">Spesifikasi cetakan jersi &amp; piawaian saiz kilang SFV APPAREL</p>
+            <p className="text-xs text-slate-600 mt-1 leading-relaxed font-normal">Spesifikasi cetakan jersi &amp; piawaian saiz kilang SFV APPAREL</p>
           </div>
         </div>
 
         {/* Distinct 2x2 Grid Cards with Generous Internal Padding (p-5 sm:p-6) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Card 1: Sublimasi */}
-          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-3.5">
+          <div className="bg-slate-50/70 rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#00BDFF] flex items-center justify-center shrink-0">
                 <Layers className="w-4.5 h-4.5" />
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#00BDFF] block">Teknologi Fabrik</span>
-                <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug">
+                <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug tracking-normal">
                   Cetak Jersi Sublimasi Penuh
                 </h3>
               </div>
@@ -1068,14 +1066,14 @@ export default function HomePage() {
           </div>
 
           {/* Card 2: DTF */}
-          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-3.5">
+          <div className="bg-slate-50/70 rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
                 <Zap className="w-4.5 h-4.5" />
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-sky-600 block">Cetakan Foto</span>
-                <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug">
+                <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug tracking-normal">
                   Cetakan Baju DTF Premium
                 </h3>
               </div>
@@ -1086,14 +1084,14 @@ export default function HomePage() {
           </div>
 
           {/* Card 3: Sulaman */}
-          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-3.5">
+          <div className="bg-slate-50/70 rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
                 <Award className="w-4.5 h-4.5" />
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 block">Kemasan Korporat</span>
-                <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug">
+                <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug tracking-normal">
                   Sulaman Logo Berkomputer
                 </h3>
               </div>
@@ -1104,14 +1102,14 @@ export default function HomePage() {
           </div>
 
           {/* Card 4: Carta Saiz */}
-          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-3.5">
+          <div className="bg-slate-50/70 rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:border-[#00BDFF]/60 transition-colors space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-4.5 h-4.5" />
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 block">Piawaian Malaysia</span>
-                <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug">
+                <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug tracking-normal">
                   Carta Saiz Asian Regular Fit
                 </h3>
               </div>
@@ -1124,65 +1122,65 @@ export default function HomePage() {
       </div>
 
       {/* =========================================================================
-          SECTION 4.5: SOALAN KERAP DITANYA (FAQ - Clean Minimalist Accordion)
+          SECTION 4.5: SOALAN KERAP DITANYA (iOS Canvas Tint - #F2F2F7)
          ========================================================================= */}
-      <div className="w-full bg-[#F2F6FE] py-8 px-4 space-y-5 border-t border-blue-100/60">
+      <div className="w-full bg-[#F2F2F7] py-7 px-4 space-y-4 border-t border-slate-200/70">
         <div className="flex justify-between items-end">
           <div>
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Soalan Kerap Ditanya</h2>
-            <p className="text-xs text-slate-600 mt-1 leading-relaxed">Jawapan ringkas mengenai tempahan jersi &amp; cetakan terus dari kilang</p>
+            <p className="text-xs text-slate-600 mt-1 leading-relaxed font-normal">Jawapan ringkas mengenai tempahan jersi &amp; cetakan terus dari kilang</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl overflow-hidden shadow-xs border border-blue-100/70 divide-y divide-gray-100">
+        <div className="bg-white rounded-3xl overflow-hidden shadow-xs border border-slate-200/80 divide-y divide-slate-100">
           {/* FAQ 1 */}
           <details className="group">
-            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-blue-50/30 active:bg-blue-50/60 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
-              <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors">
+            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+              <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors tracking-normal">
                 Berapakah minimum tempahan (MOQ) di SFV APPAREL?
               </span>
               <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-4 pb-4 pt-1.5 bg-slate-50/60 border-t border-gray-100/80 text-[12.5px] text-slate-700 leading-relaxed">
+            <div className="px-4 pb-4 pt-1.5 bg-slate-50/60 border-t border-slate-100 text-[13px] text-slate-700 leading-relaxed font-normal">
               Minimum tempahan adalah serendah <strong className="text-slate-900 font-semibold">5 helai (MOQ = 5 pcs)</strong> untuk jersi sublimasi kustom dan cetakan DTF. Kami juga menerima tempahan pukal kelab, sekolah, dan korporat sehingga ribuan helai dengan harga terus dari kilang.
             </div>
           </details>
 
           {/* FAQ 2 */}
           <details className="group">
-            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-blue-50/30 active:bg-blue-50/60 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
-              <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors">
+            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+              <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors tracking-normal">
                 Berapa hari tempoh siap produksi pesanan?
               </span>
               <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-4 pb-4 pt-1.5 bg-slate-50/60 border-t border-gray-100/80 text-[12.5px] text-slate-700 leading-relaxed">
+            <div className="px-4 pb-4 pt-1.5 bg-slate-50/60 border-t border-slate-100 text-[13px] text-slate-700 leading-relaxed font-normal">
               Tempoh standard siap produksi adalah <strong className="text-slate-900 font-semibold">5 hingga 7 hari bekerja</strong> selepas pengesahan rekaan akhir (Design Proof) dan deposit. Servis ekspres juga disediakan mengikut jadual kapasiti kilang.
             </div>
           </details>
 
           {/* FAQ 3 */}
           <details className="group">
-            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-blue-50/30 active:bg-blue-50/60 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
-              <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors">
+            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+              <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors tracking-normal">
                 Apakah format fail artwork yang diterima?
               </span>
               <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-4 pb-4 pt-1.5 bg-slate-50/60 border-t border-gray-100/80 text-[12.5px] text-slate-700 leading-relaxed">
+            <div className="px-4 pb-4 pt-1.5 bg-slate-50/60 border-t border-slate-100 text-[13px] text-slate-700 leading-relaxed font-normal">
               Kami menyokong format vektor seperti AI (Adobe Illustrator), PDF, EPS, SVG, serta gambar resolusi tinggi PNG/JPG (300 DPI). Pereka kami juga sedia membantu melakar artwork mockup anda secara percuma.
             </div>
           </details>
 
           {/* FAQ 4 */}
           <details className="group">
-            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-blue-50/30 active:bg-blue-50/60 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
-              <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors">
+            <summary className="flex items-center justify-between px-4 py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+              <span className="text-sm font-semibold text-slate-900 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors tracking-normal">
                 Bagaimana pilihan penghantaran dan liputan kurier?
               </span>
               <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-4 pb-4 pt-1.5 bg-slate-50/60 border-t border-gray-100/80 text-[12.5px] text-slate-700 leading-relaxed">
+            <div className="px-4 pb-4 pt-1.5 bg-slate-50/60 border-t border-slate-100 text-[13px] text-slate-700 leading-relaxed font-normal">
               Penghantaran fleksibel melalui Lalamove (Klang Valley), J&amp;T Express, Pos Laju serta Bas Express ke seluruh Semenanjung Malaysia, Sabah, Sarawak dan Singapura bersama nombor penjejakan automatik.
             </div>
           </details>
@@ -1190,9 +1188,9 @@ export default function HomePage() {
       </div>
 
       {/* =========================================================================
-          SECTION 5: FOOTER (DYNAMIC COMPANY SETTINGS FROM CMS STORE)
+          SECTION 5: FOOTER (Clean White Canvas)
          ========================================================================= */}
-      <footer className="w-full bg-[#F4F4F7] pt-10 pb-28 sm:pb-36 px-5 border-t border-slate-200/80 select-none space-y-8">
+      <footer className="w-full bg-white pt-8 pb-28 sm:pb-32 px-5 border-t border-slate-200/70 select-none space-y-6">
         <div className="flex flex-col space-y-4">
           <div className="flex justify-between items-start gap-4">
             {/* Left Brand Details - Perfectly aligned left flush with logo */}
@@ -1490,9 +1488,6 @@ export default function HomePage() {
             </a>
           </div>
         </div>
-
-        {/* Dedicated 100px+ Buffer to guarantee zero overlap from bottom nav and floating WhatsApp button */}
-        <div className="h-20 sm:h-24 w-full shrink-0" aria-hidden="true" />
       </footer>
 
 
