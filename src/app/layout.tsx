@@ -82,9 +82,9 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: '/icon-sfvapparel-01.svg', type: 'image/svg+xml' },
+      { url: '/logo.svg', type: 'image/svg+xml' },
     ],
-    shortcut: '/icon-sfvapparel-01.svg',
+    shortcut: '/logo.svg',
     apple: [
       { url: '/icon-sfvapparel-01.svg', sizes: '180x180', type: 'image/svg+xml' },
     ],
