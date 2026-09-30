@@ -1447,20 +1447,21 @@ export default function CustomizePage() {
           </div>
         </div>
 
-        {/* Cleaner Bottom Bar */}
-        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 p-3 px-4 shadow-sm pb-safe">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-[10px] text-slate-400">
+
+        {/* Cleaner Bottom Bar (Guaranteed No-Overflow on Narrow Mobile Screens) */}
+        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/80 p-3 px-4 shadow-sm pb-safe select-none">
+          <div className="flex items-center justify-between gap-2.5">
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] text-slate-400 truncate">
                 {totalQuantity === 0
                   ? '0 helai dipilih'
                   : `${totalQuantity} helai ${isAddressFilled && shippingFee > 0 ? `+ pos RM${shippingFee.toFixed(2)}` : ''}`}
               </div>
-              <div className="text-sm font-bold text-slate-900 font-mono">
+              <div className="text-sm font-bold text-slate-900 font-mono tabular-nums tracking-tight truncate">
                 {totalQuantity > 0 ? formatCurrency(grandTotalAmount) : 'RM 0.00'}
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <a
                 href={buildWhatsAppInquiryUrl({
                   phone: companySettings?.whatsapp_number,
@@ -1471,6 +1472,7 @@ export default function CustomizePage() {
                 })}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Hubungi WhatsApp"
                 className="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-200 text-[#25D366] hover:bg-emerald-100 flex items-center justify-center active:scale-90 transition-transform"
               >
                 <FaWhatsapp className="w-4 h-4" />
@@ -1478,7 +1480,7 @@ export default function CustomizePage() {
               <button
                 type="submit"
                 disabled={totalQuantity === 0}
-                className={`h-9 px-5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md transition-all active:scale-95 ${
+                className={`h-9 px-4 sm:px-5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md transition-all active:scale-95 ${
                   totalQuantity === 0
                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
                     : 'bg-[#00BDFF] hover:bg-sky-500 text-white shadow-sky-400/20 cursor-pointer'

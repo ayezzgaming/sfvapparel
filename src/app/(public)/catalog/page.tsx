@@ -67,16 +67,18 @@ function CatalogContent() {
 
   return (
     <div className="w-full min-h-full pt-3 pb-16 space-y-4 select-none font-ios bg-[#F2F2F7]">
-      {/* 1. iOS Search Bar (Spacious & Clean) */}
+
+
+      {/* 1. iOS Search Bar (Spacious & Clean Capsule) */}
       <div className="px-5 pt-1">
-        <div className="relative flex items-center bg-white rounded-2xl border border-slate-200/80 shadow-xs focus-within:border-[#00BDFF] focus-within:ring-2 focus-within:ring-[#00BDFF]/15 transition-all">
-          <Search className="absolute left-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
+        <div className="relative flex items-center bg-white rounded-full border border-slate-200/80 shadow-xs focus-within:border-[#00BDFF] focus-within:ring-2 focus-within:ring-[#00BDFF]/15 transition-all">
+          <Search className="absolute left-4 w-4 h-4 text-slate-400 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari jersi, kemeja, t-shirt..."
-            className="w-full pl-10 pr-9 py-3 bg-transparent rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+            className="w-full pl-11 pr-10 py-2.5 bg-transparent rounded-full text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
           />
           {searchQuery && (
             <button
@@ -89,16 +91,16 @@ function CatalogContent() {
         </div>
       </div>
 
-      {/* 3. Category Filter Pills (Generous Breathing Room) */}
+      {/* 3. Category Filter Pills (Generous Breathing Room with End Spacer) */}
       <div className="px-5">
-        <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none no-scrollbar -mr-5 pr-5">
           {CATEGORY_PILLS.map((pill) => {
             const isActive = selectedCategory === pill.id;
             return (
               <button
                 key={pill.id}
                 onClick={() => setSelectedCategory(pill.id)}
-                className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-semibold tracking-tight transition-all active:scale-95 ${
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold tracking-tight transition-all active:scale-95 ${
                   isActive
                     ? 'bg-[#00BDFF] text-white shadow-sm shadow-sky-400/20 font-bold'
                     : 'bg-white text-slate-600 border border-slate-200/60 hover:bg-slate-50'
@@ -108,6 +110,7 @@ function CatalogContent() {
               </button>
             );
           })}
+          <div className="w-2 shrink-0" />
         </div>
       </div>
 

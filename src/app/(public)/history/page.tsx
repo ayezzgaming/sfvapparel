@@ -598,24 +598,25 @@ function HistoryContent() {
                 </span>
               </div>
 
+
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between text-slate-500">
                   <span>Harga Seunit Asal</span>
-                  <span className="font-mono">{formatCurrency(selectedOrder.raw_unit_price)}</span>
+                  <span className="font-mono tabular-nums">{formatCurrency(selectedOrder.raw_unit_price)}</span>
                 </div>
                 {selectedOrder.discount_percentage > 0 && (
                   <div className="flex justify-between text-emerald-600">
                     <span>Diskaun Pukal ({selectedOrder.discount_percentage}%)</span>
-                    <span className="font-mono">-{formatCurrency(selectedOrder.raw_unit_price - selectedOrder.final_unit_price)} / helai</span>
+                    <span className="font-mono tabular-nums">-{formatCurrency(selectedOrder.raw_unit_price - selectedOrder.final_unit_price)} / helai</span>
                   </div>
                 )}
                 <div className="flex justify-between text-slate-500">
                   <span>Harga Seunit Akhir</span>
-                  <span className="font-mono">{formatCurrency(selectedOrder.final_unit_price)}</span>
+                  <span className="font-mono tabular-nums">{formatCurrency(selectedOrder.final_unit_price)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-slate-900 pt-2 border-t border-slate-100">
                   <span>Jumlah Keseluruhan ({selectedOrder.total_quantity} helai)</span>
-                  <span className="font-mono text-sm font-bold text-slate-950">{formatCurrency(selectedOrder.total_amount)}</span>
+                  <span className="font-mono tabular-nums text-sm font-bold text-slate-950">{formatCurrency(selectedOrder.total_amount)}</span>
                 </div>
 
                 {/* Struktur Bayaran: Deposit 50% vs Bayaran Penuh */}
@@ -629,15 +630,15 @@ function HistoryContent() {
                   const isBalPaid = selectedOrder.payment_status === 'paid' || Boolean(selectedOrder.balance_paid_at);
 
                   return (
-                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 space-y-2.5 mt-2">
+                    <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/60 space-y-2.5 mt-2">
                       <div className="flex items-center justify-between text-xs">
                         <div>
                           <span className="font-medium text-slate-800 block">1. Bayaran Deposit 50%</span>
                           <span className="text-[10px] text-slate-400">Pengesahan permulaan proses kilang</span>
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
-                          <span className="font-mono font-bold text-slate-900">{formatCurrency(depAmt)}</span>
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                          <span className="font-mono tabular-nums font-bold text-slate-900">{formatCurrency(depAmt)}</span>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
                             isDepPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                           }`}>
                             {isDepPaid ? 'Telah Diterima' : 'Menunggu'}
@@ -651,8 +652,8 @@ function HistoryContent() {
                           <span className="text-[10px] text-slate-400">Dibayar apabila jersi siap sedia dipos</span>
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
-                          <span className="font-mono font-bold text-slate-900">{formatCurrency(balAmt)}</span>
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                          <span className="font-mono tabular-nums font-bold text-slate-900">{formatCurrency(balAmt)}</span>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
                             isBalPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'
                           }`}>
                             {isBalPaid ? 'Selesai Lunas' : 'Belum Lunas'}

@@ -627,7 +627,7 @@ export default function HomePage() {
                           handleOpenProduct(item);
                         }}
                         aria-label={`Pilih ${item.title}`}
-                        className="w-full py-2.5 px-4 rounded-xl bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold tracking-normal shadow-md shadow-sky-400/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                        className="w-full py-2.5 px-4 rounded-full bg-[#00BDFF] hover:bg-sky-500 text-white text-xs font-bold tracking-normal shadow-md shadow-sky-400/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                       >
                         <span>Pilih Servis</span>
                         <ChevronRight className="w-3.5 h-3.5 text-white/90" />
