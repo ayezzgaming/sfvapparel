@@ -470,17 +470,21 @@ export default function CustomizePage() {
 
   // Kiraan Pilihan Kurier & Kos Penghantaran
   const shippingCalculation = useMemo(() => {
-    if (totalQuantity <= 0) {
+    const cleanPostcode = (addrPostcode || customer?.postal_code || '').trim();
+    const state = (addrCity || customer?.city || '').trim();
+
+    if (totalQuantity <= 0 || cleanPostcode.length < 5) {
       return {
         zone: 'peninsular' as const,
-        zoneLabel: 'Pilih kuantiti dahulu',
-        estimatedWeightKg: 0,
+        zoneLabel: cleanPostcode.length > 0 && cleanPostcode.length < 5 ? 'Lengkapkan 5 digit poskod' : 'Masukkan poskod penghantaran',
+        estimatedWeightKg: Math.max(0.5, Math.ceil(totalQuantity * 0.18 * 10) / 10),
         couriers: [],
       };
     }
+
     return calculateMalaysiaShippingRates({
-      postcode: addrPostcode || customer?.postal_code || '40000',
-      state: addrCity || customer?.city || 'Selangor',
+      postcode: cleanPostcode,
+      state: state,
       totalQuantity: totalQuantity,
     });
   }, [addrPostcode, addrCity, customer, totalQuantity]);
@@ -898,19 +902,12 @@ export default function CustomizePage() {
                   >
                     {cuts.filter((c) => c.is_active).map((cut) => (
                       <option key={cut.id} value={cut.id}>
-                        {cut.name} {cut.cut_add_on_price > 0 ? `(+${formatCurrency(cut.cut_add_on_price)})` : ''}
+                        {cut.name}
                       </option>
                     ))}
                   </select>
                   <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-1 text-xs text-slate-500">
-                <span>Harga Asas Seunit:</span>
-                <span className="font-semibold text-slate-900 font-mono">
-                  {formatCurrency((selectedFabric?.sublimation_base_price || 0) + (selectedCut?.cut_add_on_price || 0))}
-                </span>
               </div>
             </div>
           ) : (
@@ -1365,7 +1362,9 @@ export default function CustomizePage() {
                 <label className="text-xs text-slate-600 block">Pilihan Kurier</label>
                 {totalQuantity === 0 ? (
                   <span className="text-[10px] text-slate-400">Pilih kuantiti jersi dahulu</span>
-                ) : addrPostcode.trim().length > 0 && addrPostcode.trim().length < 5 ? (
+                ) : addrPostcode.trim().length === 0 ? (
+                  <span className="text-[10px] text-slate-400">Masukkan poskod untuk zon kurier</span>
+                ) : addrPostcode.trim().length < 5 ? (
                   <span className="text-[10px] text-amber-600 font-medium">Lengkapkan 5 digit poskod</span>
                 ) : !addrLine.trim() ? (
                   <span className="text-[10px] text-slate-400">Isi nama jalan / alamat penuh</span>
@@ -1415,36 +1414,76 @@ export default function CustomizePage() {
         </div>
 
         {/* 6. Ringkasan Telus (Transparent Pricing Breakdown) */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 space-y-2 text-xs">
-          <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">
-            Perincian Harga
+        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 space-y-3 text-xs">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+              Perincian Harga
+            </span>
+            {totalQuantity > 0 && quote.discountPercentage > 0 && (
+              <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/60">
+                {quote.tierLabel} ({quote.discountPercentage}% Jimat)
+              </span>
+            )}
           </div>
+
+          {/* Harga Seunit Dinamik mengikut Kuantiti */}
           <div className="flex justify-between text-slate-600">
-            <span>Harga Jersi ({totalQuantity} helai)</span>
-            <span className="font-mono font-medium text-slate-900">
+            <span>Harga Seunit ({totalQuantity > 0 ? `${totalQuantity} helai` : 'Kuantiti belum dipilih'})</span>
+            <div className="text-right">
+              {totalQuantity > 0 ? (
+                <div className="flex items-center gap-1.5 justify-end">
+                  {quote.discountPercentage > 0 && (
+                    <span className="line-through text-slate-400 font-mono text-[11px]">
+                      {formatCurrency(quote.rawUnitPrice)}
+                    </span>
+                  )}
+                  <span className="font-mono font-bold text-slate-900">
+                    {formatCurrency(quote.finalUnitPrice)} / helai
+                  </span>
+                </div>
+              ) : (
+                <span className="text-slate-400 font-sans text-[11px]">-</span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-between text-slate-600">
+            <span>Jumlah Harga Jersi ({totalQuantity} helai)</span>
+            <span className="font-mono font-semibold text-slate-900">
               {totalQuantity > 0 ? formatCurrency(quote.finalTotal) : 'RM 0.00'}
             </span>
           </div>
+
           <div className="flex justify-between text-slate-600">
             <span>Kos Pos {totalQuantity > 0 && isAddressFilled ? `(${selectedCourier.shortName})` : ''}</span>
-            <span className="font-mono font-medium text-slate-900">
+            <span className="font-mono font-semibold text-slate-900">
               {totalQuantity === 0 ? (
                 <span className="text-slate-400 font-sans text-[11px]">Pilih kuantiti dahulu</span>
               ) : !isAddressFilled ? (
                 <span className="text-slate-400 font-sans text-[11px]">Isi alamat dahulu</span>
               ) : shippingFee === 0 ? (
-                'Percuma'
+                <span className="text-emerald-600 font-bold">Percuma</span>
               ) : (
                 formatCurrency(shippingFee)
               )}
             </span>
           </div>
+
           <div className="pt-2 border-t border-slate-100 flex justify-between font-bold text-slate-900 text-sm">
             <span>Jumlah Keseluruhan</span>
-            <span className="font-mono text-sky-600">
+            <span className="font-mono text-[#00BDFF] text-base font-extrabold">
               {totalQuantity > 0 ? formatCurrency(grandTotalAmount) : 'RM 0.00'}
             </span>
           </div>
+
+          {totalQuantity > 0 && (
+            <div className="bg-sky-50/60 rounded-xl p-2.5 border border-sky-100 text-[11px] text-slate-700 flex justify-between items-center">
+              <span>Deposit 50% untuk mula cetak:</span>
+              <span className="font-mono font-bold text-sky-700 text-xs">
+                {formatCurrency(depositAmount)}
+              </span>
+            </div>
+          )}
         </div>
 
 

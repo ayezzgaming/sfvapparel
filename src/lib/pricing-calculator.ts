@@ -57,11 +57,11 @@ export function calculateSublimationPrice({
   const tier = getTierDiscount(tierLookupQty, tiers);
   const discountPercent = tier.discount_percentage || 0;
   
-  const unitDiscountAmount = Math.round(rawUnitPrice * (discountPercent / 100));
-  const finalUnitPrice = rawUnitPrice - unitDiscountAmount;
-  const subtotal = rawUnitPrice * actualQty;
-  const finalTotal = finalUnitPrice * actualQty;
-  const totalSavings = subtotal - finalTotal;
+  const unitDiscountAmount = Math.round(rawUnitPrice * (discountPercent / 100) * 100) / 100;
+  const finalUnitPrice = Math.round((rawUnitPrice - unitDiscountAmount) * 100) / 100;
+  const subtotal = Math.round(rawUnitPrice * actualQty * 100) / 100;
+  const finalTotal = Math.round(finalUnitPrice * actualQty * 100) / 100;
+  const totalSavings = Math.round((subtotal - finalTotal) * 100) / 100;
 
   return {
     rawUnitPrice,
@@ -91,11 +91,11 @@ export function calculateDtfPrice({
   const tier = getTierDiscount(tierLookupQty, tiers);
   const discountPercent = tier.discount_percentage || 0;
   
-  const unitDiscountAmount = Math.round(rawUnitPrice * (discountPercent / 100));
-  const finalUnitPrice = rawUnitPrice - unitDiscountAmount;
-  const subtotal = rawUnitPrice * actualQty;
-  const finalTotal = finalUnitPrice * actualQty;
-  const totalSavings = subtotal - finalTotal;
+  const unitDiscountAmount = Math.round(rawUnitPrice * (discountPercent / 100) * 100) / 100;
+  const finalUnitPrice = Math.round((rawUnitPrice - unitDiscountAmount) * 100) / 100;
+  const subtotal = Math.round(rawUnitPrice * actualQty * 100) / 100;
+  const finalTotal = Math.round(finalUnitPrice * actualQty * 100) / 100;
+  const totalSavings = Math.round((subtotal - finalTotal) * 100) / 100;
 
   return {
     rawUnitPrice,
