@@ -234,17 +234,16 @@ export default function HomePage() {
   useEffect(() => {
     setMounted(true);
     
-    // Get or generate persistent unique visitor session ID
+    // Generate or retrieve unique device session ID
     let sessionId = '';
     try {
-      sessionId = localStorage.getItem('sfv_session_id') || sessionStorage.getItem('sfv_session_id') || '';
+      sessionId = localStorage.getItem('sfv_device_sid') || '';
       if (!sessionId) {
-        sessionId = 'vs_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36);
-        localStorage.setItem('sfv_session_id', sessionId);
-        sessionStorage.setItem('sfv_session_id', sessionId);
+        sessionId = 'dev_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36);
+        localStorage.setItem('sfv_device_sid', sessionId);
       }
     } catch {
-      sessionId = 'vs_fallback_' + Date.now();
+      sessionId = 'anon_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
     }
 
     const trackVisit = async () => {
@@ -266,9 +265,25 @@ export default function HomePage() {
     };
 
     trackVisit();
-    // Heartbeat every 2 minutes to keep online session updated
-    const heartbeatInterval = setInterval(trackVisit, 120000);
-    return () => clearInterval(heartbeatInterval);
+
+    // Fast heartbeat every 30s for accurate realtime active presence
+    const heartbeatInterval = setInterval(trackVisit, 30000);
+
+    // Refresh immediately when tab gains focus / visibility
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        trackVisit();
+      }
+    };
+
+    window.addEventListener('focus', trackVisit);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(heartbeatInterval);
+      window.removeEventListener('focus', trackVisit);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   // -------------------------------------------------------------
