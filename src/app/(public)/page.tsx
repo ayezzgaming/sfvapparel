@@ -528,15 +528,10 @@ export default function HomePage() {
 
         {/* 2. PILIHAN SERVIS HEADER & CARDS (DYNAMIC FROM CMS STORE) */}
         <div className="space-y-3">
-          <div className="flex justify-between items-end mb-1">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-                Pilihan Servis
-              </h2>
-              <p className="text-xs text-slate-600 font-normal tracking-normal mt-0.5">
-                Cetakan &amp; jahitan pakaian kustom terus dari kilang
-              </p>
-            </div>
+          <div className="flex justify-between items-center mb-1">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+              Pilihan Servis
+            </h2>
 
             <Link
               href="/catalog"
@@ -646,11 +641,8 @@ export default function HomePage() {
          ========================================================================= */}
       <div className="w-full bg-white py-7 px-4 space-y-6 border-t border-slate-200/70">
         <div className="space-y-4">
-          <div className="flex justify-between items-end">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Cara Tempahan</h2>
-              <p className="text-xs text-slate-600 mt-1 leading-relaxed font-normal">4 langkah mudah untuk memulakan pesanan anda</p>
-            </div>
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Cara Tempahan</h2>
             <span className="text-[11px] font-semibold text-slate-600 bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-full shadow-xs tracking-normal">
               Panduan Pesanan
             </span>
@@ -747,11 +739,8 @@ export default function HomePage() {
          ========================================================================= */}
       {(isLoadingCms || activeVideos.length > 0) && (
         <div className="w-full bg-[#F2F2F7] py-7 px-4 border-t border-slate-200/70">
-          <div className="mb-4 flex justify-between items-end">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Proses Produksi</h2>
-              <p className="text-xs text-slate-600 mt-1 leading-relaxed font-normal">Lihat kualiti cetakan &amp; kemasan jersi anda dihasilkan</p>
-            </div>
+          <div className="mb-4 flex justify-between items-center">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Proses Produksi</h2>
           </div>
 
           <div className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 no-scrollbar">
@@ -855,7 +844,6 @@ export default function HomePage() {
       <div className="w-full bg-white py-7 px-4 border-t border-slate-200/70">
         <div className="mb-4">
           <h2 className="text-xl font-bold text-slate-900 tracking-tight">Hasil Produksi Kilang</h2>
-          <p className="text-xs text-slate-600 mt-1 leading-relaxed font-normal">Koleksi gambar sebenar tempahan jersi &amp; pakaian siap</p>
         </div>
 
         <div 
@@ -963,7 +951,6 @@ export default function HomePage() {
       <div className="w-full bg-[#F2F2F7] py-7 px-4 border-t border-slate-200/70">
         <div className="mb-4">
           <h2 className="text-xl font-bold text-slate-900 tracking-tight">Apa Kata Mereka</h2>
-          <p className="text-xs text-slate-600 mt-1 leading-relaxed font-normal">Ribuan pelanggan telah mempercayai kualiti jersi kami</p>
         </div>
 
         <div 
@@ -1053,11 +1040,8 @@ export default function HomePage() {
           SECTION 4.2: PANDUAN TEKNOLOGI CETAKAN & SPESIFIKASI KILANG (Clean White Canvas)
          ========================================================================= */}
       <div className="w-full bg-white py-7 px-4 space-y-4 border-t border-slate-200/70">
-        <div className="flex justify-between items-end">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Panduan Teknologi &amp; Spesifikasi</h2>
-            <p className="text-xs text-slate-600 mt-1 leading-relaxed font-normal">Spesifikasi cetakan jersi &amp; piawaian saiz kilang SFV APPAREL</p>
-          </div>
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Panduan Teknologi &amp; Spesifikasi</h2>
         </div>
 
         {/* Clean iOS Grouped List Container - Seamless on Mobile & Laptop Viewports */}
@@ -1148,9 +1132,8 @@ export default function HomePage() {
           SECTION 4.5: SOALAN KERAP DITANYA (iOS Canvas Tint - #F2F2F7)
          ========================================================================= */}
       <div className="w-full bg-[#F2F2F7] py-8 px-5 sm:px-6 space-y-3.5 border-t border-slate-200/70">
-        <div className="space-y-0.5">
+        <div>
           <h2 className="text-[15px] sm:text-base font-bold text-slate-900 tracking-tight">Soalan Kerap Ditanya</h2>
-          <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed font-normal">Jawapan ringkas mengenai tempahan jersi &amp; cetakan terus dari kilang</p>
         </div>
 
         <div className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs border border-slate-200/80 divide-y divide-slate-100">
