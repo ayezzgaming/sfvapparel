@@ -93,20 +93,10 @@ export async function POST(req: NextRequest) {
 
     if (!wahaResult.success) {
       console.warn('[send-otp] WAHA send warning/error:', wahaResult.error);
-      const isDev = process.env.NODE_ENV !== 'production';
-      if (isDev) {
-        return NextResponse.json({
-          success: true,
-          message: `Kod OTP anda: ${otpCode}. (Sesi WhatsApp VPS: Perlu imbas QR di WhatsApp Hub)`,
-          phone: normalizedPhone,
-          devOtp: otpCode,
-        });
-      }
-
       return NextResponse.json(
         { 
           success: false, 
-          message: 'Gagal menghantar kod ke WhatsApp. Sila pastikan sistem WhatsApp Hub telah diimbas atau hubungi sokongan.',
+          message: 'Gagal menghantar kod pengesahan ke WhatsApp. Sila pastikan nombor telefon anda aktif dan boleh menerima mesej WhatsApp.',
           error: wahaResult.error
         },
         { status: 502 }

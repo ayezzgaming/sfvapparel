@@ -117,14 +117,7 @@ function LoginForm() {
       setSuccessMsg(data.message || 'Kod OTP telah dihantar ke WhatsApp anda.');
       setStep('otp');
       setCountdown(60);
-
-      if (data.devOtp && typeof data.devOtp === 'string') {
-        const devOtpChars = data.devOtp.split('').slice(0, 6);
-        setOtp(devOtpChars);
-        setTimeout(() => handleVerifyOtp(data.devOtp, data.phone || fullPhone), 600);
-      } else {
-        setTimeout(() => otpRefs.current[0]?.focus(), 100);
-      }
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch {
       setError('Ralat sambungan. Sila cuba lagi.');
     } finally {
@@ -269,13 +262,7 @@ function LoginForm() {
       if (data.success) {
         setCountdown(60);
         setSuccessMsg('Kod pengesahan baru telah dihantar.');
-        if (data.devOtp && typeof data.devOtp === 'string') {
-          const devOtpChars = data.devOtp.split('').slice(0, 6);
-          setOtp(devOtpChars);
-          setTimeout(() => handleVerifyOtp(data.devOtp, normalizedPhone), 600);
-        } else {
-          setTimeout(() => otpRefs.current[0]?.focus(), 100);
-        }
+        setTimeout(() => otpRefs.current[0]?.focus(), 100);
       } else {
         setError(data.message || 'Gagal menghantar semula kod.');
       }
@@ -572,14 +559,6 @@ function LoginForm() {
         <p className="text-[10.5px] text-slate-400 font-medium">
           SFV APPAREL • Sistem Pengesahan Selamat
         </p>
-        <div>
-          <Link
-            href="/admin/login"
-            className="text-[10.5px] text-slate-400 hover:text-slate-600 underline decoration-slate-300 transition-colors"
-          >
-            Log Masuk Pentadbir (Admin)
-          </Link>
-        </div>
       </div>
 
     </div>

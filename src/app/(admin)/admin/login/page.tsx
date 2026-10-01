@@ -13,9 +13,7 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  ShieldCheck,
-  Info,
-  CheckCircle2
+  ShieldCheck
 } from 'lucide-react';
 
 function AdminLoginForm() {
@@ -39,12 +37,6 @@ function AdminLoginForm() {
       router.replace(destination);
     }
   }, [authLoading, isAuthenticated, router, destination]);
-
-  const handleQuickFillDefault = () => {
-    setEmail('admin@sfvapparel.com');
-    setPassword('Admin@123456');
-    setError('');
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -205,24 +197,6 @@ function AdminLoginForm() {
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
-            </button>
-          </div>
-
-          {/* Quick Default Setup Hint */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 p-3 shadow-2xs flex items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2 min-w-0">
-              <Info className="w-4 h-4 text-[#0052FF] shrink-0" />
-              <div className="text-[11px] text-slate-600 truncate">
-                <span>Akaun: </span>
-                <span className="font-mono font-semibold text-slate-900">admin@sfvapparel.com</span>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={handleQuickFillDefault}
-              className="text-[11px] font-bold text-[#0052FF] hover:underline shrink-0 cursor-pointer"
-            >
-              Isi Pantas
             </button>
           </div>
 
