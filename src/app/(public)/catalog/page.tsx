@@ -147,18 +147,18 @@ function CatalogContent() {
                   onClick={() => handleOpenDesign(design)}
                   className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md hover:border-[#00BDFF]/40 flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all group"
                 >
-                  {/* Studio Product Backdrop Container */}
-                  <div className="relative w-full aspect-[4/4.5] overflow-hidden bg-gradient-to-b from-white via-slate-50 to-slate-100/80 border-b border-slate-100/90 flex items-center justify-center p-2.5">
+                  {/* Studio Product Backdrop Container - Full Area Image */}
+                  <div className="relative w-full aspect-[4/4.5] overflow-hidden bg-slate-50 border-b border-slate-100/90 flex items-center justify-center">
                     <Image
                       src={design.thumbnail_url || design.mockup_front_url}
                       alt={design.title}
                       fill
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 250px"
-                      className="object-contain p-2 group-hover:scale-105 transition-transform duration-500 ease-out drop-shadow-xs"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                       priority={isPriority}
                       loading={isPriority ? 'eager' : 'lazy'}
                       decoding="async"
-                      quality={85}
+                      quality={90}
                     />
 
                     {/* Clean Floating Glass Circle Heart Button */}
