@@ -1,10 +1,32 @@
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import fs from 'fs';
+import path from 'path';
+import sharp from 'sharp';
+import { PDFDocument, rgb, StandardFonts, PDFImage } from 'pdf-lib';
 import { Order } from '@/types/database';
 import { formatCurrency } from '@/lib/pricing-calculator';
 
 export interface GeneratePdfOptions {
   baseUrl?: string;
   isBalancePaid?: boolean;
+}
+
+// In-memory cache for the rasterized logo PNG buffer to maximize PDF generation speed
+let cachedLogoPngBuffer: Buffer | null = null;
+
+async function getOfficialLogoPng(): Promise<Buffer | null> {
+  if (cachedLogoPngBuffer) return cachedLogoPngBuffer;
+  try {
+    const logoSvgPath = path.join(process.cwd(), 'public', 'logo.svg');
+    if (fs.existsSync(logoSvgPath)) {
+      const svgBuffer = fs.readFileSync(logoSvgPath);
+      const pngBuffer = await sharp(svgBuffer).resize(512, 512).png().toBuffer();
+      cachedLogoPngBuffer = pngBuffer;
+      return pngBuffer;
+    }
+  } catch (err) {
+    console.warn('[pdf-invoice-generator] Could not convert public/logo.svg:', err);
+  }
+  return null;
 }
 
 /**
@@ -31,6 +53,17 @@ export async function generateOrderInvoicePdf(
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const fontOblique = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
 
+  // Load official logo
+  let embeddedLogo: PDFImage | null = null;
+  try {
+    const logoPng = await getOfficialLogoPng();
+    if (logoPng) {
+      embeddedLogo = await pdfDoc.embedPng(logoPng);
+    }
+  } catch (e) {
+    console.warn('[pdf-invoice-generator] Logo embed warning:', e);
+  }
+
   // Palette definition
   const primaryDark = rgb(0.06, 0.09, 0.16); // #0F172A
   const textDark = rgb(0.12, 0.16, 0.23); // #1E293B
@@ -40,7 +73,18 @@ export async function generateOrderInvoicePdf(
   const borderGray = rgb(0.88, 0.91, 0.94); // #E2E8F0
   const emeraldGreen = rgb(0.02, 0.59, 0.41); // #059669
   const amberOrange = rgb(0.85, 0.47, 0.02); // #D97706
-  const brandBlue = rgb(0.0, 0.65, 0.95); // #00A6F3
+  const brandBlue = rgb(0.0, 0.74, 1.0); // #00BDFF (Official SFV Brand Blue)
+
+  // Subtle Watermark in background if logo available
+  if (embeddedLogo) {
+    page.drawImage(embeddedLogo, {
+      x: width / 2 - 120,
+      y: height / 2 - 120,
+      width: 240,
+      height: 240,
+      opacity: 0.04,
+    });
+  }
 
   // Financial calculations
   const totalAmount = Number(order.total_amount) || 0;
@@ -68,7 +112,7 @@ export async function generateOrderInvoicePdf(
   const trackingLink = `${host}/history/${order.order_number}`;
 
   // -------------------------------------------------------------
-  // 1. TOP HEADER BRAND BAR
+  // 1. TOP HEADER BRAND BAR WITH OFFICIAL LOGO
   // -------------------------------------------------------------
   // Header background rectangle
   page.drawRectangle({
@@ -88,58 +132,69 @@ export async function generateOrderInvoicePdf(
     color: brandBlue,
   });
 
+  // Draw Official Emblem / Logo Image
+  const brandTextStartX = embeddedLogo ? 96 : 40;
+  if (embeddedLogo) {
+    page.drawImage(embeddedLogo, {
+      x: 38,
+      y: height - 84,
+      width: 48,
+      height: 48,
+    });
+  }
+
   // Brand Name
   page.drawText('SFV APPAREL', {
-    x: 40,
-    y: height - 45,
-    size: 22,
+    x: brandTextStartX,
+    y: height - 46,
+    size: 21,
     font: fontBold,
     color: rgb(1, 1, 1),
   });
 
   page.drawText('Pakar Pembuatan Pakaian & Jersi Kustom Malaysia', {
-    x: 40,
+    x: brandTextStartX,
     y: height - 60,
-    size: 9.5,
+    size: 9,
     font: fontRegular,
-    color: rgb(0.7, 0.76, 0.84),
+    color: rgb(0.75, 0.82, 0.9),
   });
 
   page.drawText('No. Pendaftaran: 202601001234 (1598721-M)  |  Web: sfvapparel.my', {
-    x: 40,
-    y: height - 74,
-    size: 8,
+    x: brandTextStartX,
+    y: height - 73,
+    size: 7.5,
     font: fontRegular,
-    color: rgb(0.55, 0.62, 0.72),
+    color: rgb(0.6, 0.68, 0.78),
   });
 
   // Invoice Title Right
   const docTitle = isPaidInFull ? 'RESIT RASMI (LUNAS)' : 'INVOIS RASMI';
-  const docTitleWidth = fontBold.widthOfTextAtSize(docTitle, 16);
+  const docTitleWidth = fontBold.widthOfTextAtSize(docTitle, 15);
   page.drawText(docTitle, {
     x: width - 40 - docTitleWidth,
     y: height - 45,
-    size: 16,
+    size: 15,
     font: fontBold,
     color: rgb(1, 1, 1),
   });
 
   const invNumText = `NO: ${invoiceNumber}`;
-  const invNumWidth = fontBold.widthOfTextAtSize(invNumText, 11);
+  const invNumWidth = fontBold.widthOfTextAtSize(invNumText, 10.5);
   page.drawText(invNumText, {
     x: width - 40 - invNumWidth,
-    y: height - 62,
-    size: 11,
+    y: height - 61,
+    size: 10.5,
     font: fontBold,
     color: brandBlue,
   });
 
   const dateText = `Tarikh: ${orderDate}`;
-  const dateWidth = fontRegular.widthOfTextAtSize(dateText, 8.5);
+  const dateWidth = fontRegular.widthOfTextAtSize(dateText, 8);
   page.drawText(dateText, {
     x: width - 40 - dateWidth,
-    y: height - 76,
-    size: 8.5,
+    y: height - 74,
+    size: 8,
     font: fontRegular,
     color: rgb(0.8, 0.85, 0.9),
   });
