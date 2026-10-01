@@ -222,23 +222,53 @@ export default function HomePage() {
   const [mounted, setMounted] = useState(false);
 
   // -------------------------------------------------------------
-  // LIVE TRAFFIC & VISITOR STATS (GENTLE NATURAL REALTIME TICKER)
+  // REAL DATABASE-BACKED VISITOR TRAFFIC TRACKER
   // -------------------------------------------------------------
-  const [onlineUsers, setOnlineUsers] = useState(24);
-  const [totalVisits, setTotalVisits] = useState(148290);
+  const [visitorStats, setVisitorStats] = useState<{
+    online: number;
+    today: number;
+    thisWeek: number;
+    total: number;
+  } | null>(null);
 
   useEffect(() => {
     setMounted(true);
-    const interval = setInterval(() => {
-      setOnlineUsers((prev) => {
-        const delta = Math.floor(Math.random() * 5) - 2;
-        const next = prev + delta;
-        return next >= 18 && next <= 36 ? next : (next < 18 ? 19 : 35);
-      });
-      setTotalVisits((prev) => prev + (Math.random() > 0.45 ? 1 : 0));
-    }, 4200);
+    
+    // Get or generate persistent unique visitor session ID
+    let sessionId = '';
+    try {
+      sessionId = localStorage.getItem('sfv_session_id') || sessionStorage.getItem('sfv_session_id') || '';
+      if (!sessionId) {
+        sessionId = 'vs_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36);
+        localStorage.setItem('sfv_session_id', sessionId);
+        sessionStorage.setItem('sfv_session_id', sessionId);
+      }
+    } catch {
+      sessionId = 'vs_fallback_' + Date.now();
+    }
 
-    return () => clearInterval(interval);
+    const trackVisit = async () => {
+      try {
+        const res = await fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, page: '/' }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.stats) {
+            setVisitorStats(data.stats);
+          }
+        }
+      } catch (e) {
+        console.warn('Visitor tracking error:', e);
+      }
+    };
+
+    trackVisit();
+    // Heartbeat every 2 minutes to keep online session updated
+    const heartbeatInterval = setInterval(trackVisit, 120000);
+    return () => clearInterval(heartbeatInterval);
   }, []);
 
   // -------------------------------------------------------------
@@ -544,52 +574,6 @@ export default function HomePage() {
           </div>
         ) : null}
 
-        {/* 1.6 LIVE TRAFFIC & VISITOR STATS STRIP (Clean Modern Standard) */}
-        <div className="w-full bg-white rounded-2xl border border-slate-200/80 shadow-xs py-3 px-2 sm:px-3 select-none">
-          <div className="grid grid-cols-3 divide-x divide-slate-100 text-center items-center">
-            {/* Stat 1: Online Users */}
-            <div className="px-1.5 flex flex-col items-center justify-center">
-              <div className="flex items-center gap-1.5">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-                <span className="font-mono font-bold text-[13.5px] sm:text-[14px] text-slate-900 tabular-nums leading-none">
-                  {onlineUsers}
-                </span>
-              </div>
-              <span className="text-[10px] sm:text-[10.5px] font-medium text-slate-500 mt-1 tracking-tight">
-                Online Sekarang
-              </span>
-            </div>
-
-            {/* Stat 2: Total Visits */}
-            <div className="px-1.5 flex flex-col items-center justify-center">
-              <div className="flex items-center gap-1 text-[#00BDFF]">
-                <Activity className="w-3.5 h-3.5 stroke-[2.2] shrink-0" />
-                <span className="font-mono font-bold text-[13.5px] sm:text-[14px] text-slate-900 tabular-nums leading-none">
-                  {(totalVisits / 1000).toFixed(1)}k
-                </span>
-              </div>
-              <span className="text-[10px] sm:text-[10.5px] font-medium text-slate-500 mt-1 tracking-tight">
-                Total Kunjungan
-              </span>
-            </div>
-
-            {/* Stat 3: Production Orders / Verified Deliveries */}
-            <div className="px-1.5 flex flex-col items-center justify-center">
-              <div className="flex items-center gap-1 text-amber-500">
-                <Sparkles className="w-3.5 h-3.5 stroke-[2.2] shrink-0" />
-                <span className="font-mono font-bold text-[13.5px] sm:text-[14px] text-slate-900 tabular-nums leading-none">
-                  52.4k+
-                </span>
-              </div>
-              <span className="text-[10px] sm:text-[10.5px] font-medium text-slate-500 mt-1 tracking-tight">
-                Jersi Dicetak
-              </span>
-            </div>
-          </div>
-        </div>
 
         {/* 2. PILIHAN SERVIS HEADER & CARDS (DYNAMIC FROM CMS STORE) */}
         <div className="space-y-3">
@@ -1510,6 +1494,22 @@ export default function HomePage() {
               <span className="tracking-tight text-slate-800 font-semibold">{(!companySettings.developer_name || companySettings.developer_name === 'AYEZZ Studio') ? 'AYEZZ Global' : companySettings.developer_name}</span>
             </a>
           </div>
+
+          {/* Real Visitor Traffic Stats (Clean, Minimal, Low-Contrast, Seamless with Footer) */}
+          {visitorStats && (
+            <div className="pt-2.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[10.5px] text-slate-400 font-normal">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 inline-block" />
+                <span>Online: <span className="font-mono text-slate-600 font-medium">{visitorStats.online.toLocaleString()}</span></span>
+              </div>
+              <span className="text-slate-300">•</span>
+              <span>Hari ini: <span className="font-mono text-slate-600 font-medium">{visitorStats.today.toLocaleString()}</span></span>
+              <span className="text-slate-300">•</span>
+              <span>Minggu ini: <span className="font-mono text-slate-600 font-medium">{visitorStats.thisWeek.toLocaleString()}</span></span>
+              <span className="text-slate-300">•</span>
+              <span>Total Kunjungan: <span className="font-mono text-slate-600 font-medium">{visitorStats.total.toLocaleString()}</span></span>
+            </div>
+          )}
         </div>
       </footer>
 
