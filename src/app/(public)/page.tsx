@@ -942,21 +942,16 @@ export default function HomePage() {
           className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scroll-pl-4 scroll-pr-4 no-scrollbar" 
         >
           {activeTestimonials.map((t, idx) => {
-            const isActive = idx === activeTestiIndex;
             return (
               <div 
                 key={t.id}
                 onClick={() => scrollToTestimonial(idx)}
-                className={`shrink-0 w-[85%] max-w-[320px] bg-white rounded-3xl p-5 sm:p-6 snap-center border flex flex-col justify-between cursor-pointer ${
-                  isActive 
-                    ? 'border-blue-200 shadow-md shadow-blue-900/5 ring-1 ring-blue-500/20' 
-                    : 'border-slate-200/80 shadow-sm opacity-95'
-                }`}
+                className="shrink-0 w-[85%] max-w-[320px] bg-white rounded-3xl p-5 sm:p-6 snap-center border border-slate-200/80 shadow-xs hover:border-slate-300 flex flex-col justify-between cursor-pointer select-none transition-all duration-200 active:scale-[0.98]"
               >
                 <div className="flex justify-between items-start mb-3.5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full ${t.avatar_bg} flex items-center justify-center ${t.avatar_text} font-bold text-base shrink-0 shadow-xs`}>
-                      {t.initial}
+                    <div className={`w-10 h-10 rounded-full ${t.avatar_bg || 'bg-sky-50'} flex items-center justify-center ${t.avatar_text || 'text-[#00BDFF]'} font-bold text-base shrink-0 shadow-xs border border-slate-100`}>
+                      {t.initial || t.name?.charAt(0) || 'U'}
                     </div>
                     <div>
                       <h3 className="font-bold text-slate-900 text-[14px] leading-tight">{t.name}</h3>
