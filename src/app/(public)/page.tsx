@@ -221,69 +221,8 @@ export default function HomePage() {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  // -------------------------------------------------------------
-  // REAL DATABASE-BACKED VISITOR TRAFFIC TRACKER
-  // -------------------------------------------------------------
-  const [visitorStats, setVisitorStats] = useState<{
-    online: number;
-    today: number;
-    thisWeek: number;
-    total: number;
-  } | null>(null);
-
   useEffect(() => {
     setMounted(true);
-    
-    // Generate or retrieve unique device session ID
-    let sessionId = '';
-    try {
-      sessionId = localStorage.getItem('sfv_device_sid') || '';
-      if (!sessionId) {
-        sessionId = 'dev_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36);
-        localStorage.setItem('sfv_device_sid', sessionId);
-      }
-    } catch {
-      sessionId = 'anon_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
-    }
-
-    const trackVisit = async () => {
-      try {
-        const res = await fetch('/api/analytics/track', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId, page: '/' }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data?.stats) {
-            setVisitorStats(data.stats);
-          }
-        }
-      } catch (e) {
-        console.warn('Visitor tracking error:', e);
-      }
-    };
-
-    trackVisit();
-
-    // Fast heartbeat every 30s for accurate realtime active presence
-    const heartbeatInterval = setInterval(trackVisit, 30000);
-
-    // Refresh immediately when tab gains focus / visibility
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        trackVisit();
-      }
-    };
-
-    window.addEventListener('focus', trackVisit);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      clearInterval(heartbeatInterval);
-      window.removeEventListener('focus', trackVisit);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
   }, []);
 
   // -------------------------------------------------------------
@@ -498,22 +437,6 @@ export default function HomePage() {
                         {banner.status_pill}
                       </span>
                     </div>
-                    {/* Live Visitor Pill — Social Proof, Above the Fold, Subtle */}
-                    {mounted && visitorStats && (
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 text-white/90 shadow-xs">
-                        <span className="relative flex h-1.5 w-1.5 shrink-0">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
-                        </span>
-                        <span className="text-[10px] font-semibold tracking-normal tabular-nums">
-                          {visitorStats.online.toLocaleString()} online
-                        </span>
-                        <span className="text-white/40 text-[9px]">·</span>
-                        <span className="text-[10px] font-normal text-white/70 tabular-nums">
-                          {visitorStats.total.toLocaleString()} kunjungan
-                        </span>
-                      </div>
-                    )}
                   </div>
 
                   {/* Bottom Frosted Glass Panel - Light iOS Liquid Glass Theme */}
