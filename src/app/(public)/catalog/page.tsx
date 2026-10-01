@@ -161,7 +161,7 @@ function CatalogContent() {
                       quality={75}
                     />
 
-                    {/* Minimalist Clean Heart Button */}
+                    {/* Modern Translucent Dark Circle Heart Button */}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -173,10 +173,10 @@ function CatalogContent() {
                         toggleFavorite(design.id);
                       }}
                       aria-label="Kegemaran"
-                      className="absolute top-2 right-2 p-1.5 flex items-center justify-center text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)] active:scale-75 transition-all z-10 hover:scale-110"
+                      className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/15 shadow-sm active:scale-90 transition-all z-10"
                     >
                       <Heart 
-                        className={`w-4 h-4 transition-colors stroke-[2.2] ${
+                        className={`w-3.5 h-3.5 transition-colors stroke-[2.2] ${
                           isFav ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-white'
                         }`} 
                       />
