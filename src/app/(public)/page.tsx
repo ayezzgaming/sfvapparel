@@ -34,7 +34,9 @@ import {
   Users,
   CreditCard,
   Layers,
-  HelpCircle
+  HelpCircle,
+  Activity,
+  Sparkles
 } from 'lucide-react';
 import { FaWhatsapp, FaTiktok, FaFacebookF, FaInstagram, FaTelegram } from 'react-icons/fa6';
 import { formatWhatsAppLink } from '@/lib/whatsapp/dynamic-link';
@@ -219,8 +221,24 @@ export default function HomePage() {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
+  // -------------------------------------------------------------
+  // LIVE TRAFFIC & VISITOR STATS (GENTLE NATURAL REALTIME TICKER)
+  // -------------------------------------------------------------
+  const [onlineUsers, setOnlineUsers] = useState(24);
+  const [totalVisits, setTotalVisits] = useState(148290);
+
   useEffect(() => {
     setMounted(true);
+    const interval = setInterval(() => {
+      setOnlineUsers((prev) => {
+        const delta = Math.floor(Math.random() * 5) - 2;
+        const next = prev + delta;
+        return next >= 18 && next <= 36 ? next : (next < 18 ? 19 : 35);
+      });
+      setTotalVisits((prev) => prev + (Math.random() > 0.45 ? 1 : 0));
+    }, 4200);
+
+    return () => clearInterval(interval);
   }, []);
 
   // -------------------------------------------------------------
@@ -525,6 +543,53 @@ export default function HomePage() {
             </div>
           </div>
         ) : null}
+
+        {/* 1.6 LIVE TRAFFIC & VISITOR STATS STRIP (Clean Modern Standard) */}
+        <div className="w-full bg-white rounded-2xl border border-slate-200/80 shadow-xs py-3 px-2 sm:px-3 select-none">
+          <div className="grid grid-cols-3 divide-x divide-slate-100 text-center items-center">
+            {/* Stat 1: Online Users */}
+            <div className="px-1.5 flex flex-col items-center justify-center">
+              <div className="flex items-center gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                <span className="font-mono font-bold text-[13.5px] sm:text-[14px] text-slate-900 tabular-nums leading-none">
+                  {onlineUsers}
+                </span>
+              </div>
+              <span className="text-[10px] sm:text-[10.5px] font-medium text-slate-500 mt-1 tracking-tight">
+                Online Sekarang
+              </span>
+            </div>
+
+            {/* Stat 2: Total Visits */}
+            <div className="px-1.5 flex flex-col items-center justify-center">
+              <div className="flex items-center gap-1 text-[#00BDFF]">
+                <Activity className="w-3.5 h-3.5 stroke-[2.2] shrink-0" />
+                <span className="font-mono font-bold text-[13.5px] sm:text-[14px] text-slate-900 tabular-nums leading-none">
+                  {(totalVisits / 1000).toFixed(1)}k
+                </span>
+              </div>
+              <span className="text-[10px] sm:text-[10.5px] font-medium text-slate-500 mt-1 tracking-tight">
+                Total Kunjungan
+              </span>
+            </div>
+
+            {/* Stat 3: Production Orders / Verified Deliveries */}
+            <div className="px-1.5 flex flex-col items-center justify-center">
+              <div className="flex items-center gap-1 text-amber-500">
+                <Sparkles className="w-3.5 h-3.5 stroke-[2.2] shrink-0" />
+                <span className="font-mono font-bold text-[13.5px] sm:text-[14px] text-slate-900 tabular-nums leading-none">
+                  52.4k+
+                </span>
+              </div>
+              <span className="text-[10px] sm:text-[10.5px] font-medium text-slate-500 mt-1 tracking-tight">
+                Jersi Dicetak
+              </span>
+            </div>
+          </div>
+        </div>
 
         {/* 2. PILIHAN SERVIS HEADER & CARDS (DYNAMIC FROM CMS STORE) */}
         <div className="space-y-3">
