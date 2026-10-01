@@ -94,26 +94,46 @@ export async function getPartnerFactoryById(id: string): Promise<{ success: bool
 
 export async function savePartnerFactory(factory: Partial<PartnerFactory>): Promise<{ success: boolean; data?: PartnerFactory; message?: string }> {
   try {
-    const matrix = factory.pricing_matrix || {
-      base_unit_cost: Number(factory.default_unit_cost) || 22.0,
+    let existing: PartnerFactory | null = null;
+    if (factory.id) {
+      const { data: exData } = await getDb()
+        .from('partner_factories')
+        .select('*')
+        .eq('id', factory.id)
+        .single();
+      if (exData) {
+        existing = parseFactoryRow(exData);
+      }
+    }
+
+    const matrix = factory.pricing_matrix || existing?.pricing_matrix || {
+      base_unit_cost: Number(factory.default_unit_cost ?? existing?.default_unit_cost) || 22.0,
       tier_discounts: [],
       fabric_surcharges: {},
       cut_surcharges: {},
       collar_surcharges: {},
     };
 
-    const payload: Record<string, any> = {
-      factory_name: factory.factory_name,
-      pic_name: factory.pic_name || null,
-      phone: factory.phone ? factory.phone.replace(/[^0-9]/g, '') : '',
-      email: factory.email || null,
-      address: factory.address || null,
-      specialty: factory.specialty || 'Full Sublimation All-in-One',
-      default_unit_cost: Number(factory.default_unit_cost) || 22.0,
-      lead_time_days: Number(factory.lead_time_days) || 7,
+    const cleanNotes = factory.notes !== undefined 
+      ? (factory.notes ? String(factory.notes).trim() : '') 
+      : (existing?.notes || '');
+
+    const serializedNotes = JSON.stringify({
+      notes: cleanNotes,
       pricing_matrix: matrix,
-      notes: factory.notes ? String(factory.notes).trim() : null,
-      is_active: factory.is_active ?? true,
+    });
+
+    const payload: Record<string, any> = {
+      factory_name: factory.factory_name ?? existing?.factory_name,
+      pic_name: factory.pic_name !== undefined ? (factory.pic_name || null) : (existing?.pic_name || null),
+      phone: factory.phone !== undefined ? (factory.phone ? factory.phone.replace(/[^0-9]/g, '') : '') : (existing?.phone || ''),
+      email: factory.email !== undefined ? (factory.email || null) : (existing?.email || null),
+      address: factory.address !== undefined ? (factory.address || null) : (existing?.address || null),
+      specialty: factory.specialty ?? existing?.specialty ?? 'Full Sublimation All-in-One',
+      default_unit_cost: Number(factory.default_unit_cost ?? existing?.default_unit_cost) || 22.0,
+      lead_time_days: Number(factory.lead_time_days ?? existing?.lead_time_days) || 7,
+      notes: serializedNotes,
+      is_active: factory.is_active ?? existing?.is_active ?? true,
       updated_at: new Date().toISOString(),
     };
 

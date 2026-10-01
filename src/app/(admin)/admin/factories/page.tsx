@@ -412,7 +412,7 @@ function FactoriesContent() {
       {activeTab === 'directory' && (
         <div className="space-y-4">
           {/* Search Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200">
             <div className="relative w-full sm:w-80">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
@@ -420,11 +420,11 @@ function FactoriesContent() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari nama kilang, PIC atau lokasi..."
-                className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-[#00BDFF] focus:outline-none"
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-[#00BDFF] focus:bg-white focus:outline-none transition-all"
               />
             </div>
-            <div className="text-xs text-slate-500">
-              Jumlah: <span className="font-bold text-slate-800">{filteredFactories.length}</span> kilang
+            <div className="text-xs text-slate-500 font-medium px-2">
+              Jumlah Kilang: <span className="font-bold text-[#00BDFF] text-sm">{filteredFactories.length}</span> rakan kongsi
             </div>
           </div>
 
@@ -436,79 +436,104 @@ function FactoriesContent() {
             </div>
           ) : filteredFactories.length === 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-              <Building2 className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-              <p className="text-xs font-bold text-slate-700">Tiada Kilang Dijumpai</p>
-              <p className="text-xs text-slate-400 mt-1">Daftarkan kilang rakan kongsi pengeluaran pertama anda.</p>
+              <Building2 className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+              <p className="text-sm font-bold text-slate-700">Tiada Kilang Dijumpai</p>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                {searchQuery ? 'Tiada kilang sepadan dengan carian anda.' : 'Daftarkan kilang rakan kongsi pengeluaran cetak & jahit pertama anda.'}
+              </p>
               <button
                 type="button"
                 onClick={handleOpenCreateModal}
-                className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#00BDFF] hover:bg-[#00a6e0] text-white rounded-xl text-xs font-semibold cursor-pointer"
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 bg-[#00BDFF] hover:bg-[#00a6e0] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Tambah Kilang Sekarang</span>
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredFactories.map((factory) => (
                 <div
                   key={factory.id}
-                  className="bg-white border border-slate-200 rounded-2xl p-4.5 shadow-xs hover:border-[#00BDFF]/40 transition-all flex flex-col justify-between gap-4"
+                  className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs hover:shadow-md hover:border-[#00BDFF]/50 transition-all flex flex-col justify-between gap-4"
                 >
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <h3 className="font-bold text-slate-900 text-sm">{factory.factory_name}</h3>
-                        <p className="text-xs text-slate-500 mt-0.5">{factory.specialty || 'Full Sublimation'}</p>
+                  <div className="space-y-3.5">
+                    {/* Card Top: Factory Name & Status Badge */}
+                    <div className="flex items-start justify-between gap-2.5">
+                      <div className="space-y-0.5">
+                        <h3 className="font-bold text-slate-900 text-sm leading-snug">{factory.factory_name}</h3>
+                        <p className="text-[11px] font-medium text-slate-500 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-sky-400 shrink-0"></span>
+                          <span>{factory.specialty || 'Full Sublimation All-in-One'}</span>
+                        </p>
                       </div>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold border shrink-0 ${
                           factory.is_active
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : 'bg-slate-100 text-slate-600 border-slate-200'
+                            : 'bg-slate-100 text-slate-500 border-slate-200'
                         }`}
                       >
-                        {factory.is_active ? 'Aktif' : 'Tidak Aktif'}
+                        {factory.is_active ? '● Aktif' : '○ Tidak Aktif'}
                       </span>
                     </div>
 
-                    <div className="space-y-1.5 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    {/* Card Details Pill */}
+                    <div className="space-y-2 text-xs bg-slate-50/80 p-3.5 rounded-xl border border-slate-100">
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-500">Kadar Standard:</span>
-                        <span className="font-bold text-slate-900">
+                        <span className="text-slate-500 font-medium flex items-center gap-1.5">
+                          <Tag className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+                          Kadar Standard:
+                        </span>
+                        <span className="font-bold text-slate-900 bg-white px-2 py-0.5 rounded-lg border border-slate-200/80 shadow-2xs">
                           {formatCurrency(Number(factory.default_unit_cost) || 22)}/helai
                         </span>
                       </div>
+
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-500">Tempoh Siap:</span>
-                        <span className="font-medium text-slate-800">{factory.lead_time_days || 7} Hari Bekerja</span>
+                        <span className="text-slate-500 font-medium flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                          Tempoh Siap:
+                        </span>
+                        <span className="font-semibold text-slate-800">
+                          {factory.lead_time_days || 7} Hari Bekerja
+                        </span>
                       </div>
+
                       {factory.pic_name && (
                         <div className="flex items-center justify-between">
-                          <span className="text-slate-500">PIC:</span>
-                          <span className="font-medium text-slate-800">{factory.pic_name}</span>
+                          <span className="text-slate-500 font-medium flex items-center gap-1.5">
+                            <Building2 className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                            PIC Kilang:
+                          </span>
+                          <span className="font-medium text-slate-800 truncate max-w-[150px] text-right">
+                            {factory.pic_name}
+                          </span>
                         </div>
                       )}
+
                       {factory.address && (
-                        <div className="text-[11px] text-slate-500 truncate pt-1 border-t border-slate-200/60">
-                          {factory.address}
+                        <div className="text-[11px] text-slate-500 pt-1.5 border-t border-slate-200/60 truncate flex items-center gap-1" title={factory.address}>
+                          <span className="shrink-0 text-slate-400">📍</span>
+                          <span className="truncate">{factory.address}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Card Actions */}
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                  {/* Card Actions Footer */}
+                  <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs gap-2">
                     <div className="flex items-center gap-1.5">
                       {factory.phone && (
                         <a
                           href={`https://wa.me/${factory.phone.replace(/[^0-9]/g, '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg border border-emerald-200 transition-colors"
-                          title="WhatsApp Kilang"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-xl border border-emerald-200 font-semibold transition-colors"
+                          title="Hubungi WhatsApp Kilang"
                         >
-                          <FaWhatsapp className="w-3.5 h-3.5" />
+                          <FaWhatsapp className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-[11px]">Chat</span>
                         </a>
                       )}
                       <button
@@ -517,11 +542,11 @@ function FactoriesContent() {
                           setSelectedFactoryId(factory.id);
                           setActiveTab('pricing');
                         }}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[#00BDFF] hover:bg-sky-50 rounded-lg border border-sky-200 font-semibold cursor-pointer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-sky-700 bg-sky-50 hover:bg-sky-100 rounded-xl border border-sky-200 font-semibold transition-colors cursor-pointer"
                         title="Tetapkan Matriks Harga"
                       >
-                        <SlidersHorizontal className="w-3 h-3" />
-                        <span>Matriks Harga</span>
+                        <SlidersHorizontal className="w-3.5 h-3.5 text-[#00BDFF]" />
+                        <span className="text-[11px]">Matriks Harga</span>
                       </button>
                     </div>
 
@@ -529,15 +554,15 @@ function FactoriesContent() {
                       <button
                         type="button"
                         onClick={() => handleOpenEditModal(factory)}
-                        className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors cursor-pointer"
-                        title="Kemaskini Profil"
+                        className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors cursor-pointer"
+                        title="Kemaskini Profil Kilang"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDeleteFactory(factory.id, factory.factory_name)}
-                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-200 transition-colors cursor-pointer"
+                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-200 transition-colors cursor-pointer"
                         title="Padam Kilang"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -909,25 +934,25 @@ function FactoriesContent() {
 
       {/* MODAL: DAFTAR / KEMASKINI KILANG (SPACIOUS & CLEAN) */}
       {isFactoryModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70">
+            <div className="flex items-center justify-between px-6 py-4.5 border-b border-slate-100 bg-slate-50/80">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#00BDFF] flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-2xl bg-sky-100 text-[#00BDFF] flex items-center justify-center font-bold shadow-2xs">
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-slate-900">
-                    {factoryFormData.id ? 'Kemaskini Maklumat Kilang' : 'Daftar Kilang Baharu'}
+                    {factoryFormData.id ? 'Kemaskini Maklumat Kilang' : 'Daftar Kilang Rakan Kongsi'}
                   </h3>
-                  <p className="text-xs text-slate-500">Rakan kongsi pengeluaran cetak & jahit sublimasi</p>
+                  <p className="text-xs text-slate-500">Direktori pengeluaran cetak & jahit sublimasi</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsFactoryModalOpen(false)}
-                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-xl transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -936,61 +961,87 @@ function FactoriesContent() {
             {/* Form */}
             <form onSubmit={handleSaveFactory} className="p-6 space-y-4 text-xs max-h-[80vh] overflow-y-auto">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Factory Name */}
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
                     Nama Kilang / Syarikat <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={factoryFormData.factory_name}
                     onChange={(e) => setFactoryFormData({ ...factoryFormData, factory_name: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-[#00BDFF] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#00BDFF] focus:outline-none transition-all"
                     placeholder="Cth: Kilang Sublimasi Teguh Sdn Bhd"
                     required
                   />
                 </div>
 
+                {/* Specialty */}
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Kepakaran / Fokus Pengeluaran
+                  </label>
+                  <select
+                    value={factoryFormData.specialty}
+                    onChange={(e) => setFactoryFormData({ ...factoryFormData, specialty: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-[#00BDFF] focus:outline-none transition-all"
+                  >
+                    <option value="Full Sublimation All-in-One (Cetak + Potong + Jahit)">Full Sublimation All-in-One (Cetak + Potong + Jahit)</option>
+                    <option value="Full Sublimation & Muslimah Cut">Full Sublimation & Potongan Muslimah</option>
+                    <option value="Jersi Sukan & Polo Collar Specialist">Jersi Sukan & Kolar Polo</option>
+                    <option value="Cetakan DTF & Silkscreen">Cetakan DTF & Silkscreen</option>
+                    <option value="Jahitan Pukal Pantas (Express Mass Production)">Jahitan Pukal Pantas (Express Mass Production)</option>
+                  </select>
+                </div>
+
+                {/* PIC Name */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Nama PIC Kilang</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Nama PIC / Pengurus Kilang</label>
                   <input
                     type="text"
                     value={factoryFormData.pic_name}
                     onChange={(e) => setFactoryFormData({ ...factoryFormData, pic_name: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-[#00BDFF] focus:outline-none"
-                    placeholder="Cth: En. Azman"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#00BDFF] focus:outline-none transition-all"
+                    placeholder="Cth: En. Azman (Pengurus)"
                   />
                 </div>
 
+                {/* Phone / WhatsApp */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
                     No. Telefon / WhatsApp <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="tel"
                     value={factoryFormData.phone}
                     onChange={(e) => setFactoryFormData({ ...factoryFormData, phone: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-[#00BDFF] focus:outline-none"
-                    placeholder="Cth: 0123456789"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#00BDFF] focus:outline-none transition-all font-mono"
+                    placeholder="Cth: 60123456789"
                     required
                   />
                 </div>
 
+                {/* Standard Unit Cost */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Kadar Kos Standard Seunit (RM)</label>
-                  <input
-                    type="number"
-                    step="0.50"
-                    min="1"
-                    value={factoryFormData.default_unit_cost}
-                    onChange={(e) =>
-                      setFactoryFormData({ ...factoryFormData, default_unit_cost: parseFloat(e.target.value) || 0 })
-                    }
-                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#00BDFF] focus:outline-none"
-                  />
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Kadar Kos Standard (RM/helai)</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400">RM</span>
+                    <input
+                      type="number"
+                      step="0.50"
+                      min="1"
+                      value={factoryFormData.default_unit_cost}
+                      onChange={(e) =>
+                        setFactoryFormData({ ...factoryFormData, default_unit_cost: parseFloat(e.target.value) || 0 })
+                      }
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#00BDFF] focus:outline-none transition-all"
+                    />
+                  </div>
                 </div>
 
+                {/* Lead Time Days */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Tempoh Siap Pengeluaran (Hari Bekerja)</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Tempoh Siap (Hari Bekerja)</label>
                   <input
                     type="number"
                     min="1"
@@ -998,24 +1049,64 @@ function FactoriesContent() {
                     onChange={(e) =>
                       setFactoryFormData({ ...factoryFormData, lead_time_days: parseInt(e.target.value) || 7 })
                     }
-                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-[#00BDFF] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#00BDFF] focus:outline-none transition-all"
                   />
                 </div>
 
+                {/* Status Toggle */}
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Alamat / Lokasi Kilang</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Status Kilang</label>
+                  <div className="flex items-center gap-4 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="is_active"
+                        checked={factoryFormData.is_active === true}
+                        onChange={() => setFactoryFormData({ ...factoryFormData, is_active: true })}
+                        className="text-[#00BDFF] focus:ring-[#00BDFF]"
+                      />
+                      <span className="font-semibold text-emerald-700">● Aktif (Boleh Terima Job)</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="is_active"
+                        checked={factoryFormData.is_active === false}
+                        onChange={() => setFactoryFormData({ ...factoryFormData, is_active: false })}
+                        className="text-slate-400 focus:ring-slate-400"
+                      />
+                      <span className="font-semibold text-slate-500">○ Tidak Aktif (Rehat)</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Alamat / Lokasi Kilang</label>
                   <input
                     type="text"
                     value={factoryFormData.address}
                     onChange={(e) => setFactoryFormData({ ...factoryFormData, address: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-[#00BDFF] focus:outline-none"
-                    placeholder="Cth: Kawasan Perindustrian Bukit Minyak, Pulau Pinang"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#00BDFF] focus:outline-none transition-all"
+                    placeholder="Cth: Shah Alam, Selangor"
+                  />
+                </div>
+
+                {/* Notes */}
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Catatan / Terma Kilang</label>
+                  <textarea
+                    rows={2}
+                    value={factoryFormData.notes}
+                    onChange={(e) => setFactoryFormData({ ...factoryFormData, notes: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:ring-2 focus:ring-[#00BDFF] focus:outline-none transition-all"
+                    placeholder="Cth: Kilang rakan kongsi utama untuk jersi interlock & polo"
                   />
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="sticky bottom-0 bg-white dark:bg-slate-950 border-t p-4 mt-4 z-10 flex items-center justify-end gap-3">
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsFactoryModalOpen(false)}
