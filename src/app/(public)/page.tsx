@@ -1147,61 +1147,61 @@ export default function HomePage() {
       {/* =========================================================================
           SECTION 4.5: SOALAN KERAP DITANYA (iOS Canvas Tint - #F2F2F7)
          ========================================================================= */}
-      <div className="w-full bg-[#F2F2F7] py-7 px-4 space-y-4 border-t border-slate-200/70">
+      <div className="w-full bg-[#F2F2F7] py-8 px-5 sm:px-6 space-y-3.5 border-t border-slate-200/70">
         <div className="space-y-0.5">
-          <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">Soalan Kerap Ditanya</h2>
-          <p className="text-xs text-slate-500 leading-relaxed font-normal">Jawapan ringkas mengenai tempahan jersi &amp; cetakan terus dari kilang</p>
+          <h2 className="text-[15px] sm:text-base font-bold text-slate-900 tracking-tight">Soalan Kerap Ditanya</h2>
+          <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed font-normal">Jawapan ringkas mengenai tempahan jersi &amp; cetakan terus dari kilang</p>
         </div>
 
-        <div className="bg-white rounded-3xl overflow-hidden shadow-xs border border-slate-200/80 divide-y divide-slate-100">
+        <div className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs border border-slate-200/80 divide-y divide-slate-100">
           {/* FAQ 1 */}
           <details className="group">
-            <summary className="flex items-center justify-between px-5 py-3.5 sm:px-6 sm:py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00BDFF]/40 [&::-webkit-details-marker]:hidden">
-              <span className="text-[13px] sm:text-[13.5px] font-semibold text-slate-800 group-hover:text-[#00BDFF] pr-4 leading-snug transition-colors tracking-normal">
+            <summary className="flex items-center justify-between px-4 py-3 sm:px-4.5 sm:py-3.5 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none outline-none focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00BDFF]/40 [&::-webkit-details-marker]:hidden">
+              <span className="text-[12px] sm:text-[12.5px] font-medium text-slate-700 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors">
                 Berapakah minimum tempahan (MOQ) di SFV APPAREL?
               </span>
-              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-5 pb-4 pt-2 sm:px-6 bg-slate-50/50 border-t border-slate-100/80 text-[12px] sm:text-[12.5px] text-slate-600 leading-relaxed font-normal">
-              Minimum tempahan adalah serendah <strong className="text-slate-900 font-semibold">5 helai (MOQ = 5 pcs)</strong> untuk jersi sublimasi kustom dan cetakan DTF. Kami juga menerima tempahan pukal kelab, sekolah, dan korporat sehingga ribuan helai dengan harga terus dari kilang.
+            <div className="px-4 pb-3.5 pt-2 sm:px-4.5 bg-slate-50/50 border-t border-slate-100/80 text-[11px] sm:text-[11.5px] text-slate-500 leading-relaxed font-normal">
+              Minimum tempahan adalah serendah <strong className="text-slate-800 font-semibold">5 helai (MOQ = 5 pcs)</strong> untuk jersi sublimasi kustom dan cetakan DTF. Kami juga menerima tempahan pukal kelab, sekolah, dan korporat sehingga ribuan helai dengan harga terus dari kilang.
             </div>
           </details>
 
           {/* FAQ 2 */}
           <details className="group">
-            <summary className="flex items-center justify-between px-5 py-3.5 sm:px-6 sm:py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00BDFF]/40 [&::-webkit-details-marker]:hidden">
-              <span className="text-[13px] sm:text-[13.5px] font-semibold text-slate-800 group-hover:text-[#00BDFF] pr-4 leading-snug transition-colors tracking-normal">
+            <summary className="flex items-center justify-between px-4 py-3 sm:px-4.5 sm:py-3.5 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none outline-none focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00BDFF]/40 [&::-webkit-details-marker]:hidden">
+              <span className="text-[12px] sm:text-[12.5px] font-medium text-slate-700 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors">
                 Berapa hari tempoh siap produksi pesanan?
               </span>
-              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-5 pb-4 pt-2 sm:px-6 bg-slate-50/50 border-t border-slate-100/80 text-[12px] sm:text-[12.5px] text-slate-600 leading-relaxed font-normal">
-              Tempoh standard siap produksi adalah <strong className="text-slate-900 font-semibold">5 hingga 7 hari bekerja</strong> selepas pengesahan rekaan akhir (Design Proof) dan deposit. Servis ekspres juga disediakan mengikut jadual kapasiti kilang.
+            <div className="px-4 pb-3.5 pt-2 sm:px-4.5 bg-slate-50/50 border-t border-slate-100/80 text-[11px] sm:text-[11.5px] text-slate-500 leading-relaxed font-normal">
+              Tempoh standard siap produksi adalah <strong className="text-slate-800 font-semibold">5 hingga 7 hari bekerja</strong> selepas pengesahan rekaan akhir (Design Proof) dan deposit. Servis ekspres juga disediakan mengikut jadual kapasiti kilang.
             </div>
           </details>
 
           {/* FAQ 3 */}
           <details className="group">
-            <summary className="flex items-center justify-between px-5 py-3.5 sm:px-6 sm:py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00BDFF]/40 [&::-webkit-details-marker]:hidden">
-              <span className="text-[13px] sm:text-[13.5px] font-semibold text-slate-800 group-hover:text-[#00BDFF] pr-4 leading-snug transition-colors tracking-normal">
+            <summary className="flex items-center justify-between px-4 py-3 sm:px-4.5 sm:py-3.5 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none outline-none focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00BDFF]/40 [&::-webkit-details-marker]:hidden">
+              <span className="text-[12px] sm:text-[12.5px] font-medium text-slate-700 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors">
                 Apakah format fail artwork yang diterima?
               </span>
-              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-5 pb-4 pt-2 sm:px-6 bg-slate-50/50 border-t border-slate-100/80 text-[12px] sm:text-[12.5px] text-slate-600 leading-relaxed font-normal">
+            <div className="px-4 pb-3.5 pt-2 sm:px-4.5 bg-slate-50/50 border-t border-slate-100/80 text-[11px] sm:text-[11.5px] text-slate-500 leading-relaxed font-normal">
               Kami menyokong format vektor seperti AI (Adobe Illustrator), PDF, EPS, SVG, serta gambar resolusi tinggi PNG/JPG (300 DPI). Pereka kami juga sedia membantu melakar artwork mockup anda secara percuma.
             </div>
           </details>
 
           {/* FAQ 4 */}
           <details className="group">
-            <summary className="flex items-center justify-between px-5 py-3.5 sm:px-6 sm:py-4 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00BDFF]/40 [&::-webkit-details-marker]:hidden">
-              <span className="text-[13px] sm:text-[13.5px] font-semibold text-slate-800 group-hover:text-[#00BDFF] pr-4 leading-snug transition-colors tracking-normal">
+            <summary className="flex items-center justify-between px-4 py-3 sm:px-4.5 sm:py-3.5 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer select-none list-none outline-none focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00BDFF]/40 [&::-webkit-details-marker]:hidden">
+              <span className="text-[12px] sm:text-[12.5px] font-medium text-slate-700 group-hover:text-[#00BDFF] pr-3 leading-snug transition-colors">
                 Bagaimana pilihan penghantaran dan liputan kurier?
               </span>
-              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#00BDFF] group-open:rotate-180 shrink-0 transition-transform duration-200" />
             </summary>
-            <div className="px-5 pb-4 pt-2 sm:px-6 bg-slate-50/50 border-t border-slate-100/80 text-[12px] sm:text-[12.5px] text-slate-600 leading-relaxed font-normal">
+            <div className="px-4 pb-3.5 pt-2 sm:px-4.5 bg-slate-50/50 border-t border-slate-100/80 text-[11px] sm:text-[11.5px] text-slate-500 leading-relaxed font-normal">
               Penghantaran fleksibel melalui Lalamove (Klang Valley), J&amp;T Express, Pos Laju serta Bas Express ke seluruh Semenanjung Malaysia, Sabah, Sarawak dan Singapura bersama nombor penjejakan automatik.
             </div>
           </details>
