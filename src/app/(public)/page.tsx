@@ -567,7 +567,7 @@ export default function HomePage() {
                   onClick={() => handleOpenProduct(item)}
                   className="group rounded-3xl overflow-hidden bg-white w-[260px] sm:w-[275px] flex-shrink-0 snap-start border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer select-none active:scale-[0.98] flex flex-col justify-between"
                 >
-                  {/* Bagian Gambar dengan Badge Khas */}
+                  {/* Bagian Gambar */}
                   <div className="relative w-full h-44 sm:h-48 bg-slate-100 overflow-hidden">
                     <Image
                       src={item.image_url}
@@ -577,13 +577,6 @@ export default function HomePage() {
                       sizes="(max-width: 640px) 275px, 300px"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
-
-                    {/* Floating Pill on Top-Left */}
-                    <div className="absolute top-3 left-3 z-10">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-md text-[10px] font-bold text-slate-800 shadow-xs border border-white/80 tracking-wide">
-                        <span>{item.highlight || 'Kualiti Kilang'}</span>
-                      </span>
-                    </div>
                   </div>
 
                   {/* Bagian Konten dengan Padding Lega (20px) */}
@@ -643,9 +636,6 @@ export default function HomePage() {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Cara Tempahan</h2>
-            <span className="text-[11px] font-semibold text-slate-600 bg-slate-50 border border-slate-200/80 px-2.5 py-1 rounded-full shadow-xs tracking-normal">
-              Panduan Pesanan
-            </span>
           </div>
 
           {/* Clean Minimalist Stepped Flow Container (Apple/Stripe Style) */}
@@ -801,14 +791,6 @@ export default function HomePage() {
                       {/* Smooth Seamless Bottom Scrim (No Clunky Boxes) */}
                       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none z-10" />
 
-                      {/* Top-left Subtle Badge */}
-                      <div className="absolute top-3 left-3 z-20">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md text-white text-[10px] font-semibold border border-white/15 shadow-xs">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />
-                          <span>Video Kilang</span>
-                        </span>
-                      </div>
-
                       {/* Minimal Center Play Button with Brand Cyan #00BDFF Hover */}
                       <div className="absolute inset-0 flex items-center justify-center z-15 pointer-events-none">
                         <div className="w-12 h-12 rounded-full bg-black/35 group-hover:bg-[#00BDFF] backdrop-blur-md border border-white/40 shadow-lg flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110">
@@ -818,9 +800,6 @@ export default function HomePage() {
 
                       {/* Minimalist Clean Typography on Scrim */}
                       <div className="absolute inset-x-0 bottom-0 p-4 space-y-1 z-20 pointer-events-none">
-                        <span className="text-[10px] font-bold text-[#00BDFF] uppercase tracking-wider block">
-                          {video.category}
-                        </span>
                         <h3 className="text-[13px] sm:text-[13.5px] font-bold text-white leading-snug line-clamp-2 drop-shadow-sm">
                           {video.title}
                         </h3>
@@ -1052,14 +1031,9 @@ export default function HomePage() {
               <Layers className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div className="min-w-0 flex-1 space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 tracking-normal leading-tight">
-                  Cetak Jersi Sublimasi Penuh
-                </h3>
-                <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200/60 uppercase tracking-wider">
-                  Teknologi Fabrik
-                </span>
-              </div>
+              <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 tracking-normal leading-tight">
+                Cetak Jersi Sublimasi Penuh
+              </h3>
               <p className="text-xs text-slate-600 leading-relaxed font-normal">
                 Pewarna meresap terus ke gentian Microfiber Eyelet &amp; Interlock. Corak tanpa had warna, kalis luntur 100% dan pengudaraan optimum untuk sukan.
               </p>
@@ -1072,14 +1046,9 @@ export default function HomePage() {
               <Zap className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div className="min-w-0 flex-1 space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 tracking-normal leading-tight">
-                  Cetakan Baju DTF Premium
-                </h3>
-                <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200/60 uppercase tracking-wider">
-                  Cetakan Foto
-                </span>
-              </div>
+              <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 tracking-normal leading-tight">
+                Cetakan Baju DTF Premium
+              </h3>
               <p className="text-xs text-slate-600 leading-relaxed font-normal">
                 Cetakan kualiti foto berdefinisi tinggi pada 100% Combed Cotton. Hasil cetakan sangat elastik, kemas, dan tiada had minimum tempahan.
               </p>
@@ -1092,14 +1061,9 @@ export default function HomePage() {
               <Award className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div className="min-w-0 flex-1 space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 tracking-normal leading-tight">
-                  Sulaman Logo Berkomputer
-                </h3>
-                <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200/60 uppercase tracking-wider">
-                  Kemasan Korporat
-                </span>
-              </div>
+              <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 tracking-normal leading-tight">
+                Sulaman Logo Berkomputer
+              </h3>
               <p className="text-xs text-slate-600 leading-relaxed font-normal">
                 Jahitan berkepadatan tinggi untuk kemeja korporat &amp; polo shirt. Kemasan timbul yang kemas, eksklusif, dan tahan lasak basuhan.
               </p>
@@ -1112,14 +1076,9 @@ export default function HomePage() {
               <ShieldCheck className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div className="min-w-0 flex-1 space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 tracking-normal leading-tight">
-                  Carta Saiz Asian Regular Fit
-                </h3>
-                <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-[#00BDFF] border border-sky-200/60 uppercase tracking-wider">
-                  Piawaian Malaysia
-                </span>
-              </div>
+              <h3 className="text-[13.5px] sm:text-sm font-bold text-slate-900 tracking-normal leading-tight">
+                Carta Saiz Asian Regular Fit
+              </h3>
               <p className="text-xs text-slate-600 leading-relaxed font-normal">
                 Ukuran standard Malaysia: Kanak-kanak (24–32), Dewasa Standard (XS–XL), Plus Size (2XL–7XL), dan Potongan Muslimah Labuh A-Cut.
               </p>
