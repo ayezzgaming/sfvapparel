@@ -132,14 +132,10 @@ export async function updateOrderPaymentStatusDb(
           updatePayload.payment_status = 'deposit_paid';
           updatePayload.deposit_paid_at = new Date().toISOString();
           updatePayload.deposit_amount = depositAmount;
-          updatePayload.balance_amount = totalAmount - depositAmount;
+          updatePayload.balance_amount = Math.max(0, totalAmount - depositAmount);
           updatePayload.paid_amount = depositAmount;
           if (paymentId) updatePayload.deposit_payment_id = paymentId;
           if (paymentMethod) updatePayload.deposit_payment_method = paymentMethod;
-          // Majukan status ke proof_approved secara automatik
-          if (currentOrder?.status === 'pending_proof') {
-            updatePayload.status = 'proof_approved';
-          }
         }
       } else {
         // Bayaran Penuh 100%
@@ -149,9 +145,6 @@ export async function updateOrderPaymentStatusDb(
         updatePayload.balance_amount = 0;
         if (paymentId) updatePayload.payment_id = paymentId;
         if (paymentMethod) updatePayload.payment_method = paymentMethod;
-        if (currentOrder?.status === 'pending_proof') {
-          updatePayload.status = 'proof_approved';
-        }
       }
     } else {
       // If a balance settlement session was failed/cancelled, do NOT wipe out existing deposit_paid status!
@@ -254,9 +247,6 @@ export async function confirmPaymentReturnAction(orderNumber: string): Promise<{
         updatePayload.balance_amount = Math.max(0, totalAmount - depositAmount);
         updatePayload.paid_amount = depositAmount;
         updatePayload.payment_method = 'CHIP Online (Deposit 50%)';
-        if (currentOrder.status === 'pending_proof') {
-          updatePayload.status = 'proof_approved';
-        }
       }
     } else {
       updatePayload.payment_status = 'paid';
@@ -264,9 +254,6 @@ export async function confirmPaymentReturnAction(orderNumber: string): Promise<{
       updatePayload.paid_amount = totalAmount;
       updatePayload.balance_amount = 0;
       updatePayload.payment_method = 'CHIP Online (100% Penuh)';
-      if (currentOrder.status === 'pending_proof') {
-        updatePayload.status = 'proof_approved';
-      }
     }
 
     const { data: updatedOrder, error: updateErr } = await supabase

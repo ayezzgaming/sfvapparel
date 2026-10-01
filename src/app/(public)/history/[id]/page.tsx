@@ -411,10 +411,37 @@ export default function OrderDetailPage() {
       <main className="max-w-md mx-auto px-4 py-4 space-y-4">
         {/* 2. MAIN STATUS HEADER CARD */}
         <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs space-y-3.5">
-          <div className="flex items-center justify-between">
+          {/* Payment Status Banner (Clear Automatic Confirmation) */}
+          <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
+            <div>
+              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Status Bayaran</span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                {isDepositPaid ? (
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>{order.payment_status === 'paid' ? 'Lunas 100% (CHIP Online)' : 'Deposit 50% Disahkan (CHIP Online)'}</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-700">
+                    <Clock className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Menunggu Pembayaran</span>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="text-right">
+              <span className="text-[10px] text-slate-400 block font-mono">Jumlah Bayaran</span>
+              <span className="text-xs font-extrabold text-slate-900 font-mono">
+                {formatCurrency(totalAmount)}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-1">
             <div>
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                Status Pesanan
+                Tahap Pemprosesan
               </span>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className={`w-2.5 h-2.5 rounded-full ${statusConfig.dot} animate-pulse`} />

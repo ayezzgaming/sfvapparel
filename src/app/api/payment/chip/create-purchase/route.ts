@@ -26,101 +26,86 @@ export async function POST(req: NextRequest) {
 
     // Security check: Fetch authoritative order from Supabase to prevent client-side price tampering
     const supabase = getServiceSupabase();
+    if (!supabase) {
+      return NextResponse.json(
+        { success: false, message: 'Sambungan pangkalan data tidak tersedia.' },
+        { status: 500 }
+      );
+    }
+
     let validatedAmount = Number(body.totalAmount) || 0;
     let validatedCustomerName = customerName || 'Pelanggan SFV Apparel';
     let validatedCustomerEmail = customerEmail || '';
     let validatedCustomerPhone = customerPhone || '';
 
-    if (supabase) {
-      let { data: dbOrder, error: dbErr } = await supabase
+    let dbOrder = null;
+    let dbErr = null;
+
+    // Retry up to 3 times (with 250ms gap) if order is concurrently being written to Supabase
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const queryResult = await supabase
         .from('orders')
         .select('*')
         .eq('order_number', baseOrderNumber)
-        .single();
+        .maybeSingle();
 
-      // Retry once after 350ms if order was just created by client
-      if ((dbErr || !dbOrder) && baseOrderNumber) {
-        await new Promise((r) => setTimeout(r, 350));
-        const retryResult = await supabase
-          .from('orders')
-          .select('*')
-          .eq('order_number', baseOrderNumber)
-          .single();
-        dbOrder = retryResult.data;
-        dbErr = retryResult.error;
-      }
-
-      if (dbErr || !dbOrder) {
-        // Auto-recovery: If order insertion had race condition, insert now
-        if (Number(body.totalAmount) > 0) {
-          const autoRecord = {
-            order_number: baseOrderNumber,
-            customer_name: validatedCustomerName,
-            customer_email: validatedCustomerEmail || 'pelanggan@sfv.my',
-            customer_phone: validatedCustomerPhone,
-            print_type: 'sublimation',
-            design_title: itemsDescription || `Tempahan Kustom ${baseOrderNumber}`,
-            total_quantity: 1,
-            raw_unit_price: Number(body.totalAmount),
-            final_unit_price: Number(body.totalAmount),
-            total_amount: Number(body.totalAmount),
-            status: 'pending_proof',
-          };
-          const { data: createdOrder } = await supabase.from('orders').insert(autoRecord).select().single();
-          if (createdOrder) {
-            dbOrder = createdOrder;
-            dbErr = null;
-          }
+        if (queryResult.data) {
+          dbOrder = queryResult.data;
+          dbErr = null;
+          break;
         }
+        await new Promise((r) => setTimeout(r, 250));
       }
 
-      if (dbErr && !dbOrder) {
-        // Fallback: Proceed with validated request parameters rather than failing
-        console.warn(`[CHIP purchase] Order ${baseOrderNumber} not in DB, proceeding with request amount`);
+      if (!dbOrder) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            message: `Pesanan #${baseOrderNumber} tidak dijumpai dalam pangkalan data. Sila simpan borang tempahan terlebih dahulu.` 
+          },
+          { status: 404 }
+        );
       }
 
-      if (dbOrder) {
-        // Check if already paid
-        if (dbOrder.payment_status === 'paid') {
+      // Check if already paid
+      if (dbOrder.payment_status === 'paid') {
+        return NextResponse.json(
+          { success: false, message: 'Pesanan ini telah dilunaskan sepenuhnya.' },
+          { status: 400 }
+        );
+      }
+
+      const totalOrderAmount = Number(dbOrder.total_amount) || 0;
+      const depositOrderAmount = Number(dbOrder.deposit_amount) || Math.round(totalOrderAmount * 0.5 * 100) / 100;
+      const balanceOrderAmount = Number(dbOrder.balance_amount) || Math.max(0, Math.round((totalOrderAmount - depositOrderAmount) * 100) / 100);
+
+      if (isBalancePayment) {
+        if (balanceOrderAmount <= 0) {
           return NextResponse.json(
-            { success: false, message: 'Pesanan ini telah dilunaskan sepenuhnya.' },
+            { success: false, message: 'Tiada baki bayaran yang perlu dijelaskan untuk pesanan ini.' },
             { status: 400 }
           );
         }
-
-        const totalOrderAmount = Number(dbOrder.total_amount) || 0;
-        const depositOrderAmount = Number(dbOrder.deposit_amount) || Math.round(totalOrderAmount * 0.5 * 100) / 100;
-        const balanceOrderAmount = Number(dbOrder.balance_amount) || Math.round((totalOrderAmount - depositOrderAmount) * 100) / 100;
-
-        if (isBalancePayment) {
-          if (balanceOrderAmount <= 0) {
-            return NextResponse.json(
-              { success: false, message: 'Tiada baki bayaran yang perlu dijelaskan untuk pesanan ini.' },
-              { status: 400 }
-            );
-          }
-          validatedAmount = balanceOrderAmount;
-        } else if (isDepositPayment || dbOrder.payment_type_selected === 'deposit_50') {
-          validatedAmount = depositOrderAmount;
-        } else {
-          validatedAmount = totalOrderAmount;
-        }
-
-        if (dbOrder.customer_name) validatedCustomerName = dbOrder.customer_name;
-        if (dbOrder.customer_email) validatedCustomerEmail = dbOrder.customer_email;
-        if (dbOrder.customer_phone) validatedCustomerPhone = dbOrder.customer_phone;
-
-        // Update pending status in database
-        const pendingStatus = isBalancePayment ? 'balance_pending' : 'deposit_pending';
-        await supabase
-          .from('orders')
-          .update({
-            payment_status: pendingStatus,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('order_number', baseOrderNumber);
+        validatedAmount = balanceOrderAmount;
+      } else if (isDepositPayment || dbOrder.payment_type_selected === 'deposit_50') {
+        validatedAmount = depositOrderAmount;
+      } else {
+        validatedAmount = totalOrderAmount;
       }
-    }
+
+      if (dbOrder.customer_name) validatedCustomerName = dbOrder.customer_name;
+      if (dbOrder.customer_email) validatedCustomerEmail = dbOrder.customer_email;
+      if (dbOrder.customer_phone) validatedCustomerPhone = dbOrder.customer_phone;
+
+      // Update pending status in database
+      const pendingStatus = isBalancePayment ? 'balance_pending' : 'deposit_pending';
+      await supabase
+        .from('orders')
+        .update({
+          payment_status: pendingStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('order_number', baseOrderNumber);
 
     if (validatedAmount <= 0) {
       return NextResponse.json(

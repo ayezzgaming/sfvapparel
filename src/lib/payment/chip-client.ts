@@ -20,7 +20,7 @@ const DEFAULT_CHIP_CONFIG: PaymentGatewayConfig = {
 };
 
 /**
- * In-memory and secure local persistence fallback
+ * In-memory and secure database/local persistence
  */
 let cachedConfig: PaymentGatewayConfig | null = null;
 
@@ -33,8 +33,40 @@ export function getChipBaseUrl(isSandbox?: boolean): string {
  * Server-only: Retrieve full Payment Gateway Configuration (with secret API key)
  */
 export async function getFullChipConfig(): Promise<PaymentGatewayConfig> {
+  // 1. Try fetching authoritative config from Supabase Database
+  try {
+    const { getServiceSupabase } = await import('@/lib/supabase/serverClient');
+    const supabase = getServiceSupabase();
+    if (supabase) {
+      const { data: dbConfig } = await supabase
+        .from('payment_gateway_configs')
+        .select('*')
+        .eq('id', 'chip-main-gateway')
+        .maybeSingle();
+
+      if (dbConfig && (dbConfig.brand_id || dbConfig.api_key)) {
+        cachedConfig = {
+          id: dbConfig.id || 'chip-main-gateway',
+          provider: 'chip',
+          brand_id: dbConfig.brand_id || '',
+          api_key: dbConfig.api_key || '',
+          public_key: dbConfig.public_key || '',
+          is_active: Boolean(dbConfig.is_active),
+          is_sandbox: Boolean(dbConfig.is_sandbox),
+          webhook_url: dbConfig.webhook_url || '/api/payment/chip/webhook',
+          payment_methods: Array.isArray(dbConfig.payment_methods) ? dbConfig.payment_methods : DEFAULT_CHIP_CONFIG.payment_methods,
+          updated_at: dbConfig.updated_at || new Date().toISOString(),
+        };
+        return cachedConfig;
+      }
+    }
+  } catch (dbErr) {
+    console.warn('[CHIP] Supabase config fetch warning, falling back to local storage:', dbErr);
+  }
+
   if (cachedConfig) return cachedConfig;
 
+  // 2. Fallback: Local disk file
   try {
     if (fs.existsSync(CONFIG_FILE_PATH)) {
       const fileData = fs.readFileSync(CONFIG_FILE_PATH, 'utf8');
@@ -104,6 +136,29 @@ export async function saveChipConfig(
     updated_at: new Date().toISOString(),
   };
 
+  // 1. Save to Supabase Database (Persistent across deployments)
+  try {
+    const { getServiceSupabase } = await import('@/lib/supabase/serverClient');
+    const supabase = getServiceSupabase();
+    if (supabase) {
+      await supabase.from('payment_gateway_configs').upsert({
+        id: 'chip-main-gateway',
+        provider: 'chip',
+        brand_id: updated.brand_id,
+        api_key: updated.api_key,
+        public_key: updated.public_key,
+        is_active: updated.is_active,
+        is_sandbox: updated.is_sandbox,
+        webhook_url: updated.webhook_url,
+        payment_methods: updated.payment_methods,
+        updated_at: updated.updated_at,
+      });
+    }
+  } catch (err) {
+    console.warn('[CHIP] Supabase save warning:', err);
+  }
+
+  // 2. Save to local disk fallback
   try {
     const dir = path.dirname(CONFIG_FILE_PATH);
     if (!fs.existsSync(dir)) {
