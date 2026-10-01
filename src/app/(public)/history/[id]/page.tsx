@@ -275,7 +275,7 @@ export default function OrderDetailPage() {
         body: JSON.stringify({
           orderNumber: `${order.order_number}-BAL`,
           customerName: order.customer_name,
-          customerEmail: order.customer_email || `${order.customer_name.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+          customerEmail: order.customer_email || 'pelanggan@sfvapparel.my',
           customerPhone: order.customer_phone,
           totalAmount: balanceAmt,
           itemsDescription: `Pelunasan Baki 50% Pesanan ${order.order_number} (${order.design_title})`,

@@ -40,14 +40,17 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error || !admin) {
-      // If no admin exists in table at all, check if this is the default admin credentials to auto-seed
+      // If no admin exists in table at all, check if initial admin bootstrap credentials match
+      const initialAdminEmail = (process.env.INITIAL_ADMIN_EMAIL || 'admin@sfvapparel.com').trim().toLowerCase();
+      const initialAdminPassword = process.env.INITIAL_ADMIN_PASSWORD || 'Admin@123456';
+
       const { count } = await supabase.from('admins').select('*', { count: 'exact', head: true });
-      if (count === 0 && cleanEmail === 'admin@sfvapparel.com' && password === 'Admin@123456') {
-        const { hash, salt } = hashPassword('Admin@123456');
+      if (count === 0 && cleanEmail === initialAdminEmail && password === initialAdminPassword) {
+        const { hash, salt } = hashPassword(initialAdminPassword);
         const { data: newAdmin, error: seedErr } = await supabase
           .from('admins')
           .insert({
-            email: 'admin@sfvapparel.com',
+            email: initialAdminEmail,
             password_hash: hash,
             password_salt: salt,
             full_name: 'Super Admin SFV',

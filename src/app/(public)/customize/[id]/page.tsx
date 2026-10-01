@@ -739,7 +739,7 @@ export default function CustomizePage() {
         order_number: existingDraftOrder?.order_number,
         customer_id: customer?.id,
         customer_name: customerName.trim(),
-        customer_email: customerEmail.trim() || customer?.email || `${customerName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+        customer_email: customerEmail.trim() || customer?.email || 'pelanggan@sfvapparel.my',
         customer_phone: customerPhone.trim(),
         print_type: techniqueMode,
         design_id: design?.id,
@@ -790,7 +790,7 @@ export default function CustomizePage() {
           body: JSON.stringify({
             orderNumber: chipOrderNumber,
             customerName: customerName.trim(),
-            customerEmail: customerEmail.trim() || customer?.email || `${customerName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+            customerEmail: customerEmail.trim() || customer?.email || 'pelanggan@sfvapparel.my',
             customerPhone: customerPhone.trim(),
             totalAmount: payableNowAmount,
             itemsDescription: `${design?.title || 'Jersi Kustom'} (${totalQuantity} helai) [${paymentTypeSelected === 'deposit_50' ? 'Deposit 50%' : 'Bayaran Penuh 100%'}]`,
