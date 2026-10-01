@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { getServiceSupabase } from '@/lib/supabase/serverClient';
 import { Order, OrderStatus, ProofRevision } from '@/types/database';
 import { sendOrderInvoiceWhatsApp, sendOrderStatusMilestoneWhatsApp } from '@/lib/whatsapp/order-notifier';
+import { sendOrderInvoiceEmail } from '@/lib/email/order-email-notifier';
 import { triggerStaffProductionAlert } from '@/lib/n8n/n8n-client';
 
 export async function getOrdersDb(): Promise<{ success: boolean; orders?: Order[]; message?: string }> {
@@ -148,10 +149,15 @@ export async function saveOrderDb(orderData: Partial<Order>): Promise<{ success:
 
     const savedOrder = data as Order;
 
-    // Trigger WhatsApp Official Invoice asynchronously
+    // Trigger WhatsApp & Email Official Invoice asynchronously
     if (savedOrder && savedOrder.customer_phone) {
       sendOrderInvoiceWhatsApp(savedOrder, 'order_created').catch((e) =>
         console.error('[saveOrderDb] WA Invoice notification error:', e)
+      );
+    }
+    if (savedOrder && savedOrder.customer_email) {
+      sendOrderInvoiceEmail(savedOrder, 'order_created').catch((e) =>
+        console.error('[saveOrderDb] Email Invoice notification error:', e)
       );
     }
 
@@ -205,10 +211,13 @@ export async function markOrderBalancePaidAction(
       return { success: false, message: error.message };
     }
 
-    // Trigger WhatsApp notification for full balance payment
+    // Trigger WhatsApp & Email notification for full balance payment
     if (updatedOrder) {
       sendOrderInvoiceWhatsApp(updatedOrder as Order, 'balance_paid').catch((e) =>
         console.error('[markOrderBalancePaidAction] WA notification error:', e)
+      );
+      sendOrderInvoiceEmail(updatedOrder as Order, 'balance_paid').catch((e) =>
+        console.error('[markOrderBalancePaidAction] Email notification error:', e)
       );
     }
 
@@ -585,6 +594,35 @@ export async function sendOrderInvoiceWhatsAppAction(
     return { success: true, message: `Invois rasmi berjaya dihantar ke WhatsApp ${order.customer_phone}!` };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Ralat semasa menghantar WhatsApp';
+    return { success: false, message: msg };
+  }
+}
+
+/**
+ * Server Action: Send or Resend Email Invoice Directly to Customer
+ */
+export async function sendOrderInvoiceEmailAction(
+  identifier: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const res = await getOrderByNumberOrIdDb(identifier);
+    if (!res.success || !res.order) {
+      return { success: false, message: 'Pesanan tidak dijumpai.' };
+    }
+
+    const order = res.order;
+    if (!order.customer_email || !order.customer_email.includes('@')) {
+      return { success: false, message: 'Alamat email pelanggan tidak ditemui atau tidak sah pada pesanan ini.' };
+    }
+
+    const emailRes = await sendOrderInvoiceEmail(order, 'manual_invoice');
+    if (!emailRes.success) {
+      return { success: false, message: emailRes.error || 'Gagal menghantar invois melalui email.' };
+    }
+
+    return { success: true, message: `Invois rasmi berjaya dihantar ke email ${order.customer_email}!` };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Ralat semasa menghantar Email';
     return { success: false, message: msg };
   }
 }

@@ -11,6 +11,7 @@ import {
 import { PaymentGatewayConfig, PaymentStatus, Order } from '@/types/database';
 import { getServiceSupabase } from '@/lib/supabase/serverClient';
 import { sendOrderInvoiceWhatsApp } from '@/lib/whatsapp/order-notifier';
+import { sendOrderInvoiceEmail } from '@/lib/email/order-email-notifier';
 import { triggerStaffProductionAlert } from '@/lib/n8n/n8n-client';
 
 /**
@@ -176,13 +177,17 @@ export async function updateOrderPaymentStatusDb(
       return { success: false, message: error.message };
     }
 
-    // Trigger WhatsApp Official Invoice & n8n Staff Production queue asynchronously
+    // Trigger WhatsApp Official Invoice & Email Invoice & n8n Staff Production queue asynchronously
     if (updatedOrder && paymentStatus === 'paid') {
       const order = updatedOrder as Order;
       const notifType = isBalancePayment ? 'balance_paid' : 'deposit_confirmed';
 
       sendOrderInvoiceWhatsApp(order, notifType).catch((e) =>
         console.error('[updateOrderPaymentStatusDb] WA Invoice notification error:', e)
+      );
+
+      sendOrderInvoiceEmail(order, notifType).catch((e) =>
+        console.error('[updateOrderPaymentStatusDb] Email Invoice notification error:', e)
       );
 
       triggerStaffProductionAlert({
@@ -267,12 +272,15 @@ export async function confirmPaymentReturnAction(orderNumber: string): Promise<{
       return { success: false, message: updateErr.message };
     }
 
-    // Trigger WhatsApp Official Invoice asynchronously
+    // Trigger WhatsApp & Email Official Invoice asynchronously
     if (updatedOrder) {
-      sendOrderInvoiceWhatsApp(
-        updatedOrder as Order,
-        isBalancePayment ? 'balance_paid' : 'deposit_confirmed'
-      ).catch((e) => console.error('[confirmPaymentReturnAction] WA Invoice notification error:', e));
+      const notifType = isBalancePayment ? 'balance_paid' : 'deposit_confirmed';
+      sendOrderInvoiceWhatsApp(updatedOrder as Order, notifType).catch((e) =>
+        console.error('[confirmPaymentReturnAction] WA Invoice notification error:', e)
+      );
+      sendOrderInvoiceEmail(updatedOrder as Order, notifType).catch((e) =>
+        console.error('[confirmPaymentReturnAction] Email Invoice notification error:', e)
+      );
     }
 
     return { success: true, order: updatedOrder };

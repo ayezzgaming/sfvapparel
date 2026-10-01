@@ -94,7 +94,7 @@ export default function CustomizePage() {
   const router = useRouter();
   const params = useParams();
   const designId = params.id as string;
-  const { customer, isAuthenticated, isLoading: isAuthLoading, updateAddress } = useAuth();
+  const { customer, isAuthenticated, isLoading: isAuthLoading, updateAddress, updateProfile } = useAuth();
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -171,10 +171,14 @@ export default function CustomizePage() {
   const [rosterFile, setRosterFile] = useState<File | null>(null);
   const [manualRoster, setManualRoster] = useState<Record<string, PlayerEntry[]>>({});
 
+  // Kaedah Penghantaran: Kurier vs Ambil Sendiri
+  const [deliveryMethod, setDeliveryMethod] = useState<'courier' | 'pickup'>('courier');
+
   // Maklumat Pelanggan & Alamat (Persis seperti profil dengan API Poskod Malaysia)
   const [teamName, setTeamName] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
   const [addrLine, setAddrLine] = useState('');
   const [addrPostcode, setAddrPostcode] = useState('');
   const [addrCity, setAddrCity] = useState('');
@@ -189,11 +193,29 @@ export default function CustomizePage() {
   const [resolvedPostcodeCity, setResolvedPostcodeCity] = useState<string>('');
   const [resolvedPostcodeState, setResolvedPostcodeState] = useState<string>('');
 
+  // Sesi Pesanan (Draft order reuse to prevent duplicates on retry)
+  const [existingDraftOrder, setExistingDraftOrder] = useState<Order | null>(null);
+
+  // Muat turun templat CSV Roster Senarai Nama
+  const handleDownloadRosterTemplate = () => {
+    const csvContent = 'No,Nama Pemain,Nombor,Saiz\n1,HAZIM,10,L\n2,AMIR,7,M\n3,FARHAN,9,XL\n4,SYAFIQ,1,L\n5,DANIAL,23,S\n6,AIMAN,8,M\n7,ZUL,11,XL';
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'SFV_Templat_Senarai_Nama_Pemain.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   // Autofill customer details if authenticated
   useEffect(() => {
     if (customer) {
       if (customer.full_name) setCustomerName(customer.full_name);
       if (customer.whatsapp) setCustomerPhone(customer.whatsapp);
+      if (customer.email) setCustomerEmail(customer.email);
       if (customer.company_or_team) setTeamName(customer.company_or_team);
       if (customer.address) setAddrLine(customer.address);
       if (customer.postal_code) {
@@ -350,11 +372,18 @@ export default function CustomizePage() {
   ]);
 
   // Handle Multi Logo Files
+  const MAX_UPLOAD_FILE_SIZE = 15 * 1024 * 1024; // 15MB limit per file
+
   const handleLogoFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     Array.from(files).forEach((file, idx) => {
+      if (file.size > MAX_UPLOAD_FILE_SIZE) {
+        alert(`Fail "${file.name}" melebihi had saiz maksimum 15MB. Sila pilih fail yang lebih kecil.`);
+        return;
+      }
+
       const id = `logo-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
       const defaultPlacement = logoList.length === 0 && idx === 0 
         ? 'Dada Kiri (Logo Pasukan)' 
@@ -418,6 +447,10 @@ export default function CustomizePage() {
   const handleRosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > MAX_UPLOAD_FILE_SIZE) {
+        alert(`Fail "${file.name}" melebihi had saiz maksimum 15MB. Sila pilih fail yang lebih kecil.`);
+        return;
+      }
       setRosterFileName(file.name);
       setRosterFile(file);
     }
@@ -542,13 +575,15 @@ export default function CustomizePage() {
     );
   }, [shippingCalculation, selectedCourierId]);
 
-  const isAddressFilled = Boolean(totalQuantity > 0 && addrLine.trim() && addrPostcode.trim().length === 5);
-  const shippingFee = (totalQuantity > 0 && isAddressFilled) ? (selectedCourier?.rate || 0) : 0;
+  const isAddressFilled = deliveryMethod === 'pickup' || Boolean(totalQuantity > 0 && addrLine.trim() && addrPostcode.trim().length === 5);
+  const shippingFee = (deliveryMethod === 'courier' && totalQuantity > 0 && isAddressFilled) ? (selectedCourier?.rate || 0) : 0;
   const grandTotalAmount = totalQuantity > 0 ? (quote.finalTotal + shippingFee) : 0;
   const depositAmount = Math.round(grandTotalAmount * 0.5 * 100) / 100;
   const balanceAmount = grandTotalAmount - depositAmount;
   const payableNowAmount = paymentTypeSelected === 'deposit_50' ? depositAmount : grandTotalAmount;
-  const formattedFullAddress = [addrLine, addrPostcode, addrCity].filter(Boolean).join(', ');
+  const formattedFullAddress = deliveryMethod === 'pickup'
+    ? 'Ambil Sendiri di Kilang SFV Apparel, Selangor'
+    : [addrLine, addrPostcode, addrCity].filter(Boolean).join(', ');
 
   // Buka Ringkasan Pesanan (Order Summary)
   const handleOpenProcessSummary = (e: React.FormEvent) => {
@@ -570,6 +605,17 @@ export default function CustomizePage() {
       return;
     }
 
+    if (deliveryMethod === 'courier') {
+      if (!addrLine.trim()) {
+        setValidationError('Sila masukkan alamat penuh untuk penghantaran kurier.');
+        return;
+      }
+      if (addrPostcode.trim().length !== 5) {
+        setValidationError('Sila masukkan 5 digit poskod Malaysia yang sah.');
+        return;
+      }
+    }
+
     setIsSummaryModalOpen(true);
   };
 
@@ -578,13 +624,21 @@ export default function CustomizePage() {
     setIsSubmitting(true);
     setPaymentError(null);
 
-    // Kemaskini alamat ke profil jika ditanda
-    if (saveAddressToProfile && (addrLine.trim() || addrPostcode.trim() || addrCity.trim())) {
+    // Kemaskini alamat & profil ke database
+    if (saveAddressToProfile && deliveryMethod === 'courier' && (addrLine.trim() || addrPostcode.trim() || addrCity.trim())) {
       updateAddress({
         address: addrLine.trim(),
         postal_code: addrPostcode.trim() || undefined,
         city: addrCity.trim() || undefined,
       }).catch(() => {});
+    }
+
+    if (customerEmail.trim() && customerEmail.trim() !== customer?.email) {
+      updateProfile({
+        full_name: customerName.trim() || customer?.full_name || 'Pelanggan',
+        email: customerEmail.trim(),
+        company_or_team: teamName.trim() || undefined,
+      }).catch((e) => console.warn('Gagal mengemas kini email ke profil:', e));
     }
 
     const activeSizingBreakdown = Object.fromEntries(
@@ -601,12 +655,8 @@ export default function CustomizePage() {
       ? logoList.map((l, i) => `${i + 1}. ${l.fileName} [${l.placement === 'Lain-lain (Khas)' ? (l.customPlacement || 'Khas') : l.placement}]`).join('\n')
       : 'Tiada fail logo (Bincang di WA)';
 
-    // 0. Muat naik fail Logo & Roster ke VPS Media Storage Vault (0 byte Supabase quota)
-    let uploadedArtworkUrl: string | null = null;
-    const uploadedAssetLinks: string[] = [];
-
-    // 1. Upload Logo files to VPS Media Vault
-    for (const logo of logoList) {
+    // 0. Muat naik fail Logo & Roster secara SELARI (Parallel Promise.all) ke VPS Media Storage Vault
+    const logoUploadPromises = logoList.map(async (logo) => {
       if (logo.file) {
         try {
           const fd = new FormData();
@@ -619,55 +669,76 @@ export default function CustomizePage() {
           if (upRes.ok) {
             const upData = await upRes.json();
             if (upData.success && upData.url) {
-              if (!uploadedArtworkUrl) uploadedArtworkUrl = upData.url;
-              uploadedAssetLinks.push(`Logo (${logo.placement}): ${upData.url}`);
+              return { url: upData.url as string, linkText: `Logo (${logo.placement}): ${upData.url}` };
             }
           }
         } catch (e) {
           console.warn('[CustomizePage] Logo upload error:', e);
         }
       }
-    }
+      return null;
+    });
 
-    // 2. Upload Roster file to VPS Media Vault
-    if (rosterMode === 'upload' && rosterFile) {
-      try {
-        const fd = new FormData();
-        fd.append('file', rosterFile);
-        fd.append('folder', 'order-rosters');
-        const upRes = await fetch('/api/media/upload', {
-          method: 'POST',
-          body: fd,
-        });
-        if (upRes.ok) {
-          const upData = await upRes.json();
-          if (upData.success && upData.url) {
-            uploadedAssetLinks.push(`Fail Roster: ${upData.url}`);
+    const rosterUploadPromise = (async () => {
+      if (rosterMode === 'upload' && rosterFile) {
+        try {
+          const fd = new FormData();
+          fd.append('file', rosterFile);
+          fd.append('folder', 'order-rosters');
+          const upRes = await fetch('/api/media/upload', {
+            method: 'POST',
+            body: fd,
+          });
+          if (upRes.ok) {
+            const upData = await upRes.json();
+            if (upData.success && upData.url) {
+              return `Fail Roster: ${upData.url}`;
+            }
           }
+        } catch (e) {
+          console.warn('[CustomizePage] Roster upload error:', e);
         }
-      } catch (e) {
-        console.warn('[CustomizePage] Roster upload error:', e);
       }
+      return null;
+    })();
+
+    const [logoResults, rosterResult] = await Promise.all([
+      Promise.all(logoUploadPromises),
+      rosterUploadPromise,
+    ]);
+
+    let uploadedArtworkUrl: string | null = null;
+    const uploadedAssetLinks: string[] = [];
+
+    logoResults.forEach((res) => {
+      if (res) {
+        if (!uploadedArtworkUrl) uploadedArtworkUrl = res.url;
+        uploadedAssetLinks.push(res.linkText);
+      }
+    });
+
+    if (rosterResult) {
+      uploadedAssetLinks.push(rosterResult);
     }
 
     const fullNotes = [
       teamName ? `Pasukan: ${teamName}` : '',
       `[Struktur Bayaran]: ${paymentTypeSelected === 'deposit_50' ? `Deposit 50% (Bayar RM${depositAmount.toFixed(2)}, Baki RM${balanceAmount.toFixed(2)} semasa siap)` : `Bayaran Penuh 100% (RM${grandTotalAmount.toFixed(2)})`}`,
       `[Kaedah Bayaran]: ${paymentMode === 'chip_online' ? 'CHIP Gateway (FPX/Kad/e-Wallet)' : 'Manual / WhatsApp'}`,
-      `[Pilihan Kurier]: ${selectedCourier.name} (${shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)})`,
+      `[Kaedah Penghantaran]: ${deliveryMethod === 'pickup' ? 'Ambil Sendiri di Kilang SFV Apparel (RM 0.00)' : `${selectedCourier.name} (${shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)})`}`,
       `[Logo & Penaja]:\n${logoInfo}`,
       uploadedAssetLinks.length > 0 ? `[Pautan Muat Turun Fail Artwork]:\n${uploadedAssetLinks.join('\n')}` : '',
       `[Senarai Nama & Nombor]:\n${rosterInfo}`,
       additionalNotes ? `Nota Khas: ${additionalNotes}` : '',
     ].filter(Boolean).join('\n\n');
 
-    // 1. Catat ke Sistem Database
+    // 1. Catat ke Sistem Database (Reuse draft order ID if retrying in same session)
     let newOrder: Order;
     try {
       newOrder = await addOrder({
         customer_id: customer?.id,
         customer_name: customerName.trim(),
-        customer_email: customer?.email || `${customerName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+        customer_email: customerEmail.trim() || customer?.email || `${customerName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
         customer_phone: customerPhone.trim(),
         print_type: techniqueMode,
         design_id: design?.id,
@@ -695,9 +766,10 @@ export default function CustomizePage() {
         payment_method: paymentMode === 'chip_online' ? 'chip_gateway' : 'whatsapp_manual',
         status: 'pending_proof',
         production_notes: fullNotes,
-        shipping_address: formattedFullAddress || 'Ambil Sendiri di Kilang SFV Apparel',
-        shipping_courier: `${selectedCourier.name} (${shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)})`,
+        shipping_address: formattedFullAddress,
+        shipping_courier: deliveryMethod === 'pickup' ? 'Ambil Sendiri di Kilang' : `${selectedCourier.name} (${shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)})`,
       });
+      setExistingDraftOrder(newOrder);
     } catch (err: unknown) {
       console.error('Failed to create order in database:', err);
       const errMsg = err instanceof Error ? err.message : 'Gagal menyimpan pesanan ke pangkalan data.';
@@ -709,14 +781,15 @@ export default function CustomizePage() {
     // 2A. Jika memilih bayaran terus secara online melalui CHIP Gateway
     if (paymentMode === 'chip_online') {
       try {
-        const chipOrderNumber = paymentTypeSelected === 'deposit_50' ? `${newOrder.order_number}-DP` : newOrder.order_number;
+        const effectiveOrderNumber = existingDraftOrder?.order_number || newOrder.order_number;
+        const chipOrderNumber = paymentTypeSelected === 'deposit_50' ? `${effectiveOrderNumber}-DP` : effectiveOrderNumber;
         const res = await fetch('/api/payment/chip/create-purchase', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             orderNumber: chipOrderNumber,
             customerName: customerName.trim(),
-            customerEmail: customer?.email || `${customerName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+            customerEmail: customerEmail.trim() || customer?.email || `${customerName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
             customerPhone: customerPhone.trim(),
             totalAmount: payableNowAmount,
             itemsDescription: `${design?.title || 'Jersi Kustom'} (${totalQuantity} helai) [${paymentTypeSelected === 'deposit_50' ? 'Deposit 50%' : 'Bayaran Penuh 100%'}]`,
@@ -1223,14 +1296,24 @@ export default function CustomizePage() {
                     </button>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => rosterInputRef.current?.click()}
-                    className="w-full py-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 text-xs text-slate-600 flex items-center justify-center gap-2"
-                  >
-                    <Upload className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Pilih Fail (Excel/PDF)</span>
-                  </button>
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => rosterInputRef.current?.click()}
+                      className="w-full py-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 text-xs text-slate-600 hover:text-slate-900 flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Pilih Fail (Excel/PDF)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDownloadRosterTemplate}
+                      className="w-full py-2 px-3 rounded-xl border border-slate-200/80 bg-slate-50 hover:bg-slate-100 text-[11px] text-slate-700 font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-sky-600" />
+                      <span>Muat Turun Templat CSV Roster (Senarai Nama)</span>
+                    </button>
+                  </div>
                 )}
               </div>
             ) : (
@@ -1321,119 +1404,176 @@ export default function CustomizePage() {
               </div>
             </div>
 
-            <div>
-              <label className="text-xs text-slate-600 block mb-1">Nama Pasukan / Syarikat (pilihan)</label>
-              <input
-                type="text"
-                value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
-                placeholder="cth: Harimau FC"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500"
-              />
-            </div>
-
-            <div className="space-y-2 pt-1">
-              <label className="text-xs text-slate-600 block">Alamat Penghantaran</label>
-              
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <input
-                    type="text"
-                    disabled={totalQuantity === 0}
-                    value={addrPostcode}
-                    onChange={(e) => handlePostcodeChange(e.target.value)}
-                    placeholder="Poskod (5 digit)"
-                    maxLength={5}
-                    className={`w-full px-3 py-2 border rounded-xl text-xs font-mono transition-colors ${
-                      totalQuantity === 0
-                        ? 'bg-slate-100/70 border-slate-200/60 opacity-60 cursor-not-allowed text-slate-400'
-                        : 'bg-slate-50 border-slate-200 text-slate-900 focus:outline-none focus:border-sky-500'
-                    }`}
-                  />
-                </div>
-                <div className="col-span-2">
-                  <input
-                    type="text"
-                    disabled={totalQuantity === 0}
-                    value={addrCity}
-                    onChange={(e) => setAddrCity(e.target.value)}
-                    placeholder="Bandar & Negeri"
-                    className={`w-full px-3 py-2 border rounded-xl text-xs transition-colors ${
-                      totalQuantity === 0
-                        ? 'bg-slate-100/70 border-slate-200/60 opacity-60 cursor-not-allowed text-slate-400'
-                        : 'bg-slate-50 border-slate-200 text-slate-900 focus:outline-none focus:border-sky-500'
-                    }`}
-                  />
-                </div>
-              </div>
-
-              <textarea
-                rows={2}
-                disabled={totalQuantity === 0}
-                value={addrLine}
-                onChange={(e) => setAddrLine(e.target.value)}
-                placeholder="No rumah, nama jalan, taman perumahan"
-                className={`w-full px-3 py-2 border rounded-xl text-xs resize-none transition-colors ${
-                  totalQuantity === 0
-                    ? 'bg-slate-100/70 border-slate-200/60 opacity-60 cursor-not-allowed text-slate-400'
-                    : 'bg-slate-50 border-slate-200 text-slate-900 focus:outline-none focus:border-sky-500'
-                }`}
-              />
-
-              <label className="flex items-center gap-2 cursor-pointer">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs text-slate-600 block mb-1">Alamat Email (Invois & Resit)</label>
                 <input
-                  type="checkbox"
-                  checked={saveAddressToProfile}
-                  onChange={(e) => setSaveAddressToProfile(e.target.checked)}
-                  className="rounded text-sky-500 w-3.5 h-3.5"
+                  type="email"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  placeholder="nama@email.com"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500"
                 />
-                <span className="text-[11px] text-slate-500">Simpan alamat ke profil</span>
-              </label>
-            </div>
-
-            {/* Pilihan Kurier: Disabled sehingga kuantiti dan alamat diisi */}
-            <div className="space-y-1.5 pt-1">
-              <div className="flex items-center justify-between">
-                <label className="text-xs text-slate-600 block">Pilihan Kurier</label>
-                {totalQuantity === 0 ? (
-                  <span className="text-[10px] text-slate-400">Pilih kuantiti jersi dahulu</span>
-                ) : addrPostcode.trim().length === 0 ? (
-                  <span className="text-[10px] text-slate-400">Masukkan poskod untuk zon kurier</span>
-                ) : addrPostcode.trim().length < 5 ? (
-                  <span className="text-[10px] text-amber-600 font-medium">Lengkapkan 5 digit poskod</span>
-                ) : !addrLine.trim() ? (
-                  <span className="text-[10px] text-slate-400">Isi nama jalan / alamat penuh</span>
-                ) : !isAddressFilled ? (
-                  <span className="text-[10px] text-slate-400">Isi alamat dahulu untuk pilih kurier</span>
-                ) : (
-                  <span className="text-[10px] text-emerald-600 font-medium">{shippingCalculation.zoneLabel}</span>
-                )}
               </div>
-
-              <button
-                type="button"
-                disabled={totalQuantity === 0 || !isAddressFilled}
-                onClick={() => totalQuantity > 0 && isAddressFilled && setIsCourierPickerOpen(true)}
-                className={`w-full px-3 py-2.5 border rounded-xl text-left flex items-center justify-between gap-3 transition-colors ${
-                  totalQuantity === 0 || !isAddressFilled
-                    ? 'bg-slate-100/70 border-slate-200/60 opacity-60 cursor-not-allowed'
-                    : 'bg-slate-50 hover:bg-slate-100/80 border-slate-200 cursor-pointer'
-                }`}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <CourierLogo type={selectedCourier.logoType} className="w-[72px] h-6 shrink-0" />
-                  <span className={`text-xs font-semibold truncate ${totalQuantity === 0 || !isAddressFilled ? 'text-slate-400' : 'text-slate-800'}`}>
-                    {totalQuantity === 0 ? 'Pilih Kuantiti Dahulu' : !isAddressFilled ? 'Pilih Kurier (Perlu Alamat)' : selectedCourier.name}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-xs font-semibold font-mono text-slate-900">
-                    {totalQuantity === 0 || !isAddressFilled ? '-' : (shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee))}
-                  </span>
-                  <ChevronDown className={`w-4 h-4 ${totalQuantity === 0 || !isAddressFilled ? 'text-slate-300' : 'text-slate-400'}`} />
-                </div>
-              </button>
+              <div>
+                <label className="text-xs text-slate-600 block mb-1">Nama Pasukan / Syarikat (pilihan)</label>
+                <input
+                  type="text"
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
+                  placeholder="cth: Harimau FC"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500"
+                />
+              </div>
             </div>
+
+            {/* Pilihan Kaedah Penerimaan: Kurier vs Ambil Sendiri */}
+            <div className="space-y-1.5 pt-1 border-t border-slate-100">
+              <label className="text-xs font-semibold text-slate-700 block">Kaedah Penerimaan *</label>
+              <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setDeliveryMethod('courier')}
+                  className={`py-2 px-3 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    deliveryMethod === 'courier'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  <Truck className="w-3.5 h-3.5 text-sky-500" />
+                  <span>Penghantaran Kurier</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeliveryMethod('pickup')}
+                  className={`py-2 px-3 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    deliveryMethod === 'pickup'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  <MapPin className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Ambil di Kilang (RM0)</span>
+                </button>
+              </div>
+            </div>
+
+            {deliveryMethod === 'courier' ? (
+              <>
+                <div className="space-y-2 pt-1">
+                  <label className="text-xs text-slate-600 block">Alamat Penghantaran *</label>
+                  
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <input
+                        type="text"
+                        disabled={totalQuantity === 0}
+                        value={addrPostcode}
+                        onChange={(e) => handlePostcodeChange(e.target.value)}
+                        placeholder="Poskod (5 digit)"
+                        maxLength={5}
+                        className={`w-full px-3 py-2 border rounded-xl text-xs font-mono transition-colors ${
+                          totalQuantity === 0
+                            ? 'bg-slate-100/70 border-slate-200/60 opacity-60 cursor-not-allowed text-slate-400'
+                            : 'bg-slate-50 border-slate-200 text-slate-900 focus:outline-none focus:border-sky-500'
+                        }`}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <input
+                        type="text"
+                        disabled={totalQuantity === 0}
+                        value={addrCity}
+                        onChange={(e) => setAddrCity(e.target.value)}
+                        placeholder="Bandar & Negeri"
+                        className={`w-full px-3 py-2 border rounded-xl text-xs transition-colors ${
+                          totalQuantity === 0
+                            ? 'bg-slate-100/70 border-slate-200/60 opacity-60 cursor-not-allowed text-slate-400'
+                            : 'bg-slate-50 border-slate-200 text-slate-900 focus:outline-none focus:border-sky-500'
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  <textarea
+                    rows={2}
+                    disabled={totalQuantity === 0}
+                    value={addrLine}
+                    onChange={(e) => setAddrLine(e.target.value)}
+                    placeholder="No rumah, nama jalan, taman perumahan"
+                    className={`w-full px-3 py-2 border rounded-xl text-xs resize-none transition-colors ${
+                      totalQuantity === 0
+                        ? 'bg-slate-100/70 border-slate-200/60 opacity-60 cursor-not-allowed text-slate-400'
+                        : 'bg-slate-50 border-slate-200 text-slate-900 focus:outline-none focus:border-sky-500'
+                    }`}
+                  />
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={saveAddressToProfile}
+                      onChange={(e) => setSaveAddressToProfile(e.target.checked)}
+                      className="rounded text-sky-500 w-3.5 h-3.5"
+                    />
+                    <span className="text-[11px] text-slate-500">Simpan alamat ke profil</span>
+                  </label>
+                </div>
+
+                {/* Pilihan Kurier: Disabled sehingga kuantiti dan alamat diisi */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs text-slate-600 block">Pilihan Kurier</label>
+                    {totalQuantity === 0 ? (
+                      <span className="text-[10px] text-slate-400">Pilih kuantiti jersi dahulu</span>
+                    ) : addrPostcode.trim().length === 0 ? (
+                      <span className="text-[10px] text-slate-400">Masukkan poskod untuk zon kurier</span>
+                    ) : addrPostcode.trim().length < 5 ? (
+                      <span className="text-[10px] text-amber-600 font-medium">Lengkapkan 5 digit poskod</span>
+                    ) : !addrLine.trim() ? (
+                      <span className="text-[10px] text-slate-400">Isi nama jalan / alamat penuh</span>
+                    ) : !isAddressFilled ? (
+                      <span className="text-[10px] text-slate-400">Isi alamat dahulu untuk pilih kurier</span>
+                    ) : (
+                      <span className="text-[10px] text-emerald-600 font-medium">{shippingCalculation.zoneLabel}</span>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={totalQuantity === 0 || !isAddressFilled}
+                    onClick={() => totalQuantity > 0 && isAddressFilled && setIsCourierPickerOpen(true)}
+                    className={`w-full px-3 py-2.5 border rounded-xl text-left flex items-center justify-between gap-3 transition-colors ${
+                      totalQuantity === 0 || !isAddressFilled
+                        ? 'bg-slate-100/70 border-slate-200/60 opacity-60 cursor-not-allowed'
+                        : 'bg-slate-50 hover:bg-slate-100/80 border-slate-200 cursor-pointer'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <CourierLogo type={selectedCourier.logoType} className="w-[72px] h-6 shrink-0" />
+                      <span className={`text-xs font-semibold truncate ${totalQuantity === 0 || !isAddressFilled ? 'text-slate-400' : 'text-slate-800'}`}>
+                        {totalQuantity === 0 ? 'Pilih Kuantiti Dahulu' : !isAddressFilled ? 'Pilih Kurier (Perlu Alamat)' : selectedCourier.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-xs font-semibold font-mono text-slate-900">
+                        {totalQuantity === 0 || !isAddressFilled ? '-' : (shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee))}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 ${totalQuantity === 0 || !isAddressFilled ? 'text-slate-300' : 'text-slate-400'}`} />
+                    </div>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="p-3 bg-emerald-50/80 border border-emerald-200/80 rounded-xl space-y-1.5">
+                <div className="flex items-center gap-2 text-emerald-800 font-semibold text-xs">
+                  <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Ambil Sendiri di Kilang SFV Apparel</span>
+                </div>
+                <p className="text-[11px] text-emerald-700 leading-relaxed">
+                  Kos penghantaran: <strong>RM 0.00 (Percuma)</strong>. Anda boleh mengambil tempahan di kilang sebaik sahaja status pesanan bertukar kepada <em>Siap / Sedia Diambil</em>.
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="text-xs text-slate-600 block mb-1">Nota Tambahan (pilihan)</label>
@@ -1658,14 +1798,25 @@ export default function CustomizePage() {
                 </div>
 
                 <div className="flex items-center gap-2 pt-1 border-t border-slate-200/50">
-                  <CourierLogo type={selectedCourier.logoType} className="h-4 w-12 shrink-0" />
-                  <span className="text-[11px] text-slate-500 font-medium truncate">
-                    {selectedCourier.shortName || selectedCourier.name} • {formattedFullAddress || 'Ambil di Kilang'}
-                  </span>
+                  {deliveryMethod === 'pickup' ? (
+                    <div className="flex items-center gap-2 min-w-0">
+                      <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span className="text-[11px] text-emerald-700 font-semibold truncate">
+                        Ambil Sendiri di Kilang SFV Apparel (RM 0.00)
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      <CourierLogo type={selectedCourier.logoType} className="h-4 w-12 shrink-0" />
+                      <span className="text-[11px] text-slate-500 font-medium truncate">
+                        {selectedCourier.shortName || selectedCourier.name} • {formattedFullAddress || 'Alamat Belum Diisi'}
+                      </span>
+                    </>
+                  )}
                 </div>
 
                 <div className="text-[11px] text-slate-400 truncate">
-                  {customerName} • {customerPhone}
+                  {customerName} • {customerPhone} {customerEmail ? `• ${customerEmail}` : ''}
                 </div>
               </div>
 
@@ -1738,7 +1889,7 @@ export default function CustomizePage() {
                   <span className="font-mono">{formatCurrency(quote.finalTotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Penghantaran ({selectedCourier.shortName || selectedCourier.name})</span>
+                  <span>Penghantaran ({deliveryMethod === 'pickup' ? 'Ambil Sendiri' : (selectedCourier.shortName || selectedCourier.name)})</span>
                   <span className="font-mono">{shippingFee === 0 ? 'Percuma' : formatCurrency(shippingFee)}</span>
                 </div>
                 <div className="flex justify-between text-slate-800 font-medium pt-1 border-t border-slate-100">

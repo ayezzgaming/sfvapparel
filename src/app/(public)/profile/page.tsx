@@ -227,6 +227,43 @@ export default function ProfilePage() {
 
         <div className="bg-white rounded-2xl overflow-hidden shadow-2xs border border-slate-200/60 divide-y divide-slate-100">
           
+          {/* Alamat Emel Rasmi */}
+          <div 
+            onClick={() => {
+              if (!isAuthenticated) {
+                router.push('/auth/login?redirect=/profile');
+                return;
+              }
+              setIsEditProfileOpen(true);
+            }}
+            className="flex items-center justify-between px-4 py-3.5 hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+                <FileText className="w-4 h-4 stroke-[1.75]" />
+              </div>
+              <div>
+                <span className="text-[13.5px] font-medium text-slate-900 block">
+                  Alamat Emel (Salinan Invois)
+                </span>
+                {isAuthenticated && customer?.email && (
+                  <span className="text-[11px] text-slate-400 truncate max-w-[200px] block mt-0.5 font-mono">
+                    {customer.email}
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-1 text-slate-400 shrink-0">
+              <span className="text-xs text-slate-400 truncate max-w-[120px]">
+                {isAuthenticated 
+                  ? (customer?.email ? 'Disimpan' : '+ Tambah Emel')
+                  : 'Log Masuk'}
+              </span>
+              <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
+            </div>
+          </div>
+
           {/* Buku Alamat Penghantaran */}
           <div 
             onClick={() => {
