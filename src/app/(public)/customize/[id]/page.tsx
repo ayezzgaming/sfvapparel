@@ -185,6 +185,10 @@ export default function CustomizePage() {
   const [selectedCourierId, setSelectedCourierId] = useState<string>('jnt');
   const [isCourierPickerOpen, setIsCourierPickerOpen] = useState(false);
 
+  // Resolved postcode city/state from lookup (needed for accurate zone label)
+  const [resolvedPostcodeCity, setResolvedPostcodeCity] = useState<string>('');
+  const [resolvedPostcodeState, setResolvedPostcodeState] = useState<string>('');
+
   // Autofill customer details if authenticated
   useEffect(() => {
     if (customer) {
@@ -192,7 +196,17 @@ export default function CustomizePage() {
       if (customer.whatsapp) setCustomerPhone(customer.whatsapp);
       if (customer.company_or_team) setTeamName(customer.company_or_team);
       if (customer.address) setAddrLine(customer.address);
-      if (customer.postal_code) setAddrPostcode(customer.postal_code);
+      if (customer.postal_code) {
+        setAddrPostcode(customer.postal_code);
+        // Pre-resolve postcode to get accurate city/state for zone label
+        const match = lookupMalaysiaPostcode(customer.postal_code);
+        if (match) {
+          setResolvedPostcodeCity(match.city);
+          setResolvedPostcodeState(match.state);
+          // Only overwrite addrCity if it's empty (don't override user's saved city)
+          if (!customer.city) setAddrCity(`${match.city}, ${match.state}`);
+        }
+      }
       if (customer.city) setAddrCity(customer.city);
     }
   }, [customer]);
@@ -206,7 +220,15 @@ export default function CustomizePage() {
       const match = lookupMalaysiaPostcode(cleaned);
       if (match) {
         setAddrCity(`${match.city}, ${match.state}`);
+        setResolvedPostcodeCity(match.city);
+        setResolvedPostcodeState(match.state);
+      } else {
+        setResolvedPostcodeCity('');
+        setResolvedPostcodeState('');
       }
+    } else {
+      setResolvedPostcodeCity('');
+      setResolvedPostcodeState('');
     }
   };
 
@@ -471,7 +493,8 @@ export default function CustomizePage() {
   // Kiraan Pilihan Kurier & Kos Penghantaran
   const shippingCalculation = useMemo(() => {
     const cleanPostcode = (addrPostcode || customer?.postal_code || '').trim();
-    const state = (addrCity || customer?.city || '').trim();
+    // Use resolved state from postcode lookup (more accurate than the combined addrCity string)
+    const state = resolvedPostcodeState || (addrCity || customer?.city || '').trim();
 
     if (totalQuantity <= 0 || cleanPostcode.length < 5) {
       return {
@@ -482,12 +505,24 @@ export default function CustomizePage() {
       };
     }
 
-    return calculateMalaysiaShippingRates({
+    const result = calculateMalaysiaShippingRates({
       postcode: cleanPostcode,
       state: state,
       totalQuantity: totalQuantity,
     });
-  }, [addrPostcode, addrCity, customer, totalQuantity]);
+
+    // Override zoneLabel with actual destination city from postcode lookup for clarity
+    const destinationCity = resolvedPostcodeCity || addrCity.split(',')[0].trim();
+    if (destinationCity) {
+      const zoneDesc =
+        result.zone === 'klang_valley' ? 'Lembah Klang / KL (Zon 1)'
+        : result.zone === 'peninsular' ? 'Semenanjung Malaysia (Zon 2)'
+        : 'Sabah & Sarawak (Zon 3)';
+      result.zoneLabel = `${destinationCity} — ${zoneDesc}`;
+    }
+
+    return result;
+  }, [addrPostcode, addrCity, resolvedPostcodeCity, resolvedPostcodeState, customer, totalQuantity]);
 
   const selectedCourier = useMemo(() => {
     const list = shippingCalculation?.couriers || [];
@@ -1005,7 +1040,7 @@ export default function CustomizePage() {
                         value={qty === 0 ? '' : qty}
                         onChange={(e) => handleSizeChange(sizeKey, parseInt(e.target.value) || 0)}
                         placeholder="0"
-                        className="w-6 text-center text-xs font-mono font-bold text-slate-900 bg-transparent focus:outline-none"
+                        className="w-10 text-center text-[11px] font-mono font-bold text-slate-900 bg-transparent focus:outline-none tabular-nums"
                       />
                       <button
                         type="button"
@@ -1770,7 +1805,16 @@ export default function CustomizePage() {
               <div>
                 <h3 className="text-xs font-bold text-slate-900">Pilih Kurier</h3>
                 <p className="text-[10px] text-slate-400">
-                  {(!addrLine.trim() || !addrPostcode.trim()) ? 'Kos pos dikira selepas alamat dimasukkan' : shippingCalculation.zoneLabel}
+                  {(!addrLine.trim() || !addrPostcode.trim())
+                    ? 'Kos pos dikira selepas alamat dimasukkan'
+                    : (() => {
+                        const originCity = companySettings?.address
+                          ? (companySettings.address.split(',').pop()?.trim() || 'Selangor')
+                          : 'Selangor';
+                        const destCity = resolvedPostcodeCity || addrCity.split(',')[0].trim() || addrPostcode;
+                        return `${originCity} → ${destCity} · ${shippingCalculation.zoneLabel}`;
+                      })()
+                  }
                 </p>
               </div>
               <button
