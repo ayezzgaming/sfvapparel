@@ -145,20 +145,20 @@ function CatalogContent() {
                 <div
                   key={design.id}
                   onClick={() => handleOpenDesign(design)}
-                  className="bg-white rounded-2xl overflow-hidden shadow-xs border border-slate-200/60 hover:border-sky-200 flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all group"
+                  className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md hover:border-[#00BDFF]/40 flex flex-col justify-between cursor-pointer active:scale-[0.98] transition-all group"
                 >
-                  {/* Clean Visual Image Area */}
-                  <div className="relative w-full aspect-[4/4.5] overflow-hidden bg-slate-100">
+                  {/* Studio Product Backdrop Container */}
+                  <div className="relative w-full aspect-[4/4.5] overflow-hidden bg-gradient-to-b from-white via-slate-50 to-slate-100/80 border-b border-slate-100/90 flex items-center justify-center p-2.5">
                     <Image
                       src={design.thumbnail_url || design.mockup_front_url}
                       alt={design.title}
                       fill
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 250px"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                      className="object-contain p-2 group-hover:scale-105 transition-transform duration-500 ease-out drop-shadow-xs"
                       priority={isPriority}
                       loading={isPriority ? 'eager' : 'lazy'}
                       decoding="async"
-                      quality={75}
+                      quality={85}
                     />
 
                     {/* Modern Translucent Dark Circle Heart Button */}
@@ -184,7 +184,7 @@ function CatalogContent() {
                   </div>
 
                   {/* Clean Minimal Typography (No Badges, No Clutter) */}
-                  <div className="p-3">
+                  <div className="p-3 bg-white">
                     <h3 className="text-xs font-bold text-slate-900 tracking-tight truncate group-hover:text-[#00BDFF] transition-colors">
                       {design.title}
                     </h3>
@@ -256,13 +256,13 @@ function CatalogContent() {
         {selectedDesign && (
           <div className="space-y-4">
             {/* Mockup Preview Photo (1:1 Ratio) */}
-            <div className="relative w-full aspect-square rounded-2xl bg-slate-100 overflow-hidden shadow-xs border border-slate-200/60">
+            <div className="relative w-full aspect-square rounded-2xl bg-gradient-to-b from-white via-slate-50 to-slate-100/80 overflow-hidden shadow-xs border border-slate-200/80 p-4 flex items-center justify-center">
               <Image
                 src={selectedDesign.mockup_front_url || selectedDesign.thumbnail_url}
                 alt={selectedDesign.title}
                 fill
                 sizes="(max-width: 640px) 90vw, 400px"
-                className="object-cover"
+                className="object-contain p-2 drop-shadow-sm"
                 priority
               />
             </div>
