@@ -476,13 +476,29 @@ export default function HomePage() {
                   />
 
                   {/* Top Status Pill - Clean Light Frosted Glass */}
-                  <div className="absolute top-3.5 left-3.5 z-20 flex items-center gap-2">
+                  <div className="absolute top-3.5 left-3.5 z-20 flex flex-col items-start gap-1.5">
                     <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-white/80 text-slate-900 shadow-xs">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-400/40 shrink-0" />
                       <span className="text-[11px] font-bold tracking-normal text-slate-900">
                         {banner.status_pill}
                       </span>
                     </div>
+                    {/* Live Visitor Pill — Social Proof, Above the Fold, Subtle */}
+                    {mounted && visitorStats && (
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 text-white/90 shadow-xs">
+                        <span className="relative flex h-1.5 w-1.5 shrink-0">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+                        </span>
+                        <span className="text-[10px] font-semibold tracking-normal tabular-nums">
+                          {visitorStats.online.toLocaleString()} online
+                        </span>
+                        <span className="text-white/40 text-[9px]">·</span>
+                        <span className="text-[10px] font-normal text-white/70 tabular-nums">
+                          {visitorStats.total.toLocaleString()} kunjungan
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Bottom Frosted Glass Panel - Light iOS Liquid Glass Theme */}
@@ -1494,22 +1510,6 @@ export default function HomePage() {
               <span className="tracking-tight text-slate-800 font-semibold">{(!companySettings.developer_name || companySettings.developer_name === 'AYEZZ Studio') ? 'AYEZZ Global' : companySettings.developer_name}</span>
             </a>
           </div>
-
-          {/* Real Visitor Traffic Stats (Clean, Minimal, Low-Contrast, Seamless with Footer) */}
-          {visitorStats && (
-            <div className="pt-2.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[10.5px] text-slate-400 font-normal">
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 inline-block" />
-                <span>Online: <span className="font-mono text-slate-600 font-medium">{visitorStats.online.toLocaleString()}</span></span>
-              </div>
-              <span className="text-slate-300">•</span>
-              <span>Hari ini: <span className="font-mono text-slate-600 font-medium">{visitorStats.today.toLocaleString()}</span></span>
-              <span className="text-slate-300">•</span>
-              <span>Minggu ini: <span className="font-mono text-slate-600 font-medium">{visitorStats.thisWeek.toLocaleString()}</span></span>
-              <span className="text-slate-300">•</span>
-              <span>Total Kunjungan: <span className="font-mono text-slate-600 font-medium">{visitorStats.total.toLocaleString()}</span></span>
-            </div>
-          )}
         </div>
       </footer>
 
