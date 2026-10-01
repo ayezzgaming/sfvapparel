@@ -137,7 +137,7 @@ export async function saveOrderDb(orderData: Partial<Order>): Promise<{ success:
 
     const { data, error } = await supabase
       .from('orders')
-      .insert(recordToInsert)
+      .upsert(recordToInsert, { onConflict: 'order_number' })
       .select()
       .single();
 

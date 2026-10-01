@@ -450,7 +450,7 @@ export function useAppStore() {
     [state.favorites]
   );
 
-  const addOrder = useCallback(async (orderData: Omit<Order, 'id' | 'order_number' | 'created_at' | 'updated_at'>) => {
+  const addOrder = useCallback(async (orderData: Omit<Order, 'id' | 'order_number' | 'created_at' | 'updated_at'> & { id?: string; order_number?: string }) => {
     initStoreIfNeeded();
     const res = await saveOrderDb(orderData);
     if (!res.success || !res.order) {

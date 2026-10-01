@@ -736,6 +736,7 @@ export default function CustomizePage() {
     let newOrder: Order;
     try {
       newOrder = await addOrder({
+        order_number: existingDraftOrder?.order_number,
         customer_id: customer?.id,
         customer_name: customerName.trim(),
         customer_email: customerEmail.trim() || customer?.email || `${customerName.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
@@ -781,7 +782,7 @@ export default function CustomizePage() {
     // 2A. Jika memilih bayaran terus secara online melalui CHIP Gateway
     if (paymentMode === 'chip_online') {
       try {
-        const effectiveOrderNumber = existingDraftOrder?.order_number || newOrder.order_number;
+        const effectiveOrderNumber = newOrder.order_number;
         const chipOrderNumber = paymentTypeSelected === 'deposit_50' ? `${effectiveOrderNumber}-DP` : effectiveOrderNumber;
         const res = await fetch('/api/payment/chip/create-purchase', {
           method: 'POST',

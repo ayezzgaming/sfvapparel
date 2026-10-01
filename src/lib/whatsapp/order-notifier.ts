@@ -37,7 +37,7 @@ export async function sendOrderInvoiceWhatsApp(
     const isPaidInFull = order.payment_status === 'paid' || Boolean(order.balance_paid_at);
 
     const invoiceNumber = `INV-${order.order_number.replace(/^SFV-?/i, '')}`;
-    const orderDate = new Date(order.created_at).toLocaleDateString('ms-MY', {
+    const orderDate = new Date(order.created_at || Date.now()).toLocaleDateString('ms-MY', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
