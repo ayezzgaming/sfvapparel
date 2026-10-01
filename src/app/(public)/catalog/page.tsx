@@ -161,7 +161,7 @@ function CatalogContent() {
                       quality={85}
                     />
 
-                    {/* Soft Frosted Translucent Circle Heart Button */}
+                    {/* Clean Floating Glass Circle Heart Button */}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -173,11 +173,15 @@ function CatalogContent() {
                         toggleFavorite(design.id);
                       }}
                       aria-label="Kegemaran"
-                      className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-black/15 hover:bg-black/25 backdrop-blur-md flex items-center justify-center text-white border border-white/25 shadow-xs active:scale-90 transition-all z-10"
+                      className={`absolute top-2.5 right-2.5 w-7 h-7 rounded-full backdrop-blur-md flex items-center justify-center transition-all duration-200 z-10 active:scale-90 shadow-xs ${
+                        isFav
+                          ? 'bg-rose-50/95 border border-rose-200/90 text-rose-500 hover:bg-rose-100 shadow-rose-500/10'
+                          : 'bg-white/90 hover:bg-white border border-slate-200/80 text-slate-400 hover:text-slate-600 shadow-slate-900/5 hover:scale-105'
+                      }`}
                     >
                       <Heart 
-                        className={`w-3.5 h-3.5 transition-colors stroke-[2.2] drop-shadow-xs ${
-                          isFav ? 'fill-[#FF2D55] text-[#FF2D55]' : 'text-white'
+                        className={`w-3.5 h-3.5 transition-transform duration-200 stroke-[2.2] ${
+                          isFav ? 'fill-rose-500 text-rose-500 scale-105' : 'text-slate-400'
                         }`} 
                       />
                     </button>
