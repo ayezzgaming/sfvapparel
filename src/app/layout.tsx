@@ -128,33 +128,21 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://solfhbixctrcqthhithr.supabase.co" />
         <link rel="preload" as="image" href="https://solfhbixctrcqthhithr.supabase.co/storage/v1/object/public/cms-assets/hero-hd-1790331893659-5ozr.webp" fetchPriority="high" type="image/webp" />
         
-        {/* Google Analytics GA4 Script (Deferred to idle to achieve 0ms TBT & 0ms main-thread contention) */}
+        {/* Google Ads Tag (gtag.js) AW-17378798696 */}
         <Script
-          id="google-analytics-deferred"
-          strategy="lazyOnload"
+          src="https://www.googletagmanager.com/gtag/js?id=AW-17378798696"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="google-tag-aw-17378798696"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', '${gaId}', {
-                page_path: window.location.pathname,
-              });
-
-              function loadGtagScript() {
-                if (window._gtagLoaded) return;
-                window._gtagLoaded = true;
-                var s = document.createElement('script');
-                s.src = 'https://www.googletagmanager.com/gtag/js?id=${gaId}';
-                s.async = true;
-                document.head.appendChild(s);
-              }
-
-              if ('requestIdleCallback' in window) {
-                requestIdleCallback(function() { setTimeout(loadGtagScript, 2000); });
-              } else {
-                setTimeout(loadGtagScript, 3000);
-              }
+              gtag('config', 'AW-17378798696');
+              ${gaId ? `gtag('config', '${gaId}');` : ''}
             `,
           }}
         />
