@@ -99,13 +99,23 @@ export default function OrderInvoiceModal({ order, isOpen, onClose }: OrderInvoi
               <FaWhatsapp className={`w-4 h-4 ${isSendingWa ? 'animate-spin' : ''}`} />
             </button>
 
+            <a
+              href={`/api/invoice/${encodeURIComponent(order.order_number)}/pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-medium text-xs rounded-full flex items-center space-x-1 transition-all cursor-pointer"
+              title="Muat Turun Fail PDF Invois Rasmi"
+            >
+              <Printer className="w-3.5 h-3.5 text-slate-600" />
+              <span>Muat Turun PDF</span>
+            </a>
+
             <button
               type="button"
               onClick={handlePrint}
               className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-medium text-xs rounded-full flex items-center space-x-1 transition-all cursor-pointer"
             >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Cetak / PDF</span>
+              <span>Cetak</span>
             </button>
 
             <button

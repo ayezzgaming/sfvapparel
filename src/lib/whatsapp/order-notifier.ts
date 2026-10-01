@@ -67,6 +67,8 @@ export async function sendOrderInvoiceWhatsApp(
     let depositStatusLabel = isDepositPaid ? '[DISAHKAN DITERIMA]' : '[MENUNGGU BAYARAN]';
     let balanceStatusLabel = isPaidInFull ? '[LUNAS SEPENUHNYA]' : '[BAYAR BILA SEDIA DIPOS]';
 
+    const pdfInvoiceUrl = `${host}/api/invoice/${encodeURIComponent(order.order_number)}/pdf`;
+
     const message = `*${headerTitle}*
 *SFV APPAREL*
 ========================================
@@ -81,7 +83,7 @@ export async function sendOrderInvoiceWhatsApp(
 • *Jenis Cetakan:* ${order.print_type === 'sublimation' ? 'Sublimasi Penuh' : 'DTF Premium'}
 • *Kuantiti:* ${order.total_quantity} helai ${sizeText ? `(Saiz: ${sizeText})` : ''}
 • *Harga Seunit:* ${formatCurrency(order.final_unit_price || order.raw_unit_price)}
-• *Alamat Pos:* ${order.shipping_address || 'Ambil di kilang'}
+• *Alamat / Kaedah Pos:* ${order.shipping_address || 'Ambil di kilang'}
 ${order.tracking_number ? `• *No. Tracking Kurier:* ${order.tracking_number}` : ''}
 
 *STRUKTUR BAYARAN:*
@@ -93,7 +95,10 @@ ${order.tracking_number ? `• *No. Tracking Kurier:* ${order.tracking_number}` 
 • Status: *${order.status ? order.status.toUpperCase().replace(/_/g, ' ') : 'DALAM PROSES'}*
 
 ========================================
-*Semak Invois & Jejak Pengeluaran Langsung:*
+📄 *Muat Turun Fail PDF Invois Rasmi:*
+${pdfInvoiceUrl}
+
+🔍 *Semak & Jejak Pengeluaran Langsung:*
 ${trackingLink}
 
 Terima kasih atas tempahan anda bersama SFV Apparel!`;

@@ -391,6 +391,36 @@ export async function sendWahaImage(to: string, fileUrl: string, caption?: strin
 }
 
 /**
+ * Send file / document (PDF, Excel, etc.)
+ */
+export async function sendWahaFile(to: string, fileUrl: string, filename?: string, caption?: string): Promise<{ success: boolean; data?: unknown; error?: string }> {
+  try {
+    const chatId = formatChatId(to);
+    const res = await fetch(`${WAHA_URL}/api/sendFile`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({
+        session: DEFAULT_SESSION,
+        chatId,
+        file: { url: fileUrl, filename: filename || 'Dokumen.pdf' },
+        caption: caption || '',
+      }),
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      return { success: false, error: errBody || 'Ralat penghantaran fail WhatsApp' };
+    }
+
+    const data = await res.json();
+    return { success: true, data };
+  } catch (err: unknown) {
+    const error = err instanceof Error ? err.message : 'Ralat sambungan fail WhatsApp';
+    return { success: false, error };
+  }
+}
+
+/**
  * Send typing presence (Mengetik...) to WhatsApp
  */
 export async function startWahaTyping(to: string): Promise<boolean> {
