@@ -280,7 +280,7 @@ export default function CustomizePage() {
   }, [sizing, activeSizeKeys]);
 
   const handleSizeChange = (size: string, val: number) => {
-    const cleanVal = Math.max(0, val);
+    const cleanVal = Number.isFinite(val) ? Math.max(0, Math.floor(val)) : 0;
     setSizing((prev) => ({
       ...prev,
       [size]: cleanVal,

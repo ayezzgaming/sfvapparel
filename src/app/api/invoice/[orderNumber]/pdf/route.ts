@@ -21,12 +21,15 @@ export async function GET(
       return new NextResponse('Database connection error', { status: 500 });
     }
 
-    // Lookup order by order_number or ID
-    const { data: order, error } = await supabase
-      .from('orders')
-      .select('*')
-      .or(`order_number.eq.${orderNumber},id.eq.${orderNumber}`)
-      .maybeSingle();
+    // Lookup order by order_number or ID safely without UUID cast error
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderNumber);
+    let query = supabase.from('orders').select('*');
+    if (isUuid) {
+      query = query.or(`order_number.eq.${orderNumber},id.eq.${orderNumber}`);
+    } else {
+      query = query.eq('order_number', orderNumber);
+    }
+    const { data: order, error } = await query.maybeSingle();
 
     if (error || !order) {
       return new NextResponse('Pesanan tidak dijumpai', { status: 404 });

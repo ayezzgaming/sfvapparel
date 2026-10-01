@@ -59,7 +59,9 @@ export async function getCustomerOrdersDb(identifier: string): Promise<{ success
         trimmed.includes('@') ? `customer_email.ilike.%${trimmed}%` : '',
       ].filter(Boolean).join(',');
 
-      query = query.or(orConditions);
+      if (orConditions) {
+        query = query.or(orConditions);
+      }
     }
 
     const { data, error } = await query.order('created_at', { ascending: false });
