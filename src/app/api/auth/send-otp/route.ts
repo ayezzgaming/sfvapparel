@@ -84,10 +84,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Gagal menyimpan OTP.' }, { status: 500 });
     }
 
-    // Send OTP via WAHA (Strictly no emojis)
+    // Send OTP via WAHA (Standard Malaysian Industry Format: Inclusive, Neutral & Secure)
     const chatId = formatChatId(normalizedPhone);
-    const greeting = customerName ? `Assalamualaikum *${customerName}*,` : 'Assalamualaikum,';
-    const message = `*SFV Apparel - Kod Pengesahan*\n\n${greeting}\n\nKod OTP anda ialah: *${otpCode}*\n\nKod ini sah selama 5 minit sahaja.\nJangan kongsikan kod ini kepada sesiapa.`;
+    const recipientGreeting = customerName ? `Salam sejahtera *${customerName}*,` : 'Salam sejahtera,';
+    const message = `*SFV APPAREL*
+Kod Pengesahan (OTP): *${otpCode}*
+
+${recipientGreeting}
+Kod pengesahan untuk pendaftaran/log masuk akaun SFV Apparel anda ialah *${otpCode}*. Kod ini sah selama 5 minit sahaja.
+
+AMARAN KESELAMATAN:
+Jangan kongsikan kod ini kepada sesiapa termasuk pihak SFV Apparel demi keselamatan akaun anda.
+
+---
+[EN] Your SFV Apparel security verification code is *${otpCode}*. Valid for 5 minutes. Do not share this code with anyone.`;
 
     const wahaResult = await sendWahaMessage(chatId, message);
 
