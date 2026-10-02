@@ -144,6 +144,9 @@ export default function RootLayout({
               gtag('config', 'AW-17378798696');
               ${gaId ? `gtag('config', '${gaId}');` : ''}
 
+              // Google Ads Page View Conversion Event
+              gtag('event', 'conversion', {'send_to': 'AW-17378798696/kGluCPLj_IwdEOjY7d5A'});
+
               // Google Ads WhatsApp Click Conversion Tracker
               function gtag_report_whatsapp_conversion(url, targetBlank) {
                 var navigated = false;
