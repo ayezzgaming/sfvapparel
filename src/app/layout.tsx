@@ -143,6 +143,57 @@ export default function RootLayout({
               gtag('js', new Date());
               gtag('config', 'AW-17378798696');
               ${gaId ? `gtag('config', '${gaId}');` : ''}
+
+              // Google Ads WhatsApp Click Conversion Tracker
+              function gtag_report_whatsapp_conversion(url, targetBlank) {
+                var navigated = false;
+                var callback = function () {
+                  if (navigated) return;
+                  navigated = true;
+                  if (url) {
+                    if (targetBlank) {
+                      window.open(url, '_blank', 'noopener,noreferrer');
+                    } else {
+                      window.location.href = url;
+                    }
+                  }
+                };
+
+                if (typeof window.gtag !== 'function') {
+                  callback();
+                  return false;
+                }
+
+                try {
+                  gtag('event', 'conversion', {
+                    'send_to': 'AW-17378798696/4VRZCLKg_4wdEOjY7d5A',
+                    'event_callback': callback
+                  });
+                } catch (e) {
+                  callback();
+                }
+
+                setTimeout(callback, 800);
+                return false;
+              }
+
+              if (typeof window !== 'undefined') {
+                document.addEventListener('click', function(e) {
+                  var link = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+                  if (!link) return;
+                  var href = link.href || '';
+                  if (
+                    href.indexOf('wa.me/') === -1 &&
+                    href.indexOf('api.whatsapp.com/') === -1 &&
+                    href.indexOf('web.whatsapp.com/') === -1
+                  ) {
+                    return;
+                  }
+                  var targetBlank = link.target === '_blank' || link.getAttribute('target') === '_blank';
+                  e.preventDefault();
+                  gtag_report_whatsapp_conversion(href, targetBlank);
+                }, true);
+              }
             `,
           }}
         />
