@@ -148,7 +148,6 @@ export async function saveDesignDb(
 
     const payload: Record<string, any> = {
       id: validId,
-      code: code || null,
       title: formattedTitle,
       category: design.category,
       print_type: design.print_type,
@@ -173,10 +172,9 @@ export async function saveDesignDb(
       return { success: false, message: `Ralat simpan ke Supabase: ${error.message}` };
     }
 
-
     const savedDesign: Design = {
       id: String(data.id),
-      code: data.code || code || extractDesignCode(data.title),
+      code: code || extractDesignCode(data.title),
       title: data.title,
       category: data.category,
       print_type: data.print_type,
